@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mock interview drill — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="11.4">
+<main class="lesson">
+
+  <span class="eyebrow">Get Hired · Lesson 11.4</span>
+  <h1>Mock interview drill</h1>
+  <p class="lead">Knowing the material and performing it under pressure are different skills. This lesson is a rehearsal: how to run a realistic mock on yourself, a mixed question drill, and a way to score your answers so practice actually improves them.</p>
+
+  <h2>Why rehearse out loud</h2>
+  <p>You can recognize a correct answer on a quiz and still freeze when a stranger asks the same thing live. Interviews test <em>retrieval under pressure</em> and <em>communication</em>, not just knowledge — and those only improve by simulating the real thing. Saying an answer aloud, against a clock, with no notes, surfaces the gap between “I get it” and “I can explain it well right now.” Better to find that gap in your living room than in the actual interview.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t11-interview-loop.svg" alt="The interview loop as a sequence of rounds: recruiter screen, technical (fundamentals and coding), system design, project or take-home, behavioral and judgment, and finally offer. Each round maps to a track in the course.">
+    <figcaption>A typical loop. Reassuringly, each round maps onto a track you’ve already studied.</figcaption>
+  </figure>
+
+  <h2>How to run a realistic mock</h2>
+  <p>Set a 45-minute timer and treat it like the real thing: answer <strong>out loud</strong>, in full sentences, with no peeking at notes. <strong>Record yourself</strong> (phone audio is fine) — watching it back is uncomfortable and unreasonably effective; you’ll catch filler words, rushed reasoning, and answers that trailed off. Split the time into three blocks: ~15 minutes of fundamentals/RAG/agents Q&amp;A, ~15 minutes on one system-design prompt (talk through it as if at a whiteboard), and ~15 minutes of behavioral questions. Then score yourself with the rubric below before reviewing answers.</p>
+
+  <h2>The drill: draw a question</h2>
+  <p>Use this to simulate the randomness of a real round. Draw a question, start talking within five seconds (no stalling), and give a complete ~2-minute answer. Draw again. Don’t look anything up mid-answer.</p>
+
+  <div class="demo" id="mock-demo">
+    <div id="mock-q" style="font-size:16px;font-weight:700;color:#0f172a;min-height:48px;padding:6px 2px">Press “Draw a question” to begin.</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
+      <button id="mock-draw" type="button" style="padding:9px 16px;border:0;border-radius:9px;background:#4f46e5;color:#fff;font-weight:700;cursor:pointer">Draw a question</button>
+      <span id="mock-tag" style="font-size:13px;color:#64748b;align-self:center"></span>
+    </div>
+  </div>
+
+  <h2>A few questions, with what a strong answer hits</h2>
+  <p>Study these after you’ve <em>attempted</em> them cold. The point isn’t a script to memorize — it’s the <strong>checklist</strong> a good answer covers. (Track&nbsp;9 has the full bank; these are a representative sampler.)</p>
+
+  <div class="box practice">
+    <div class="box-label">Sampler</div>
+    <details class="sol">
+      <summary><span class="chev">▸</span> “Walk me through how RAG works, and where it goes wrong.”</summary>
+      <div class="sol-body">
+        <p><strong>A strong answer hits:</strong> the pipeline (chunk → embed → store → retrieve → ground the answer with citations); <em>why</em> it exists (fresh/private knowledge without retraining, less hallucination); and the failure modes — retrieval misses the right chunk (fix: hybrid search, reranking, better chunking), the model ignores the context or hallucinates anyway (fix: grounding prompt, citations, faithfulness eval), and stale or duplicated docs. Bonus: mention you’d <em>measure</em> it (recall@k, faithfulness). Naming failure modes is what separates a senior answer from a textbook one.</p>
+      </div>
+    </details>
+    <details class="sol">
+      <summary><span class="chev">▸</span> “When would you fine-tune instead of using RAG?”</summary>
+      <div class="sol-body">
+        <p><strong>Hits:</strong> default to prompt → RAG → fine-tune in that order. Fine-tune for <em>form/behavior</em> (tone, format, a narrow skill), not for <em>fresh facts</em> (that’s RAG’s job). Call out the costs: data preparation, compute, evaluation, and that it can’t easily incorporate changing knowledge. Mention LoRA/QLoRA make it cheaper. The trap is suggesting fine-tuning to “add knowledge” — flag that as usually the wrong tool.</p>
+      </div>
+    </details>
+    <details class="sol">
+      <summary><span class="chev">▸</span> “Design a customer-support assistant over our help docs.” (system design)</summary>
+      <div class="sol-body">
+        <p><strong>Hits:</strong> clarify requirements first (volume, latency, languages, accuracy bar, what “done” means). Sketch the pipeline: ingestion + chunking, embedding + vector store, hybrid retrieval + rerank, grounded generation with citations, guardrails (PII, injection, refusal for out-of-scope), and an eval + monitoring loop. Then talk <em>trade-offs</em>: cost vs latency, model size, caching, fallback to a human. Close with how you’d measure success and catch regressions. Structure and trade-offs matter more than any single “right” design.</p>
+      </div>
+    </details>
+    <details class="sol">
+      <summary><span class="chev">▸</span> “Tell me about a time you shipped something under ambiguity.” (behavioral)</summary>
+      <div class="sol-body">
+        <p><strong>Hits:</strong> use STAR — Situation, Task, Action, Result — in about two minutes, with a real metric in the Result. For a data engineer, a pipeline or reliability story works great; tie the lesson to how you’d operate on an AI team. Prepare 4–5 of these in advance (a conflict, a failure you owned, a hard trade-off, a shipped win, a time you influenced without authority). Specifics and outcomes beat generalities every time.</p>
+      </div>
+    </details>
+  </div>
+
+  <h2>Score yourself honestly</h2>
+  <p>After each answer, rate it 1–3 on four axes. Anything below a 3 is your study list for next time.</p>
+  <div class="tbl-wrap">
+    <table class="t">
+      <tr><th style="width:150px">Axis</th><th>1 (work on it)</th><th>3 (interview-ready)</th></tr>
+      <tr><td><b>Correctness</b></td><td>Missing or wrong key ideas.</td><td>Accurate; covers the core checklist.</td></tr>
+      <tr><td><b>Structure</b></td><td>Rambling; no clear order.</td><td>Clear path: why → how → trade-offs.</td></tr>
+      <tr><td><b>Trade-offs</b></td><td>One “right” answer, no nuance.</td><td>Names alternatives, costs, failure modes.</td></tr>
+      <tr><td><b>Delivery</b></td><td>Hesitant, filler, trails off.</td><td>Confident, concise, finishes cleanly.</td></tr>
+    </table>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>Interviews test <strong>retrieval under pressure + communication</strong> — rehearse out loud, timed, recorded.</li>
+      <li>Each <strong>round maps to a track</strong> (fundamentals→T1–2, RAG/agents→T3–4, design→T9.4, project→T10, behavioral→T9.6).</li>
+      <li>Strong technical answers follow <strong>why → how → trade-offs &amp; failure modes</strong>, and mention <strong>measurement</strong>.</li>
+      <li>Prepare <strong>4–5 STAR stories</strong> with real metrics; your data-engineering history is rich material.</li>
+      <li><strong>Score yourself</strong> on correctness, structure, trade-offs, delivery — anything under a 3 is next week’s study list.</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice — the full mock</div>
+    <p>Run one complete 45-minute mock today: 15 minutes drawing technical questions above (and from Track&nbsp;9), 15 minutes on the support-assistant system-design prompt, 15 minutes on behavioral questions using your STAR stories. Record it, score every answer with the rubric, and write down your three weakest spots.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> How to get the most from the replay</summary>
+      <div class="sol-body">
+        <p>When you watch it back, judge three things beyond correctness. <strong>Did you start within five seconds?</strong> Long stalls read as uncertainty; practice beginning with a one-sentence frame (“Sure — at a high level, RAG has three stages…”) to buy thinking time while sounding decisive. <strong>Did you finish, or trail off?</strong> End with a clean closer (“…and I’d measure it with recall@k and faithfulness”) instead of fading out. <strong>Did you name trade-offs unprompted?</strong> That’s the single most senior-sounding habit, and the easiest to add deliberately.</p>
+        <p><strong>Why self-scoring works:</strong> the rubric turns a vague feeling (“that went okay?”) into specific, fixable targets. You’ll find your weak axis is usually the same one across answers — often structure or trade-offs, rarely raw correctness — which means a small, focused change lifts every future answer at once. Three honest mocks will do more for your performance than re-reading three more tracks.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Mid-interview, you’re asked something you genuinely don’t know. What’s the best move?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Say what you <em>do</em> know, reason aloud toward an answer, and state how you’d find the rest.</span>
+        <div class="why">Correct. Interviewers care how you think, not whether you’ve memorized everything. Anchoring on related knowledge, reasoning out loud, and saying “here’s how I’d figure it out” shows exactly the problem-solving they’re hiring for — often scoring better than a memorized fact.</div></li>
+      <li data-correct="false"><span class="opt">B) Confidently bluff a made-up answer and hope they don’t probe.</span>
+        <div class="why">Bluffing is high-risk and usually transparent — a single follow-up exposes it, and now they doubt your other answers too. Honesty plus reasoning is both safer and more impressive.</div></li>
+      <li data-correct="false"><span class="opt">C) Go silent and think until you can produce a perfect answer.</span>
+        <div class="why">Long silence reads as freezing. A brief pause is fine, but thinking <em>out loud</em> keeps the interviewer with you and shows your process — which is the thing being evaluated.</div></li>
+      <li data-correct="false"><span class="opt">D) Just say “I don’t know” and wait for the next question.</span>
+        <div class="why">A flat “I don’t know” leaves points on the table. You almost always know something adjacent — share that and how you’d close the gap. Showing a path beats a dead end.</div></li>
+    </ul>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: structure is the skill that travels</div>
+    <p>If you improve one thing, make it structure. Under pressure, knowledge you genuinely have can come out as a jumble, and a jumbled correct answer scores worse than a well-organized partial one — because the interviewer is also imagining you explaining things to teammates and stakeholders. A reliable template fixes most of this: open with a one-sentence frame, give the “why,” walk the “how” in order, then volunteer trade-offs and how you’d measure success. That shape works for nearly any technical question and it makes you sound senior even on topics you know only moderately well.</p>
+    <p>The same applies to system-design rounds, where there’s rarely a single right answer and the evaluation is almost entirely about process. Always start by clarifying requirements and constraints before drawing anything — jumping to a solution is the classic mistake — then sketch the components, then spend most of your time on trade-offs and failure modes, because that’s where senior judgment shows. Practicing this structure a few times is what lets your real knowledge land cleanly when it counts. You’ve done the learning; this is just making sure it survives contact with a nervous moment.</p>
+  </div>
+
+  <p>That’s the whole arc: you understand the engine, you can feed it knowledge and let it act, you can make it trustworthy, fast, and cheap, you’ve built proof, and now you can perform. If you want to go past job-ready into genuinely deep, <strong>Track&nbsp;12: Going Deeper</strong> awaits — otherwise, go build, go apply, and good luck. You’ve earned the shot.</p>
+
+</main>
+
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  var qEl = $("mock-q"), btn = $("mock-draw"), tag = $("mock-tag");
+  if (!qEl || !btn) return;
+  var BANK = [
+    ["Explain tokens and why token counts drive cost and latency.", "Fundamentals · T1"],
+    ["What is an embedding, and why does cosine similarity matter for retrieval?", "Fundamentals · T1/T3"],
+    ["Walk me through a RAG pipeline and three ways it fails.", "RAG · T3"],
+    ["Pure vector search misses exact product names. What do you do?", "RAG · T3"],
+    ["When would you fine-tune instead of using RAG?", "Tuning · T5"],
+    ["What turns a chatbot into an agent, and what new risks appear?", "Agents · T4"],
+    ["Design an assistant over our internal docs. Start by asking questions.", "System design · T9"],
+    ["How would you evaluate a RAG system, offline and in production?", "Evals · T6"],
+    ["A prompt change improved one answer but broke others. How do you catch that?", "Evals · T6"],
+    ["How do you defend against prompt injection in a tool-using agent?", "Safety · T7"],
+    ["Your LLM feature's cost tripled this month. How do you investigate and cut it?", "Serving · T8"],
+    ["Tell me about a time you shipped under ambiguity. (STAR)", "Behavioral · T9"]
+  ];
+  var last = -1;
+  function draw() {
+    var i = Math.floor(Math.random() * BANK.length);
+    if (BANK.length > 1) { while (i === last) { i = Math.floor(Math.random() * BANK.length); } }
+    last = i;
+    qEl.textContent = BANK[i][0];
+    if (tag) tag.textContent = BANK[i][1] + "  ·  answer in ~2 min, out loud";
+  }
+  btn.addEventListener("click", draw);
+})();
+</script>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

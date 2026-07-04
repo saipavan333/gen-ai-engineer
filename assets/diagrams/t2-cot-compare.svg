@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 384" width="860" height="384" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="860" height="384" fill="#ffffff"/>
+<text x="430" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Give the model room to think</text>
+<text x="220" y="62" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14.5" fill="#b91c1c" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Answer directly</text>
+<rect x="40" y="80" width="360" height="70" rx="10" ry="10" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+<text x="58" y="101.4" font-family="DejaVu Sans, sans-serif" font-size="12.8" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">“I have 3 apples. I eat 1, buy 2 bags</text>
+<text x="58" y="122.4" font-family="DejaVu Sans, sans-serif" font-size="12.8" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve"> of 4, then give away half. How many?”</text>
+<line x1="220" y1="150" x2="220.0" y2="177.0" stroke="#94a3b8" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="220.0,188.0 215.6,177.0 224.4,177.0" fill="#94a3b8"/>
+<rect x="40" y="194" width="360" height="56" rx="10" ry="10" fill="#fef1ef" stroke="#dc2626" stroke-width="2"/>
+<text x="58" y="215.4" font-family="DejaVu Sans, sans-serif" font-size="12.8" fill="#1f2937" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">“6”      ✗   one leap, wrong</text>
+<text x="640" y="62" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14.5" fill="#15803d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Think step by step</text>
+<rect x="460" y="80" width="360" height="70" rx="10" ry="10" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+<text x="478" y="101.4" font-family="DejaVu Sans, sans-serif" font-size="12.8" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">“…How many? Let’s think step by</text>
+<text x="478" y="122.4" font-family="DejaVu Sans, sans-serif" font-size="12.8" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve"> step.”</text>
+<line x1="640" y1="150" x2="640.0" y2="177.0" stroke="#94a3b8" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="640.0,188.0 635.6,177.0 644.4,177.0" fill="#94a3b8"/>
+<rect x="460" y="194" width="360" height="150" rx="10" ry="10" fill="#eefaf0" stroke="#16a34a" stroke-width="2"/>
+<text x="478" y="215.4" font-family="DejaVu Sans Mono, monospace" font-size="12.8" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">Start: 3 apples</text>
+<text x="478" y="236.4" font-family="DejaVu Sans Mono, monospace" font-size="12.8" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">Eat 1  →  2</text>
+<text x="478" y="257.4" font-family="DejaVu Sans Mono, monospace" font-size="12.8" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">Buy 2 bags of 4  →  2 + 8 = 10</text>
+<text x="478" y="278.4" font-family="DejaVu Sans Mono, monospace" font-size="12.8" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">Give away half  →  5</text>
+<text x="478" y="299.4" font-family="DejaVu Sans Mono, monospace" font-size="12.8" fill="#1f2937" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Answer: 5      ✓</text>
+<text x="430" y="372" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.3" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Same model, same question — only the second prompt invites the reasoning that gets it right.</text>
+</svg>

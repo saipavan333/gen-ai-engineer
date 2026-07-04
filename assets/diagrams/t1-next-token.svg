@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 340" width="840" height="340" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="840" height="340" fill="#ffffff"/>
+<rect x="24" y="122.5" width="184" height="74" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="24" y="125" width="184" height="74" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="24" y="120" width="184" height="74" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="116.0" y="148.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Context so far</text>
+<text x="116.0" y="161.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">"The cat sat on the ___"</text>
+<rect x="258" y="114.5" width="120" height="90" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="258" y="117" width="120" height="90" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="258" y="112" width="120" height="90" rx="13" ry="13" fill="url(#g_accent)" stroke="#4f46e5" stroke-width="1.8"/>
+<text x="318.0" y="141.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="20" fill="#312e81" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">LLM</text>
+<text x="318.0" y="157.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">a neural</text>
+<text x="318.0" y="172.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">network</text>
+<rect x="420" y="38.5" width="250" height="248" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="420" y="41" width="250" height="248" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="420" y="36" width="250" height="248" rx="13" ry="13" fill="url(#g_plain)" stroke="#94a3b8" stroke-width="1.8"/>
+<text x="545.0" y="160.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="15.5" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve"></text>
+<text x="545" y="60" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">P(next token)</text>
+<text x="470" y="92" font-family="DejaVu Sans Mono, monospace" font-size="12.5" fill="#334155" text-anchor="end" font-weight="normal" dominant-baseline="middle" xml:space="preserve">mat</text>
+<rect x="480" y="83" width="61.49999999999999" height="18" rx="4" ry="4" fill="#4f46e5" stroke="#4f46e5" stroke-width="0"/>
+<text x="551.5" y="92" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">0.41</text>
+<text x="470" y="130" font-family="DejaVu Sans Mono, monospace" font-size="12.5" fill="#334155" text-anchor="end" font-weight="normal" dominant-baseline="middle" xml:space="preserve">rug</text>
+<rect x="480" y="121" width="27.0" height="18" rx="4" ry="4" fill="#6366f1" stroke="#6366f1" stroke-width="0"/>
+<text x="517.0" y="130" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">0.18</text>
+<text x="470" y="168" font-family="DejaVu Sans Mono, monospace" font-size="12.5" fill="#334155" text-anchor="end" font-weight="normal" dominant-baseline="middle" xml:space="preserve">floor</text>
+<rect x="480" y="159" width="16.5" height="18" rx="4" ry="4" fill="#818cf8" stroke="#818cf8" stroke-width="0"/>
+<text x="506.5" y="168" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">0.11</text>
+<text x="470" y="206" font-family="DejaVu Sans Mono, monospace" font-size="12.5" fill="#334155" text-anchor="end" font-weight="normal" dominant-baseline="middle" xml:space="preserve">sofa</text>
+<rect x="480" y="197" width="10.500000000000002" height="18" rx="4" ry="4" fill="#a5b4fc" stroke="#a5b4fc" stroke-width="0"/>
+<text x="500.5" y="206" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">0.07</text>
+<text x="470" y="244" font-family="DejaVu Sans Mono, monospace" font-size="12.5" fill="#334155" text-anchor="end" font-weight="normal" dominant-baseline="middle" xml:space="preserve">...</text>
+<rect x="480" y="235" width="34.5" height="18" rx="4" ry="4" fill="#cbd5e1" stroke="#cbd5e1" stroke-width="0"/>
+<text x="524.5" y="244" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#64748b" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">0.23</text>
+<rect x="700" y="122.5" width="116" height="74" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="700" y="125" width="116" height="74" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="700" y="120" width="116" height="74" rx="13" ry="13" fill="url(#g_example)" stroke="#16a34a" stroke-width="1.8"/>
+<text x="758.0" y="148.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#14532d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">sample</text>
+<text x="758.0" y="161.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">pick "mat"</text>
+<line x1="208" y1="157" x2="244.0" y2="157.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="256.0,157.0 244.0,161.8 244.0,152.2" fill="#475569"/>
+<line x1="378" y1="157" x2="406.0" y2="157.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="418.0,157.0 406.0,161.8 406.0,152.2" fill="#475569"/>
+<line x1="670" y1="157" x2="686.0" y2="157.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="698.0,157.0 686.0,161.8 686.0,152.2" fill="#475569"/>
+<line x1="758" y1="194" x2="758" y2="312" stroke="#16a34a" stroke-width="2.2" stroke-linecap="round"/>
+<line x1="758" y1="312" x2="116" y2="312" stroke="#16a34a" stroke-width="2.2" stroke-linecap="round"/>
+<line x1="116" y1="312" x2="116.0" y2="208.0" stroke="#16a34a" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="116.0,196.0 120.8,208.0 111.2,208.0" fill="#16a34a"/>
+<text x="437" y="330" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#16a34a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">append the chosen token to the context, then repeat</text>
+</svg>

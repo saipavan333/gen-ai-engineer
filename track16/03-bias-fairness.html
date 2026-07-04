@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Responsible AI: bias &amp; fairness — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="16.3">
+<main class="lesson">
+
+  <span class="eyebrow">Frontier &amp; Responsible AI · Lesson 16.3</span>
+  <h1>Responsible AI: bias &amp; fairness</h1>
+  <p class="lead">Models learn from human data, so they inherit human biases. If your system touches decisions about people — hiring, lending, content, access — that isn’t an abstract ethics topic; it’s an engineering requirement you’ll be asked about. This lesson is practical: where bias comes from, how to measure it, and how to reduce it.</p>
+
+  <h2>Why models are biased</h2>
+  <p>An LLM learns statistical patterns from vast amounts of human-written text, and that text reflects the world’s inequities, stereotypes, and skews. So the model can absorb and reproduce them: associating certain jobs with certain genders, rating dialects as less “professional,” performing worse for some groups because they’re underrepresented in the data. This isn’t the model being malicious — it’s a mirror of its training data, which is exactly why it’s subtle and pervasive. The harm becomes real when such a model is placed in a decision: screening résumés, moderating speech, approving applications, or simply representing people. As the builder, you’re responsible for the system’s behavior, not just the model’s.</p>
+
+  <h2>You can’t manage what you don’t measure</h2>
+  <p>Fairness starts as an evaluation problem — Track&nbsp;6, pointed at equity. The core technique is <strong>disaggregated evaluation</strong>: don’t just measure overall accuracy, measure it <em>per group</em>. A résumé-screener that’s 90% accurate overall might be 95% for one group and 78% for another — a serious problem the aggregate number hides completely. So you build test sets that let you compare performance across the relevant dimensions (and test with matched inputs that differ only in a sensitive attribute — same résumé, different name — to see if the output changes when it shouldn’t). You measure, break it down, and look specifically for gaps.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">disaggregated_eval.py</span></div>
+<pre><code><span class="c"># same qualifications, names signalling different groups — output should not differ</span>
+<span class="k">for</span> group, names <span class="k">in</span> test_names.<span class="f">items</span>():
+    scores <span class="o">=</span> [<span class="f">screen</span>(resume.<span class="f">replace</span>(<span class="s">"NAME"</span>, n)) <span class="k">for</span> n <span class="k">in</span> names]
+    <span class="f">print</span>(group, <span class="s">"avg score:"</span>, <span class="f">mean</span>(scores))
+<span class="c"># a large gap across groups on identical qualifications = bias to fix</span></code></pre>
+
+  <h2>Reducing it (defense in depth, again)</h2>
+  <p>No single fix makes a system “fair”; you layer mitigations and keep measuring. <strong>Data</strong>: for anything you fine-tune, curate for balance and representation. <strong>Prompting</strong>: instruct the model to ignore irrelevant attributes and judge on stated qualifications. <strong>Output checks</strong>: validate and monitor decisions for disparate patterns (Track&nbsp;7’s output validation, aimed at fairness). <strong>Human oversight</strong>: keep a person in the loop for consequential decisions rather than fully automating them. <strong>Transparency</strong>: document what the system does, its known limitations, and how it was tested — a practice often formalized as a <span class="term">model card</span>. And crucially, <strong>question whether an LLM should make the decision at all</strong> — sometimes the responsible design is to assist a human, not replace their judgment.</p>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>Models <strong>inherit bias from human training data</strong> — it’s a mirror, which makes it subtle and pervasive.</li>
+      <li>Harm becomes real when the system makes or influences <strong>decisions about people</strong>; you own the system’s behavior.</li>
+      <li>Measure with <strong>disaggregated evaluation</strong> (per group), and test matched inputs differing only in a sensitive attribute.</li>
+      <li>Reduce it in layers: <strong>data, prompting, output checks, human oversight, transparency (model cards)</strong>.</li>
+      <li>Sometimes the responsible choice is to <strong>assist a human, not automate</strong> the decision.</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p>Your team ships an AI résumé-screener and reports “90% accuracy — great!” What single evaluation would you insist on before it touches real candidates, and what would you do if it revealed a gap?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>The evaluation:</strong> disaggregated accuracy — break the 90% down by the groups that matter (gender, ethnicity signals, age proxies, etc.), and run matched tests where identical qualifications carry only a different name or school. The aggregate number is meaningless for fairness because it can hide a large per-group gap: 90% overall could be 96% for one group and 75% for another.</p>
+        <p><strong>If it reveals a gap:</strong> do not ship as-is. Investigate the cause (biased training/prompt, a proxy feature like zip code or name doing the discriminating), apply mitigations (remove/neutralize the proxy, adjust the prompt to focus on qualifications, add output checks), and re-measure. Add human review so no candidate is auto-rejected on the model’s word alone, and document the findings and limits in a model card. If the gap can’t be reliably closed, the responsible decision may be to <em>not</em> automate screening and instead have the tool assist a human reviewer. The through-line: for decisions about people, “accurate on average” is not the bar — “equitable across groups, verified, and overseen” is, and proving that is an engineering task, not a slogan.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Why is a single overall-accuracy number insufficient for judging whether a people-affecting AI system is fair?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) A high average can hide large disparities between groups; you need accuracy disaggregated per group to see them.</span>
+        <div class="why">Correct. Overall accuracy averages across everyone, so a system that works well for one group and poorly for another can post a great aggregate while treating some people unfairly. Only per-group (disaggregated) measurement reveals the gap — which is the thing that matters for fairness.</div></li>
+      <li data-correct="false"><span class="opt">B) Overall accuracy is always wrong and should never be measured.</span>
+        <div class="why">It’s still useful as one signal — the issue is that it’s <em>insufficient</em> for fairness on its own, not that it’s worthless. You add disaggregation, you don’t discard aggregate metrics.</div></li>
+      <li data-correct="false"><span class="opt">C) Because fairness can’t be measured at all.</span>
+        <div class="why">Fairness can be measured (imperfectly) — disaggregated evals, matched-input tests, and disparity metrics all quantify it. Claiming it’s unmeasurable is an excuse not to try.</div></li>
+      <li data-correct="false"><span class="opt">D) Because accuracy and fairness are the same thing.</span>
+        <div class="why">They’re different: a model can be accurate on average yet unfair across groups. Conflating them is exactly the mistake disaggregated evaluation exists to catch.</div></li>
+    </ul>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: fairness is contextual, and it’s a sociotechnical problem</div>
+    <p>One reason this is hard — and worth being honest about in an interview — is that “fair” has no single mathematical definition that satisfies every intuition. Researchers have formalized several fairness criteria (equal accuracy across groups, equal false-positive rates, equal opportunity, and others), and a famous result is that some of them are mutually incompatible: you often <em>cannot</em> satisfy all reasonable definitions at once, so which one applies depends on the context and the harms involved. That means fairness isn’t a checkbox you compute; it’s a judgment about your specific application — what decision is being made, who bears the cost of each kind of error, and what the domain and the law require. A thoughtful engineer names the relevant notion of fairness for the use case rather than pretending there’s a universal metric.</p>
+    <p>The deeper point is that bias is a <strong>sociotechnical</strong> problem: it lives in the interaction between the model, the data, the product design, and the humans and institutions around it — not in the weights alone. So the strongest mitigations are often not clever algorithms but design decisions: keeping a human in the loop, giving affected people a way to appeal, choosing <em>not</em> to build a high-risk automated decision, being transparent about limitations, and including diverse perspectives when defining what “good” means. This connects straight to the next lesson: because these harms are real and hard, they’re increasingly the subject of regulation, which turns “we should be responsible” into “we’re legally required to be.” Treating responsibility as a first-class engineering requirement — measured, documented, and designed for — is both the ethical stance and, increasingly, the compliant one.</p>
+  </div>
+
+  <p>Responsibility is also becoming law. Next: <strong>governance &amp; regulation.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Generating safe, correct SQL — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="13.3">
+<main class="lesson">
+
+  <span class="eyebrow">Structured Data &amp; Text-to-SQL · Lesson 13.3</span>
+  <h1>Generating safe, correct SQL</h1>
+  <p class="lead">You are about to let a language model write queries that run against your database. That sentence should make you nervous — and this lesson turns that nervousness into layered, boring, reliable safety.</p>
+
+  <h2>Why you never trust generated SQL</h2>
+  <p>A model can be prompt-injected (Track&nbsp;7): a malicious value in the data, or a cleverly worded question, can steer it into producing <code>DROP TABLE customers;</code> or <code>DELETE FROM orders;</code>. Even without an attacker, a well-meaning model can write a query that scans a billion rows and takes your database down, or one that exposes data the user shouldn’t see. The rule is simple and absolute: <strong>never rely on the prompt for safety</strong>. “Please only write SELECT statements” is a request, not a guarantee — and a request is not a security control. Safety has to live in the system around the model, in layers, so that if one fails the others still hold.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t13-safe-sql.svg" alt="Layered SQL guardrails and why each matters: a read-only database user means it cannot DROP, DELETE, or UPDATE; allowing SELECT only means parsing the query and rejecting anything that writes; forcing a row LIMIT prevents ten-million-row scans; parameterizing values prevents SQL injection; a timeout and sandbox stop one bad query from hanging the database.">
+    <figcaption>Defense in depth: each layer catches what the others might miss. The database permission is the one that can’t be talked around.</figcaption>
+  </figure>
+
+  <h2>The layers, strongest first</h2>
+  <p><strong>1 · A read-only database user (your bedrock).</strong> Connect using credentials that only have <code>SELECT</code> permission. Now it is <em>physically impossible</em> for any generated query to modify or delete data — the database itself refuses. This is the one control an attacker cannot prompt their way around, so it’s non-negotiable. Everything else is a helpful addition on top.</p>
+  <p><strong>2 · Validate that it’s a single read.</strong> Before running, check the query is one statement and starts with <code>SELECT</code> (or <code>WITH</code>), and reject stacked statements (a semicolon followed by more SQL). This catches obvious writes early and gives a clean error instead of a database rejection.</p>
+  <p><strong>3 · Force a row limit.</strong> Wrap or inject a <code>LIMIT</code> so even a query over a huge table returns bounded results — protecting both latency and memory.</p>
+  <p><strong>4 · Parameterize any user-supplied values</strong> so raw user text is never concatenated into SQL, and <strong>5 · set a timeout</strong> so a pathological query is cancelled rather than hanging the connection.</p>
+
+  <div class="code-label"><span class="dot"></span><span class="fname">safe_run.py</span></div>
+<pre><code><span class="k">import</span> sqlite3
+
+<span class="k">def</span> <span class="f">validate</span>(sql):
+    q <span class="o">=</span> sql.<span class="f">strip</span>().<span class="f">rstrip</span>(<span class="s">";"</span>).<span class="f">strip</span>()
+    <span class="k">if</span> <span class="s">";"</span> <span class="k">in</span> q:                              <span class="c"># block stacked statements</span>
+        <span class="k">raise</span> <span class="f">ValueError</span>(<span class="s">"only a single statement is allowed"</span>)
+    <span class="k">if</span> <span class="k">not</span> q.<span class="f">lower</span>().<span class="f">startswith</span>((<span class="s">"select"</span>, <span class="s">"with"</span>)):   <span class="c"># reads only</span>
+        <span class="k">raise</span> <span class="f">ValueError</span>(<span class="s">"only SELECT queries are allowed"</span>)
+    <span class="k">return</span> q
+
+<span class="k">def</span> <span class="f">run_readonly</span>(sql, db_path):
+    q <span class="o">=</span> <span class="f">validate</span>(sql)
+    <span class="c"># open the DB in read-only mode — a second, hard guarantee</span>
+    con <span class="o">=</span> sqlite3.<span class="f">connect</span>(<span class="s">f"file:</span>{db_path}<span class="s">?mode=ro"</span>, uri<span class="o">=</span><span class="k">True</span>)
+    <span class="k">try</span>:
+        rows <span class="o">=</span> con.<span class="f">execute</span>(q <span class="o">+</span> <span class="s">" LIMIT 1000"</span>).<span class="f">fetchall</span>()   <span class="c"># bound the result</span>
+    <span class="k">finally</span>:
+        con.<span class="f">close</span>()
+    <span class="k">return</span> rows</code></pre>
+  <p>Note the belt <em>and</em> braces: <code>validate</code> rejects non-reads, and <code>mode=ro</code> makes the connection itself read-only so even a write that slipped past validation would fail at the database. That redundancy is the whole idea of defense in depth — you assume each layer is imperfect.</p>
+
+  <div class="box warn">
+    <div class="box-label">The cardinal sin</div>
+    <p>Putting your safety in the prompt (“do not write destructive queries”) and then executing whatever comes back with a normal read-write connection. One prompt injection and your data is gone. The prompt is a hint; the <em>permissions</em> are the wall.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li><strong>Never trust generated SQL</strong> — and never make the prompt your only defense.</li>
+      <li>The bedrock control is a <strong>read-only database user</strong>: writes become physically impossible.</li>
+      <li>Add layers: <strong>validate SELECT-only &amp; single-statement</strong>, <strong>force a LIMIT</strong>, <strong>parameterize values</strong>, <strong>set a timeout</strong>.</li>
+      <li><strong>Defense in depth:</strong> assume any one layer can fail, so keep several (e.g. validation <em>and</em> a read-only connection).</li>
+      <li>This is Track&nbsp;7’s security mindset applied to databases.</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p>A teammate’s text-to-SQL endpoint runs the model’s output directly with a normal (read-write) connection, relying on a prompt line: “only generate SELECT statements.” List the concrete changes you’d make, in priority order, and say which single change matters most and why.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>Priority order:</strong> (1) switch to a <em>read-only database user</em> — this alone makes destructive queries impossible regardless of what the model emits. (2) Add code validation that the query is a single <code>SELECT</code>/<code>WITH</code>, rejecting semicolon-stacked statements. (3) Enforce a <code>LIMIT</code> and a statement <em>timeout</em> to bound cost and stop runaway scans. (4) Parameterize any user-supplied literals rather than concatenating them. (5) Keep the prompt instruction too — it reduces bad generations — but treat it as a hint, not a control.</p>
+        <p><strong>Which matters most:</strong> the read-only user. Every other layer reduces the <em>chance</em> of a bad query; the read-only permission removes the <em>possibility</em> of a damaging one. Security controls that make an attack impossible beat controls that make it merely less likely — and it’s the one thing a prompt injection can’t argue with. Notice this is straight least-privilege thinking: give the component exactly the access it needs (read) and nothing more.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Which control most reliably prevents a prompt-injected text-to-SQL system from deleting data?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Connecting with a database user that only has SELECT permission.</span>
+        <div class="why">Correct. If the credentials can’t write, no generated query can delete or modify data — the database enforces it, and no clever prompt can talk the database out of its own permission model. This least-privilege control is the one guarantee an attacker cannot bypass, which is why it’s the bedrock.</div></li>
+      <li data-correct="false"><span class="opt">B) A strongly-worded system prompt forbidding destructive SQL.</span>
+        <div class="why">A prompt is a request the model usually follows but an attacker can override via injection. It reduces accidents but provides no guarantee — you must never make it your only line of defense.</div></li>
+      <li data-correct="false"><span class="opt">C) Asking the model to double-check its own SQL before returning it.</span>
+        <div class="why">Self-checking can catch honest mistakes, but the same injected instructions that produced the bad query can also defeat the self-check. It’s a helpful nicety, not a control that <em>prevents</em> deletion.</div></li>
+      <li data-correct="false"><span class="opt">D) Logging every query for later review.</span>
+        <div class="why">Logging is valuable for auditing, but it’s after-the-fact — it tells you data was deleted, it doesn’t stop it. Prevention (read-only permissions) beats detection here.</div></li>
+    </ul>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: correctness is a kind of safety too</div>
+    <p>We’ve focused on <em>security</em> safety — no deletes, no injection, no runaway scans. But there’s a quieter safety that matters just as much in analytics: <em>not returning a confident wrong answer</em>. A query that silently double-counts through a fan-out join, or misses rows because of a null in the join key, is a different kind of unsafe — it corrupts decisions instead of data. Some of the same discipline helps here: constrain the surface (curated views with the joins baked in), and validate the <em>shape</em> of results (did we expect one row and get thousands?).</p>
+    <p>The deeper move is to make the system <em>show its work</em>. Returning the generated SQL alongside the answer — and, in a good UI, the row count and a sample — lets a user sanity-check the “how” behind the number, turning a black box into something auditable. This dovetails with grounding and citations from RAG: just as a RAG answer should point to its sources, a text-to-SQL answer should point to the query that produced it. Transparency doesn’t make the SQL correct, but it makes wrongness <em>visible</em>, which is the next best thing — and it’s exactly what earns trust from the analysts whose bottleneck you’re trying to remove.</p>
+  </div>
+
+  <p>Safety in place, we can let the system actually run queries — and, crucially, recover when they fail. Next: <strong>the self-correcting SQL agent.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

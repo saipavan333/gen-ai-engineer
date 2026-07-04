@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Caching — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="8.3">
+<main class="lesson">
+
+  <span class="eyebrow">Track 8 · Lesson 8.3</span>
+  <h1>Caching</h1>
+  <p class="lead">The fastest, cheapest LLM call is the one you never make. Many production workloads ask the same or similar things over and over — and caching turns those repeats into instant, near-free responses. It’s often the single biggest cost win available.</p>
+
+  <h2>Why caching is so effective here</h2>
+  <p>LLM calls are unusually expensive (money and latency) and queries are unusually repetitive — the same FAQ, the same document summarized, the same popular question asked a thousand times. <span class="term">Caching</span> stores the result of a call so the next identical (or similar) request returns the stored answer instantly, at no model cost. Because LLM calls cost so much more than a cache lookup, even a modest hit rate pays off enormously.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t8-caching.svg" alt="Caching: don't pay twice for the same work. A Request goes to a Cache check. On a hit, return the cached answer (instant, nearly free). On a miss, call the model and store the result. Three cache types: Exact cache (same prompt → stored answer), Semantic cache (similar prompt via embeddings → reuse), Prefix cache (reuse computed prompt prefix). Cache hits cost almost nothing and return instantly.">
+    <figcaption>Check the cache first; serve hits instantly and free, only call the model on a miss (then store it). Three flavors cover exact repeats, similar questions, and shared prompt prefixes.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p>An <span class="term">exact cache</span> returns a stored answer when the request is identical (same prompt → same answer). A <span class="term">semantic cache</span> matches <em>similar</em> requests using embeddings (Track 1.3): if a new query is close enough to a cached one, reuse the answer. <span class="term">Prompt/prefix caching</span> (a provider/runtime feature) reuses the model’s computation for a shared prompt prefix (like a long fixed system prompt) across requests, cutting prefill cost. The <span class="term">hit rate</span> is the fraction of requests served from cache.</p>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — exact + semantic cache (free)</div>
+    <p>An exact cache is a dictionary; a semantic cache adds an embedding similarity check. Both are a few lines.</p>
+<pre><code><span class="k">import</span> numpy <span class="k">as</span> np
+<span class="k">from</span> sentence_transformers <span class="k">import</span> SentenceTransformer
+embed <span class="o">=</span> <span class="f">SentenceTransformer</span>(<span class="s">"all-MiniLM-L6-v2"</span>)
+
+exact <span class="o">=</span> {}                                   <span class="c"># exact cache: prompt -> answer</span>
+sem_q, sem_v, sem_a <span class="o">=</span> [], <span class="kc">None</span>, []           <span class="c"># semantic cache: queries, vectors, answers</span>
+
+<span class="k">def</span> <span class="f">cached_answer</span>(query, threshold<span class="o">=</span><span class="n">0.92</span>):
+    <span class="k">if</span> query <span class="k">in</span> exact:                        <span class="c"># 1) exact hit → instant, free</span>
+        <span class="k">return</span> exact[query]
+    <span class="k">if</span> sem_v <span class="k">is</span> <span class="k">not</span> <span class="kc">None</span>:                    <span class="c"># 2) semantic hit → similar question already answered</span>
+        qv <span class="o">=</span> embed.<span class="f">encode</span>([query], normalize_embeddings<span class="o">=</span><span class="kc">True</span>)[<span class="n">0</span>]
+        sims <span class="o">=</span> sem_v <span class="o">@</span> qv
+        <span class="k">if</span> sims.<span class="f">max</span>() <span class="o">&gt;=</span> threshold:
+            <span class="k">return</span> sem_a[<span class="f">int</span>(sims.<span class="f">argmax</span>())]
+    answer <span class="o">=</span> <span class="f">call_model</span>(query)                <span class="c"># 3) miss → pay for it once, then store</span>
+    exact[query] <span class="o">=</span> answer
+    <span class="f">store_semantic</span>(query, answer)            <span class="c"># append to sem_q/sem_v/sem_a</span>
+    <span class="k">return</span> answer</code></pre>
+    <p>The semantic threshold is the key knob: too low and you return a cached answer to a question that’s actually different (a wrong answer); too high and you miss real repeats. Tune it against your data (Track 6).</p>
+  </div>
+
+  <div class="box warn">
+    <div class="box-label">Caching has correctness risks</div>
+    <p>Cache the wrong things and you serve stale or wrong answers. Don’t cache <strong>personalized</strong> responses across users (one user could get another’s answer), <strong>time-sensitive</strong> answers (today’s price), or <strong>non-deterministic creative</strong> tasks where variety is the point. And set the semantic threshold carefully — a too-loose semantic cache confidently returns a near-miss answer. Cache the stable, shared, repeatable stuff; invalidate when the underlying data changes.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>The cheapest call is one you skip — <strong>caching</strong> turns repeats into instant, near-free responses.</li>
+      <li><strong>Exact cache</strong> (identical prompt), <strong>semantic cache</strong> (similar via embeddings), <strong>prefix cache</strong> (shared prompt prefix).</li>
+      <li>Because LLM calls cost far more than a lookup, even a <strong>modest hit rate</strong> is a big win.</li>
+      <li>The <strong>semantic threshold</strong> is a correctness knob — too loose serves wrong answers.</li>
+      <li>Don’t cache <strong>personalized, time-sensitive, or intentionally-varied</strong> outputs; <strong>invalidate</strong> when data changes.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">You add a semantic cache with a low similarity threshold to maximize hit rate. Users start getting answers that don’t quite match their questions. What happened?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) The loose threshold matches questions that aren’t actually the same, so it returns a cached answer to a different question — raise the threshold (trading some hit rate for correctness).</span>
+        <div class="why">Correct. A low threshold treats merely-similar queries as identical, serving a near-miss cached answer. The semantic cache threshold trades hit rate against correctness; raise it so only genuinely-equivalent questions hit, and validate on real query pairs.</div></li>
+      <li data-correct="false"><span class="opt">B) The embedding model is broken.</span>
+        <div class="why">The embeddings are working — they’re ranking similar questions as similar. The problem is your threshold for calling them “the same” is too permissive, not a model fault.</div></li>
+      <li data-correct="false"><span class="opt">C) Exact caching would have the same problem.</span>
+        <div class="why">Exact caching only hits on identical prompts, so it wouldn’t return an answer to a different question. The wrong-answer risk is specific to semantic caching with a loose threshold.</div></li>
+      <li data-correct="false"><span class="opt">D) You need a bigger model.</span>
+        <div class="why">Model size is irrelevant — the wrong answers come from the cache returning a mismatched stored answer, not from generation. Fix the threshold.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Classify as cacheable or not: (a) “What’s your return policy?”, (b) “Summarize <em>my</em> last order”, (c) “Write a fresh joke”, (d) “What’s the weather now?”.<br>
+    <strong>2.</strong> Why does prefix caching specifically help RAG and agents?<br>
+    <strong>3.</strong> Your cache hit rate is 60% but the answers are based on docs that change weekly. What must you add?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> (a) <strong>cacheable</strong> — a stable, shared answer everyone gets. (b) <strong>not</strong> — personalized; caching across users could leak one user’s data to another. (c) <strong>not</strong> — variety is the point; a cached joke defeats it. (d) <strong>not</strong> — time-sensitive; a cached answer goes stale immediately. Cache the stable and shared; never the personal, time-sensitive, or deliberately-varied.</p>
+        <p><strong>2.</strong> RAG and agents tend to send a large, <em>fixed</em> prefix on every call — a long system prompt, instructions, tool definitions — followed by the variable part (the query/step). Prefix caching reuses the model’s computation for that shared prefix instead of re-processing it each time, cutting prefill cost and TTFT. Since these systems make many calls with the same heavy prefix, the savings compound.</p>
+        <p><strong>3.</strong> <strong>Cache invalidation</strong> tied to the data: when the weekly docs update (re-index), you must expire the affected cached answers (or use a time-to-live so entries auto-expire within the update window). Otherwise your 60% hit rate is 60% potentially-stale answers. A cache without an invalidation strategy trades cost for correctness — define how and when entries die.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: caching as a system, not a dict</div>
+    <p>In production, caching graduates from an in-memory dictionary to a deliberate layer with policies. You choose a <strong>store</strong> (an in-process dict for a single server, or Redis/a database for a fleet so all instances share hits), a <strong>key</strong> (the exact prompt, or a normalized form, plus any relevant context like user-scope or model version — so you don’t mix incompatible results), an <strong>invalidation</strong> strategy (time-to-live, or event-based eviction when source data changes), and for semantic caches a carefully-tuned <strong>threshold</strong> validated on real query pairs. Each is a small decision with real correctness consequences, which is why caching is a place senior engineers slow down even though the happy path looks trivial.</p>
+    <p>The strategic point: caching is frequently the <em>largest</em> single cost lever, precisely because real traffic is far more repetitive than people expect — a long tail of unique queries sits on top of a fat head of common ones. Measure your actual query distribution (Track 6 traces) and you’ll often find a handful of questions account for a big share of volume; caching those alone can slash cost. Combine exact caching for identical repeats, prefix caching for your fixed system prompt/tools, and a conservative semantic cache for paraphrases, and you can cut both spend and latency substantially with almost no quality risk — provided you respect the boundaries (no personalized/time-sensitive caching, sane invalidation, tuned thresholds). It’s the rare optimization that makes things both cheaper <em>and</em> faster at once.</p>
+  </div>
+
+  <p>Caching avoids calls; the next lever makes the calls you <em>do</em> make cheaper by not over-using your most expensive model. Next: <strong>model routing</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

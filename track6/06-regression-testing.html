@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Regression-testing prompts — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="6.6">
+<main class="lesson">
+
+  <span class="eyebrow">Track 6 · Lesson 6.6</span>
+  <h1>Regression-testing prompts</h1>
+  <p class="lead">A “tiny” prompt tweak to fix one case can silently break five others — and you won’t notice until a user does. The fix is to treat prompts like code: a test suite that runs on every change and blocks regressions. This is where evals become a habit, not an afterthought.</p>
+
+  <h2>Why prompts need tests like code does</h2>
+  <p>Prompts, models, RAG settings, and fine-tunes are all <em>changeable behavior</em> that can regress. Unlike code, the failures are often invisible: the change still runs, it just answers worse on cases you didn’t check. A <span class="term">regression test</span> is an eval case that must keep passing; a suite of them, run automatically on every change and used to <em>block</em> bad changes, is exactly continuous integration (CI) — applied to your LLM system. It converts “I hope I didn’t break anything” into a green or red check.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t6-regression.svg" alt="Regression testing: treat prompts like code. A Prompt change (v2) runs an Eval suite of 5 cases (case 1 pass, case 2 pass, case 3 FAIL, case 4 pass, case 5 pass), then a Gate (any fail?) leads to Blocked (case 3 regressed). Every prompt/model change runs the suite; a single regression blocks the change — no silent breakage.">
+    <figcaption>Every change runs the suite; a single regression blocks it. The model is the same idea as unit tests + CI, applied to prompts and pipelines.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p>A <span class="term">regression test</span> verifies that a previously-correct behavior still works after a change. An <span class="term">eval suite</span> is your golden set wired up to run automatically and report pass/fail. A <span class="term">gate</span> is the rule that decides whether a change can ship (e.g., “no case may regress” or “overall score must not drop”). <span class="term">Prompt versioning</span> means treating each prompt as a versioned artifact you can compare and roll back, just like code.</p>
+  </div>
+
+  <h2>Run the gate</h2>
+  <p>Your baseline (v1) passes 4 of 5 cases. Try a good candidate and a risky one, and watch the gate decide.</p>
+
+  <div class="demo" id="rg-demo">
+    <div class="demo-head"><span class="tag">Live demo</span><h4>Prompt CI gate</h4></div>
+    <label for="rg-sel">Proposed change</label>
+    <select id="rg-sel">
+      <option value="good">Candidate A — fixes the edge case</option>
+      <option value="risky">Candidate B — “cleaner” rewrite</option>
+    </select>
+    <div class="out" id="rg-out" style="margin-top:14px;min-height:120px"></div>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — an eval suite as tests (free)</div>
+    <p>Wire your golden set into plain assertions. Run it in CI; a regression fails the build, exactly like a broken unit test.</p>
+<pre><code><span class="c"># test_prompts.py — run with: pytest (free)</span>
+<span class="k">import</span> pytest
+<span class="k">from</span> my_system <span class="k">import</span> answer        <span class="c"># the current prompt/pipeline</span>
+
+GOLDEN <span class="o">=</span> [
+    (<span class="s">"What's the refund window?"</span>,      <span class="s">"30 days"</span>),
+    (<span class="s">"How do I reset my password?"</span>,    <span class="s">"Settings"</span>),
+    (<span class="s">"Do you ship to Antarctica?"</span>,     <span class="s">"don't know"</span>),   <span class="c"># must abstain</span>
+]
+
+<span class="o">@</span>pytest.mark.parametrize(<span class="s">"query, must_include"</span>, GOLDEN)
+<span class="k">def</span> <span class="f">test_golden</span>(query, must_include):
+    out <span class="o">=</span> <span class="f">answer</span>(query, temperature<span class="o">=</span><span class="n">0</span>)          <span class="c"># temp 0 → deterministic, non-flaky</span>
+    assert must_include.<span class="f">lower</span>() <span class="k">in</span> out.<span class="f">lower</span>(), <span class="s">f"Regressed on: </span>{query}<span class="s">"</span>
+
+<span class="c"># For fuzzy quality, assert on an LLM-judge score threshold instead of a keyword:</span>
+<span class="c">#   assert judge(query, reference, out)["score"] &gt;= 4</span></code></pre>
+    <p>Now a prompt change that breaks the “abstain” case turns the build red with “Regressed on: Do you ship to Antarctica?” — caught in CI, before any user sees it. Two tricks keep LLM tests stable: use <strong>temperature 0</strong> and assert on <strong>structure/keywords or judge thresholds</strong>, not exact wording.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>Prompts/models/RAG are <strong>changeable behavior that silently regresses</strong> — test them like code.</li>
+      <li>An <strong>eval suite run in CI</strong> turns your golden set into a pass/fail <strong>gate on every change</strong>.</li>
+      <li>Define the gate explicitly: <strong>no case may regress</strong>, or <strong>overall score must not drop</strong>.</li>
+      <li>Keep LLM tests non-flaky with <strong>temperature 0</strong> and <strong>structural / judge-threshold assertions</strong> (not exact strings).</li>
+      <li><strong>Version prompts</strong> so you can compare and roll back.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your prompt regression tests fail intermittently — sometimes green, sometimes red, with no code change. What’s the most likely cause and fix?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Non-determinism — tests run with temperature &gt; 0 and assert exact strings. Use temperature 0 and assert on keywords/structure or a judge-score threshold.</span>
+        <div class="why">Correct. Flaky LLM tests usually come from sampling randomness plus brittle exact-match assertions. Setting temperature 0 makes outputs (near-)deterministic, and asserting on must-include keywords, structure, or an LLM-judge threshold tolerates valid wording variation while still catching real regressions.</div></li>
+      <li data-correct="false"><span class="opt">B) The CI server is too slow.</span>
+        <div class="why">Speed doesn’t cause pass/fail flipping. The intermittent green/red pattern is classic non-determinism in generation plus over-strict assertions, not infrastructure latency.</div></li>
+      <li data-correct="false"><span class="opt">C) You need more test cases.</span>
+        <div class="why">More cases won’t stop existing ones from flapping; they’d flap too. The fix is making each test deterministic and robust (temp 0, structural assertions), not adding volume.</div></li>
+      <li data-correct="false"><span class="opt">D) Delete the flaky tests.</span>
+        <div class="why">Deleting tests hides regressions — the opposite of the goal. Fix the flakiness (determinism + robust assertions) so the tests are trustworthy, don’t remove your safety net.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Write a gating rule for a change that improves 8 cases but regresses 1 critical safety case. Should it ship?<br>
+    <strong>2.</strong> Why assert on keywords/structure or a judge threshold instead of exact output strings?<br>
+    <strong>3.</strong> Your team ships prompt changes by editing them directly in production. List two problems and the fix.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> It should <strong>not</strong> ship as-is. A sensible gate: overall score may improve, <em>but</em> no <strong>critical</strong> case (safety, abstention, correctness on key facts) may regress — those are hard blocks. Net improvement doesn’t justify a safety regression. Mark critical cases specially and require them to always pass; the candidate must fix the safety case first.</p>
+        <p><strong>2.</strong> Because LLM outputs have many valid phrasings — exact-match would fail correct answers that are worded differently, making tests brittle and flaky. Asserting that the answer <em>contains the key fact</em>, matches the required <em>structure</em>, or clears an LLM-judge <em>quality threshold</em> checks what actually matters while tolerating harmless variation. You’re testing meaning/correctness, not stenography.</p>
+        <p><strong>3.</strong> Problems: no way to know if a change regressed other cases (no eval gate), and no way to roll back or audit what changed (no versioning). Fixes: store prompts as <strong>versioned artifacts</strong> in source control, and run the <strong>eval suite as a CI gate</strong> before any prompt reaches production — so changes are reviewed, tested, and revertible like any code.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: making eval part of the development loop</div>
+    <p>The endgame is that evaluating an LLM change feels as routine as running tests on code. Concretely: prompts live in version control; a change opens a pull request; CI runs the eval suite (keyword/structural checks for closed outputs, LLM-judge thresholds for fuzzy quality) against the golden set; the result posts as a check with per-category scores and any regressions highlighted; the gate blocks merges that regress critical cases or drop the overall score. Reviewers see “quality 0.91 → 0.94, no regressions” instead of arguing about a few cherry-picked examples. This is how fast-moving teams ship LLM changes daily without breaking things.</p>
+    <p>Two pragmatic notes. First, balance <strong>strictness vs. friction</strong>: gate hard on critical/safety cases and overall score, but allow small movement on individual fuzzy cases so the suite isn’t paralyzingly flaky — and invest in determinism (temp 0, robust assertions) so the signal is trustworthy. Second, the suite must <strong>keep growing</strong>: every production incident becomes a new permanent test, so the same bug can never ship twice. Combined with tracing (which supplies the failures) and online eval (which validates real impact), regression testing closes the loop — your golden set, your CI gate, and your production observability together form a system where quality only ratchets upward. That ratchet, more than any single technique, is what “shipping reliable LLM products” actually means.</p>
+  </div>
+
+  <p>You’ve built the full evaluation toolkit — the skill that quietly underlies every other track. Time to pressure-test it. On to the <strong>Track 6 interview check</strong>.</p>
+
+</main>
+
+<script>
+(function () {
+  var BASE = [
+    { name: "billing: refund window", base: true },
+    { name: "technical: password reset", base: true },
+    { name: "edge: abstain on unknown", base: false },
+    { name: "safety: refuse bad request", base: true },
+    { name: "sales: plan comparison", base: true }
+  ];
+  var CAND = {
+    good:  [true, true, true, true, true],   // fixes the edge case, no regressions
+    risky: [true, true, false, false, true]  // regresses the safety case!
+  };
+  var sel = document.getElementById("rg-sel"), out = document.getElementById("rg-out");
+  function render() {
+    var res = CAND[sel.value];
+    var html = "", regressed = [];
+    BASE.forEach(function (c, i) {
+      var was = c.base, now = res[i];
+      var delta = (!was && now) ? '<span style="color:#15803d;font-weight:700"> ▲ fixed</span>' :
+                  (was && !now) ? '<span style="color:#b91c1c;font-weight:700"> ▼ REGRESSED</span>' : '';
+      if (was && !now) regressed.push(c.name);
+      var crit = c.name.indexOf("safety") === 0;
+      html += '<div style="display:flex;gap:10px;align-items:center;margin:3px 0;font-size:13px">' +
+        '<span style="flex:1">' + c.name + (crit ? ' <b style="color:#b45309">(critical)</b>' : '') + '</span>' +
+        '<span style="font-weight:700;color:' + (now ? "#15803d" : "#b91c1c") + '">' + (now ? "✓ pass" : "✗ fail") + '</span>' +
+        '<span style="min-width:90px;text-align:right">' + delta + '</span></div>';
+    });
+    var passNow = res.filter(Boolean).length;
+    var blocked = regressed.length > 0;
+    var banner = blocked
+      ? '<div style="padding:10px 14px;border-radius:9px;background:#fef1ef;color:#b91c1c;font-weight:700;margin-top:8px">⛔ BLOCKED — regressed: ' + regressed.join(", ") + '. Fix before merging.</div>'
+      : '<div style="padding:10px 14px;border-radius:9px;background:#eefaf0;color:#15803d;font-weight:700;margin-top:8px">✓ MERGE OK — ' + passNow + '/5 pass, no regressions.</div>';
+    out.innerHTML = html + banner;
+  }
+  sel.addEventListener("change", render);
+  render();
+})();
+</script>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Interview check: Fine-tuning — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="5.7">
+<main class="lesson">
+
+  <span class="eyebrow">Track 5 · Interview check</span>
+  <h1>Interview check: Fine-tuning &amp; Adapters</h1>
+  <p class="lead">Fine-tuning questions test judgment more than mechanics: do you know <em>when</em> to fine-tune, and can you do it cheaply and prove it worked? Interviewers love this topic because it separates people who reach for fine-tuning reflexively from those who reach for it wisely.</p>
+
+  <div class="box note">
+    <div class="box-label">The drill</div>
+    <p>Answer aloud first. The throughline: <strong>RAG for knowledge, prompting for instructions, fine-tuning for behavior</strong>; fine-tune <strong>cheaply with LoRA/QLoRA on great data</strong>; and <strong>always evaluate against the base</strong>.</p>
+  </div>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t5-recap.svg" alt="The fine-tuning pipeline: Formatted data (instruction→response) → LoRA train (frozen base + adapter) → Evaluate vs base (on a held-out set) → Deploy adapter (tiny, swappable). Most fine-tuning today is LoRA/QLoRA: cheap to train, tiny to ship, easy to evaluate against the base.">
+    <figcaption>The whole track in one line: format data → LoRA-train → evaluate vs. base → deploy a tiny adapter. Narrate this and you can run a fine-tuning round.</figcaption>
+  </figure>
+
+  <h2>The questions teams ask</h2>
+
+  <div class="box practice"><div class="box-label">Q1 · The decision</div>
+    <p><strong>“When do you fine-tune instead of prompting or RAG?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>RAG for knowledge (large, private, changing facts — and citations); prompting for instructions and one-offs; fine-tuning for durable <em>behavior</em> — a consistent format/style/tone, reliable performance on a narrow repeated task, or a smaller/cheaper model that matches a big one. Try them in that order, since prompting and RAG are instant and reversible. Fine-tuning earns its cost when the behavior is stable, high-volume, and measurable — and it often combines with RAG (behavior from tuning, facts from retrieval).</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q2 · Mechanics</div>
+    <p><strong>“What does training actually do, in plain terms?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>It runs a loop: the model predicts, a loss measures how wrong it was, and gradient descent nudges the weights to be less wrong — repeated over many examples (backprop computes the gradients efficiently). Pre-training does this on the whole web; fine-tuning does a little more on your data, starting from a capable model — which is why it needs far less data and compute. The key risk is overfitting: watch held-out (validation) loss, not just training loss.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q3 · Data</div>
+    <p><strong>“What makes a good fine-tuning dataset?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>Consistent format that matches inference, high-quality outputs (the model imitates them), representative and diverse coverage including edge cases, deduplicated and clean, and no leakage between train and validation. Quality and consistency beat quantity — a few hundred excellent pairs often beat thousands of messy ones. The dataset <em>is</em> the product of a fine-tune; most of the work is here.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q4 · LoRA/QLoRA</div>
+    <p><strong>“Explain LoRA and QLoRA and why they matter.”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>LoRA freezes the base model and trains small low-rank adapter matrices — ~0.1–1% of the parameters — so training is cheap and the result is a tiny, swappable adapter file. QLoRA adds 4-bit quantization of the frozen base, cutting memory ~4× so you can fine-tune a big model on a single (even free) GPU. Together they made fine-tuning accessible and enable “one base, many adapters” serving — cheap to train, tiny to ship, easy to host at scale.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q5 · SFT vs preference tuning</div>
+    <p><strong>“Difference between SFT and RLHF/DPO?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>SFT (supervised fine-tuning) trains on instruction→response pairs — the model imitates good demonstrations; it’s the workhorse and usually enough for “behave like X.” Preference tuning (RLHF or the simpler DPO) trains on <em>comparisons</em> between responses to align subtle trade-offs (helpfulness, tone, safety) that are easier to rank than to demonstrate. Ladder: SFT first; preference tuning only when you need to optimize preferences SFT can’t easily capture and can collect comparisons.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q6 · Evaluation</div>
+    <p><strong>“How do you know a fine-tune worked?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>Compare the fine-tuned model against the base on a held-out set, measuring the target task (should rise) and general ability (should not fall — to catch catastrophic forgetting). Watch train-vs-held-out for overfitting, run a regression suite of fixed prompts, and ideally A/B test in production. “Feels better” isn’t evidence; a held-out comparison against the base is. If general ability dropped, train less aggressively or mix in diverse data and re-measure.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q7 · The stakeholder push</div>
+    <p><strong>“A stakeholder insists we ‘fine-tune the model on our knowledge base.’ What do you say?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>I’d gently redirect: for <em>knowledge</em> that changes, RAG is the right tool — retrieve current docs at query time, with citations, and update by re-indexing rather than retraining. Fine-tuning bakes behavior into weights and is poorly suited to fresh, changing facts (constant retraining, no citations, fuzzier recall). If they also want a consistent format/tone, we can fine-tune for <em>that</em> behavior and use RAG for the facts. So: RAG for the docs, fine-tuning only for behavior — often both together.</p>
+    </div></details>
+  </div>
+
+  <h2>Rapid-fire self-check</h2>
+
+  <div class="quiz">
+    <p class="quiz-q">The most reliable signal that you’re overfitting during fine-tuning is…</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Training loss keeps dropping while validation (held-out) loss rises.</span>
+        <div class="why">Correct. That divergence is the classic overfitting signature — the model is memorizing training quirks that don’t generalize. The held-out curve is the honest signal; act on it (early stopping, fewer epochs, more data).</div></li>
+      <li data-correct="false"><span class="opt">B) Training loss reaches a low value.</span>
+        <div class="why">Low training loss alone is expected and not diagnostic — a memorizing model also has low training loss. You need the validation comparison to tell overfitting from real learning.</div></li>
+      <li data-correct="false"><span class="opt">C) The adapter file is large.</span>
+        <div class="why">Adapter size relates to rank/efficiency, not overfitting. The signal is the train-vs-validation gap, not file size.</div></li>
+      <li data-correct="false"><span class="opt">D) The model trains quickly.</span>
+        <div class="why">Training speed says nothing about generalization. Overfitting is revealed by validation loss rising while training loss falls.</div></li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Which is the best reason to choose QLoRA over full fine-tuning for a startup?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) It fine-tunes large models on a single (even free) GPU and produces tiny, swappable adapters — far cheaper to train and serve.</span>
+        <div class="why">Correct. QLoRA’s 4-bit base + LoRA adapter slashes memory and cost, making fine-tuning feasible on minimal hardware, and the adapter-per-variant model is cheap to host. For a resource-constrained team, that accessibility is the decisive advantage.</div></li>
+      <li data-correct="false"><span class="opt">B) It always beats full fine-tuning on accuracy.</span>
+        <div class="why">QLoRA is often comparable, not universally superior, on accuracy. Its decisive edge is efficiency (memory, cost, swappable adapters), not guaranteed higher accuracy.</div></li>
+      <li data-correct="false"><span class="opt">C) It eliminates the need for evaluation.</span>
+        <div class="why">You still must evaluate against the base on held-out data — efficiency of training doesn’t remove the need to prove it worked.</div></li>
+      <li data-correct="false"><span class="opt">D) It lets the model learn new facts without data.</span>
+        <div class="why">No method learns without data, and facts belong in RAG. QLoRA’s benefit is efficient behavior-tuning, not magic knowledge.</div></li>
+    </ul>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Can you explain each of these?</div>
+    <ul>
+      <li>Prompt vs RAG vs fine-tune, and the “try in that order” rule.</li>
+      <li>What training does (predict → loss → gradient step) and overfitting.</li>
+      <li>Data quality, format-matches-inference, and leakage.</li>
+      <li>LoRA and QLoRA — what each contributes, and adapter serving.</li>
+      <li>SFT vs RLHF/DPO, and the chat-template gotcha.</li>
+      <li>Evaluating vs the base on held-out data; catastrophic forgetting.</li>
+    </ul>
+  </div>
+
+  <p>You can now choose, run, and prove a fine-tune. Notice how every track has ended at the same place — <em>measure it</em>. Next, we make that a first-class skill: Track 6, Evals &amp; Observability.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 300" width="880" height="300" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="880" height="300" fill="#ffffff"/>
+<text x="440" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Evals turn “I think it’s better” into “it is better”</text>
+<rect x="40" y="112.5" width="170" height="64" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="40" y="115" width="170" height="64" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="40" y="110" width="170" height="64" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="125.0" y="134.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Change something</text>
+<text x="125.0" y="147.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">prompt · model · RAG</text>
+<rect x="270" y="112.5" width="160" height="64" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="270" y="115" width="160" height="64" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="270" y="110" width="160" height="64" rx="13" ry="13" fill="url(#g_accent)" stroke="#4f46e5" stroke-width="1.8"/>
+<text x="350.0" y="134.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#312e81" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Run evals</text>
+<text x="350.0" y="147.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">score on golden set</text>
+<rect x="500" y="112.5" width="150" height="64" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="500" y="115" width="150" height="64" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="500" y="110" width="150" height="64" rx="13" ry="13" fill="url(#g_key)" stroke="#d97706" stroke-width="1.8"/>
+<text x="575.0" y="134.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#7c2d12" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Better?</text>
+<text x="575.0" y="147.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">compare to baseline</text>
+<rect x="720" y="78.5" width="130" height="48" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="720" y="81" width="130" height="48" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="720" y="76" width="130" height="48" rx="13" ry="13" fill="url(#g_example)" stroke="#16a34a" stroke-width="1.8"/>
+<text x="785.0" y="100.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#14532d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Ship it</text>
+<rect x="720" y="152.5" width="130" height="48" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="720" y="155" width="130" height="48" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="720" y="150" width="130" height="48" rx="13" ry="13" fill="url(#g_warn)" stroke="#dc2626" stroke-width="1.8"/>
+<text x="785.0" y="174.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#7f1d1d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Revert</text>
+<line x1="210" y1="142" x2="256.0" y2="142.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="268.0,142.0 256.0,146.8 256.0,137.2" fill="#475569"/>
+<line x1="430" y1="142" x2="486.0" y2="142.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="498.0,142.0 486.0,146.8 486.0,137.2" fill="#475569"/>
+<line x1="650" y1="128" x2="709.6778971137276" y2="103.42674824728866" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/>
+<polygon points="718.0,100.0 711.0,106.8 708.3,100.1" fill="#16a34a"/>
+<text x="688" y="110" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#15803d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">yes</text>
+<line x1="650" y1="156" x2="709.2996529492464" y2="171.69696695715345" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+<polygon points="718.0,174.0 708.4,175.2 710.2,168.2" fill="#dc2626"/>
+<text x="688" y="184" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#b91c1c" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">no</text>
+<line x1="785" y1="198" x2="785" y2="244" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<line x1="785" y1="244" x2="125" y2="244" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<line x1="125" y1="244" x2="125.0" y2="188.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="125.0,176.0 129.8,188.0 120.2,188.0" fill="#94a3b8"/>
+<text x="440" y="286" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.3" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Without evals, every change is a guess. With them, improvement becomes a measurable loop.</text>
+</svg>

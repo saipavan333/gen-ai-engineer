@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Advanced evals — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="12.3">
+<main class="lesson">
+
+  <span class="eyebrow">Going Deeper · Lesson 12.3</span>
+  <h1>Advanced evals</h1>
+  <p class="lead">Track&nbsp;6 made you measure. This lesson makes your measurements <em>trustworthy</em> — calibrating LLM judges, cancelling their biases, and using enough statistical care that “v2 is better” is a fact, not a hopeful glance at a number that ticked up.</p>
+
+  <h2>Why your eval needs its own eval</h2>
+  <p>An LLM-as-judge is itself a model, with all the unreliability that implies — so an unvalidated judge is just another unvalidated model, and trusting it blindly means you’re measuring your system with a ruler of unknown length. Worse, judges have <em>systematic</em> biases: they tend to favor the first answer shown (position bias), longer answers (verbosity bias), and outputs from models like themselves (self-preference). If you don’t account for these, you’ll confidently ship changes that the judge liked for the wrong reasons. Advanced evaluation is the discipline of making the measurement itself rigorous before you let it drive decisions.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t12-eval-depth.svg" alt="A flow for trusting an eval: start with an LLM-as-judge, score a human-labeled sample, measure agreement using Cohen's kappa, then either trust the judge or fix the rubric. Below, a reminder for comparing version A versus B: fix the seed at temperature zero, run the whole golden set, prefer pairwise judgments, and confirm the gap beats run-to-run noise before declaring a winner.">
+    <figcaption>Validate the judge against humans first; only then let it grade at scale — and compare versions with statistical care.</figcaption>
+  </figure>
+
+  <h2>1 · Calibrate the judge against humans</h2>
+  <p>Before an LLM judge grades thousands of outputs, prove it agrees with people on a sample you label by hand. Take 30–50 examples, score them yourself (or with a teammate), have the judge score the same ones, and measure <span class="term">agreement</span> — ideally <span class="term">Cohen’s κ</span> (kappa), which corrects for agreement that would happen by chance. High agreement means you can trust the judge to scale your labels; low agreement means your <em>rubric</em> is ambiguous or the judge is biased, and you fix that before proceeding. This calibration step is what converts “the judge said 8/10” into a number you can stand behind.</p>
+
+  <h2>2 · Cancel the biases you can predict</h2>
+  <p>Two cheap techniques remove most judge bias. For comparisons, use <strong>position swapping</strong>: judge each pair twice, A-then-B and B-then-A, and average — if a model only wins in one order, that’s position bias, not quality. Prefer <strong>pairwise</strong> judgments (“which answer is better?”) over absolute scores, because relative judgments are more stable and consistent than a model’s shaky sense of “7 vs 8 out of 10.” And control for verbosity by telling the judge to ignore length and reward correctness, or by capping answer length in the comparison.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">fair_pairwise.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">which_is_better</span>(question, answer_a, answer_b):
+    <span class="c"># Judge both orders to cancel position bias, then combine.</span>
+    first  <span class="o">=</span> judge(question, answer_a, answer_b)   <span class="c"># returns "A" or "B"</span>
+    second <span class="o">=</span> judge(question, answer_b, answer_a)   <span class="c"># swapped order</span>
+    <span class="k">if</span> first <span class="o">==</span> <span class="s">"A"</span> <span class="k">and</span> second <span class="o">==</span> <span class="s">"B"</span>:     <span class="c"># both agree A is better</span>
+        <span class="k">return</span> <span class="s">"A"</span>
+    <span class="k">if</span> first <span class="o">==</span> <span class="s">"B"</span> <span class="k">and</span> second <span class="o">==</span> <span class="s">"A"</span>:     <span class="c"># both agree B is better</span>
+        <span class="k">return</span> <span class="s">"B"</span>
+    <span class="k">return</span> <span class="s">"tie"</span>                            <span class="c"># disagreement = position bias, call it a tie</span></code></pre>
+
+  <h2>3 · Respect the noise</h2>
+  <p>LLM outputs vary run to run, so a small score difference can be pure randomness. Before declaring a winner, take three precautions. <strong>Reduce noise</strong> where you can: fix the seed and use temperature&nbsp;0 for eval runs so results are reproducible. <strong>Use enough examples</strong>: a 2-point move on 50 questions is one or two answers flipping — well within noise — whereas the same gap over 500 questions is far more credible. And <strong>quantify uncertainty</strong>: report a confidence interval or run a simple significance check, and only call a change a win when the gap clearly exceeds run-to-run variation. “The number went up” is the beginning of an investigation, not the end of one.</p>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>An <strong>unvalidated judge is an unvalidated model</strong> — calibrate it against human labels (Cohen’s κ) before trusting it at scale.</li>
+      <li>Judges have <strong>systematic biases</strong> (position, verbosity, self-preference); design around them.</li>
+      <li><strong>Swap positions and average</strong>, and prefer <strong>pairwise</strong> over absolute scores, to get stable comparisons.</li>
+      <li>Respect <strong>run-to-run noise</strong>: fix the seed/temp&nbsp;0, use enough examples, and check the gap beats variation before declaring a winner.</li>
+      <li>Rigor in the measurement is what lets evals safely <strong>drive decisions</strong>.</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p>A teammate says: “v2 of our prompt scored 82% vs v1’s 80% on our 50-question set — let’s ship v2.” Is that conclusion safe? What would you do before shipping?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>Is it safe? No — not yet.</strong> A 2-point difference on 50 questions is just <em>one</em> answer changing (1/50 = 2%). That’s easily within run-to-run noise, especially if the eval wasn’t run at temperature&nbsp;0, and it could even be judge variance rather than a real quality change. Shipping on this is exactly the trap this lesson warns about.</p>
+        <p><strong>What I’d do:</strong> (1) re-run both versions at <em>temperature&nbsp;0 with a fixed seed</em> to remove sampling noise, ideally a few times to see the spread. (2) <em>Expand the set</em> — 50 is small; move toward a few hundred representative questions so a 2-point gap means something. (3) Use a <em>pairwise</em> judge with position-swapping (“is v2’s answer better than v1’s for this question?”) rather than comparing two absolute percentages. (4) Look at <em>which</em> questions changed — did v2 fix a real failure mode or just reshuffle? (5) Only call it a win if the gap clearly survives all of that. If it doesn’t, v1 and v2 are effectively tied and the decision should rest on other factors (cost, latency, simplicity).</p>
+        <p><strong>Why this matters:</strong> teams that ship on noise spend their lives chasing phantom improvements and regressions. Insisting that a “win” beat the noise floor is what makes your eval a reliable decision-making instrument instead of a slot machine.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your LLM judge tends to prefer whichever answer it sees first. What’s the most effective fix for fair A/B comparisons?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Judge each pair in both orders (A-then-B and B-then-A) and only count a win when both orders agree.</span>
+        <div class="why">Correct. Position bias is order-dependent by definition, so evaluating both orders and requiring agreement cancels it — if a model only “wins” when shown first, that disagreement reveals the bias and you score it a tie. Cheap, simple, and it directly neutralizes the effect.</div></li>
+      <li data-correct="false"><span class="opt">B) Always show the new version first so it gets the benefit.</span>
+        <div class="why">That deliberately bakes the bias into your results in favor of the new version — the opposite of fair. You’d systematically overrate whatever you put first.</div></li>
+      <li data-correct="false"><span class="opt">C) Switch to a larger judge model and assume bias disappears.</span>
+        <div class="why">Bigger judges still exhibit position (and other) biases. Size doesn’t reliably remove a structural bias; an order-swapping protocol does, regardless of model.</div></li>
+      <li data-correct="false"><span class="opt">D) Stop using pairwise comparison and trust absolute 1–10 scores instead.</span>
+        <div class="why">Absolute scores are <em>less</em> stable than pairwise judgments and carry their own biases (like verbosity). The fix for position bias is to swap and average, not to abandon the more reliable comparison method.</div></li>
+    </ul>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: evaluation is the moat</div>
+    <p>Here’s the strategic reason this track ends on evals rather than a flashier topic: in applied GenAI, the evaluation harness is often a more durable advantage than any prompt, model, or framework. Models change every few months and prompts are easily copied, but a rich, domain-specific golden set — built from your real users’ questions and your real production failures — encodes hard-won knowledge that competitors can’t clone. Teams that can reliably tell whether a change is better can adopt new models the day they launch, safely, while teams flying blind are stuck guessing. The eval is what lets you move fast <em>without</em> breaking things.</p>
+    <p>That turns into a flywheel. Every production failure becomes a new test case, so the system literally can’t regress the same way twice; the golden set grows richer with use; and evaluation graduates from a one-time check into <em>eval-driven development</em> — wired into CI so no prompt or model change ships without passing, exactly like unit tests guard normal software. The cost to watch is the judges themselves (running an LLM over a large set isn’t free), so you balance set size, judge model, and frequency — yet another measurable trade-off. Internalize this and you’ll be the engineer who makes a team’s AI <em>trustworthy</em>, which is precisely the person worth hiring.</p>
+  </div>
+
+  <div class="box note">
+    <div class="box-label">You’ve reached the end of the path</div>
+    <p>That’s the whole journey — from “what is a token?” to calibrating an LLM judge. You can open the box, feed a model knowledge, let it act, make it trustworthy, fast, and cheap, prove it with built-and-measured projects, and present yourself for the role. The only thing left isn’t reading — it’s reps: build the capstones (Track&nbsp;10), run your study plan (11.1), and start applying. You’re ready. Go build something real.</p>
+  </div>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

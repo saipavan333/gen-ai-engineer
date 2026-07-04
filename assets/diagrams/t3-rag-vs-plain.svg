@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 300" width="820" height="300" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="820" height="300" fill="#ffffff"/>
+<text x="410" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Why RAG: grounded beats guessing</text>
+<text x="212" y="62" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14.5" fill="#b91c1c" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">LLM alone</text>
+<rect x="60" y="84.5" width="300" height="52" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="60" y="87" width="300" height="52" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="60" y="82" width="300" height="52" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="210.0" y="108.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Question</text>
+<line x1="210" y1="134" x2="210.0" y2="156.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="210.0,168.0 205.2,156.0 214.8,156.0" fill="#475569"/>
+<rect x="60" y="176.5" width="300" height="64" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="60" y="179" width="300" height="64" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="60" y="174" width="300" height="64" rx="13" ry="13" fill="url(#g_warn)" stroke="#dc2626" stroke-width="1.8"/>
+<text x="210.0" y="191.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#7f1d1d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">“Plausible” answer</text>
+<text x="210.0" y="203.75" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">from frozen memory →</text>
+<text x="210.0" y="217.75" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">may be outdated or made up</text>
+<text x="620" y="62" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14.5" fill="#15803d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">With RAG</text>
+<rect x="460" y="84.5" width="300" height="52" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="460" y="87" width="300" height="52" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="460" y="82" width="300" height="52" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="610.0" y="108.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Question + retrieved facts</text>
+<line x1="610" y1="134" x2="610.0" y2="156.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="610.0,168.0 605.2,156.0 614.8,156.0" fill="#475569"/>
+<rect x="460" y="176.5" width="300" height="64" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="460" y="179" width="300" height="64" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="460" y="174" width="300" height="64" rx="13" ry="13" fill="url(#g_example)" stroke="#16a34a" stroke-width="1.8"/>
+<text x="610.0" y="191.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#14532d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Grounded answer</text>
+<text x="610.0" y="203.75" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">from real documents →</text>
+<text x="610.0" y="217.75" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">current, verifiable, cited</text>
+<text x="410" y="286" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.3" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Same model — RAG changes the inputs, not the weights.</text>
+</svg>

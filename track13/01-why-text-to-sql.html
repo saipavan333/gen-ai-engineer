@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Why text-to-SQL — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="13.1">
+<main class="lesson">
+
+  <span class="eyebrow">Structured Data &amp; Text-to-SQL · Lesson 13.1</span>
+  <h1>Why text-to-SQL (and where it breaks)</h1>
+  <p class="lead">Most of the world’s valuable data lives in databases, and most of the people who need answers can’t write SQL. Text-to-SQL closes that gap — and it’s the single most natural place for a data engineer to shine in GenAI. This lesson frames the problem, the payoff, and the honest failure modes.</p>
+
+  <h2>The problem it kills</h2>
+  <p>In every company there’s a queue: a marketer wants “revenue by region last quarter,” a support lead wants “tickets reopened more than twice,” an exec wants “top 10 customers by lifetime value.” Each of these is a five-minute SQL query — but only for the handful of people who know SQL and the schema. Everyone else waits on that bottleneck. <span class="term">Text-to-SQL</span> is a system that takes a plain-English question, writes the SQL for it, runs it against the database, and returns the answer in words. It turns “ask the data team and wait two days” into “ask and get an answer now.”</p>
+  <p>This is enormous because it applies almost everywhere: analytics assistants, internal “chat with your database” tools, customer-facing reporting, and BI copilots are among the most-funded, most-built GenAI products right now. And — importantly for you — it’s a problem where <strong>knowing databases is the hard part</strong>, not knowing the LLM. That’s your home field.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t13-textsql-flow.svg" alt="Text-to-SQL flow: a plain-English question goes to an LLM that has the schema, which writes SQL; the SQL runs read-only on the database; results are turned into a worded answer. On an error, the database's error message is sent back so the model self-corrects.">
+    <figcaption>The core loop: question → SQL (using the schema) → safe run → answer, with errors looping back for a self-correction.</figcaption>
+  </figure>
+
+  <h2>What it looks like</h2>
+  <p>Imagine a tiny sales database — the kind you’ll actually build in this track with <strong>SQLite</strong> (it’s built into Python, so there’s nothing to install and nothing to pay for). Two tables:</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">schema.sql</span></div>
+<pre><code><span class="k">CREATE TABLE</span> customers (
+    id       <span class="k">INTEGER PRIMARY KEY</span>,
+    name     <span class="k">TEXT</span>,
+    country  <span class="k">TEXT</span>,
+    signup   <span class="k">DATE</span>
+);
+<span class="k">CREATE TABLE</span> orders (
+    id           <span class="k">INTEGER PRIMARY KEY</span>,
+    customer_id  <span class="k">INTEGER</span>,
+    amount       <span class="k">REAL</span>,
+    created_at   <span class="k">DATE</span>
+);</code></pre>
+  <p>A user asks: <em>“How much did customers in Canada spend in total?”</em> A good text-to-SQL system, given that schema, produces:</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">generated.sql</span></div>
+<pre><code><span class="k">SELECT</span> SUM(o.amount) <span class="k">AS</span> total_spent
+<span class="k">FROM</span> orders o
+<span class="k">JOIN</span> customers c <span class="k">ON</span> c.id <span class="o">=</span> o.customer_id
+<span class="k">WHERE</span> c.country <span class="o">=</span> <span class="s">'Canada'</span>;</code></pre>
+  <p>…runs it, gets <code>[(48210.5,)]</code>, and answers: <em>“Customers in Canada have spent $48,210.50 in total.”</em> The magic isn’t the English — it’s that the model had to understand the <strong>schema</strong> (which table has amounts, how to join customers to orders, that country lives on <code>customers</code>) to write correct SQL. Schema understanding is the whole game, and it’s exactly the next lesson.</p>
+
+  <h2>Where it breaks (be honest in interviews)</h2>
+  <p>Text-to-SQL demos beautifully and then meets reality. The failure modes are predictable, and naming them is a senior signal:</p>
+  <p><strong>Ambiguity.</strong> “Show me our best customers” — best by revenue? order count? recency? The model has to guess, and may guess differently than the user meant. <strong>Schema misunderstanding.</strong> It may hallucinate a column that doesn’t exist, pick the wrong table when names are similar, or botch a multi-table join. <strong>Wrong-but-runs.</strong> The scariest case: the SQL executes without error but computes the wrong thing (e.g., double-counts through a bad join), returning a confident, wrong number. <strong>Scale &amp; dialect.</strong> Hundreds of tables won’t fit in the prompt, and SQL dialects differ (SQLite vs Postgres vs BigQuery). Each of these has a mitigation you’ll learn — schema selection, validation, self-correction, and evaluation — but a system that ignores them is a liability, because <em>a wrong number that looks right is worse than an error</em>.</p>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li><strong>Text-to-SQL</strong> = English question → generated SQL → safe run → worded answer. It removes the analyst bottleneck.</li>
+      <li>It’s one of the highest-demand GenAI applications, and the hard part is <strong>databases</strong> — your advantage.</li>
+      <li>Correctness hinges on the model understanding the <strong>schema</strong>, not on fancy language.</li>
+      <li>Failure modes: <strong>ambiguity, schema misunderstanding, wrong-but-runs, scale/dialect</strong>. Each has a mitigation.</li>
+      <li>The dangerous failure is a <strong>confident wrong number</strong> — which is why validation and evaluation matter as much as generation.</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p>For the two-table schema above, write (by hand) the SQL you’d want the model to produce for: “How many orders did we get in 2025?” Then name one way a text-to-SQL system could get this <em>specific</em> question subtly wrong.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
+      <div class="sol-body">
+<pre><code><span class="k">SELECT</span> COUNT(*) <span class="k">AS</span> order_count
+<span class="k">FROM</span> orders
+<span class="k">WHERE</span> created_at <span class="o">&gt;=</span> <span class="s">'2025-01-01'</span>
+  <span class="k">AND</span> created_at <span class="o">&lt;</span> <span class="s">'2026-01-01'</span>;</code></pre>
+        <p><strong>A subtle way it goes wrong:</strong> the model might write <code>WHERE strftime('%Y', created_at) = '2025'</code> — correct in SQLite but broken in other dialects — or, worse, use <code>created_at &lt;= '2025-12-31'</code>, which silently drops orders with a time component late on Dec 31 (since <code>'2025-12-31 14:00'</code> &gt; <code>'2025-12-31'</code>). Both <em>run</em> and return a plausible count, so no error surfaces — this is the “wrong-but-runs” trap. The half-open range <code>&gt;= start AND &lt; next-year</code> is the robust pattern, and noticing this is exactly the kind of data-engineering judgment that makes your answers stand out.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Why is a text-to-SQL query that <em>runs successfully but returns the wrong number</em> considered more dangerous than one that throws an error?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) An error is visible and gets fixed; a wrong-but-plausible number is trusted and acted on.</span>
+        <div class="why">Correct. Errors are self-announcing — someone sees them and investigates. A query that silently double-counts or misfilters returns a confident number that looks right, so it flows into a decision or a report unquestioned. Undetected wrong answers erode trust in the whole system, which is why validation and evaluation (later lessons) matter as much as generation.</div></li>
+      <li data-correct="false"><span class="opt">B) Errors crash the database, while wrong numbers don’t.</span>
+        <div class="why">A failed <code>SELECT</code> doesn’t crash a database — it just returns an error to the caller. The danger of the wrong number isn’t about stability; it’s that no one knows it’s wrong.</div></li>
+      <li data-correct="false"><span class="opt">C) Wrong numbers are always caused by SQL injection.</span>
+        <div class="why">Injection is a separate security concern. Wrong-but-runs errors usually come from bad joins, ambiguous questions, or filter mistakes — logic problems, not attacks.</div></li>
+      <li data-correct="false"><span class="opt">D) They aren’t more dangerous; both are equally easy to catch.</span>
+        <div class="why">They’re not equally catchable — that’s the whole point. An error is caught immediately; a plausible wrong number can go unnoticed indefinitely, which makes it the more dangerous outcome.</div></li>
+    </ul>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: why this is your unfair advantage</div>
+    <p>Text-to-SQL sits precisely at the intersection of LLMs and data engineering, and the LLM half is the easy half. Anyone can call a model and ask for SQL; almost no one applying for these roles can reason about join fan-out, null handling, date-boundary bugs, dialect differences, indexing, or how to give a model just the relevant slice of a 400-table warehouse without blowing the context window. Those are the things that decide whether the generated SQL is <em>correct at scale</em> — and they’re your bread and butter from a decade of pipelines.</p>
+    <p>There’s also a strategic idea worth carrying into interviews: the best text-to-SQL systems don’t point the model at raw tables. They put a <strong>semantic layer</strong> in between — curated views, clear column names, documented metrics (“revenue means SUM(amount) on paid orders”), and example query pairs. That turns an ambiguous natural-language problem into a constrained, well-labeled one the model rarely gets wrong. Designing that layer is data modeling, which is exactly what you already do. So when you frame text-to-SQL as “a data-modeling and correctness problem with an LLM on top,” you’re not learning a new field — you’re applying your field to a new interface.</p>
+  </div>
+
+  <p>The whole system rises or falls on how well the model understands your schema. So that’s where we start building. Next: <strong>schema-aware prompting.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 300" width="900" height="300" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="900" height="300" fill="#ffffff"/>
+<text x="450" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">PII: redact before you log or send</text>
+<rect x="24" y="100" width="280" height="80" rx="10" ry="10" fill="#fef1ef" stroke="#dc2626" stroke-width="2"/>
+<text x="164" y="124" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#b91c1c" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">User text (contains PII)</text>
+<text x="40" y="146" font-family="DejaVu Sans Mono, monospace" font-size="11" fill="#7f1d1d" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">“I'm Jane Doe, jane@x.com,</text>
+<text x="40" y="162" font-family="DejaVu Sans Mono, monospace" font-size="11" fill="#7f1d1d" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve"> card 4111 1111 1111 1111”</text>
+<rect x="360" y="118.5" width="130" height="50" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="360" y="121" width="130" height="50" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="360" y="116" width="130" height="50" rx="13" ry="13" fill="url(#g_accent)" stroke="#4f46e5" stroke-width="1.8"/>
+<text x="425.0" y="133.5" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#312e81" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Redact</text>
+<text x="425.0" y="146.5" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">detect + mask</text>
+<rect x="540" y="100" width="320" height="80" rx="10" ry="10" fill="#eefaf0" stroke="#16a34a" stroke-width="2"/>
+<text x="700" y="124" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#15803d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Safe to log / send</text>
+<text x="556" y="146" font-family="DejaVu Sans Mono, monospace" font-size="11" fill="#14532d" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">“I'm [NAME], [EMAIL],</text>
+<text x="556" y="162" font-family="DejaVu Sans Mono, monospace" font-size="11" fill="#14532d" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve"> card [CARD]”</text>
+<line x1="304" y1="140" x2="346.0" y2="140.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="358.0,140.0 346.0,144.8 346.0,135.2" fill="#475569"/>
+<line x1="490" y1="140" x2="526.0" y2="140.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="538.0,140.0 526.0,144.8 526.0,135.2" fill="#475569"/>
+<text x="450" y="226" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Redact PII before logging, before sending to third-party models, and from outputs.</text>
+<text x="450" y="250" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Know your data-handling obligations (GDPR, etc.) — privacy is a legal duty, not just hygiene.</text>
+</svg>

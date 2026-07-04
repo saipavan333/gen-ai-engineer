@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Interview check: Data &amp; SQL agents — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="13.5">
+<main class="lesson">
+
+  <span class="eyebrow">Structured Data &amp; Text-to-SQL · Interview check</span>
+  <h1>Interview check: Data &amp; SQL agents</h1>
+  <p class="lead">Text-to-SQL is a favorite interview topic precisely because it exposes whether you think about safety, scale, and correctness — not just prompting. It’s also where your data background lets you outshine everyone. Here are the questions teams ask, with strong answers.</p>
+
+  <div class="box note">
+    <div class="box-label">How to use this</div>
+    <p>Answer each one <strong>out loud</strong> before opening the model answer. This track’s bar: could you design a trustworthy “chat with your database” feature and defend every safety and correctness decision? If yes, you can hold your own in the rounds that most reward a data engineer.</p>
+  </div>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t13-textsql-flow.svg" alt="The text-to-SQL loop as a track summary: question plus schema to the LLM, which writes SQL, run read-only on the database, turned into a worded answer, with errors looping back for self-correction.">
+    <figcaption>The whole track on one line. If you can narrate this — and defend the safety and evaluation around it — you’re ready.</figcaption>
+  </figure>
+
+  <h2>The questions teams ask</h2>
+
+  <div class="box practice">
+    <div class="box-label">Q1 · Warm-up</div>
+    <p><strong>“Walk me through how a text-to-SQL system works, end to end.”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> A user asks in plain English. I build a prompt containing the relevant schema (tables, columns, relationships, a few sample rows and example query pairs) plus the question, and the model returns a SQL query. I validate it (single SELECT), run it through a <em>read-only</em> connection with a row limit, and turn the rows into a worded answer — returning the SQL too, for transparency. If the query errors, I feed the database’s error message back and let the model revise, up to a small retry cap.</p>
+        <p><strong>Testing:</strong> Whether you have the full pipeline, including safety (read-only) and reliability (self-correction), rather than just “ask the model for SQL and run it.”</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q2 · Safety (they will push here)</div>
+    <p><strong>“The model could generate <code>DROP TABLE</code>. How do you prevent damage?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> Defense in depth, with a read-only database user as the bedrock — if the credentials can’t write, no generated query can delete or modify anything, and no prompt injection can change that. On top I validate the query is a single SELECT/WITH and reject stacked statements, force a LIMIT, set a statement timeout, and parameterize any user-supplied values. I never rely on the prompt (“please only SELECT”) as a control — that’s a hint, not a wall. Permissions are the wall.</p>
+        <p><strong>Testing:</strong> Least-privilege thinking. The phrase they want is “read-only database user”; leading with a prompt instruction is a red flag.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q3 · Scale</div>
+    <p><strong>“Our warehouse has 500 tables. They can’t all fit in the prompt. Now what?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> Schema retrieval — RAG over metadata. I embed each table’s name and description, and for a given question retrieve just the handful of relevant tables to put in the prompt. That keeps context small, cheap, and focused, and it improves accuracy by not drowning the model in irrelevant tables. I’d also invest in a curated semantic layer — clean views, a data dictionary, canonical metric definitions — so the model queries a friendly, well-documented surface instead of raw production tables.</p>
+        <p><strong>Testing:</strong> That you connect this to RAG (Track 3) and that you know accuracy comes from the semantic layer, not a bigger model.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q4 · The big one: evaluation</div>
+    <p><strong>“How do you know your text-to-SQL system is actually correct?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> I build a golden set of question → correct-SQL pairs across easy and hard cases, then measure <strong>execution accuracy</strong>: run the generated query <em>and</em> the reference query and compare their <em>result sets</em> — not the SQL strings. String matching is wrong because many different queries are equally correct (different join order, aliases, subquery vs CTE); what matters is whether they return the same rows. I track accuracy overall and by difficulty, watch specific failure modes (bad joins, wrong date boundaries, ambiguity), and wire it into CI so a prompt or schema change can’t silently regress. In production I also log queries, add user feedback (“was this right?”), and monitor error/retry rates.</p>
+        <p><strong>Testing:</strong> This is the senior differentiator. The key insights: compare <em>results</em>, not query text; use a golden set; and evaluate continuously. It’s Track 6 applied to SQL.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q5 · Reliability</div>
+    <p><strong>“The generated query fails or returns something odd. How does your system recover?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> On an error, I feed the database’s exact error message back to the model and let it revise, within a bounded retry loop (2–3 tries) — the ReAct pattern; the read-only runner means retrying is harmless. For “runs but looks wrong,” I sanity-check the result shape (a “how many” question shouldn’t return 40,000 rows) and can feed that mismatch back too. And for genuinely ambiguous questions, I’d rather have the system ask a clarifying question than confidently guess.</p>
+        <p><strong>Testing:</strong> Whether you know self-correction (feed the error back), bounded loops, and that asking-when-unsure beats guessing.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q6 · System design</div>
+    <p><strong>“Design a ‘chat with your database’ feature for non-technical staff.”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> Clarify first: which database, how many tables, read-only analytics or actions, latency and accuracy expectations, who the users are. Then: a curated semantic layer (clean views + dictionary + example queries); schema retrieval to select relevant tables per question; the model generates SQL at temperature 0; a safety layer (read-only user, SELECT-only validation, LIMIT, timeout); a self-correcting retry loop; and an answer that shows the SQL and a result preview so users can trust it. Around it: a golden-set eval in CI, query logging, feedback capture, and cost/latency monitoring. I’d start narrow — a few well-modeled tables — and expand as evaluation shows it’s reliable.</p>
+        <p><strong>Testing:</strong> Structure, safety, evaluation, and pragmatism (start narrow). Clarifying before designing is a senior tell.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q7 · Judgment</div>
+    <p><strong>“When would you <em>not</em> ship text-to-SQL, or heavily constrain it?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> When wrong answers are costly and hard to notice — regulated financial or medical reporting, say — free-form generated SQL is risky because of the confident-wrong-number problem. There I’d constrain hard: restrict to a small set of validated, parameterized queries or a curated metrics layer rather than open-ended generation, keep a human in the loop for anything consequential, and always surface the SQL. The skill is matching how much freedom the model gets to how costly a wrong answer is.</p>
+        <p><strong>Testing:</strong> Maturity — knowing that “generate any SQL” isn’t always appropriate, and how to dial down the model’s freedom by risk.</p>
+      </div>
+    </details>
+  </div>
+
+  <h2>Rapid-fire self-check</h2>
+
+  <div class="quiz">
+    <p class="quiz-q">What’s the right way to measure whether a generated SQL query is “correct” against a reference query?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Run both and compare their result sets (execution accuracy) — different SQL can be equally correct.</span>
+        <div class="why">Correct. Execution accuracy compares what the queries <em>return</em>, which is what matters. Many correct queries differ in text — join order, aliases, CTE vs subquery — so comparing result sets (order-insensitively) is the valid measure.</div></li>
+      <li data-correct="false"><span class="opt">B) Check that the generated SQL string exactly matches the reference SQL.</span>
+        <div class="why">String matching fails constantly: two textually different queries can be identically correct. Exact-match would mark correct answers as wrong and is the classic mistake in text-to-SQL evaluation.</div></li>
+      <li data-correct="false"><span class="opt">C) Ask the model whether its own query is correct.</span>
+        <div class="why">Self-assessment isn’t ground truth — the same misunderstanding that produced a wrong query can rate it “correct.” You need an objective check against known-good results.</div></li>
+      <li data-correct="false"><span class="opt">D) Count the number of tables the query joins.</span>
+        <div class="why">Join count says nothing about correctness — a correct query might join one table or five. It’s unrelated to whether the result is right.</div></li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">An interviewer asks for the single most important safety control in a text-to-SQL system. Best answer?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Run queries through a read-only database user, so writes are impossible regardless of what’s generated.</span>
+        <div class="why">Correct. Least privilege at the database level is the one control an attacker or a bad generation can’t bypass — the database itself refuses to write. Everything else layers on top of this bedrock.</div></li>
+      <li data-correct="false"><span class="opt">B) A system prompt that says “never write destructive SQL.”</span>
+        <div class="why">A prompt is a hint, not a control — prompt injection can override it. Relying on it as your main safety is the cardinal sin of text-to-SQL.</div></li>
+      <li data-correct="false"><span class="opt">C) Only allowing the model to use small tables.</span>
+        <div class="why">Table size is unrelated to write-safety; a destructive query on a small table is still destructive. This doesn’t address the actual risk.</div></li>
+      <li data-correct="false"><span class="opt">D) Rate-limiting how many queries a user can run.</span>
+        <div class="why">Rate limits help with load and abuse volume, but a single <code>DROP TABLE</code> within the limit still causes damage. It’s not the control that prevents destruction.</div></li>
+    </ul>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Can you explain each of these? (the real test)</div>
+    <ul>
+      <li>The end-to-end pipeline: schema prompt → SQL → safe run → answer, with self-correction.</li>
+      <li>Why the <strong>read-only user</strong> is the bedrock safety control, and the layers on top.</li>
+      <li>Scaling with <strong>schema retrieval</strong> and a <strong>semantic layer</strong>.</li>
+      <li><strong>Execution accuracy</strong> on a golden set — comparing results, not SQL strings — in CI.</li>
+      <li>The <strong>self-correction loop</strong>, bounded retries, and asking when a question is ambiguous.</li>
+      <li>When to <strong>constrain or not ship</strong> open-ended SQL by how costly a wrong answer is.</li>
+    </ul>
+  </div>
+
+  <p>You can now design a text-to-SQL system that’s safe, scalable, self-correcting, and — crucially — <em>measured</em>. This is your strongest interview weapon; lean on it. Next, we make everything you’ve built actually run in production: <strong>Track&nbsp;14, Productionization &amp; LLMOps.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

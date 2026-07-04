@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Capstone: a prompt/RAG eval harness — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="10.3">
+<main class="lesson">
+
+  <span class="eyebrow">Track 10 · Capstone 10.3</span>
+  <h1>Capstone: a prompt/RAG eval harness</h1>
+  <p class="lead">This is the project that signals “senior” louder than any other, because almost no one builds it: a reusable harness that scores any prompt or RAG system against a golden set, judges fuzzy quality with an LLM, and gates changes so regressions can’t ship. It’s the measurement discipline of Track 6 turned into a tool — free and runnable.</p>
+
+  <h2>What you’re building</h2>
+  <p>A small framework you can point at <em>any</em> LLM system (a prompt, the RAG bot from 10.1, the agent from 10.2) that: loads a golden set, runs the system on each case, scores with both exact/keyword checks and an LLM-as-judge, reports per-category results, and <strong>fails if quality regresses vs. a baseline</strong>. This is the “evaluation included” box graders look for (Track 9.5), made reusable.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t6-recap.svg" alt="The evaluation flywheel: Golden set (+ LLM-judge) → Offline eval (CI gate) → Ship (to production) → Tracing (watch every request) → Online eval (A/B + feedback), looping back to fold production failures into the golden set.">
+    <figcaption>You’re building the left half of this flywheel — the golden set, the LLM-judge, and the offline CI gate — as a reusable harness.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Setup (free)</div>
+<pre><code><span class="o">$</span> pip install ollama
+<span class="o">$</span> ollama pull llama3.2          <span class="c"># used both as the judge and (optionally) the system under test</span></code></pre>
+  </div>
+
+  <h2>Step 1 — The golden set (data is the product)</h2>
+  <div class="code-label"><span class="dot"></span><span class="fname">golden.jsonl</span></div>
+<pre><code>{<span class="s">"q"</span>: <span class="s">"What is the refund window?"</span>, <span class="s">"expected"</span>: <span class="s">"30 days from delivery"</span>, <span class="s">"category"</span>: <span class="s">"billing"</span>}
+{<span class="s">"q"</span>: <span class="s">"How do I reset my password?"</span>, <span class="s">"expected"</span>: <span class="s">"Settings &gt; Security"</span>, <span class="s">"category"</span>: <span class="s">"technical"</span>}
+{<span class="s">"q"</span>: <span class="s">"Ship to the Moon?"</span>, <span class="s">"expected"</span>: <span class="s">"I don't know / not supported"</span>, <span class="s">"category"</span>: <span class="s">"edge"</span>}
+<span class="c"># ... 20-50 real cases, covering every category + edge/abstain/safety cases ...</span></code></pre>
+
+  <h2>Step 2 — The harness (keyword + LLM-judge + per-category)</h2>
+  <div class="code-label"><span class="dot"></span><span class="fname">harness.py</span></div>
+<pre><code><span class="k">import</span> json, ollama
+<span class="k">from</span> collections <span class="k">import</span> defaultdict
+
+<span class="k">def</span> <span class="f">judge</span>(question, expected, answer):
+    <span class="s">"""LLM-as-judge: is the answer correct vs the expected answer? Returns 1-5."""</span>
+    p <span class="o">=</span> <span class="s">f"""Score the ANSWER 1-5 for correctness vs the EXPECTED answer. Ignore wording/length.
+Return JSON: {{"score": &lt;1-5&gt;}}.
+QUESTION: {question}
+EXPECTED: {expected}
+ANSWER: {answer}"""</span>
+    out <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"llama3.2"</span>, messages<span class="o">=</span>[{<span class="s">"role"</span>:<span class="s">"user"</span>,<span class="s">"content"</span>:p}],
+            format<span class="o">=</span><span class="s">"json"</span>, options<span class="o">=</span>{<span class="s">"temperature"</span>: <span class="n">0</span>})[<span class="s">"message"</span>][<span class="s">"content"</span>]
+    <span class="k">try</span>: <span class="k">return</span> <span class="f">int</span>(json.<span class="f">loads</span>(out)[<span class="s">"score"</span>])
+    <span class="k">except</span>: <span class="k">return</span> <span class="n">1</span>
+
+<span class="k">def</span> <span class="f">evaluate</span>(system_fn, path<span class="o">=</span><span class="s">"golden.jsonl"</span>):
+    rows <span class="o">=</span> [json.<span class="f">loads</span>(l) <span class="k">for</span> l <span class="k">in</span> open(path)]
+    by_cat <span class="o">=</span> defaultdict(<span class="k">lambda</span>: {<span class="s">"n"</span>: <span class="n">0</span>, <span class="s">"score"</span>: <span class="n">0</span>})
+    per_case <span class="o">=</span> {}
+    <span class="k">for</span> r <span class="k">in</span> rows:
+        ans <span class="o">=</span> <span class="f">system_fn</span>(r[<span class="s">"q"</span>])
+        s <span class="o">=</span> <span class="f">judge</span>(r[<span class="s">"q"</span>], r[<span class="s">"expected"</span>], ans)        <span class="c"># fuzzy quality (1-5)</span>
+        by_cat[r[<span class="s">"category"</span>]][<span class="s">"n"</span>] <span class="o">+=</span> <span class="n">1</span>
+        by_cat[r[<span class="s">"category"</span>]][<span class="s">"score"</span>] <span class="o">+=</span> s
+        per_case[r[<span class="s">"q"</span>]] <span class="o">=</span> s
+    overall <span class="o">=</span> <span class="f">sum</span>(c[<span class="s">"score"</span>] <span class="k">for</span> c <span class="k">in</span> by_cat.<span class="f">values</span>()) <span class="o">/</span> <span class="f">sum</span>(c[<span class="s">"n"</span>] <span class="k">for</span> c <span class="k">in</span> by_cat.<span class="f">values</span>())
+    <span class="k">return</span> {<span class="s">"overall"</span>: overall, <span class="s">"by_category"</span>:
+            {k: v[<span class="s">"score"</span>]/v[<span class="s">"n"</span>] <span class="k">for</span> k, v <span class="k">in</span> by_cat.<span class="f">items</span>()}, <span class="s">"per_case"</span>: per_case}</code></pre>
+
+  <h2>Step 3 — The regression gate (CI for prompts)</h2>
+  <div class="code-label"><span class="dot"></span><span class="fname">gate.py</span></div>
+<pre><code><span class="k">import</span> json, sys
+<span class="k">from</span> harness <span class="k">import</span> evaluate
+<span class="k">from</span> my_system <span class="k">import</span> answer        <span class="c"># the prompt/RAG system you're changing</span>
+
+result <span class="o">=</span> <span class="f">evaluate</span>(answer)
+baseline <span class="o">=</span> json.<span class="f">load</span>(open(<span class="s">"baseline.json"</span>))   <span class="c"># committed scores from the last good version</span>
+
+<span class="f">print</span>(<span class="s">"overall:"</span>, <span class="f">round</span>(result[<span class="s">"overall"</span>], <span class="n">2</span>), <span class="s">"vs baseline"</span>, baseline[<span class="s">"overall"</span>])
+regressed <span class="o">=</span> [c <span class="k">for</span> c, v <span class="k">in</span> result[<span class="s">"by_category"</span>].<span class="f">items</span>()
+             <span class="k">if</span> v <span class="o">&lt;</span> baseline[<span class="s">"by_category"</span>].<span class="f">get</span>(c, <span class="n">0</span>) <span class="o">-</span> <span class="n">0.3</span>]    <span class="c"># tolerance for noise</span>
+
+<span class="k">if</span> regressed:
+    <span class="f">print</span>(<span class="s">"❌ BLOCKED — regressed:"</span>, regressed)
+    sys.<span class="f">exit</span>(<span class="n">1</span>)                              <span class="c"># fail the build (run this in CI)</span>
+<span class="f">print</span>(<span class="s">"✅ OK — no regressions"</span>)</code></pre>
+
+  <div class="box key">
+    <div class="box-label">Why this is the standout project</div>
+    <ul>
+      <li>It’s the <strong>rarest thing in any portfolio</strong> — proof you measure quality systematically, not by vibes.</li>
+      <li>It’s <strong>reusable</strong>: point it at the RAG bot (10.1), the agent (10.2), or any prompt — one harness, many systems.</li>
+      <li>It demonstrates <strong>LLM-as-judge, per-category scoring, and a CI gate</strong> (Track 6.3–6.6) in working code.</li>
+      <li>It’s genuinely useful — you’ll <em>use</em> it on your other capstones, which is a great story.</li>
+      <li>Free and local: the judge is the same Ollama model.</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Extensions</div>
+    <p><strong>1.</strong> Add <strong>retrieval metrics</strong> (recall@k/MRR) when evaluating a RAG system, separate from answer quality (Track 3.8) — so you know which half failed.<br>
+    <strong>2.</strong> <strong>Validate the judge</strong> (Track 6.3): hand-score 10 cases and check the LLM-judge correlates with you.<br>
+    <strong>3.</strong> Add <strong>pairwise</strong> comparison (“is version A or B better?”) for head-to-head prompt comparisons.<br>
+    <strong>4.</strong> Wire <code>gate.py</code> into a <strong>GitHub Action</strong> so every PR runs the eval automatically.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> The interview narrative</summary>
+      <div class="sol-body">
+        <p>“I built a reusable eval harness because measurement is what makes LLM systems shippable. It loads a golden set with categories and edge cases, scores each answer with an LLM-as-judge (validated against my own labels), reports per-category quality, and gates changes in CI — a regression on any critical category fails the build. I use it on all my projects, so I can adopt a new model or refactor a prompt and instantly know if quality moved.” This single project proves the entire Track 6 skillset and the “evaluation is the moat” thesis — the clearest senior signal you can give.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Why does the regression gate compare per-<em>category</em> scores rather than only the overall average?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) An overall average can stay flat while a critical category (like safety or edge/abstain) silently regresses — per-category catches localized failures.</span>
+        <div class="why">Correct. A change might improve common cases enough to mask a serious drop in a small but critical category (safety, abstention). Per-category gating localizes regressions and lets you block on the categories that matter, which a single blended number hides.</div></li>
+      <li data-correct="false"><span class="opt">B) Per-category scoring is faster to compute.</span>
+        <div class="why">It’s the same work; the benefit is diagnostic precision, not speed. You’re catching <em>where</em> quality moved, not saving time.</div></li>
+      <li data-correct="false"><span class="opt">C) Overall averages can’t be computed for LLM systems.</span>
+        <div class="why">You can absolutely compute an overall average — the harness does. The point is that it can mask localized regressions, so you <em>also</em> check per category.</div></li>
+      <li data-correct="false"><span class="opt">D) Categories make the eval set smaller.</span>
+        <div class="why">Categorizing doesn’t change the set size; it changes how you read the results — surfacing where regressions hide.</div></li>
+    </ul>
+  </div>
+
+  <p>You can measure anything. Next, change a model’s behavior itself. Next capstone: <strong>a fine-tuned domain model</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

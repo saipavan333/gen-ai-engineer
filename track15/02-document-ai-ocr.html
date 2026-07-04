@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Document AI &amp; OCR — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="15.2">
+<main class="lesson">
+
+  <span class="eyebrow">Multimodal AI · Lesson 15.2</span>
+  <h1>Document AI &amp; OCR</h1>
+  <p class="lead">Turning documents into structured data — invoices, forms, receipts, contracts — is the highest-value multimodal use case in business, and one VLMs changed overnight. This lesson covers OCR, the new VLM-based approach, and how to make extraction trustworthy.</p>
+
+  <h2>The problem: documents aren’t data</h2>
+  <p>A scanned invoice is a picture, not a database row. To <em>use</em> it — to pay it, audit it, total it — someone has to turn “this image” into “vendor: Acme, total: $4,210, due: 2025-07-01.” That translation, done by hand, is a vast amount of human labor across finance, insurance, healthcare, and logistics. <span class="term">Document AI</span> is the task of doing it automatically: from a document image, produce clean structured fields.</p>
+  <p>The classic first step is <span class="term">OCR</span> (optical character recognition) — detecting and transcribing the <em>text</em> in an image. Open tools like <strong>Tesseract</strong> do this for free. OCR gives you the raw words and roughly where they are, but not their <em>meaning</em>: it returns a wall of text, not “this number is the total and that one is the tax.”</p>
+
+  <h2>The old way vs the new way</h2>
+  <p><strong>The old way:</strong> OCR the document, then write rules and regular expressions to find fields (“the total is the number after the word ‘Total’”). This is brittle — every vendor’s invoice has a different layout, so the rules break constantly and each new format is a new engineering project. Teams spent years on this.</p>
+  <p><strong>The new way:</strong> hand the document image straight to a VLM and ask for structured output. The model reads the text <em>and understands the layout</em>, so it can find the total whether it’s top-right, bottom, or in a table — no per-vendor rules. You combine two things you already know: multimodal input (Lesson&nbsp;15.1) and structured JSON output (Track&nbsp;2), ideally validated against a schema (Track&nbsp;7).</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">extract_invoice.py</span></div>
+<pre><code><span class="k">import</span> ollama, json
+<span class="k">from</span> pydantic <span class="k">import</span> BaseModel
+
+<span class="k">class</span> <span class="f">Invoice</span>(BaseModel):        <span class="c"># the shape we require back</span>
+    vendor: str
+    total: float
+    due_date: str
+
+prompt <span class="o">=</span> <span class="s">"""Read this invoice. Return ONLY JSON with keys:</span>
+<span class="s">vendor (string), total (number), due_date (YYYY-MM-DD). No prose."""</span>
+
+reply <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"llava"</span>,
+    messages<span class="o">=</span>[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: prompt, <span class="s">"images"</span>: [<span class="s">"invoice.png"</span>]}])
+
+data <span class="o">=</span> Invoice(<span class="o">**</span>json.<span class="f">loads</span>(reply[<span class="s">"message"</span>][<span class="s">"content"</span>]))   <span class="c"># parse + validate</span>
+<span class="f">print</span>(data.vendor, data.total, data.due_date)</code></pre>
+  <p>The pydantic model does real work: if the VLM returns a total as <code>"$4,210"</code> instead of a number, or omits <code>due_date</code>, validation fails loudly instead of passing bad data downstream — the “assume it’ll misbehave” discipline from Start Here, applied to extraction.</p>
+
+  <h2>Best of both: OCR + VLM</h2>
+  <p>For accuracy-critical fields, combine them. OCR is often more <em>reliable</em> at exact character transcription (an account number, a precise amount), while the VLM is better at <em>understanding</em> which field is which and handling layout. A strong pattern is to use the VLM for structure and OCR to verify the exact digits — cross-checking the two, and flagging disagreements for human review. This is defense in depth again: two imperfect readers catch each other’s mistakes.</p>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li><strong>Document AI</strong> = image of a document → clean structured fields; it’s the highest-value multimodal use case.</li>
+      <li><strong>OCR</strong> (e.g. free Tesseract) transcribes the text but not its meaning; rules on top are brittle across layouts.</li>
+      <li><strong>VLMs</strong> read text <em>and</em> layout, extracting fields with no per-vendor rules — multimodal input + structured JSON output.</li>
+      <li><strong>Validate</strong> the JSON against a schema (pydantic) so bad extractions fail loudly, not silently.</li>
+      <li>For critical fields, <strong>combine OCR + VLM</strong> and flag disagreements for a human — defense in depth.</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p>You’re extracting the <code>total</code> and <code>account_number</code> from utility bills to auto-pay them. Why is “VLM returns JSON” not enough on its own here, and what would you add before letting a payment go through?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>Why it’s not enough:</strong> this is high-stakes — a wrong <code>total</code> or <code>account_number</code> sends real money to the wrong place, and a VLM can misread a digit or hallucinate a plausible value with full confidence and valid-looking JSON. Schema validation confirms the <em>shape</em> (a number, a string) but not the <em>correctness</em> of the value.</p>
+        <p><strong>What I’d add:</strong> (1) cross-check exact fields with OCR and require agreement on <code>account_number</code> and <code>total</code>; (2) sanity rules (total within an expected range, account number matches the expected format/length); (3) a confidence/uncertainty signal, and (4) a human-in-the-loop confirmation step for any payment above a threshold or any case where the checks disagree. The principle: the amount of automation should scale with how reversible and low-cost a mistake is — and irreversible money movement demands verification and, above a threshold, a human. This is exactly the judgment (Track&nbsp;7, Track&nbsp;1) that separates a safe system from a demo.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Why do VLMs largely replace the old “OCR + hand-written regex rules” approach to extracting invoice fields?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) VLMs understand layout and meaning, so they find the right field across many different document formats without per-format rules.</span>
+        <div class="why">Correct. The brittleness of the old approach came from rules tied to specific layouts (“total is after the word Total”), which broke on every new vendor. A VLM reads the document holistically and identifies fields regardless of position, eliminating most of that per-format engineering.</div></li>
+      <li data-correct="false"><span class="opt">B) VLMs never make mistakes, so no validation is needed.</span>
+        <div class="why">VLMs absolutely make mistakes (misread digits, hallucinated values), which is why schema validation and, for critical fields, OCR cross-checks and human review remain essential. The advantage is flexibility across layouts, not infallibility.</div></li>
+      <li data-correct="false"><span class="opt">C) VLMs don’t need to read the text at all.</span>
+        <div class="why">They very much read the text — that’s the point. The improvement over pure OCR is that they also understand <em>which</em> text is which field, using layout and context.</div></li>
+      <li data-correct="false"><span class="opt">D) OCR can’t run for free, but VLMs can.</span>
+        <div class="why">OCR has excellent free options (Tesseract). Cost isn’t the reason; the reason is that VLMs handle varied layouts and meaning without brittle per-format rules.</div></li>
+    </ul>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: how you evaluate an extraction system</div>
+    <p>Document extraction is a place where the evaluation discipline from Track&nbsp;6 becomes very concrete, and interviewers love it because it’s measurable. You build a golden set of documents with hand-verified correct fields, then measure <strong>field-level accuracy</strong> — for each field (vendor, total, date), what fraction of documents did the system get exactly right? Aggregate accuracy hides problems, so you break it down by field (maybe <code>total</code> is 99% but <code>due_date</code> is 80% because of date-format confusion) and by document type or vendor (one layout may be far worse). That breakdown tells you exactly where to invest — a better prompt for dates, an OCR cross-check for totals, a human step for the one bad layout.</p>
+    <p>Two subtleties make you sound experienced. First, define “correct” carefully: is <code>4210.0</code> equal to <code>4210.00</code>? is a date correct in any format or only <code>YYYY-MM-DD</code>? Normalizing before comparison matters, exactly like comparing SQL result sets rather than strings (Track&nbsp;13). Second, distinguish the cost of different errors: a missing field the system <em>flags</em> as low-confidence is cheap (a human fills it in), while a wrong field returned with confidence is expensive (it flows into a payment). So you don’t just maximize accuracy — you tune the system to prefer “I’m not sure, please check” over confident wrong answers on the fields that matter. Designing extraction around <em>calibrated uncertainty and human handoff</em>, not just raw accuracy, is what turns a flashy demo into something a finance team will actually trust with their invoices.</p>
+  </div>
+
+  <p>Vision covered — now the other sense. Next: <strong>audio: speech-to-text and text-to-speech.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

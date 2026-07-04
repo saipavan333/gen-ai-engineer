@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 366" width="920" height="366" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="920" height="366" fill="#ffffff"/>
+<text x="460" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">What makes an agent reliable (not just demo-able)</text>
+<text x="210" y="66" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#475569" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Technique</text>
+<text x="640" y="66" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#475569" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">What it buys you</text>
+<rect x="30" y="88.5" width="360" height="44" rx="9" ry="9" fill="#0f172a" opacity="0.055"/>
+<rect x="30" y="91" width="360" height="44" rx="9" ry="9" fill="#1e293b" opacity="0.035"/>
+<rect x="30" y="86" width="360" height="44" rx="9" ry="9" fill="url(#g_concept)" stroke="#2563eb" stroke-width="1.8"/>
+<text x="46" y="108.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#0c4a6e" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Reflection / self-critique</text>
+<line x1="396" y1="108.0" x2="423.0" y2="108.0" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/>
+<polygon points="432.0,108.0 423.0,111.6 423.0,104.4" fill="#16a34a"/>
+<rect x="438" y="88.5" width="452" height="44" rx="9" ry="9" fill="#0f172a" opacity="0.055"/>
+<rect x="438" y="91" width="452" height="44" rx="9" ry="9" fill="#1e293b" opacity="0.035"/>
+<rect x="438" y="86" width="452" height="44" rx="9" ry="9" fill="url(#g_key)" stroke="#d97706" stroke-width="1.8"/>
+<text x="454" y="108.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#713f12" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">catches its own mistakes before finishing</text>
+<rect x="30" y="140.5" width="360" height="44" rx="9" ry="9" fill="#0f172a" opacity="0.055"/>
+<rect x="30" y="143" width="360" height="44" rx="9" ry="9" fill="#1e293b" opacity="0.035"/>
+<rect x="30" y="138" width="360" height="44" rx="9" ry="9" fill="url(#g_concept)" stroke="#2563eb" stroke-width="1.8"/>
+<text x="46" y="160.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#0c4a6e" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Plan, then execute</text>
+<line x1="396" y1="160.0" x2="423.0" y2="160.0" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/>
+<polygon points="432.0,160.0 423.0,163.6 423.0,156.4" fill="#16a34a"/>
+<rect x="438" y="140.5" width="452" height="44" rx="9" ry="9" fill="#0f172a" opacity="0.055"/>
+<rect x="438" y="143" width="452" height="44" rx="9" ry="9" fill="#1e293b" opacity="0.035"/>
+<rect x="438" y="138" width="452" height="44" rx="9" ry="9" fill="url(#g_key)" stroke="#d97706" stroke-width="1.8"/>
+<text x="454" y="160.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#713f12" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">fewer wasted tool calls, readable traces</text>
+<rect x="30" y="192.5" width="360" height="44" rx="9" ry="9" fill="#0f172a" opacity="0.055"/>
+<rect x="30" y="195" width="360" height="44" rx="9" ry="9" fill="#1e293b" opacity="0.035"/>
+<rect x="30" y="190" width="360" height="44" rx="9" ry="9" fill="url(#g_concept)" stroke="#2563eb" stroke-width="1.8"/>
+<text x="46" y="212.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#0c4a6e" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Validate tool results</text>
+<line x1="396" y1="212.0" x2="423.0" y2="212.0" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/>
+<polygon points="432.0,212.0 423.0,215.6 423.0,208.4" fill="#16a34a"/>
+<rect x="438" y="192.5" width="452" height="44" rx="9" ry="9" fill="#0f172a" opacity="0.055"/>
+<rect x="438" y="195" width="452" height="44" rx="9" ry="9" fill="#1e293b" opacity="0.035"/>
+<rect x="438" y="190" width="452" height="44" rx="9" ry="9" fill="url(#g_key)" stroke="#d97706" stroke-width="1.8"/>
+<text x="454" y="212.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#713f12" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">don't trust a tool blindly — check schema/range</text>
+<rect x="30" y="244.5" width="360" height="44" rx="9" ry="9" fill="#0f172a" opacity="0.055"/>
+<rect x="30" y="247" width="360" height="44" rx="9" ry="9" fill="#1e293b" opacity="0.035"/>
+<rect x="30" y="242" width="360" height="44" rx="9" ry="9" fill="url(#g_concept)" stroke="#2563eb" stroke-width="1.8"/>
+<text x="46" y="264.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#0c4a6e" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Bounded loops + budgets</text>
+<line x1="396" y1="264.0" x2="423.0" y2="264.0" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/>
+<polygon points="432.0,264.0 423.0,267.6 423.0,260.4" fill="#16a34a"/>
+<rect x="438" y="244.5" width="452" height="44" rx="9" ry="9" fill="#0f172a" opacity="0.055"/>
+<rect x="438" y="247" width="452" height="44" rx="9" ry="9" fill="#1e293b" opacity="0.035"/>
+<rect x="438" y="242" width="452" height="44" rx="9" ry="9" fill="url(#g_key)" stroke="#d97706" stroke-width="1.8"/>
+<text x="454" y="264.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#713f12" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">no infinite loops or runaway cost</text>
+<rect x="30" y="296.5" width="360" height="44" rx="9" ry="9" fill="#0f172a" opacity="0.055"/>
+<rect x="30" y="299" width="360" height="44" rx="9" ry="9" fill="#1e293b" opacity="0.035"/>
+<rect x="30" y="294" width="360" height="44" rx="9" ry="9" fill="url(#g_concept)" stroke="#2563eb" stroke-width="1.8"/>
+<text x="46" y="316.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#0c4a6e" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Eval harness for tasks</text>
+<line x1="396" y1="316.0" x2="423.0" y2="316.0" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/>
+<polygon points="432.0,316.0 423.0,319.6 423.0,312.4" fill="#16a34a"/>
+<rect x="438" y="296.5" width="452" height="44" rx="9" ry="9" fill="#0f172a" opacity="0.055"/>
+<rect x="438" y="299" width="452" height="44" rx="9" ry="9" fill="#1e293b" opacity="0.035"/>
+<rect x="438" y="294" width="452" height="44" rx="9" ry="9" fill="url(#g_key)" stroke="#d97706" stroke-width="1.8"/>
+<text x="454" y="316.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#713f12" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">measure task success rate, not vibes</text>
+<text x="460" y="352" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Interviewers probe failure modes. Showing you design for them is a senior signal.</text>
+</svg>

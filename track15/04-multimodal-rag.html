@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Multimodal RAG — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="15.4">
+<main class="lesson">
+
+  <span class="eyebrow">Multimodal AI · Lesson 15.4</span>
+  <h1>Multimodal RAG</h1>
+  <p class="lead">RAG gave a model your documents. Multimodal RAG gives it your <em>images</em> too — product photos, charts, diagrams, scanned pages — so it can retrieve and reason over visual knowledge, not just text. It’s Track&nbsp;3 with a wider definition of “document.”</p>
+
+  <h2>Why retrieve over images</h2>
+  <p>Plenty of the knowledge you’d want a system to ground on isn’t text: a product catalog is photos, a technical manual is full of diagrams, financial reports are charts, an archive is scanned pages. Text-only RAG can’t reach any of it. <span class="term">Multimodal RAG</span> extends the same retrieve-then-ground pattern so the “documents” can be images: given a question, find the most relevant images (and text), and feed them to a VLM to produce a grounded, cited answer. The shape is identical to Track&nbsp;3 — index, retrieve top-k, ground — only the content type widened.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t15-mm-rag.svg" alt="Multimodal RAG: a question is embedded and used to search an index of image and text vectors; the top matching images and passages are retrieved; a vision-language model grounds its answer on them and can cite the image.">
+    <figcaption>The Track&nbsp;3 pipeline, widened: retrieve over image + text embeddings, then let a VLM ground the answer.</figcaption>
+  </figure>
+
+  <h2>Two ways to make images searchable</h2>
+  <p>The only genuinely new question is: how do you retrieve images by a text query? Two approaches, both free.</p>
+  <p><strong>1 · Shared-space embeddings (CLIP).</strong> A model like <span class="term">CLIP</span> embeds images <em>and</em> text into the <em>same</em> vector space, so a text query and a matching image land near each other. You embed all your images once, then embed the query text and do the same cosine-similarity search as always — the image whose vector is closest wins. This is true image search: “a red running shoe” finds the photo even if no caption says those words.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">clip_search.py</span></div>
+<pre><code><span class="k">from</span> sentence_transformers <span class="k">import</span> SentenceTransformer, util
+model <span class="o">=</span> SentenceTransformer(<span class="s">"clip-ViT-B-32"</span>)     <span class="c"># open CLIP, free</span>
+
+img_vecs <span class="o">=</span> model.<span class="f">encode</span>([Image.<span class="f">open</span>(p) <span class="k">for</span> p <span class="k">in</span> image_paths])  <span class="c"># index images</span>
+q_vec <span class="o">=</span> model.<span class="f">encode</span>(<span class="s">"a red running shoe"</span>)                    <span class="c"># same space!</span>
+hits <span class="o">=</span> util.<span class="f">cos_sim</span>(q_vec, img_vecs)[<span class="n">0</span>].<span class="f">topk</span>(<span class="n">3</span>)                <span class="c"># nearest images</span></code></pre>
+  <p><strong>2 · Caption-then-embed.</strong> Use a VLM to <em>describe</em> each image in text (“a red running shoe on a white background, side view”), then embed and index those captions with your normal text pipeline. Now image retrieval is just text retrieval over the captions. It’s simpler to bolt onto an existing text-RAG system and lets you search on details a caption spells out, at the cost of an up-front captioning pass and whatever the caption leaves out.</p>
+
+  <h2>Then ground with a VLM</h2>
+  <p>Retrieval finds the relevant images; the generation step hands those images (not just captions) to a VLM along with the question, so it can actually look at them to answer — “based on the retrieved photo, this shoe has a mesh upper and a visible air unit.” That’s grounding (Track&nbsp;3, Track&nbsp;7) in multimodal form: the answer is anchored to retrieved visual evidence, and you can “cite” by showing the image it used. Same trust discipline, richer sources.</p>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li><strong>Multimodal RAG</strong> widens “documents” to images (photos, charts, diagrams, scans) — same retrieve-then-ground shape as Track&nbsp;3.</li>
+      <li>Make images searchable two ways: <strong>shared-space embeddings (CLIP)</strong> for true image search, or <strong>caption-then-embed</strong> for a simpler bolt-on.</li>
+      <li>CLIP puts <strong>images and text in one vector space</strong>, so a text query finds matching images by cosine similarity — the search you already know.</li>
+      <li>Ground the answer by feeding <strong>retrieved images to a VLM</strong>, and “cite” by showing the image used.</li>
+      <li>All free/open: CLIP via <code>sentence-transformers</code>, a VLM via Ollama.</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p>You’re building search for a furniture catalog of 50,000 product photos with sparse, inconsistent text descriptions. Would you use CLIP shared-space embeddings or caption-then-embed — and why? When might you combine them?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>Lean CLIP here.</strong> The text descriptions are sparse and inconsistent, so caption-then-embed would inherit those gaps unless you first generate good captions — and the whole value is letting users search by visual qualities (“mid-century walnut armchair,” “curved velvet sofa”) that the existing text doesn’t capture. CLIP embeds the <em>images themselves</em> into the same space as the query, so it can match on appearance directly, which is exactly what visual product search needs.</p>
+        <p><strong>When to combine:</strong> generate VLM captions <em>and</em> use CLIP, then do hybrid retrieval (Track&nbsp;3) — CLIP for visual similarity, caption/text search for specific attributes a description states well (material, dimensions, SKU). That mirrors dense+sparse hybrid search: each catches what the other misses. You’d let evaluation decide the blend — build a small golden set of query→correct-product pairs and measure retrieval recall for CLIP-only, captions-only, and hybrid. The instinct to <em>measure</em> which retrieval approach actually works on your data, rather than assuming, is the Track&nbsp;3/Track&nbsp;6 discipline carried into multimodal — and it’s what makes the answer sound like an engineer’s, not a guess.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">What does CLIP make possible that a normal text-embedding model does not?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) It embeds images and text into the same vector space, so a text query can retrieve matching images by cosine similarity.</span>
+        <div class="why">Correct. CLIP’s shared space is the key: because an image’s vector and a matching text’s vector land near each other, you can search images with a text query using the exact same nearest-neighbor mechanism as text RAG. A text-only model has no representation of images at all.</div></li>
+      <li data-correct="false"><span class="opt">B) It lets a text model read image files as raw bytes.</span>
+        <div class="why">CLIP doesn’t feed raw bytes to a text model — it produces image <em>embeddings</em> in a shared space. Raw bytes carry no semantic meaning a similarity search could use.</div></li>
+      <li data-correct="false"><span class="opt">C) It generates images from text prompts.</span>
+        <div class="why">That’s text-to-image generation, a different kind of model. CLIP is about <em>embedding</em> images and text into a comparable space for retrieval, not generating pictures.</div></li>
+      <li data-correct="false"><span class="opt">D) It removes the need to embed anything, since images are already vectors.</span>
+        <div class="why">Images aren’t already meaningful vectors — CLIP is exactly what turns an image into a semantic embedding. You still embed everything; CLIP just makes image and text embeddings comparable.</div></li>
+    </ul>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: choosing your approach, and evaluating it</div>
+    <p>The CLIP-vs-caption choice is a genuine engineering trade-off worth being able to reason about aloud. <strong>Shared-space embeddings</strong> shine when the query is about visual appearance and captions would be lossy or missing — product search, “find similar images,” style matching — and they need no per-image LLM pass, so indexing is cheap at scale. Their limit is that a single image vector can miss fine detail and can’t easily be searched on facts that aren’t visual (a price, a model number). <strong>Caption-then-embed</strong> shines when you can write rich, structured descriptions (a VLM extracting specs from each product image) and want to search on those specifics with your existing text stack; its costs are the up-front captioning compute and the risk that anything the caption omits becomes unsearchable. Many strong systems use both and fuse the results — the multimodal version of hybrid search.</p>
+    <p>Evaluation ties it together and is the part candidates forget. Multimodal retrieval is measured just like text retrieval (Track&nbsp;3): a golden set of queries with known-relevant images, scored with recall@k and friends — did the right image make the top-k? You measure each approach on <em>your</em> data because the winner is corpus-dependent: CLIP may dominate on a clean photo catalog and lose on scanned documents where a VLM’s reading of the text matters more. And the generation half needs its own check — did the VLM’s answer actually reflect the retrieved image, or did it hallucinate (faithfulness, Track&nbsp;6/12)? The through-line of this entire track is that multimodal is your familiar toolkit — retrieval, grounding, evaluation, hybrid fusion — applied to images and audio. Master that framing and you can build, and defend, systems over any kind of data, which is exactly the range that makes a GenAI engineer valuable.</p>
+  </div>
+
+  <p>You can now bring vision, documents, audio, and multimodal retrieval into your work. Let’s pressure-test it. Next: the <strong>interview check</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

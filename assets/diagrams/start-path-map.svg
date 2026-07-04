@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 892" width="720" height="892" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="720" height="892" fill="#ffffff"/>
+<rect x="80" y="32.5" width="560" height="86" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="80" y="35" width="560" height="86" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="80" y="30" width="560" height="86" rx="13" ry="13" fill="url(#g_concept)" stroke="#2563eb" stroke-width="1.8"/>
+<text x="360.0" y="64.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="18" fill="#1e3a8a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Foundations</text>
+<text x="360.0" y="79.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">1 · How LLMs Work   |   2 · Prompt Engineering</text>
+<rect x="80" y="152.5" width="560" height="86" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="80" y="155" width="560" height="86" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="80" y="150" width="560" height="86" rx="13" ry="13" fill="url(#g_example)" stroke="#16a34a" stroke-width="1.8"/>
+<text x="360.0" y="184.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="18" fill="#14532d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Knowledge &amp; action</text>
+<text x="360.0" y="199.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">3 · RAG &amp; Vector DBs   |   4 · Agents &amp; Tool Use</text>
+<rect x="80" y="272.5" width="560" height="86" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="80" y="275" width="560" height="86" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="80" y="270" width="560" height="86" rx="13" ry="13" fill="url(#g_key)" stroke="#d97706" stroke-width="1.8"/>
+<text x="360.0" y="304.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="18" fill="#7c2d12" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Customize &amp; trust</text>
+<text x="360.0" y="319.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">5 · Fine-tuning   |   6 · Evals   |   7 · Guardrails</text>
+<rect x="80" y="392.5" width="560" height="86" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="80" y="395" width="560" height="86" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="80" y="390" width="560" height="86" rx="13" ry="13" fill="url(#g_deep)" stroke="#0d9488" stroke-width="1.8"/>
+<text x="360.0" y="424.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="18" fill="#134e4a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Make it shippable</text>
+<text x="360.0" y="439.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">8 · Serving, Latency &amp; Cost</text>
+<rect x="80" y="512.5" width="560" height="86" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="80" y="515" width="560" height="86" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="80" y="510" width="560" height="86" rx="13" ry="13" fill="url(#g_accent)" stroke="#4f46e5" stroke-width="1.8"/>
+<text x="360.0" y="544.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="18" fill="#312e81" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Prove it</text>
+<text x="360.0" y="559.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">9 · Interview Bank   |   10 · Capstones</text>
+<rect x="80" y="632.5" width="560" height="86" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="80" y="635" width="560" height="86" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="80" y="630" width="560" height="86" rx="13" ry="13" fill="url(#g_practice)" stroke="#7c3aed" stroke-width="1.8"/>
+<text x="360.0" y="664.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="18" fill="#4c1d95" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Land it &amp; go further</text>
+<text x="360.0" y="679.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">11 · Get Hired   |   12 · Going Deeper</text>
+<rect x="80" y="752.5" width="560" height="86" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="80" y="755" width="560" height="86" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="80" y="750" width="560" height="86" rx="13" ry="13" fill="url(#g_ink)" stroke="#334155" stroke-width="1.8"/>
+<text x="360.0" y="776.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="18" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Specialize &amp; modernize</text>
+<text x="360.0" y="791.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">13 · Text-to-SQL   |   14 · LLMOps   |   15 · Multimodal</text>
+<text x="360.0" y="807.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">16 · Frontier &amp; Responsible AI</text>
+<line x1="360" y1="116" x2="360.0" y2="136.0" stroke="#94a3b8" stroke-width="2.4" stroke-linecap="round"/>
+<polygon points="360.0,148.0 355.2,136.0 364.8,136.0" fill="#94a3b8"/>
+<line x1="360" y1="236" x2="360.0" y2="256.0" stroke="#94a3b8" stroke-width="2.4" stroke-linecap="round"/>
+<polygon points="360.0,268.0 355.2,256.0 364.8,256.0" fill="#94a3b8"/>
+<line x1="360" y1="356" x2="360.0" y2="376.0" stroke="#94a3b8" stroke-width="2.4" stroke-linecap="round"/>
+<polygon points="360.0,388.0 355.2,376.0 364.8,376.0" fill="#94a3b8"/>
+<line x1="360" y1="476" x2="360.0" y2="496.0" stroke="#94a3b8" stroke-width="2.4" stroke-linecap="round"/>
+<polygon points="360.0,508.0 355.2,496.0 364.8,496.0" fill="#94a3b8"/>
+<line x1="360" y1="596" x2="360.0" y2="616.0" stroke="#94a3b8" stroke-width="2.4" stroke-linecap="round"/>
+<polygon points="360.0,628.0 355.2,616.0 364.8,616.0" fill="#94a3b8"/>
+<line x1="360" y1="716" x2="360.0" y2="736.0" stroke="#94a3b8" stroke-width="2.4" stroke-linecap="round"/>
+<polygon points="360.0,748.0 355.2,736.0 364.8,736.0" fill="#94a3b8"/>
+</svg>

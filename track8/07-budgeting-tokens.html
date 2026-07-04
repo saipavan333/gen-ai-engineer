@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Budgeting tokens — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="8.7">
+<main class="lesson">
+
+  <span class="eyebrow">Track 8 · Lesson 8.7</span>
+  <h1>Budgeting tokens</h1>
+  <p class="lead">Caching skips calls, routing right-sizes them, batching speeds the hardware — but every call you do make still spends tokens, on every request, forever. Token budgeting is the most universal lever: make each prompt as lean as it can be, and you pay less on literally every call.</p>
+
+  <h2>Every token is paid, every time</h2>
+  <p>Because cost and latency both scale with tokens (Lesson 8.1), the size of your prompt and answer is a per-request tax you pay endlessly. A bloated prompt — a giant system message, a dozen few-shot examples, an over-long conversation history, too much retrieved context — multiplies across every call and every user. <span class="term">Token budgeting</span> is treating your token usage like a budget: knowing where the tokens go, and trimming the fat without losing quality.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t8-token-budget.svg" alt="Where your tokens (and cost) go: a stacked bar showing System 10%, Few-shot examples 20%, Conversation history 25%, Retrieved context 30%, Output 15%. Trim levers: shorten the system prompt; fewer few-shot examples (or fine-tune them in); summarize old history; retrieve fewer/smaller chunks; cap max output tokens. Every token is paid on every call.">
+    <figcaption>Account for where tokens go, then trim each part: a shorter system prompt, fewer examples, summarized history, leaner retrieval, capped output. Each cut compounds across every request.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p>A <span class="term">token budget</span> is a deliberate accounting of how many tokens each part of your request uses: the <strong>system prompt</strong>, any <strong>few-shot examples</strong>, the <strong>conversation history</strong>, <strong>retrieved context</strong> (in RAG), and the <strong>output</strong>. You measure each part, find the biggest, and trim it — with levers like shortening instructions, using fewer examples (or fine-tuning them in), summarizing old history, retrieving less, and capping <span class="term">max output tokens</span>.</p>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — measure, then trim (free)</div>
+    <p>Count each component so you know where to cut — guessing wastes effort on the wrong part.</p>
+<pre><code><span class="k">import</span> tiktoken
+enc <span class="o">=</span> tiktoken.<span class="f">get_encoding</span>(<span class="s">"cl100k_base"</span>)
+<span class="k">def</span> <span class="f">n</span>(text): <span class="k">return</span> <span class="f">len</span>(enc.<span class="f">encode</span>(text))
+
+parts <span class="o">=</span> {
+    <span class="s">"system"</span>:    <span class="f">n</span>(system_prompt),
+    <span class="s">"examples"</span>:  <span class="f">sum</span>(<span class="f">n</span>(e) <span class="k">for</span> e <span class="k">in</span> few_shot),
+    <span class="s">"history"</span>:   <span class="f">sum</span>(<span class="f">n</span>(m) <span class="k">for</span> m <span class="k">in</span> conversation),
+    <span class="s">"context"</span>:   <span class="f">sum</span>(<span class="f">n</span>(c) <span class="k">for</span> c <span class="k">in</span> retrieved_chunks),
+}
+<span class="k">for</span> name, count <span class="k">in</span> <span class="f">sorted</span>(parts.<span class="f">items</span>(), key<span class="o">=</span><span class="k">lambda</span> kv: <span class="o">-</span>kv[<span class="n">1</span>]):
+    <span class="f">print</span>(<span class="s">f"</span>{name}<span class="s">: </span>{count}<span class="s"> tokens"</span>)         <span class="c"># attack the biggest first</span>
+<span class="c"># context: 2400  history: 1800  examples: 700  system: 250   → trim context + history</span>
+
+<span class="c"># Cheap wins:</span>
+<span class="c">#  - cap output:  max_tokens=300 (don't let it ramble)</span>
+<span class="c">#  - trim history: keep last N turns + a running summary (Track 4.5)</span>
+<span class="c">#  - retrieve less: top-3 instead of top-10, smaller chunks (Track 3)</span></code></pre>
+    <p>The measurement is the point: people often “optimize” the system prompt while a 2,400-token retrieved-context blob is the real cost. Measure first, cut the biggest, re-measure.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>Every token is paid on <strong>every call</strong> — prompt size is a per-request tax that multiplies at scale.</li>
+      <li><strong>Account for where tokens go</strong> (system, examples, history, context, output) and trim the biggest.</li>
+      <li>Levers: shorter system prompt, fewer examples (or fine-tune them in), summarized history, leaner retrieval, <strong>capped output</strong>.</li>
+      <li><strong>Output tokens are doubly costly</strong> (price + decode latency) — cap them deliberately.</li>
+      <li><strong>Measure first</strong> — don’t trim the part that isn’t the problem.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your costs are high. You spend an afternoon tightening the system prompt from 300 → 180 tokens, but the bill barely moves. A trace shows each call also sends 2,400 tokens of retrieved context and 1,800 of history. What should you have done?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Measure each component first, then trim the biggest — here, retrieve fewer/smaller chunks and summarize history, not the already-small system prompt.</span>
+        <div class="why">Correct. The system prompt was a tiny fraction of the tokens, so cutting it couldn’t move the bill much. Token budgeting starts with measurement: the retrieved context (2,400) and history (1,800) dominate, so that’s where the savings are. Optimize where the tokens actually are.</div></li>
+      <li data-correct="false"><span class="opt">B) Switch to a bigger model for efficiency.</span>
+        <div class="why">A bigger model is usually pricier per token and does nothing about the 4,200+ tokens you send every call. The issue is prompt size, not model choice.</div></li>
+      <li data-correct="false"><span class="opt">C) Raise the temperature.</span>
+        <div class="why">Temperature doesn’t affect token counts or cost. It’s irrelevant to budgeting.</div></li>
+      <li data-correct="false"><span class="opt">D) Increase max output tokens so answers are complete.</span>
+        <div class="why">That increases cost and latency. The problem is too many <em>input</em> tokens (context + history); lengthening output makes things worse.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Why is capping <code>max_tokens</code> on the output a double win compared to trimming input?<br>
+    <strong>2.</strong> Your agent’s cost grows over a long task. Which component is likely ballooning, and what fixes it?<br>
+    <strong>3.</strong> You use 8 few-shot examples (1,000 tokens) on every call. Give two ways to reduce that cost.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> Output tokens cost on <em>both</em> axes: they’re usually the higher-priced tokens <em>and</em> each one adds decode time (Lesson 8.1). So capping output saves money <em>and</em> latency, whereas trimming input mainly saves money and TTFT. (Trim both, but a runaway-length answer is especially worth capping.)</p>
+        <p><strong>2.</strong> The <strong>conversation/agent history</strong> — each step re-sends a growing transcript, so input tokens climb every call (Lesson 8.1, Track 4.5). Fix it with memory management: keep the last few turns plus a running summary of older ones, and drop or retrieve-on-demand the rest, so the per-call token count stays bounded instead of growing without limit.</p>
+        <p><strong>3.</strong> (a) Use <strong>fewer examples</strong> — test whether 3 well-chosen examples match 8’s quality (often they do), saving most of the 1,000 tokens per call. (b) <strong>Fine-tune the behavior in</strong> (Track 5): bake the examples’ pattern into the weights so you can drop them from the prompt entirely — a one-time training cost to stop paying 1,000 tokens on every single call. (Also: dynamic/retrieved few-shot, selecting only the most relevant example per query.)</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: the compounding economics of lean prompts</div>
+    <p>Token budgeting feels small per call and is enormous in aggregate, which is exactly why it’s the most universally-applied serving optimization. Trim 500 tokens from a prompt that runs ten million times a month and you’ve saved five billion tokens a month, every month, on top of faster responses — and you did it once. This compounding is why disciplined teams keep prompts ruthlessly lean: it’s free money that recurs. It also reframes some earlier-track decisions through a cost lens: every few-shot example you add (Track 2) is a permanent per-call tax, which is one reason fine-tuning to shrink prompts (Track 5) can pay for itself; every extra retrieved chunk (Track 3) costs tokens forever, which is another reason to retrieve precisely rather than dumping context.</p>
+    <p>Two cautions keep it from becoming penny-wise-pound-foolish. First, <strong>don’t trim into a quality regression</strong> — cutting the example or context the model actually needed costs you more in wrong answers than you saved in tokens, so every trim is a change you validate against your eval set (Track 6), watching quality as you cut. Second, <strong>measure, don’t guess</strong>: instrument your requests (Track 6 tracing) to see the real token breakdown, because intuition about where tokens go is often wrong (people obsess over the system prompt while context dominates). The mature loop is: measure the token budget per request → trim the biggest component → confirm quality held → re-measure. Do that, and token budgeting becomes a precise, ongoing optimization rather than blind cutting — and combined with caching, routing, and (if self-hosting) quantization and batching, it’s how you take a feature that worked in a demo and make it cheap and fast enough to serve millions.</p>
+  </div>
+
+  <p>You now have the full serving toolkit — cost, latency, and the levers for both. Time to pressure-test it. On to the <strong>Track 8 interview check</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

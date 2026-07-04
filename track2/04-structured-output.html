@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Structured output &amp; JSON — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="2.4">
+<main class="lesson">
+
+  <span class="eyebrow">Track 2 · Lesson 2.4</span>
+  <h1>Structured output &amp; JSON</h1>
+  <p class="lead">The moment you put an LLM <em>inside software</em>, you need its output in a shape code can read. This lesson is how you turn a chatty model into a reliable component — the bridge between “cool demo” and “shipped feature.”</p>
+
+  <h2>Why structured output is non-negotiable for products</h2>
+  <p>A human can read “the customer seems upset and wants a refund.” Your code can’t — not reliably. To route a ticket, update a database, or call another function, you need fields: <code>intent="refund"</code>, <code>sentiment="negative"</code>, <code>urgent=true</code>. Free-form prose forces fragile string-parsing that breaks the first time the model rephrases. Structured output — usually <span class="term">JSON</span> — is what lets an LLM slot into a real system. It’s also the foundation of tool/function calling in Track 4, which is just structured output the model fills in.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t2-json-why.svg" alt="Make outputs your software can read. Prose: 'The customer seems upset about a double charge and wants a refund' forces code to guess fields from text — fragile string parsing that breaks often. JSON: '{intent: refund, sentiment: negative, urgent: true}' lets json.loads() produce a dict you use directly. Same information, but JSON drops straight into code.">
+    <figcaption>Same facts, two formats. JSON is the one your program can act on without guesswork.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p><span class="term">Structured output</span> means the model returns data in a fixed, machine-readable format — almost always <span class="term">JSON</span> (JavaScript Object Notation: keys and values like <code>{"urgent": true}</code>). A <span class="term">schema</span> is the contract describing the expected shape: which fields exist, their types, and allowed values. <span class="term">Validation</span> is checking the model’s output actually matches that schema before you trust it.</p>
+  </div>
+
+  <h2>Getting JSON reliably: four levers</h2>
+  <p>Asking nicely isn’t enough on its own — models love to add “Sure! Here’s the JSON:” or a trailing explanation that breaks parsing. Use these together:</p>
+  <ol>
+    <li><strong>Specify the exact shape</strong> in the prompt, ideally with a concrete example of the JSON (this is few-shot from 2.2 applied to format).</li>
+    <li><strong>Use a JSON/structured-output mode</strong> if your runtime has one. It constrains the model so the output is always valid JSON. Ollama supports this for free with <code>format="json"</code> (and can even take a JSON schema).</li>
+    <li><strong>Validate</strong> the parsed output against your schema — check fields, types, and allowed values, not just that it parses.</li>
+    <li><strong>Retry or repair</strong> on failure: send the error back and ask the model to fix it. This loop is what makes it production-grade.</li>
+  </ol>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t2-json-pipeline.svg" alt="Reliable JSON pipeline: Prompt plus JSON schema goes to Model, which produces JSON text, which goes to Validate/parse. If valid, Use it. If invalid, a red loop goes back to the Model to ask again, including the parse error and the schema.">
+    <figcaption>The production pattern: generate, validate, and on failure ask again <em>with the error</em>. Never trust raw model output as valid data — verify it.</figcaption>
+  </figure>
+
+  <h2>Validate it yourself</h2>
+  <p>Here’s a real validator (running in your browser). Edit the “model output,” or click a failure button, and watch validation catch exactly what’s wrong. This is the check your code must do on every response.</p>
+
+  <div class="demo" id="js-demo">
+    <div class="demo-head"><span class="tag">Live demo</span><h4>JSON validator</h4></div>
+    <p class="demo-hint">Target schema: <code>intent</code> ∈ {refund, billing, technical, other} · <code>sentiment</code> ∈ {positive, negative, mixed, neutral} · <code>urgent</code> : boolean</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+      <button class="run" data-fix="valid" style="background:#eefaf0;color:#15803d">Valid</button>
+      <button class="run" data-fix="prose" style="background:#fef1ef;color:#b91c1c">Wrapped in prose</button>
+      <button class="run" data-fix="type" style="background:#fef1ef;color:#b91c1c">Wrong type</button>
+      <button class="run" data-fix="enum" style="background:#fef1ef;color:#b91c1c">Invalid value</button>
+      <button class="run" data-fix="missing" style="background:#fef1ef;color:#b91c1c">Missing field</button>
+    </div>
+    <textarea id="js-input" rows="4" class="mono"></textarea>
+    <div class="out" id="js-out" style="margin-top:12px"></div>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — JSON mode + validation + retry (free, Ollama)</div>
+    <p>The whole pattern, end to end, with a free local model. <code>pydantic</code> defines the schema and validates types in one line:</p>
+<pre><code><span class="o">!</span>pip install ollama pydantic
+<span class="k">import</span> json, ollama
+<span class="k">from</span> pydantic <span class="k">import</span> BaseModel, ValidationError
+
+<span class="k">class</span> <span class="f">Ticket</span>(BaseModel):          <span class="c"># the schema, as a Python class</span>
+    intent: str
+    sentiment: str
+    urgent: bool
+
+<span class="k">def</span> <span class="f">extract</span>(text, tries<span class="o">=</span><span class="n">2</span>):
+    prompt <span class="o">=</span> <span class="s">f"""Extract fields from the ticket as JSON with keys
+intent (refund/billing/technical/other), sentiment (positive/negative/mixed/neutral), urgent (true/false).
+Ticket: "</span>{text}<span class="s">" """</span>
+    <span class="k">for</span> attempt <span class="k">in</span> <span class="f">range</span>(tries):
+        resp <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"llama3.2"</span>,
+                           messages<span class="o">=</span>[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: prompt}],
+                           format<span class="o">=</span><span class="s">"json"</span>)        <span class="c"># force valid JSON (free!)</span>
+        <span class="k">try</span>:
+            <span class="k">return</span> Ticket(<span class="o">**</span>json.<span class="f">loads</span>(resp[<span class="s">"message"</span>][<span class="s">"content"</span>]))   <span class="c"># parse + validate</span>
+        <span class="k">except</span> (json.JSONDecodeError, ValidationError) <span class="k">as</span> e:
+            prompt <span class="o">+=</span> <span class="s">f"\nYour last output was invalid: </span>{e}<span class="s">. Return ONLY valid JSON."</span>   <span class="c"># retry w/ error</span>
+    <span class="k">raise</span> <span class="f">RuntimeError</span>(<span class="s">"Model could not produce valid JSON"</span>)
+
+t <span class="o">=</span> <span class="f">extract</span>(<span class="s">"My card was charged twice and no one has replied in 3 days!"</span>)
+<span class="f">print</span>(t.intent, t.sentiment, t.urgent)   <span class="c"># -> refund negative True</span></code></pre>
+    <p>Notice what makes this robust: <code>format="json"</code> stops the model adding prose, <code>pydantic</code> guarantees the types are right before you use them, and the retry loop feeds the error back so a one-off slip self-corrects. That’s the difference between a script and a feature.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>Software needs <strong>machine-readable output</strong>; JSON is the default, and it underpins tool calling (Track 4).</li>
+      <li>Get reliable JSON with four levers: <strong>specify the shape, use a JSON mode, validate, and retry on failure.</strong></li>
+      <li><strong>Validate values, not just syntax</strong> — check required fields, types, and allowed enums.</li>
+      <li>The production pattern is a <strong>generate → validate → retry-with-error loop</strong>; never trust raw output as data.</li>
+      <li>Tools like <strong>pydantic</strong> turn a schema into one-line validation; runtimes like <strong>Ollama’s <code>format="json"</code></strong> make valid JSON free.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your extraction endpoint works 95% of the time, but occasionally the model returns <code>{"urgent": "yes"}</code> instead of a boolean and a downstream service crashes. Best fix?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Validate the parsed output against a typed schema and, on failure, retry asking the model to correct it.</span>
+        <div class="why">Correct. Validation catches the wrong type <em>before</em> it reaches the downstream service, and the retry loop repairs the occasional slip. This is exactly the generate → validate → retry pattern that makes structured output production-grade.</div></li>
+      <li data-correct="false"><span class="opt">B) Add a note to the prompt: “urgent must be a boolean” and hope it sticks.</span>
+        <div class="why">Helpful, but “hope” isn’t a safeguard — that 5% will still slip through eventually. Prompt wording reduces failures; only validation actually <em>prevents</em> a bad value from reaching production.</div></li>
+      <li data-correct="false"><span class="opt">C) Wrap the downstream call in a try/except and ignore failures.</span>
+        <div class="why">That hides the symptom and silently drops data. You want to detect the bad output and fix it (retry), not swallow errors and lose tickets.</div></li>
+      <li data-correct="false"><span class="opt">D) Raise the temperature so the model is less repetitive.</span>
+        <div class="why">Higher temperature adds variability — the opposite of what you want for consistent structured output. For extraction you want temperature 0 plus validation.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Design a JSON schema for extracting a calendar event from a message: title, date, start time, attendees (list), and whether it’s all-day. Which fields might legitimately be missing, and how do you represent that?<br>
+    <strong>2.</strong> The model returns valid JSON, but <code>"date": "next Tuesday"</code> instead of an ISO date. Is this a parsing failure or a validation failure? How do you handle it?<br>
+    <strong>3.</strong> Why is “the output parsed as JSON” not enough to trust it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> Something like: <code>{title: str, date: str (ISO), start: str|null, attendees: list[str], all_day: bool}</code>. Optional fields (a missing time, no attendees) should be represented explicitly — <code>null</code> or an empty list — and your schema should <em>allow</em> that (e.g., <code>start: Optional[str]</code>). Forcing every field to be present pushes the model to invent values; allowing nulls lets it honestly say “absent,” which you then handle in code.</p>
+        <p><strong>2.</strong> Neither pure parsing nor a type error — it’s a <em>semantic</em> validation failure: the value is a string (correct type) but not the format you need. Handle it by validating the value (e.g., that <code>date</code> matches an ISO pattern), and either instruct the model to output ISO dates with an example, or post-process “next Tuesday” into a real date. Type-checking alone won’t catch this; value-checking will.</p>
+        <p><strong>3.</strong> Because valid JSON only guarantees <em>syntax</em>, not <em>meaning</em>. <code>{"urgent": "yes"}</code> parses fine but is the wrong type; <code>{"intent": "banana"}</code> parses fine but isn’t an allowed value; a required field can be missing entirely. Trusting “it parsed” lets bad data into your system. You must validate fields, types, and allowed values — the shape <em>and</em> the contents.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: how JSON mode actually guarantees valid JSON</div>
+    <p>“JSON mode” and schema-constrained output aren’t just a stern instruction — they change the <em>decoding</em> step from Track 1. Remember the model outputs a probability over every possible next token, and a sampler picks one. <span class="term">Constrained decoding</span> adds a filter: at each step, it masks out any token that would make the output violate the grammar (or schema), so only tokens that keep the JSON valid can be chosen. If the model is mid-string, a closing brace is forbidden; if a field expects a boolean, only <code>true</code>/<code>false</code> tokens are allowed. The result is output that is <em>guaranteed</em> to parse, by construction. Providers expose this as “JSON mode,” “structured outputs,” or “function calling”; libraries like Outlines and llama.cpp grammars do it locally.</p>
+    <p>Two caveats keep you honest. First, constrained decoding guarantees <em>shape</em>, not <em>truth</em> — the model can still fill valid fields with wrong values, so semantic validation and grounding still matter. Second, even with a JSON mode, keep the validate-and-retry loop: it’s your safety net for the value-level errors a grammar can’t catch (wrong enum, impossible date, hallucinated id). Shape from the decoder, correctness from your validation — use both.</p>
+  </div>
+
+  <p>You can now make outputs that software trusts. The last prompting lesson zooms out to the reusable <strong>patterns and anti-patterns</strong> — the playbook pros reach for, and the traps that quietly wreck prompts.</p>
+
+</main>
+
+<script>
+(function () {
+  var SAMPLES = {
+    valid: '{"intent": "refund", "sentiment": "negative", "urgent": true}',
+    prose: 'Sure! Here is the JSON you asked for:\n{"intent": "refund", "sentiment": "negative", "urgent": true}',
+    type: '{"intent": "refund", "sentiment": "negative", "urgent": "yes"}',
+    enum: '{"intent": "complain", "sentiment": "negative", "urgent": true}',
+    missing: '{"intent": "refund", "sentiment": "negative"}'
+  };
+  var ENUMS = {
+    intent: ["refund", "billing", "technical", "other"],
+    sentiment: ["positive", "negative", "mixed", "neutral"]
+  };
+  var input = document.getElementById("js-input");
+  var out = document.getElementById("js-out");
+  function row(ok, label) {
+    return '<div style="display:flex;align-items:center;gap:8px;margin:4px 0;font-size:14px">' +
+      '<span style="color:' + (ok ? "#15803d" : "#b91c1c") + ';font-weight:800">' + (ok ? "✓" : "✗") + '</span>' +
+      '<span style="color:#334155">' + label + '</span></div>';
+  }
+  function validate() {
+    var text = input.value;
+    var data, html = "";
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      out.innerHTML = '<div style="padding:11px 14px;border-radius:9px;background:#fef1ef;color:#b91c1c;font-weight:650">' +
+        '✗ Does not parse as JSON: ' + e.message + '</div>' +
+        '<div style="margin-top:8px;font-size:13px;color:#64748b">Cause: the model wrapped JSON in prose or produced malformed syntax. A JSON mode prevents this.</div>';
+      return;
+    }
+    var checks = [];
+    checks.push([data.intent !== undefined, '<code>intent</code> present']);
+    checks.push([ENUMS.intent.indexOf(data.intent) >= 0, '<code>intent</code> is an allowed value']);
+    checks.push([data.sentiment !== undefined, '<code>sentiment</code> present']);
+    checks.push([ENUMS.sentiment.indexOf(data.sentiment) >= 0, '<code>sentiment</code> is an allowed value']);
+    checks.push([data.urgent !== undefined, '<code>urgent</code> present']);
+    checks.push([typeof data.urgent === "boolean", '<code>urgent</code> is a boolean']);
+    var allOk = checks.every(function (c) { return c[0]; });
+    checks.forEach(function (c) { html += row(c[0], c[1]); });
+    var banner = allOk
+      ? '<div style="padding:10px 14px;border-radius:9px;background:#eefaf0;color:#15803d;font-weight:700;margin-bottom:8px">✓ Valid — safe to use</div>'
+      : '<div style="padding:10px 14px;border-radius:9px;background:#fef1ef;color:#b91c1c;font-weight:700;margin-bottom:8px">✗ Invalid — would trigger a retry</div>';
+    out.innerHTML = banner + html;
+  }
+  input.addEventListener("input", validate);
+  document.querySelectorAll('#js-demo button[data-fix]').forEach(function (b) {
+    b.addEventListener("click", function () { input.value = SAMPLES[b.getAttribute("data-fix")]; validate(); });
+  });
+  input.value = SAMPLES.valid;
+  validate();
+})();
+</script>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Output validation — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="7.6">
+<main class="lesson">
+
+  <span class="eyebrow">Track 7 · Lesson 7.6</span>
+  <h1>Output validation</h1>
+  <p class="lead">The model’s output is not trusted code — it’s text generated from (possibly poisoned) inputs. The moment you feed it into HTML, a database query, a shell, or an action, it becomes an attack vector. Validating output before use closes the loop on LLM security.</p>
+
+  <h2>Why output is an attack surface</h2>
+  <p>We treat <em>input</em> as untrusted (Lesson 7.1). The subtle danger is that <em>output</em> is untrusted too: it’s shaped by inputs an attacker may control (via injection), and the model can produce malformed, malicious, or sensitive content. If you render its output as HTML, you risk <span class="term">XSS</span>; if you run its output as a SQL query, you risk SQL injection; if you let it trigger a tool, you risk an unintended action; if you pass it on verbatim, you might leak a secret it included. The fix is the same as for any untrusted data: <strong>validate and sanitize before use</strong>.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t7-output-validation.svg" alt="Validate the output before you trust it. LLM output goes into Validate, which checks: valid schema / parses, no secrets or PII leaked, no unsafe HTML / scripts, values within allowed set. If it passes, Use it; if it fails, Reject / retry. Never feed raw model output into actions, HTML, or queries unchecked — treat it as untrusted.">
+    <figcaption>Run model output through validation before it touches anything: check structure, scan for secrets/PII, neutralize unsafe markup, and confirm values are allowed. Pass → use; fail → reject or retry.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p><span class="term">Output validation</span> is checking and sanitizing the model’s output before your system acts on it. It includes <span class="term">schema validation</span> (does it parse into the expected shape? — Track 2.4), <span class="term">sanitization</span> (escape or strip unsafe HTML/markup so it can’t execute), <span class="term">allowlisting</span> (only permit known-good values/actions), and <span class="term">leak checks</span> (no secrets or PII in what you return). The principle: <strong>insecure output handling</strong> — trusting model output downstream — is a top LLM vulnerability.</p>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — validate before acting (free)</div>
+    <p>The pattern: parse, check, allowlist, sanitize — then and only then use it.</p>
+<pre><code><span class="k">import</span> json, html
+
+<span class="k">def</span> <span class="f">safe_use</span>(model_output):
+    <span class="c"># 1) structure: must be valid JSON in the expected shape (Track 2.4)</span>
+    <span class="k">try</span>:
+        data <span class="o">=</span> json.<span class="f">loads</span>(model_output)
+    <span class="k">except</span> json.JSONDecodeError:
+        <span class="k">return</span> <span class="f">reject</span>(<span class="s">"not valid JSON"</span>)
+
+    <span class="c"># 2) allowlist: action must be one we permit (never run arbitrary actions)</span>
+    <span class="k">if</span> data.<span class="f">get</span>(<span class="s">"action"</span>) <span class="k">not</span> <span class="k">in</span> {<span class="s">"refund"</span>, <span class="s">"reply"</span>, <span class="s">"escalate"</span>}:
+        <span class="k">return</span> <span class="f">reject</span>(<span class="s">"unknown action"</span>)
+
+    <span class="c"># 3) bounds: enforce hard limits in CODE, not the prompt (Track 4.8)</span>
+    <span class="k">if</span> data[<span class="s">"action"</span>] <span class="o">==</span> <span class="s">"refund"</span> <span class="k">and</span> data[<span class="s">"amount"</span>] <span class="o">&gt;</span> <span class="n">100</span>:
+        <span class="k">return</span> <span class="f">needs_human_approval</span>(data)
+
+    <span class="c"># 4) sanitize anything rendered to a user (prevent XSS)</span>
+    safe_text <span class="o">=</span> html.<span class="f">escape</span>(data[<span class="s">"message"</span>])
+    <span class="k">return</span> safe_text</code></pre>
+    <p>Notice every dangerous path is gated by <em>your code</em>, not the model’s good intentions: unknown actions are rejected, big refunds need a human, and user-facing text is HTML-escaped so an injected <code>&lt;script&gt;</code> can’t run. The model proposes; your validation disposes.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>Model <strong>output is untrusted</strong> — it’s shaped by attacker-influenceable inputs and can be malformed or malicious.</li>
+      <li>Validate before use: <strong>parse the schema, allowlist values/actions, enforce bounds in code, sanitize markup, scan for leaks</strong>.</li>
+      <li><strong>Insecure output handling</strong> (XSS, SQL injection, unsafe actions) is a top LLM vulnerability.</li>
+      <li>Enforce hard limits and allowed actions in <strong>code</strong>, never via the prompt alone.</li>
+      <li>This closes the loop: untrusted in <em>and</em> untrusted out.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your app shows the model’s answer directly in a web page via <code>innerHTML</code>. An attacker, through prompt injection, gets the model to output <code>&lt;script&gt;steal()&lt;/script&gt;</code>. What protects you?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Treat the output as untrusted and escape/sanitize it before rendering (or use safe text rendering), so any markup can’t execute.</span>
+        <div class="why">Correct. This is classic XSS via insecure output handling — the same defense as for any user-supplied content applies: escape HTML (or render as text), so <code>&lt;script&gt;</code> displays as harmless characters instead of executing. Model output must be sanitized exactly like untrusted input before it hits the DOM.</div></li>
+      <li data-correct="false"><span class="opt">B) Nothing needed — the model wouldn’t produce a script tag.</span>
+        <div class="why">Via injection it can, and assuming it won’t is exactly the insecure-output-handling mistake. You must sanitize regardless of what you expect the model to produce.</div></li>
+      <li data-correct="false"><span class="opt">C) Add “don’t output HTML” to the system prompt.</span>
+        <div class="why">A prompt instruction can be overridden by injection and isn’t an enforced boundary. The reliable fix is sanitizing/escaping at the rendering layer in code.</div></li>
+      <li data-correct="false"><span class="opt">D) Use a bigger model.</span>
+        <div class="why">Model size doesn’t prevent XSS — any model’s output, if injected, can contain a script. The defense is treating output as untrusted and escaping it before rendering.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Give three distinct downstream sinks where unvalidated model output is dangerous, and the matching validation.<br>
+    <strong>2.</strong> Why enforce a refund limit in code rather than instructing the model “never refund over $100”?<br>
+    <strong>3.</strong> Your agent asks the model which tool to call. Why allowlist the action instead of executing whatever it names?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> (a) <strong>HTML/DOM</strong> → escape/sanitize to prevent XSS. (b) <strong>SQL/database</strong> → never build queries from raw output; use parameterized queries and validate values to prevent SQL injection. (c) <strong>Actions/tools</strong> → allowlist permitted actions and validate arguments to prevent unintended operations. (Also: returning text to a user → scan for secrets/PII.) Each sink has a matching, well-known sanitization.</p>
+        <p><strong>2.</strong> Because the prompt is influenceable (injection) and probabilistic — “never over $100” can be overridden or ignored, and you’d only find out when money moved. A hard check in code runs outside the model’s influence and cannot be talked around: even if the model outputs <code>amount: 10000</code>, your validator rejects or escalates it. Security limits belong in the trusted layer.</p>
+        <p><strong>3.</strong> Because the model could be hijacked (injection) or simply hallucinate a tool name, and executing an arbitrary named action is “excessive agency” — a top LLM risk. An allowlist means only the specific, vetted actions can run, so the worst a manipulated model can do is request something that gets rejected. You constrain the set of possible actions in code, not trust the model to choose safely.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: the LLM is a component, not a perimeter</div>
+    <p>Output validation is where LLM security rejoins ordinary, battle-tested application security. The lesson the web learned decades ago — “never trust input; sanitize before it crosses into a dangerous context” — applies <em>twice</em> for LLM apps: untrusted input flows into the model, and the model’s (input-influenced) output flows into your sinks. So you sanitize at both boundaries with the same rigor: parameterized queries for databases, escaping/CSP for HTML, allowlists for actions, schema validation for structure, and secret/PII scanning for anything returned. The LLM is just a powerful, manipulable component in the middle; the deterministic code around it is what enforces safety.</p>
+    <p>This reframes the whole track’s philosophy. You don’t make the model trustworthy — you build a system where the model’s behavior, however manipulated, can only flow through validated, least-privilege channels. Insecure output handling shows up explicitly in the OWASP LLM Top 10 because it’s so commonly skipped: teams validate inputs, then pipe the model’s output straight into <code>eval</code>, <code>innerHTML</code>, or a database. Don’t. Treat output as untrusted data, run it through the gauntlet of structure-check → allowlist → bounds-in-code → sanitize → leak-scan, and only then let it act. Combined with input moderation, prompt hardening, and least privilege, this is what turns “the model said so” into a system you can actually defend.</p>
+  </div>
+
+  <p>You’ve now seen each guard individually. The art is combining them so no single failure becomes a breach. Next: <strong>defense in depth</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

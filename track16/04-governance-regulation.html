@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Governance &amp; regulation — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="16.4">
+<main class="lesson">
+
+  <span class="eyebrow">Frontier &amp; Responsible AI · Lesson 16.4</span>
+  <h1>Governance &amp; regulation</h1>
+  <p class="lead">“Be responsible” is becoming “comply with the law.” You don’t need to be a lawyer, but you do need to understand how AI regulation is structured, because it shapes what you’re allowed to build and what you must document. This is the literacy interviewers increasingly expect.</p>
+
+  <div class="box note">
+    <div class="box-label">Not legal advice</div>
+    <p>This lesson explains concepts so you can talk about them and design sensibly. Laws vary by region, are actively evolving, and the specifics change — for real compliance decisions, check the current regulations and consult legal counsel. Treat this as engineering literacy, not a compliance manual.</p>
+  </div>
+
+  <h2>The organizing idea: risk-based rules</h2>
+  <p>The most influential framework, the <strong>EU AI Act</strong>, is worth knowing because its core idea is spreading: <span class="term">obligations scale with risk</span>. Rather than one rule for all AI, it sorts <em>uses</em> into tiers and imposes heavier requirements as the potential for harm rises. An AI that recommends songs is treated very differently from one that screens job applicants — and rightly so.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t16-eu-ai-act.svg" alt="EU AI Act risk pyramid: at the top, unacceptable-risk uses are banned (e.g. social scoring); below, high-risk uses (hiring, credit, medical) face strict rules; below that, limited-risk uses must disclose they are AI (chatbots); at the wide base, minimal-risk uses (spam filters, games) are free to use.">
+    <figcaption>Obligations scale with risk. Most applications sit near the bottom — but you must know which tier yours is in.</figcaption>
+  </figure>
+
+  <h2>The tiers, and what they mean for you</h2>
+  <p><strong>Unacceptable risk → banned.</strong> A small set of uses considered too harmful are prohibited outright (e.g. government social scoring, certain manipulative systems). If your idea is here, it’s not a compliance task — it’s off the table.</p>
+  <p><strong>High risk → strict obligations.</strong> Uses in sensitive domains — hiring, credit, education, healthcare, critical infrastructure, law enforcement — are allowed but carry heavy requirements: risk management, data governance, documentation, human oversight, transparency, accuracy and robustness testing, and record-keeping. This is where most of the engineering-compliance work lives, and where “we tested it and documented it” stops being optional.</p>
+  <p><strong>Limited risk → transparency.</strong> Things like chatbots must disclose that users are interacting with AI, and AI-generated content may need labeling. Light obligations, mostly about honesty.</p>
+  <p><strong>Minimal risk → free.</strong> The vast majority — spam filters, recommendations, game AI — have essentially no special obligations.</p>
+  <p>The practical takeaway: <strong>know your use case’s tier early</strong>, because it determines what you must build. A hiring tool (high-risk) needs documented testing, bias evaluation, human oversight, and audit trails <em>by design</em>; bolting them on later is painful. Beyond the AI Act, remember adjacent rules: <strong>data-privacy law</strong> (like GDPR) governs the personal data you feed models and store; there are open questions around <strong>copyright</strong> and training data; and sector rules (finance, health) add their own requirements.</p>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>Modern AI regulation is <strong>risk-based</strong>: obligations scale with potential harm (the EU AI Act’s core idea).</li>
+      <li>Tiers: <strong>unacceptable (banned)</strong> → <strong>high-risk (strict rules)</strong> → <strong>limited (disclose it’s AI)</strong> → <strong>minimal (free)</strong>.</li>
+      <li><strong>High-risk</strong> (hiring, credit, medical, etc.) demands documentation, human oversight, bias testing, and record-keeping <em>by design</em>.</li>
+      <li><strong>Know your tier early</strong> — it dictates what you must build; retrofitting compliance is costly.</li>
+      <li>Also mind <strong>data-privacy law (GDPR), copyright, and sector rules</strong>. (And verify current specifics — this evolves.)</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p>For each, name the likely EU-AI-Act risk tier and one obligation it implies: (a) a chatbot that answers FAQs on a retail site; (b) an AI that scores loan applications; (c) a spam filter.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>(a) FAQ chatbot → limited risk.</strong> Obligation: transparency — disclose to users that they’re talking to an AI, not a human. Otherwise light-touch.</p>
+        <p><strong>(b) Loan-scoring AI → high risk.</strong> Credit decisions materially affect people’s lives, so this tier brings the heavy obligations: documented risk management, data governance, bias/accuracy testing, human oversight (a person can review/override), transparency to affected people, and record-keeping. You’d design audit trails and disaggregated evaluation (Lesson 16.3) from day one.</p>
+        <p><strong>(c) Spam filter → minimal risk.</strong> Essentially no special obligations — it’s a low-stakes classifier.</p>
+        <p><strong>Why this matters:</strong> the same technology (an LLM classifier) lands in three different tiers purely because of <em>what decision it affects</em>. That’s the whole logic of risk-based regulation, and it’s why the first question for any new AI feature isn’t “can we build it?” but “what does it affect, and therefore what must it satisfy?” Knowing to ask that — and that the loan model needs oversight and documentation the spam filter doesn’t — is the literacy that keeps a team out of trouble and marks you as someone who thinks past the demo.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Under a risk-based framework like the EU AI Act, what determines how many obligations an AI system carries?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) The risk of its <em>use case</em> — the potential for harm — so a loan-scorer faces far more requirements than a music recommender.</span>
+        <div class="why">Correct. The framework tiers <em>uses</em> by potential harm and scales obligations accordingly: unacceptable uses are banned, high-risk uses (affecting livelihoods, safety, rights) get strict rules, and minimal-risk uses are largely free. It’s about impact, not the technology per se.</div></li>
+      <li data-correct="false"><span class="opt">B) The size of the model (parameter count).</span>
+        <div class="why">Obligations track the use case’s risk, not model size. A small model doing high-risk hiring decisions carries heavy obligations; a huge model recommending songs carries few.</div></li>
+      <li data-correct="false"><span class="opt">C) Whether the model is open or closed source.</span>
+        <div class="why">Open vs closed is a separate engineering choice. Regulatory obligations are driven by how the system is <em>used</em> and whom it affects, not its licensing.</div></li>
+      <li data-correct="false"><span class="opt">D) How much the company charges for the product.</span>
+        <div class="why">Price is irrelevant to risk tier. A free high-risk system and a paid one face the same obligations; what matters is the potential for harm.</div></li>
+    </ul>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: governance is mostly engineering you already know</div>
+    <p>Here’s the reassuring part, and a genuinely strong interview point: much of what high-risk compliance <em>requires</em> is the good engineering this course already taught — just written down and made auditable. “Accuracy and robustness testing” is your evaluation suite (Track&nbsp;6). “Risk management and known limitations” is the failure-mode thinking and the model card (Lesson&nbsp;16.3). “Human oversight” is the human-in-the-loop design you use for high-stakes actions (Tracks&nbsp;7, 15). “Record-keeping” is the tracing and logging from your production monitoring (Track&nbsp;14). “Data governance” is the pipeline and data-quality discipline you’ve done for a decade. Compliance isn’t a separate, alien workstream so much as the artifacts of responsible engineering, organized so an auditor (or a regulator) can inspect them.</p>
+    <p>That reframing is powerful in two ways. First, it means the right time to build for governance is <em>upfront</em>, because the eval sets, audit logs, documentation, and oversight steps are cheap to design in and expensive to retrofit — the same lesson as security and evals throughout the course. Second, it positions you well: a data engineer who can talk about audit trails, data governance, testing, and documentation is already fluent in the language of AI governance, because those are your existing strengths applied to a new domain. When an interviewer raises regulation, the answer that impresses isn’t reciting statutes — it’s “I’d identify the risk tier, and for high-risk uses I’d build in evaluation, human oversight, logging, and documentation from the start, because that’s both the responsible design and what compliance will require.” That connects ethics, engineering, and law in one sentence, which is exactly the maturity these questions are probing for.</p>
+  </div>
+
+  <p>You now understand where the field is going and how to build in it responsibly. Let’s consolidate it the way an interviewer will. Next: the <strong>interview check</strong> — and the finish line of the course.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

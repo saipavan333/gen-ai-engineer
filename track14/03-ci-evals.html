@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CI for prompts &amp; evals — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="14.3">
+<main class="lesson">
+
+  <span class="eyebrow">Productionization &amp; LLMOps · Lesson 14.3</span>
+  <h1>CI for prompts &amp; evals</h1>
+  <p class="lead">In normal software, tests in CI stop you shipping bugs. In LLM software, a one-word prompt tweak can quietly wreck quality with no error anywhere. The fix is the same idea, upgraded: make every change pass your evals before it can ship.</p>
+
+  <h2>Why LLM apps need an eval gate</h2>
+  <p><span class="term">CI</span> (continuous integration) is the automation that runs your tests every time you change code, blocking the change if they fail. It works because bugs in normal code usually announce themselves — a test goes red. But LLM behavior is different: you “fix” one prompt to improve one answer and silently break five others, and <em>nothing errors</em>. The output is still fluent, still plausible — just worse. Traditional tests can’t catch that, because there’s no exception to catch. So you add an <span class="term">eval gate</span>: CI runs your golden-set evaluation (Track&nbsp;6) on every change and <strong>blocks the deploy if the quality score drops below a threshold</strong>. Now a regression is caught by a red build, exactly like a bug — instead of by an angry user a week later.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t14-cicd.svg" alt="CI with an eval gate: a change to a prompt, model, or code triggers CI to run unit tests plus a golden-set eval; if the score meets the threshold it deploys, otherwise the build is blocked and reported.">
+    <figcaption>The eval gate: quality is a build-time check, so regressions are blocked before they reach users.</figcaption>
+  </figure>
+
+  <h2>What runs in CI</h2>
+  <p>Two kinds of checks. <strong>Deterministic tests</strong> — fast, exact assertions run at temperature&nbsp;0: does the endpoint return valid JSON with the required fields? does a known question retrieve the known-correct chunk? does the SQL agent produce a runnable query for a fixed question? These behave like normal unit tests. <strong>The eval</strong> — your golden set of question→expected pairs scored for quality (exact match, or LLM-as-judge for open-ended answers), producing a single number you can gate on. You wire both into a CI workflow that fails if either the tests fail or the eval score falls below your bar.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">.github/workflows/ci.yml</span></div>
+<pre><code>name: ci
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install -r requirements.txt
+      - run: pytest                 <span class="c"># deterministic tests</span>
+      - run: python eval.py --min-score 0.85   <span class="c"># the eval gate</span></code></pre>
+  <p><code>eval.py</code> runs your golden set and <strong>exits with a failure code if the score is below <code>--min-score</code></strong>. That non-zero exit is what turns a quality drop into a failed build — the whole trick in one line.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">eval.py (the gate)</span></div>
+<pre><code>score <span class="o">=</span> <span class="f">run_golden_set</span>()          <span class="c"># fraction correct on your held-out set</span>
+<span class="f">print</span>(<span class="s">f"eval score: </span>{score:.2f}<span class="s">"</span>)
+<span class="k">if</span> score <span class="o">&lt;</span> args.min_score:
+    <span class="f">print</span>(<span class="s">"BELOW THRESHOLD — blocking deploy"</span>)
+    sys.<span class="f">exit</span>(<span class="n">1</span>)               <span class="c"># fails the CI job</span></code></pre>
+
+  <div class="box note">
+    <div class="box-label">Prompts are code</div>
+    <p>Keep prompts in version control, not pasted into a dashboard. Then a prompt change is a diff that goes through the same review + eval gate as any code change — reviewable, revertible, and testable. Treating prompts as code is what makes “we changed the prompt and quality dropped” a caught regression instead of a mystery.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>LLM regressions are <strong>silent</strong> — no error, just worse output — so ordinary tests miss them.</li>
+      <li>Add an <strong>eval gate</strong>: CI runs your golden set and <strong>blocks the change if the score drops below a threshold</strong>.</li>
+      <li>Run <strong>deterministic tests</strong> (temp 0: valid JSON, right retrieval) <em>and</em> the <strong>quality eval</strong>.</li>
+      <li>The mechanism is a <strong>non-zero exit code</strong> on a failing eval — that’s what fails the build.</li>
+      <li><strong>Prompts live in version control</strong>, so every prompt change is reviewed and eval-gated like code.</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p>Your teammate wants to change the system prompt to fix one customer complaint, and deploy it straight to production. As the person who set up CI, what do you insist happens first — and what specifically stops a hidden regression?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>What I insist on:</strong> the prompt change goes in as a commit/PR, which triggers CI. CI runs the deterministic tests and the golden-set eval; the change only merges/deploys if the eval score stays at or above the threshold. I’d also add the specific complaint as a <em>new case</em> in the golden set, so we can prove the fix works and never regress on it again.</p>
+        <p><strong>What stops the hidden regression:</strong> the golden set contains many cases, not just the one being fixed. If “fixing” the complaint quietly degrades ten other answers, their scores drop, the aggregate falls below the threshold, and the build fails — blocking the deploy. Without the gate, the change would ship looking fine (no errors) and the ten regressions would surface later as user complaints. The gate converts “we’ll find out in production” into “we find out in the pull request,” which is the entire value of CI applied to LLM quality.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Why can’t ordinary unit tests alone protect an LLM app from quality regressions the way they protect normal code?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) A worse LLM answer usually still runs without error — it’s fluent but lower quality — so there’s no exception for a test to catch; you need an eval that scores quality.</span>
+        <div class="why">Correct. Normal bugs throw errors or fail assertions. A degraded prompt produces output that’s still valid and plausible, just worse — nothing crashes. Only a quality evaluation on a golden set can detect that drop and gate on it.</div></li>
+      <li data-correct="false"><span class="opt">B) Unit tests can’t run in CI for Python projects.</span>
+        <div class="why">They absolutely can — pytest in CI is standard. The issue isn’t running tests; it’s that pass/fail assertions don’t capture <em>quality</em> degradation that produces no error.</div></li>
+      <li data-correct="false"><span class="opt">C) LLM outputs are identical every run, so tests are pointless.</span>
+        <div class="why">LLM outputs are often <em>non-deterministic</em> (unless temperature 0), which is a further reason exact-match tests are limited — but the core point is that quality drops don’t raise errors, so you need scored evals.</div></li>
+      <li data-correct="false"><span class="opt">D) You should skip testing LLM apps and rely on user reports.</span>
+        <div class="why">Relying on users to find regressions is exactly what the eval gate exists to avoid. You want to catch drops in CI, before shipping — not after complaints.</div></li>
+    </ul>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: the regression set is a living asset</div>
+    <p>The most valuable thing that comes out of running an eval gate over time isn’t any single score — it’s the golden set itself, which should grow with every incident. When something goes wrong in production (a class of question the system botches, a prompt injection that slips through, a hallucination a user reports), the fix isn’t just to patch it; it’s to add that exact case to the golden set. Now the eval gate guarantees you can never regress on it again — the system literally cannot ship a change that reintroduces that failure. Over months, this turns your evaluation suite into an encoded memory of every mistake you’ve made and fixed, which is a genuine competitive moat (Track&nbsp;12): a competitor can copy your prompts, but not your hard-won library of failure cases.</p>
+    <p>This also changes how you adopt new models. When a better model launches, teams without an eval gate upgrade nervously and hope; teams with one just run the new model against the golden set and <em>see</em> whether it’s actually better on their real cases — often within an hour, safely. The eval gate is what lets you move fast without breaking things: it’s simultaneously your regression shield, your model-selection tool, and your institutional memory. When an interviewer asks how you’d keep an LLM product reliable as it evolves, “evals in CI, and every production failure becomes a permanent test case” is the answer that signals real operational maturity.</p>
+  </div>
+
+  <p>Even with a great eval gate, production will surprise you — real users do things your golden set didn’t imagine. So you watch. Next: <strong>monitoring in production.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

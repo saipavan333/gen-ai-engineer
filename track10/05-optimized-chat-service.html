@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Capstone: a cost &amp; latency-optimized chat service — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="10.5">
+<main class="lesson">
+
+  <span class="eyebrow">Track 10 · Capstone 10.5</span>
+  <h1>Capstone: a cost &amp; latency-optimized chat service</h1>
+  <p class="lead">The final project: a production-style chat service that wraps an LLM with the serving levers from Track 8 — caching, routing, streaming, token budgeting — and <em>measures</em> the savings. It’s the difference between a demo and something you could actually run at scale, and it completes your end-to-end engineer’s toolkit.</p>
+
+  <h2>What you’re building</h2>
+  <p>A chat service that, for each request: checks a cache, routes easy queries to a small model and hard ones to a bigger one, trims the prompt to a token budget, streams the response, and records cost and latency metrics so you can prove the optimizations work. Free and local via Ollama (a small and a larger model).</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t8-recap.svg" alt="The optimization toolkit. Go FASTER (latency): stream the output; smaller/quantized model; cache repeated work; shorter outputs; route to a fast model. Go CHEAPER (cost): cache (biggest single win); route easy queries to cheap models; smaller/quantized models; trim the token budget; batch for GPU efficiency. Measure first to find the real bottleneck, then apply the lever that targets it.">
+    <figcaption>The levers you’re implementing. The capstone wires several of them into one service — and measures the result, because optimization without measurement is guessing.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Setup (free)</div>
+<pre><code><span class="o">$</span> pip install ollama
+<span class="o">$</span> ollama pull llama3.2:1b      <span class="c"># small/fast (cheap path)</span>
+<span class="o">$</span> ollama pull llama3.1:8b      <span class="c"># larger/capable (hard path)</span></code></pre>
+  </div>
+
+  <h2>The optimized service</h2>
+  <div class="code-label"><span class="dot"></span><span class="fname">chat_service.py</span></div>
+<pre><code><span class="k">import</span> time, ollama
+
+cache <span class="o">=</span> {}                                          <span class="c"># exact cache (Track 8.3)</span>
+metrics <span class="o">=</span> {<span class="s">"requests"</span>: <span class="n">0</span>, <span class="s">"cache_hits"</span>: <span class="n">0</span>, <span class="s">"small"</span>: <span class="n">0</span>, <span class="s">"big"</span>: <span class="n">0</span>, <span class="s">"latency"</span>: []}
+
+<span class="k">def</span> <span class="f">route</span>(msg):                                     <span class="c"># model routing (Track 8.4)</span>
+    hard <span class="o">=</span> any(w <span class="k">in</span> msg.<span class="f">lower</span>() <span class="k">for</span> w <span class="k">in</span> [<span class="s">"analyze"</span>, <span class="s">"explain why"</span>, <span class="s">"design"</span>, <span class="s">"prove"</span>, <span class="s">"compare"</span>])
+    <span class="k">return</span> <span class="s">"llama3.1:8b"</span> <span class="k">if</span> hard <span class="k">or</span> <span class="f">len</span>(msg) <span class="o">&gt;</span> <span class="n">300</span> <span class="k">else</span> <span class="s">"llama3.2:1b"</span>
+
+<span class="k">def</span> <span class="f">trim_history</span>(history, keep<span class="o">=</span><span class="n">6</span>):                  <span class="c"># token budgeting (Track 8.7)</span>
+    <span class="k">return</span> history[<span class="o">-</span>keep:]                            <span class="c"># keep recent turns (or summarize older — Track 4.5)</span>
+
+<span class="k">def</span> <span class="f">chat</span>(msg, history<span class="o">=</span><span class="kc">None</span>, stream<span class="o">=</span><span class="kc">True</span>):
+    metrics[<span class="s">"requests"</span>] <span class="o">+=</span> <span class="n">1</span>
+    t0 <span class="o">=</span> time.<span class="f">time</span>()
+
+    <span class="k">if</span> msg <span class="k">in</span> cache:                                <span class="c"># 1) CACHE: instant, free</span>
+        metrics[<span class="s">"cache_hits"</span>] <span class="o">+=</span> <span class="n">1</span>
+        metrics[<span class="s">"latency"</span>].<span class="f">append</span>(time.<span class="f">time</span>() <span class="o">-</span> t0)
+        <span class="k">return</span> cache[msg]
+
+    model <span class="o">=</span> <span class="f">route</span>(msg)                              <span class="c"># 2) ROUTE: right-size the model</span>
+    metrics[<span class="s">"small"</span> <span class="k">if</span> <span class="s">"1b"</span> <span class="k">in</span> model <span class="k">else</span> <span class="s">"big"</span>] <span class="o">+=</span> <span class="n">1</span>
+    messages <span class="o">=</span> <span class="f">trim_history</span>(history <span class="k">or</span> []) <span class="o">+</span> [{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: msg}]
+
+    <span class="k">if</span> stream:                                      <span class="c"># 3) STREAM: low perceived latency (Track 8.2)</span>
+        out <span class="o">=</span> <span class="s">""</span>
+        <span class="k">for</span> chunk <span class="k">in</span> ollama.<span class="f">chat</span>(model<span class="o">=</span>model, messages<span class="o">=</span>messages, stream<span class="o">=</span><span class="kc">True</span>,
+                                 options<span class="o">=</span>{<span class="s">"num_predict"</span>: <span class="n">400</span>}):     <span class="c"># cap output tokens</span>
+            tok <span class="o">=</span> chunk[<span class="s">"message"</span>][<span class="s">"content"</span>]
+            <span class="f">print</span>(tok, end<span class="o">=</span><span class="s">""</span>, flush<span class="o">=</span><span class="kc">True</span>)
+            out <span class="o">+=</span> tok
+    <span class="k">else</span>:
+        out <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span>model, messages<span class="o">=</span>messages)[<span class="s">"message"</span>][<span class="s">"content"</span>]
+
+    cache[msg] <span class="o">=</span> out                              <span class="c"># store for next time</span>
+    metrics[<span class="s">"latency"</span>].<span class="f">append</span>(time.<span class="f">time</span>() <span class="o">-</span> t0)
+    <span class="k">return</span> out
+
+<span class="k">def</span> <span class="f">report</span>():                                       <span class="c"># prove the optimizations (Track 6 + 8)</span>
+    n <span class="o">=</span> metrics[<span class="s">"requests"</span>] <span class="or">or</span> <span class="n">1</span>
+    <span class="f">print</span>(<span class="s">f"\nrequests: </span>{n}<span class="s">  cache hit-rate: </span>{metrics['cache_hits']/n:.0%}<span class="s">"</span>)
+    <span class="f">print</span>(<span class="s">f"routed → small: </span>{metrics['small']}<span class="s">, big: </span>{metrics['big']}<span class="s">"</span>)
+    lat <span class="o">=</span> metrics[<span class="s">"latency"</span>]
+    <span class="f">print</span>(<span class="s">f"avg latency: </span>{<span class="f">sum</span>(lat)/<span class="f">len</span>(lat):.2f}<span class="s">s  (cache hits ≈ 0s)"</span>)</code></pre>
+
+  <div class="box key">
+    <div class="box-label">What makes this stand out</div>
+    <ul>
+      <li>It composes <strong>caching + routing + streaming + token budgeting</strong> into one coherent service.</li>
+      <li>It <strong>measures</strong> cache hit-rate, routing split, and latency — proving the optimizations, not just claiming them.</li>
+      <li>You can <strong>quantify savings</strong>: “caching cut X% of calls, routing sent Y% to the small model, avg latency dropped to Z.”</li>
+      <li>It’s the “make it production-ready” story interviewers love — affordable and fast, with the numbers to back it.</li>
+      <li>Free and local, with two real models to demonstrate routing.</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Extensions</div>
+    <p><strong>1.</strong> Add a <strong>semantic cache</strong> (Track 8.3): embed queries and reuse answers for similar (not just identical) questions, with a tuned threshold.<br>
+    <strong>2.</strong> Add <strong>token counting</strong> (Track 8.1) to estimate cost per request and per day, and log it.<br>
+    <strong>3.</strong> Add <strong>guardrails</strong> (Track 7): input/output moderation around the service.<br>
+    <strong>4.</strong> Wrap it in a small <strong>web API</strong> (FastAPI) with Server-Sent Events so the browser streams tokens.<br>
+    <strong>5.</strong> Combine with RAG (10.1) so the service answers from your docs <em>and</em> is optimized.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> The interview narrative</summary>
+      <div class="sol-body">
+        <p>“I built a chat service designed for production economics. Per request it checks a cache (a big share of real traffic repeats), routes easy queries to a small model and hard ones to a larger one, trims the history to a token budget, streams the response for low perceived latency, and caps output length. Crucially, it records metrics — cache hit-rate, routing split, latency — so I can <em>prove</em> the savings rather than assume them. I’d measure first to find the real bottleneck, then apply the lever that targets it.” This proves you can take a feature from “works” to “affordable and fast at scale,” which is what separates a prototype from a product.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">The service tracks cache hit-rate, routing split, and latency. Why is measuring these as important as implementing the optimizations?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Without measurement you can’t tell if an optimization actually helped, find the real bottleneck, or prove the impact — optimization without metrics is guessing.</span>
+        <div class="why">Correct. The whole discipline (Tracks 6 and 8) is measure-first: metrics confirm a lever worked, reveal where the actual bottleneck is, and let you quantify savings to stakeholders. An unmeasured “optimization” might do nothing — or hide a regression. Numbers turn serving into engineering.</div></li>
+      <li data-correct="false"><span class="opt">B) Metrics make the service faster on their own.</span>
+        <div class="why">Measuring doesn’t speed anything up; it tells you whether your changes did. The value is knowledge and proof, not direct performance.</div></li>
+      <li data-correct="false"><span class="opt">C) They’re only needed for the interview.</span>
+        <div class="why">They’re essential in production too — for finding bottlenecks, catching regressions, and managing cost. The interview value follows from their real engineering value.</div></li>
+      <li data-correct="false"><span class="opt">D) They replace the need for caching and routing.</span>
+        <div class="why">Metrics measure those levers; they don’t replace them. You need both the optimizations and the measurement that validates them.</div></li>
+    </ul>
+  </div>
+
+  <hr class="sep">
+
+  <div class="box concept">
+    <div class="box-label">You made it — here’s what you can now do</div>
+    <p>Look back at the arc. You started with “what is a token?” and you can now <strong>build, evaluate, secure, and serve real LLM products</strong>: a grounded RAG assistant, a guarded tool-using agent, a reusable eval harness, a fine-tuned domain model, and a cost-optimized chat service — every one of them running for $0. More importantly, you have the <em>judgment</em> that ties them together: when to use RAG vs fine-tuning vs prompting, how to know something works, what can go wrong, and how to make it fast and cheap. That judgment, plus a portfolio of running projects, is exactly what a job-ready applied GenAI engineer looks like.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Your launch checklist</div>
+    <ul>
+      <li><strong>Build the capstones</strong> — start with the RAG assistant (10.1) and the eval harness (10.3); they anchor every interview.</li>
+      <li><strong>Put them on GitHub</strong> with clear READMEs (decisions, eval results, “what’s next”) — your portfolio.</li>
+      <li><strong>Rehearse the interview bank</strong> (Track 9) out loud until the answers are automatic.</li>
+      <li><strong>Keep the flywheel turning</strong> — as you learn, fold new failures into your evals; measure, don’t guess.</li>
+      <li><strong>Stay grounded</strong>: the model is a brilliant, fallible component; your job is the trustworthy system around it.</li>
+    </ul>
+  </div>
+
+  <p>That’s the whole path — from zero to a job-ready applied GenAI engineer who can ship real, reliable LLM products end to end. The tools will keep changing; the fundamentals, the judgment, and the measure-first discipline you’ve built will not. Now go build something, measure it, and ship it. You’re ready.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

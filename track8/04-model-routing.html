@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Model routing — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="8.4">
+<main class="lesson">
+
+  <span class="eyebrow">Track 8 · Lesson 8.4</span>
+  <h1>Model routing</h1>
+  <p class="lead">Using your most powerful model for every request is like taking a helicopter to the corner store. Most queries are easy; routing them to a small, cheap model — and reserving the big one for hard cases — can cut costs dramatically with little quality loss.</p>
+
+  <h2>Not every query needs your best model</h2>
+  <p>Models vary enormously in cost and speed: a small model can be many times cheaper and faster than a frontier one. And real traffic is mostly easy — greetings, simple lookups, short classifications — interspersed with a minority of genuinely hard requests. <span class="term">Model routing</span> exploits this: a lightweight decision sends each query to the cheapest model that can handle it, escalating to a bigger model only when needed. You pay top dollar only for the requests that actually require it.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t8-routing.svg" alt="Model routing: right-size the model per query. A Query goes to a Router (how hard is it?). Easy queries route to a Small model ($) — fast, cheap. Hard queries route to a Big model ($$$) — capable. Most queries are easy, so routing them to a cheap model can cut costs dramatically.">
+    <figcaption>A router judges difficulty and sends easy queries to a cheap, fast model and hard ones to a capable model — matching spend to need.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p><span class="term">Model routing</span> chooses which model handles each request. A <span class="term">router</span> can be rules (length, keywords, task type), a small classifier, or an LLM call itself. A <span class="term">cascade</span> is a common pattern: try the cheap model first, and escalate to a bigger one only if the cheap model is unsure or its output fails a check. The goal is to move along the <span class="term">cost/quality frontier</span> — getting most of the quality for a fraction of the cost.</p>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — a simple router and a cascade (free)</div>
+    <p>Start with cheap heuristics; escalate only when needed. (Free models of different sizes via Ollama.)</p>
+<pre><code><span class="k">def</span> <span class="f">route</span>(query):
+    <span class="c"># cheap heuristic router: short/simple → small model</span>
+    <span class="k">if</span> <span class="f">len</span>(query) <span class="o">&lt;</span> <span class="n">200</span> <span class="k">and</span> <span class="k">not</span> any(w <span class="k">in</span> query.<span class="f">lower</span>() <span class="k">for</span> w <span class="k">in</span> [<span class="s">"analyze"</span>, <span class="s">"explain why"</span>, <span class="s">"prove"</span>, <span class="s">"design"</span>]):
+        <span class="k">return</span> <span class="s">"small"</span>
+    <span class="k">return</span> <span class="s">"big"</span>
+
+<span class="k">def</span> <span class="f">answer</span>(query):
+    <span class="c"># CASCADE: try small first, escalate if it's not confident / fails a check</span>
+    out <span class="o">=</span> <span class="f">call</span>(<span class="s">"llama3.2:1b"</span>, query)             <span class="c"># small, cheap, fast</span>
+    <span class="k">if</span> <span class="f">looks_uncertain</span>(out) <span class="or">or</span> <span class="k">not</span> <span class="f">passes_checks</span>(out):
+        out <span class="o">=</span> <span class="f">call</span>(<span class="s">"llama3.1:8b"</span>, query)         <span class="c"># escalate to a bigger model</span>
+    <span class="k">return</span> out
+
+<span class="c"># Measure: what % escalates, and is quality on the small path acceptable? (Track 6)</span></code></pre>
+    <p>Even a crude router captures most of the savings, because the easy majority is genuinely easy. The art is tuning the threshold so you don’t send hard queries to the small model (quality drop) or easy ones to the big model (wasted money).</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>Models vary hugely in cost/speed; <strong>most queries are easy</strong> — don’t use your best model for all of them.</li>
+      <li><strong>Routing</strong> sends each query to the cheapest model that can handle it (rules, a classifier, or an LLM judge).</li>
+      <li>A <strong>cascade</strong> tries cheap first and escalates only on low confidence or a failed check.</li>
+      <li>This moves you along the <strong>cost/quality frontier</strong> — most of the quality for a fraction of the cost.</li>
+      <li><strong>Measure</strong> the escalation rate and small-path quality; tune the router with data, not vibes.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your chatbot uses a frontier model for everything; 80% of traffic is greetings and simple FAQs. What’s the highest-ROI change?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Route the easy 80% to a small, cheap model and reserve the frontier model for the hard 20% — big cost cut with little quality impact.</span>
+        <div class="why">Correct. The bulk of traffic doesn’t need a frontier model, so routing it to a cheap one captures most of the savings while the hard minority still gets full capability. Right-sizing the model per query is exactly the cost/quality frontier move, and 80% easy traffic makes it especially lucrative.</div></li>
+      <li data-correct="false"><span class="opt">B) Upgrade to an even bigger frontier model for consistency.</span>
+        <div class="why">That raises cost across <em>all</em> traffic, including the 80% that didn’t need power in the first place — the opposite of the goal. Consistency isn’t worth paying frontier prices for greetings.</div></li>
+      <li data-correct="false"><span class="opt">C) Increase max output tokens.</span>
+        <div class="why">Longer outputs increase cost and latency and don’t address the over-use of an expensive model on easy queries. Irrelevant to the bottleneck.</div></li>
+      <li data-correct="false"><span class="opt">D) Add more system-prompt instructions.</span>
+        <div class="why">Prompt tweaks don’t change which (expensive) model runs. The savings come from routing easy traffic to a cheaper model, not from prompt wording.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Give two simple, cheap signals a router could use to guess query difficulty.<br>
+    <strong>2.</strong> What’s the risk of routing too aggressively to the small model, and how do you detect it?<br>
+    <strong>3.</strong> Why is a cascade (try-cheap-then-escalate) sometimes better than a one-shot difficulty classifier?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> Cheap signals: query <strong>length</strong> (short tends to be simpler), presence of <strong>reasoning keywords</strong> (“analyze,” “prove,” “design,” “why”) or task type (classification vs open-ended generation), the <strong>domain/category</strong> (FAQ vs novel request), and whether the answer needs tools/retrieval. None are perfect, but together they cheaply separate the easy majority from the hard minority. You can also use a tiny classifier trained on labeled examples.</p>
+        <p><strong>2.</strong> The risk is quality loss — hard queries sent to the small model get worse answers, which you might not see in aggregate metrics. Detect it by measuring quality <em>on the small-model path</em> against your eval set (Track 6), and by monitoring online signals (escalations, retries, thumbs-down, handoffs) for the small-model segment. If small-path quality dips below your bar, tighten the router so fewer/only-truly-easy queries go small.</p>
+        <p><strong>3.</strong> A one-shot classifier must judge difficulty <em>before</em> seeing any answer, and it’s imperfect — it’ll misroute some hard queries to the small model. A cascade lets the small model actually <em>try</em>, and you escalate based on its real output (low confidence, failed validation, refusal). That uses evidence rather than a prediction, so it can catch cases the classifier would have misjudged — at the cost of an extra call when escalation happens. Use a cascade when the cost of a wrong answer outweighs the occasional double call.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: the cost/quality frontier</div>
+    <p>Routing is really about navigating a frontier: for any task, there’s a curve trading cost against quality, and your job is to sit at the best point for <em>your</em> requirements. The key insight is that the curve is rarely linear — for easy queries, a small model gets you to ~99% of the quality at ~10% of the cost, so forcing them through a frontier model is almost pure waste. The savings come from recognizing that quality demand is <em>heterogeneous</em>: different requests need different points on the curve, and a single model choice for all of them is a compromise that overpays for the easy and (if you picked small) underdelivers on the hard.</p>
+    <p>Two practical extensions. First, routing composes with everything else in this track — you cache first (skip the call), then route (right-size the call), then within the chosen model trim tokens and stream. Second, the router itself has a cost and an error rate: a cheap heuristic is free but coarse; an LLM-as-judge router is accurate but adds a call; a small trained classifier is a nice middle. Choose the router sophistication that pays for itself, and — as always — <em>measure</em>: track the escalation rate, the cost saved, and the quality on each path, so routing is a tuned, monitored system rather than a guess. Done well, model routing is frequently the second-biggest cost lever after caching, and it lets you offer frontier-grade quality where it matters while keeping the bill sane.</p>
+  </div>
+
+  <p>So far we’ve optimized <em>around</em> the model. Now we make the model itself cheaper and faster to run — crucial when you self-host. Next: <strong>quantization</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

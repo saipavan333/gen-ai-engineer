@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MCP (Model Context Protocol) — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="4.6">
+<main class="lesson">
+
+  <span class="eyebrow">Track 4 · Lesson 4.6</span>
+  <h1>MCP (Model Context Protocol)</h1>
+  <p class="lead">Before MCP, every team wired up every tool by hand, in its own way. MCP is the standard plug that fixed it: build a tool or data connector once as an MCP server, and any MCP-compatible agent can use it. It’s become core industry infrastructure — worth understanding well.</p>
+
+  <h2>The problem MCP solves</h2>
+  <p>You’ve seen tool calling: you describe functions and the model calls them. But every integration was bespoke — each app re-implemented connectors to GitHub, databases, file systems, Slack, in its own format, and none were reusable across apps. It was the pre-USB world of incompatible cables. <span class="term">MCP</span> (Model Context Protocol) is an open standard that defines <em>one</em> way for an AI app to connect to tools and data, so a connector built once works everywhere. Think of it as the “USB-C for AI”: a universal interface between models and the outside world.</p>
+
+  <div class="box note">
+    <div class="box-label">Where MCP stands now</div>
+    <p>MCP launched in late 2024 and has since become an industry standard: it’s supported across major platforms (Anthropic, OpenAI, Google, Microsoft, and many tools like Cursor and VS Code), with <strong>thousands of public MCP servers</strong> available. In December 2025 it was donated to the Linux Foundation’s Agentic AI Foundation, so it’s no longer any single company’s protocol — it’s shared infrastructure. Learning it is a durable skill, not a vendor bet.</p>
+  </div>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t4-mcp.svg" alt="MCP: one standard plug for tools and data. An AI app (MCP client) connects through the MCP protocol to multiple servers: a GitHub server, a Database server, a Files server, and a Slack server. Build a tool as an MCP server once; any MCP-compatible agent can use it — the USB-C for AI.">
+    <figcaption>One client speaks MCP to many servers. Each server exposes its capabilities through the same protocol, so the AI app gets a uniform way to discover and use any of them.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p>MCP is a client–server protocol. The <span class="term">MCP host/client</span> is the AI application (your agent, or a product like a desktop assistant). An <span class="term">MCP server</span> is a small program that exposes capabilities to clients. Servers offer three kinds of things: <span class="term">tools</span> (functions the model can call, like tool calling), <span class="term">resources</span> (data the model can read, like files or records), and <span class="term">prompts</span> (reusable prompt templates). The client <em>discovers</em> what a server offers and calls it through the standard protocol — so the same agent can talk to any compliant server without custom code.</p>
+  </div>
+
+  <h2>How it works in practice</h2>
+  <p>An MCP-compatible agent is configured to connect to one or more servers (over a local pipe or HTTP). On connect, it asks each server “what do you offer?” and gets back a list of tools/resources/prompts with their schemas. From then on, those tools appear to the model exactly like the function calls from Lesson 4.2 — the difference is you didn’t hand-code the integration; you pointed at a standard server. Swap in a different server (a Postgres server, a Jira server) and the agent gains those abilities with zero new glue code.</p>
+
+  <div class="box example">
+    <div class="box-label">Worked example — a minimal MCP server (free)</div>
+    <p>Exposing a tool over MCP with the free Python SDK. Any MCP client (a desktop assistant, an IDE, your own agent) can then discover and call <code>get_weather</code> — no custom integration on their side.</p>
+<pre><code><span class="o">!</span>pip install mcp
+<span class="k">from</span> mcp.server.fastmcp <span class="k">import</span> FastMCP
+
+mcp <span class="o">=</span> <span class="f">FastMCP</span>(<span class="s">"weather"</span>)            <span class="c"># name this server</span>
+
+<span class="o">@</span>mcp.<span class="f">tool</span>()
+<span class="k">def</span> <span class="f">get_weather</span>(city: str) <span class="o">-&gt;</span> str:
+    <span class="s">"""Get the current weather for a city."""</span>   <span class="c"># docstring becomes the description</span>
+    <span class="k">return</span> <span class="s">f"</span>{city}<span class="s">: 18°C, clear"</span>
+
+<span class="o">@</span>mcp.<span class="f">resource</span>(<span class="s">"weather://cities"</span>)
+<span class="k">def</span> <span class="f">supported_cities</span>() <span class="o">-&gt;</span> str:
+    <span class="s">"""Data the model can read."""</span>
+    <span class="k">return</span> <span class="s">"Paris, London, Tokyo, Bengaluru"</span>
+
+<span class="k">if</span> __name__ <span class="o">==</span> <span class="s">"__main__"</span>:
+    mcp.<span class="f">run</span>()    <span class="c"># now any MCP client can connect and use these</span></code></pre>
+    <p>The type hints and docstrings <em>are</em> the tool schema — MCP generates it. You wrote a normal Python function and got a universally-usable AI tool. That reuse is the entire point: the connector is built once and works in every compatible agent.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li><strong>MCP</strong> is an open standard for connecting AI apps to tools and data — “USB-C for AI.”</li>
+      <li>A <strong>client</strong> (your agent) connects to <strong>servers</strong> that expose <strong>tools, resources, and prompts</strong>.</li>
+      <li>Build a connector <strong>once as an MCP server</strong>; any MCP-compatible agent can use it — no bespoke glue.</li>
+      <li>It’s now <strong>industry-standard infrastructure</strong> (broad platform support, thousands of public servers, Linux Foundation governance).</li>
+      <li>To the model, MCP tools look just like <strong>Lesson 4.2 tool calls</strong> — MCP standardizes the <em>integration</em>, not the model behavior.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your team has built three different agents, each with its own hand-coded connector to your internal ticketing system. A fourth agent now needs it too. What does MCP change?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Build the ticketing integration once as an MCP server; all current and future MCP-compatible agents use it with no per-agent glue code.</span>
+        <div class="why">Correct. The repeated, bespoke connectors are exactly the waste MCP eliminates. One standard server exposes the ticketing tools/resources, and every compatible client connects to it the same way — write once, reuse everywhere, including the fourth agent and the next ten.</div></li>
+      <li data-correct="false"><span class="opt">B) Nothing — you still write a custom connector per agent.</span>
+        <div class="why">That’s the pre-MCP status quo MCP exists to fix. With MCP, the integration lives in one server and is consumed through a standard protocol, so you stop re-implementing it per agent.</div></li>
+      <li data-correct="false"><span class="opt">C) It makes the model smarter at using the ticketing system.</span>
+        <div class="why">MCP standardizes the <em>integration</em>, not the model’s reasoning. To the model, MCP tools look like ordinary tool calls; the benefit is reuse and interoperability, not raw capability.</div></li>
+      <li data-correct="false"><span class="opt">D) It replaces the need for tool calling entirely.</span>
+        <div class="why">MCP <em>uses</em> tool calling — it’s the standardized transport/discovery layer around it, not a replacement. The model still calls tools; MCP just standardizes how those tools are exposed and connected.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Map each to tool / resource / prompt: (a) “run a SQL query,” (b) “read this config file,” (c) “a reusable ‘summarize ticket’ template.”<br>
+    <strong>2.</strong> Why is an open, governed standard (vs. one vendor’s API) strategically valuable for MCP’s success?<br>
+    <strong>3.</strong> Your agent connects to an MCP server you didn’t write, from the public ecosystem. What security questions should you ask first?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> (a) <strong>tool</strong> — an action the model invokes; (b) <strong>resource</strong> — data the model reads; (c) <strong>prompt</strong> — a reusable template the server offers. The three primitives cover “do something,” “read something,” and “use this canned instruction.”</p>
+        <p><strong>2.</strong> A single vendor’s API ties everyone to that vendor and fragments when competitors build their own. An open standard under neutral governance (Linux Foundation) lets every vendor and tool-builder adopt it without lock-in, which is what produced the network effect — thousands of servers and broad client support. Standards win on interoperability; that’s why MCP became infrastructure rather than a feature.</p>
+        <p><strong>3.</strong> Treat a third-party MCP server like any third-party code with access to your data and actions: What permissions/tools does it expose, and could they be destructive? Who runs it and do you trust them? What data does it see, and where does it go? Could a malicious or compromised server return content that manipulates your agent (a supply-chain / prompt-injection risk, Track 7)? Run untrusted servers sandboxed, with least-privilege scopes, and validate their outputs — convenience never excuses skipping the trust check.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: why standards like this matter, and the risks they import</div>
+    <p>MCP’s rise is a classic standards story. Tool calling solved “how does a model invoke a function,” but left “how do apps and tools find and talk to each other” as an N×M integration mess — every app times every tool, each pairing custom. A shared protocol collapses that to N+M: build one server, build one client, and they interoperate. The result is an ecosystem — thousands of ready-made servers for everything from databases to design tools — that no single company could have built alone. For you as an engineer, it means assembling capable agents increasingly looks like <em>choosing and connecting servers</em>, not writing connectors, and the skill shifts toward orchestration and trust.</p>
+    <p>But standardized power standardizes risk, too. Connecting your agent to external MCP servers extends its trust boundary to code and data you don’t control: a compromised or malicious server can return content crafted to hijack the agent (prompt injection through tool results), exfiltrate data the agent passes it, or expose dangerous actions. The discipline mirrors any dependency supply chain: prefer trusted, audited servers; run untrusted ones sandboxed with least-privilege access; scope what each server can see and do; require human approval for high-impact actions; and validate server outputs before the model acts on them. MCP makes wiring an agent to the world trivial — which is exactly why the safety thinking from Track 7 becomes non-optional. The plug is universal; your judgment about what to plug in is what keeps it safe.</p>
+  </div>
+
+  <p>One capable agent is powerful. Sometimes the cleaner design is several specialists coordinated together. Next: <strong>multi-agent &amp; orchestration</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

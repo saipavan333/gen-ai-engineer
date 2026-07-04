@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Batching &amp; throughput — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="8.6">
+<main class="lesson">
+
+  <span class="eyebrow">Track 8 · Lesson 8.6</span>
+  <h1>Batching &amp; throughput</h1>
+  <p class="lead">A GPU running one request at a time is mostly idle. Batching processes many requests together to keep it busy, dramatically increasing how many users one machine can serve. It’s the key to serving LLMs affordably at scale — and the source of the latency-vs-throughput trade-off you’ll constantly balance.</p>
+
+  <h2>Why GPUs love batches</h2>
+  <p>GPUs are massively parallel — they’re built to do many calculations at once. Serving a single request uses only a sliver of that capacity, so the GPU sits largely idle while you pay for the whole thing. <span class="term">Batching</span> groups multiple requests and runs them together in one pass, using the GPU’s parallelism fully. The result: far more <span class="term">throughput</span> (requests served per second per GPU) and thus far lower cost per request — the economics that make self-hosted LLM serving viable.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t8-batching.svg" alt="Batching: keep the GPU busy for high throughput. Four requests are grouped into a Batch, processed by the GPU in one efficient pass, and produce four responses. Continuous batching processes many requests together, yielding far more throughput per GPU dollar.">
+    <figcaption>Group requests and run them together in one GPU pass. One machine serves many users at once, slashing the cost per request.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p><span class="term">Batching</span> processes multiple requests simultaneously on the GPU. <span class="term">Throughput</span> is how many requests (or tokens) you can serve per second; <span class="term">latency</span> is how long one request takes. These trade off: waiting to fill a batch can add a little latency to each request but greatly raises throughput. <span class="term">Continuous batching</span> (used by serving engines like <span class="term">vLLM</span>) is the modern approach — it dynamically adds and removes requests from the running batch as they arrive and finish, keeping the GPU maximally busy without making requests wait for a fixed batch to fill.</p>
+  </div>
+
+  <div class="box note">
+    <div class="box-label">Mostly the serving engine’s job</div>
+    <p>You rarely implement batching by hand. If you call a hosted API, the provider batches for you. If you self-host, you use a serving engine — <strong>vLLM</strong>, TGI, or similar (and even Ollama for local) — that does continuous batching automatically. Your job is to <em>understand</em> the trade-off so you configure and reason about it well, not to write the batching loop.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>A GPU serving one request is mostly idle; <strong>batching</strong> runs many requests together to use its parallelism.</li>
+      <li>Batching raises <strong>throughput</strong> (requests/sec per GPU) → lower <strong>cost per request</strong> at scale.</li>
+      <li><strong>Throughput vs latency is a trade-off</strong>: bigger batches serve more but can add per-request latency.</li>
+      <li><strong>Continuous batching</strong> (vLLM, TGI) adds/removes requests dynamically for the best of both.</li>
+      <li>The <strong>serving engine</strong> handles it — you configure and reason about it, you don’t hand-code it.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">You self-host a model and costs are high because each GPU serves few users. Throughput is low even though latency per request is fine. What most directly helps?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Use a serving engine with continuous batching (e.g., vLLM) so each GPU processes many requests together, raising throughput and lowering cost per request.</span>
+        <div class="why">Correct. Low throughput with fine per-request latency means the GPU is underused — it’s serving requests one or a few at a time. Continuous batching packs many concurrent requests into the GPU’s parallel capacity, multiplying requests/sec per machine and cutting cost per request, which is the actual problem.</div></li>
+      <li data-correct="false"><span class="opt">B) Quantize to a lower bit-width.</span>
+        <div class="why">Quantization helps fit/speed but doesn’t address under-utilization from serving one request at a time. You could be running a quantized model and still waste most of the GPU without batching. (They compose, but batching targets the throughput problem directly.)</div></li>
+      <li data-correct="false"><span class="opt">C) Stream the output.</span>
+        <div class="why">Streaming improves perceived latency, not throughput or cost. It doesn’t help the GPU serve more concurrent users.</div></li>
+      <li data-correct="false"><span class="opt">D) Add more system-prompt instructions.</span>
+        <div class="why">Prompt content doesn’t affect GPU utilization or how many requests run concurrently. The fix for low throughput is batching.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> In your own words, why does running one request at a time waste a GPU?<br>
+    <strong>2.</strong> Explain the latency/throughput trade-off, and when you’d favor each.<br>
+    <strong>3.</strong> If you only ever call a hosted API (no self-hosting), how much do you need to worry about batching?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> A GPU has thousands of parallel compute units, but a single request only occupies a fraction of them — the rest sit idle while you pay for the whole chip. It’s like running one item through a factory built for hundreds at once. Batching fills the unused capacity with other requests, so the same hardware does much more work for the same cost.</p>
+        <p><strong>2.</strong> Bigger batches serve more requests per second (high throughput) but an individual request may wait a bit to be batched and shares the GPU, slightly raising its latency; smaller batches give each request lower latency but waste capacity (low throughput). Favor <strong>throughput</strong> when you’re serving lots of users and cost-per-request dominates (a busy product); favor <strong>latency</strong> when individual responsiveness is paramount and volume is low (a premium, low-traffic experience). Continuous batching largely lets you have both.</p>
+        <p><strong>3.</strong> Much less — the provider handles batching and GPU utilization for you, baked into the per-token price. You don’t configure it. Your serving levers become routing, caching, token budgeting, and model choice. Batching becomes <em>your</em> direct concern only when you self-host, where keeping GPUs busy is central to your cost. (Still worth understanding, since it explains the economics behind the prices you pay.)</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: the serving stack and the KV cache</div>
+    <p>When you self-host, throughput engineering centers on a serving engine (vLLM is the popular open-source choice) that does several things in concert: <strong>continuous batching</strong> (dynamically packing requests so the GPU never idles waiting for a batch to fill or for the slowest request to finish), efficient <strong>KV-cache management</strong> (the model caches the keys/values of tokens it has already processed so it doesn’t recompute them each decode step — managing this memory well, as vLLM’s “paged attention” does, is what lets many requests share a GPU), and smart scheduling. You mostly configure rather than build this, but understanding it explains your knobs: batch size, max concurrent sequences, and how much GPU memory goes to the KV cache vs. the model.</p>
+    <p>Step back and the whole track forms a coherent serving strategy with two audiences. If you <strong>call hosted APIs</strong>, the provider has already done quantization and batching; your job is to call less and call cheaper — cache (skip calls), route (right-size calls), budget tokens (lean calls), and stream (better UX). If you <strong>self-host</strong>, you additionally own the hardware efficiency — quantize to fit cheap GPUs and batch to keep them full — which is what makes self-hosting’s “no per-token fee” economics actually pay off. In both cases the meta-skill is the same as Track 6 preached: measure cost and latency as first-class metrics, find the real bottleneck, and apply the lever that targets it. Throughput is just the self-hosting corner of that discipline — and continuous batching is the single biggest reason a self-hosted model can be cost-competitive at scale.</p>
+  </div>
+
+  <p>We’ve optimized the calls and the hardware. The last lever is the most universal: spend fewer tokens per call, on every call, forever. Next: <strong>budgeting tokens</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

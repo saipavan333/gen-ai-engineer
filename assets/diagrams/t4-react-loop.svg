@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 360" width="720" height="360" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="720" height="360" fill="#ffffff"/>
+<text x="360" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">The agent loop: Reason + Act (ReAct)</text>
+<rect x="270" y="72.5" width="180" height="56" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="270" y="75" width="180" height="56" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="270" y="70" width="180" height="56" rx="13" ry="13" fill="url(#g_concept)" stroke="#2563eb" stroke-width="1.8"/>
+<text x="360.0" y="90.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#1e3a8a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Thought</text>
+<text x="360.0" y="103.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">“I should search.”</text>
+<rect x="270" y="160.5" width="180" height="56" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="270" y="163" width="180" height="56" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="270" y="158" width="180" height="56" rx="13" ry="13" fill="url(#g_key)" stroke="#d97706" stroke-width="1.8"/>
+<text x="360.0" y="178.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#7c2d12" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Action</text>
+<text x="360.0" y="191.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">call a tool</text>
+<rect x="270" y="248.5" width="180" height="56" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="270" y="251" width="180" height="56" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="270" y="246" width="180" height="56" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="360.0" y="266.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Observation</text>
+<text x="360.0" y="279.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">tool result</text>
+<line x1="360" y1="126" x2="360.0" y2="144.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="360.0,156.0 355.2,144.0 364.8,144.0" fill="#475569"/>
+<line x1="360" y1="214" x2="360.0" y2="232.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="360.0,244.0 355.2,232.0 364.8,232.0" fill="#475569"/>
+<path d="M 268 274 Q 150 274 150 186 Q 150 98 268 98" fill="none" stroke="#94a3b8" stroke-width="2.2"/>
+<polygon points="268,98 256,92 257,105" fill="#94a3b8"/>
+<text x="150" y="192" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">repeat</text>
+<text x="150" y="208" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">until done</text>
+<rect x="500" y="248.5" width="180" height="56" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="500" y="251" width="180" height="56" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="500" y="246" width="180" height="56" rx="13" ry="13" fill="url(#g_example)" stroke="#16a34a" stroke-width="1.8"/>
+<text x="590.0" y="274.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#14532d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Final answer</text>
+<line x1="450" y1="274" x2="488.0" y2="274.0" stroke="#16a34a" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="498.0,274.0 488.0,278.0 488.0,270.0" fill="#16a34a"/>
+<text x="537" y="234" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#16a34a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">when confident</text>
+<text x="360" y="340" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Each cycle adds a thought, an action, and its observation to the context — reasoning over actions.</text>
+</svg>

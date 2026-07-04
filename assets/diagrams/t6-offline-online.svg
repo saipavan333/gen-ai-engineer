@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 320" width="880" height="320" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="880" height="320" fill="#ffffff"/>
+<text x="440" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Offline vs online evaluation</text>
+<rect x="24" y="60" width="392" height="222" rx="14" ry="14" fill="#eff5ff" stroke="#2563eb" stroke-width="2"/>
+<text x="220" y="86" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="15" fill="#2563eb" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Offline (before deploy)</text>
+<circle cx="52" cy="116" r="4.5" fill="#2563eb"/>
+<text x="68" y="120" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.2" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">Run on your golden set</text>
+<circle cx="52" cy="146" r="4.5" fill="#2563eb"/>
+<text x="68" y="150" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.2" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">Fast, cheap, repeatable</text>
+<circle cx="52" cy="176" r="4.5" fill="#2563eb"/>
+<text x="68" y="180" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.2" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">Gates every change (CI)</text>
+<circle cx="52" cy="206" r="4.5" fill="#2563eb"/>
+<text x="68" y="210" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.2" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">But: a proxy for the real world</text>
+<rect x="460" y="60" width="392" height="222" rx="14" ry="14" fill="#f3fbf5" stroke="#15803d" stroke-width="2"/>
+<text x="656" y="86" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="15" fill="#15803d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Online (in production)</text>
+<circle cx="488" cy="116" r="4.5" fill="#15803d"/>
+<text x="504" y="120" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.2" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">Real traffic &amp; real users</text>
+<circle cx="488" cy="146" r="4.5" fill="#15803d"/>
+<text x="504" y="150" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.2" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">A/B tests, user feedback, ratings</text>
+<circle cx="488" cy="176" r="4.5" fill="#15803d"/>
+<text x="504" y="180" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.2" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">The ground truth signal</text>
+<circle cx="488" cy="206" r="4.5" fill="#15803d"/>
+<text x="504" y="210" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.2" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">But: slower, riskier, needs traffic</text>
+<text x="440" y="306" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.3" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">You need both: offline to ship safely, online to learn what actually works.</text>
+</svg>

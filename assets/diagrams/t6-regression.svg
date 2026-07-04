@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 300" width="880" height="300" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="880" height="300" fill="#ffffff"/>
+<text x="440" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Regression testing: treat prompts like code</text>
+<rect x="28" y="118.5" width="150" height="64" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="28" y="121" width="150" height="64" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="28" y="116" width="150" height="64" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="103.0" y="140.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Prompt change</text>
+<text x="103.0" y="152.75" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">(v2)</text>
+<rect x="230" y="78" width="240" height="150" rx="12" ry="12" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+<text x="350" y="100" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Eval suite (5 cases)</text>
+<text x="252" y="124" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#334155" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">case 1</text>
+<text x="440" y="124" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#15803d" text-anchor="end" font-weight="bold" dominant-baseline="middle" xml:space="preserve">✓ pass</text>
+<text x="252" y="145" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#334155" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">case 2</text>
+<text x="440" y="145" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#15803d" text-anchor="end" font-weight="bold" dominant-baseline="middle" xml:space="preserve">✓ pass</text>
+<text x="252" y="166" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#334155" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">case 3</text>
+<text x="440" y="166" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#b91c1c" text-anchor="end" font-weight="bold" dominant-baseline="middle" xml:space="preserve">✗ FAIL</text>
+<text x="252" y="187" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#334155" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">case 4</text>
+<text x="440" y="187" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#15803d" text-anchor="end" font-weight="bold" dominant-baseline="middle" xml:space="preserve">✓ pass</text>
+<text x="252" y="208" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#334155" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">case 5</text>
+<text x="440" y="208" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#15803d" text-anchor="end" font-weight="bold" dominant-baseline="middle" xml:space="preserve">✓ pass</text>
+<rect x="540" y="118.5" width="150" height="64" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="540" y="121" width="150" height="64" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="540" y="116" width="150" height="64" rx="13" ry="13" fill="url(#g_key)" stroke="#d97706" stroke-width="1.8"/>
+<text x="615.0" y="140.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#7c2d12" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Gate</text>
+<text x="615.0" y="153.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">any fail?</text>
+<rect x="740" y="118.5" width="120" height="64" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="740" y="121" width="120" height="64" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="740" y="116" width="120" height="64" rx="13" ry="13" fill="url(#g_warn)" stroke="#dc2626" stroke-width="1.8"/>
+<text x="800.0" y="140.75" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#7f1d1d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Blocked</text>
+<text x="800.0" y="153.5" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="9.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">case 3 regressed</text>
+<line x1="178" y1="148" x2="216.0" y2="148.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="228.0,148.0 216.0,152.8 216.0,143.2" fill="#475569"/>
+<line x1="470" y1="152" x2="526.0207075219" y2="148.70466426341764" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="538.0,148.0 526.3,153.5 525.7,143.9" fill="#475569"/>
+<line x1="690" y1="148" x2="726.0" y2="148.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="738.0,148.0 726.0,152.8 726.0,143.2" fill="#475569"/>
+<text x="440" y="270" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Every prompt/model change runs the suite. A single regression blocks the change — no silent breakage.</text>
+</svg>

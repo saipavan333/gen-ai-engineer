@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Python drills — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="0.5">
+<main class="lesson">
+
+  <span class="eyebrow">Start Here · Lesson 0.5</span>
+  <h1>Python drills</h1>
+  <p class="lead">Reading code isn’t the same as writing it. These six short drills move the patterns from 0.3 and 0.4 into your fingers. Each is a real mini-task you’ll see again later in the course. Try each one in a free Colab cell <em>before</em> opening the solution.</p>
+
+  <h2>How to get the most from these</h2>
+  <p>Struggle a little on purpose. Read the drill, type an attempt, run it, fix the errors yourself — <em>then</em> open the solution and compare your reasoning to mine. A solution you reached for after trying teaches ten times more than one you read cold. If you get stuck for more than a few minutes, peek at the first line of the solution, then close it and finish on your own. There’s no clock here.</p>
+
+  <div class="box note">
+    <div class="box-label">A friendly reminder</div>
+    <p>Errors are normal and expected — every one of these will throw a red message at some point. That’s the work, not a sign you’re failing. Read the last line of the traceback, fix, rerun. (Lesson 0.3’s deep dive has the error-reading playbook if you want it.)</p>
+  </div>
+
+  <h2>Drill 1 — Filter a list (comprehension)</h2>
+  <div class="box practice">
+    <div class="box-label">Drill 1</div>
+    <p>Start from <code>words = "RAG gives a model grounded knowledge".split()</code>. Build a new list containing only the words longer than 4 characters.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
+      <div class="sol-body">
+<pre><code>words <span class="o">=</span> <span class="s">"RAG gives a model grounded knowledge"</span>.<span class="f">split</span>()
+long_words <span class="o">=</span> [w <span class="k">for</span> w <span class="k">in</span> words <span class="k">if</span> <span class="f">len</span>(w) <span class="o">&gt;</span> <span class="n">4</span>]
+<span class="f">print</span>(long_words)   <span class="c"># -> ['gives', 'model', 'grounded', 'knowledge']</span></code></pre>
+        <p><strong>Why:</strong> <code>.split()</code> turns a sentence into a list of words; the trailing <code>if</code> keeps only those passing the test. This exact shape — “keep the items that qualify” — is how you’ll drop empty or too-short chunks before sending them to a model.</p>
+      </div>
+    </details>
+  </div>
+
+  <h2>Drill 2 — Count things (frequency dict)</h2>
+  <div class="box practice">
+    <div class="box-label">Drill 2</div>
+    <p>Given <code>intents = ["refund", "refund", "shipping", "refund", "returns", "shipping"]</code>, build a dictionary that maps each intent to how many times it appears.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
+      <div class="sol-body">
+<pre><code>intents <span class="o">=</span> [<span class="s">"refund"</span>, <span class="s">"refund"</span>, <span class="s">"shipping"</span>, <span class="s">"refund"</span>, <span class="s">"returns"</span>, <span class="s">"shipping"</span>]
+
+counts <span class="o">=</span> {}
+<span class="k">for</span> i <span class="k">in</span> intents:
+    counts[i] <span class="o">=</span> counts.<span class="f">get</span>(i, <span class="n">0</span>) <span class="o">+</span> <span class="n">1</span>
+
+<span class="f">print</span>(counts)   <span class="c"># -> {'refund': 3, 'shipping': 2, 'returns': 1}</span></code></pre>
+        <p><strong>Why:</strong> the <code>counts.get(i, 0)</code> move reads the current tally (or 0 if this intent is new), adds one, and stores it back. Counting is everywhere in evals — “how many answers were correct,” “how often did each tool get called” — and this is the canonical way to do it.</p>
+      </div>
+    </details>
+  </div>
+
+  <h2>Drill 3 — Build a messages list</h2>
+  <div class="box practice">
+    <div class="box-label">Drill 3</div>
+    <p>Write code that, given <code>system = "You are concise."</code> and <code>turns = ["Hi", "What is a token?"]</code>, builds the chat <em>messages</em> list: a system dict first, then one user dict per turn.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
+      <div class="sol-body">
+<pre><code>system <span class="o">=</span> <span class="s">"You are concise."</span>
+turns <span class="o">=</span> [<span class="s">"Hi"</span>, <span class="s">"What is a token?"</span>]
+
+messages <span class="o">=</span> [{<span class="s">"role"</span>: <span class="s">"system"</span>, <span class="s">"content"</span>: system}]
+<span class="k">for</span> t <span class="k">in</span> turns:
+    messages.<span class="f">append</span>({<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: t})
+
+<span class="f">print</span>(messages)
+<span class="c"># [{'role': 'system', 'content': 'You are concise.'},</span>
+<span class="c">#  {'role': 'user', 'content': 'Hi'},</span>
+<span class="c">#  {'role': 'user', 'content': 'What is a token?'}]</span></code></pre>
+        <p><strong>Why:</strong> this is the literal payload every chat model wants — a list of role/content dicts, system first. You just built, by hand, the structure that libraries hide behind a <code>chat()</code> call. Seeing it plainly now means none of the later code is mysterious.</p>
+      </div>
+    </details>
+  </div>
+
+  <h2>Drill 4 — A tiny chunker</h2>
+  <div class="box practice">
+    <div class="box-label">Drill 4</div>
+    <p>Write <code>chunk(text, size)</code> that splits a string into a list of pieces, each at most <code>size</code> characters long. For example, <code>chunk("abcdefg", 3)</code> should give <code>["abc", "def", "g"]</code>.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
+      <div class="sol-body">
+<pre><code><span class="k">def</span> <span class="f">chunk</span>(text, size):
+    <span class="k">return</span> [text[i:i <span class="o">+</span> size] <span class="k">for</span> i <span class="k">in</span> <span class="f">range</span>(<span class="n">0</span>, <span class="f">len</span>(text), size)]
+
+<span class="f">print</span>(<span class="f">chunk</span>(<span class="s">"abcdefg"</span>, <span class="n">3</span>))   <span class="c"># -> ['abc', 'def', 'g']</span></code></pre>
+        <p><strong>Why:</strong> <code>range(0, len(text), size)</code> steps in jumps of <code>size</code> (0, 3, 6…), and <code>text[i:i+size]</code> slices that piece. You just wrote the simplest possible document chunker — the very thing Track&nbsp;3 builds on (real chunkers add overlap and split on sentence boundaries, but this is the skeleton).</p>
+      </div>
+    </details>
+  </div>
+
+  <h2>Drill 5 — Read a nested field safely</h2>
+  <div class="box practice">
+    <div class="box-label">Drill 5</div>
+    <p>A model reply looks like <code>{"text": "...", "usage": {"total_tokens": 42}}</code> — but sometimes the <code>"usage"</code> block is missing entirely. Write <code>total_tokens(reply)</code> that returns the token count, or <code>0</code> if usage isn’t there.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
+      <div class="sol-body">
+<pre><code><span class="k">def</span> <span class="f">total_tokens</span>(reply):
+    <span class="k">return</span> reply.<span class="f">get</span>(<span class="s">"usage"</span>, {}).<span class="f">get</span>(<span class="s">"total_tokens"</span>, <span class="n">0</span>)
+
+<span class="f">print</span>(<span class="f">total_tokens</span>({<span class="s">"usage"</span>: {<span class="s">"total_tokens"</span>: <span class="n">42</span>}}))   <span class="c"># -> 42</span>
+<span class="f">print</span>(<span class="f">total_tokens</span>({<span class="s">"text"</span>: <span class="s">"hi"</span>}))                     <span class="c"># -> 0</span></code></pre>
+        <p><strong>Why:</strong> the trick is the empty-dict default. <code>reply.get("usage", {})</code> hands back a real (empty) dict when usage is missing, so the second <code>.get</code> still works instead of crashing. Chaining <code>.get</code> with a <code>{}</code> fallback is the clean way to dig into nested, unreliable API responses — and you’ll read token usage exactly like this in Track&nbsp;8.</p>
+      </div>
+    </details>
+  </div>
+
+  <h2>Drill 6 — Keyword search (the seed of retrieval)</h2>
+  <div class="box practice">
+    <div class="box-label">Drill 6</div>
+    <p>Write <code>search(query, docs)</code> that returns every document containing <em>all</em> of the query’s words (case-insensitive). Test it with <code>query = "refund time"</code> against a few sentences.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
+      <div class="sol-body">
+<pre><code><span class="k">def</span> <span class="f">search</span>(query, docs):
+    terms <span class="o">=</span> query.<span class="f">lower</span>().<span class="f">split</span>()
+    <span class="k">return</span> [d <span class="k">for</span> d <span class="k">in</span> docs <span class="k">if</span> <span class="f">all</span>(t <span class="k">in</span> d.<span class="f">lower</span>() <span class="k">for</span> t <span class="k">in</span> terms)]
+
+docs <span class="o">=</span> [
+    <span class="s">"Refund time is 5 business days."</span>,
+    <span class="s">"Shipping is free over $50."</span>,
+    <span class="s">"You can request a refund any time within 30 days."</span>,
+]
+<span class="k">for</span> hit <span class="k">in</span> <span class="f">search</span>(<span class="s">"refund time"</span>, docs):
+    <span class="f">print</span>(hit)
+<span class="c"># Refund time is 5 business days.</span>
+<span class="c"># You can request a refund any time within 30 days.</span></code></pre>
+        <p><strong>Why:</strong> <code>all(...)</code> is true only when every term is present, and the lowercasing makes the match case-insensitive. This is keyword (lexical) search in miniature — the “sparse” half of the hybrid search you’ll build in Track&nbsp;3. You’ve now hand-written both a chunker and a retriever; RAG will feel like assembling parts you already understand.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">In Drill 5, why is the default in <code>reply.get("usage", {})</code> an empty dict <code>{}</code> rather than <code>0</code> or <code>None</code>?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) So the next <code>.get("total_tokens", 0)</code> still has a dict to call it on, even when usage is missing.</span>
+        <div class="why">Correct. The whole point is to keep chaining. If usage is absent, <code>{}</code> is returned — a real dict — so <code>.get("total_tokens", 0)</code> runs safely and yields 0. Return <code>None</code> or <code>0</code> instead and that second <code>.get</code> would crash with an <code>AttributeError</code>.</div></li>
+      <li data-correct="false"><span class="opt">B) Because <code>{}</code> is faster than <code>0</code>.</span>
+        <div class="why">Speed isn’t the issue at all. The default is about <em>type</em>: the next step needs something it can call <code>.get</code> on, i.e. a dict.</div></li>
+      <li data-correct="false"><span class="opt">C) Because token counts are always stored as dictionaries.</span>
+        <div class="why">The token count itself is a number; <code>usage</code> is the dict that holds it. The <code>{}</code> default stands in for a missing <em>usage block</em>, not for the count.</div></li>
+      <li data-correct="false"><span class="opt">D) It doesn’t matter — any default works the same.</span>
+        <div class="why">It matters a lot. Only a dict default lets the chained <code>.get</code> survive. Try it with <code>None</code> and you’ll get <code>AttributeError: 'NoneType' object has no attribute 'get'</code>.</div></li>
+    </ul>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">What you just practiced</div>
+    <ul>
+      <li>Transforming and filtering lists with <strong>comprehensions</strong> (Drills 1, 4, 6).</li>
+      <li>Building and counting with <strong>dicts</strong>, including safe nested reads (Drills 2, 5).</li>
+      <li>Assembling the <strong>messages list-of-dicts</strong> by hand (Drill 3) — the shape every chat model speaks.</li>
+      <li>Writing a <strong>chunker</strong> and a <strong>keyword retriever</strong> — miniature versions of real RAG parts (Drills 4, 6).</li>
+    </ul>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: you already have the muscles for this</div>
+    <p>If you’re coming from data engineering, notice what these drills actually are: filtering rows, grouping and counting, reshaping records, and a lexical search. You’ve done every one of these a thousand times in SQL and pandas — <code>WHERE</code> is Drill 1, <code>GROUP BY ... COUNT</code> is Drill 2, building a JSON payload is Drill 3, and a <code>LIKE '%term%'</code> filter is Drill 6. The syntax is new; the <em>thinking</em> is not. Much of applied GenAI is data wrangling wearing a different hat, which is exactly why a data background transfers so well. Don’t let unfamiliar libraries convince you you’re a beginner here — you’re a practitioner learning a new dialect.</p>
+  </div>
+
+  <p>That’s enough Python to carry you through the whole course; we’ll pick up anything else just-in-time. Time to open the box. Next: <strong>how LLMs actually work.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>What LLMs can &amp; can't do — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="1.6">
+<main class="lesson">
+
+  <span class="eyebrow">Track 1 · Lesson 1.6</span>
+  <h1>What LLMs can &amp; can't do</h1>
+  <p class="lead">This is the lesson that keeps you employed. Knowing exactly where these models shine and where they quietly fail is the difference between a demo that wows and a product that embarrasses you in front of users. It’s also the most-probed area in interviews.</p>
+
+  <h2>Why limits matter more than capabilities</h2>
+  <p>It’s easy to be impressed by what LLMs can do. The professional skill is knowing what they <em>can’t</em> — because that’s where products break. Almost every limitation follows directly from Lesson 1.1: the model predicts <strong>plausible</strong> next tokens, not <strong>true</strong> ones. When plausible and true line up, it looks brilliant. When they diverge, it fails confidently. Everything below is a corollary of that one fact.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t1-capabilities.svg" alt="Two panels. Reliable at: rewriting and reformatting text; summarizing text you provide; drafting, brainstorming, ideation; explaining concepts and code; extracting structure like JSON; translation and shifting tone. Handle with care: exact facts from memory (may invent); events after its training cutoff; arithmetic and counting letters; real citations, URLs, quotes; knowing when it is unsure; anything it was never shown.">
+    <figcaption>The pattern: LLMs are strong when working <em>on text you give them</em>, and risky when <em>recalling exact facts from memory</em>. Notice the left column is all transformation; the right is all recall and self-knowledge.</figcaption>
+  </figure>
+
+  <h2>Hallucination, demystified</h2>
+  <p>A <span class="term">hallucination</span> is when a model produces fluent, confident output that is factually wrong or fabricated — an invented statistic, a non-existent citation, a plausible but fake API method. The crucial reframing: <strong>this isn’t the model malfunctioning, it’s the model working exactly as designed.</strong> Its job is to produce likely text. When it doesn’t “know” something, it doesn’t fall silent — there’s no mechanism for that. It generates the most plausible-sounding continuation, which can be completely made up.</p>
+
+  <div class="box warn">
+    <div class="box-label">The dangerous part</div>
+    <p>A model’s <strong>confidence is uncorrelated with its correctness</strong>. It states fabricated facts in exactly the same fluent, assured tone as real ones, because both are just “likely text.” You cannot tell a hallucination from a fact by how sure the model sounds. This is why you never ship an LLM answer to a high-stakes question without grounding or verification.</p>
+  </div>
+
+  <h2>The knowledge cutoff</h2>
+  <p>Because a model’s knowledge is frozen into its weights at training time (Lesson 1.1), it has a <span class="term">knowledge cutoff</span>: a date after which it knows nothing. Ask about last week’s news, a library released yesterday, or your company’s internal policy, and at best it admits ignorance — at worst, it hallucinates a plausible answer.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t1-cutoff.svg" alt="A timeline. A blue band on the left is 'what the model learned during training' (knows capitals, classic books, stable facts). A red vertical line marks the 'knowledge cutoff'. To the right, a dashed red region is 'after cutoff: model must guess', with 'today' marked further right. Caption: to answer about anything after the cutoff or your private docs, you must supply it — that's RAG and tools.">
+    <figcaption>Everything to the right of the cutoff — recent events <em>and</em> anything private it never saw — is outside the model’s knowledge. The only way it can answer correctly is if you put the information in the prompt.</figcaption>
+  </figure>
+
+  <p>And a few more limits that trip people up, all explainable from what you’ve learned:</p>
+  <ul>
+    <li><strong>Arithmetic &amp; character tasks:</strong> the model sees tokens, not digits or letters (Lesson 1.2), so multi-step math and “count the R’s” are genuinely hard without tools.</li>
+    <li><strong>No real memory:</strong> it only knows what’s in the current context window (Lesson 1.4) — no recall of past sessions unless you re-supply it.</li>
+    <li><strong>Prompt sensitivity:</strong> small wording changes can shift outputs, because you’re nudging a probability distribution, not querying a fact store.</li>
+    <li><strong>Inherited bias:</strong> trained on human text, models can reproduce its biases and stereotypes — a real safety concern (Track 7).</li>
+  </ul>
+
+  <h2>The good news: every limit has an engineering answer</h2>
+  <p>Here’s the optimistic punchline, and the map for the rest of this course. None of these limitations are dead ends — each has a well-understood fix, and learning those fixes <em>is</em> applied GenAI engineering.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t1-mitigations.svg" alt="A hub-and-spoke diagram. From 'LLM alone — fluent, but maybe wrong', four arrows point to: Ground it with RAG (Track 3); Give it tools (Track 4); Measure with evals (Track 6); Guard inputs and outputs (Track 7). Caption: every limitation above has an engineering answer — that's the rest of this course.">
+    <figcaption>Ground it (supply real facts), give it tools (let it compute and fetch), measure it (evals), and guard it (validation). The model alone is just the engine; these are the car around it.</figcaption>
+  </figure>
+
+  <div class="box example">
+    <div class="box-label">Worked example — see a hallucination, then ground it away (free, Colab)</div>
+    <p>This uses a small, free, instruction-following model. Watch it confabulate a made-up fact, then watch grounding fix it:</p>
+<pre><code><span class="o">!</span>pip install transformers
+<span class="k">from</span> transformers <span class="k">import</span> pipeline
+qa <span class="o">=</span> <span class="f">pipeline</span>(<span class="s">"text2text-generation"</span>, model<span class="o">=</span><span class="s">"google/flan-t5-base"</span>)   <span class="c"># small, free, instruction-tuned</span>
+
+<span class="c"># 1) UNGROUNDED — it has no idea, but will still answer something</span>
+q <span class="o">=</span> <span class="s">"What is the warranty period of the Acme X200 blender?"</span>
+<span class="f">print</span>(<span class="s">"ungrounded:"</span>, qa(q, max_new_tokens<span class="o">=</span><span class="n">30</span>)[<span class="n">0</span>][<span class="s">"generated_text"</span>])
+
+<span class="c"># 2) GROUNDED — give it the fact and forbid guessing</span>
+context <span class="o">=</span> <span class="s">"The Acme X200 blender comes with a 3-year limited warranty."</span>
+prompt <span class="o">=</span> <span class="s">f"Context: </span>{context}<span class="s">\n\nUsing ONLY the context, answer. If the answer is not in the context, say 'I don't know'.\nQuestion: </span>{q}<span class="s">"</span>
+<span class="f">print</span>(<span class="s">"grounded:  "</span>, qa(prompt, max_new_tokens<span class="o">=</span><span class="n">30</span>)[<span class="n">0</span>][<span class="s">"generated_text"</span>])</code></pre>
+    <p>The ungrounded call invents or fumbles an answer; the grounded call reports the real “3-year limited warranty,” because the fact is now in front of it and you’ve told it not to guess. That two-line difference — <em>supply the facts, forbid guessing</em> — is the entire spirit of RAG, which you’ll build for real in Track 3.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>Limits flow from one fact: the model predicts <strong>plausible</strong> tokens, not <strong>true</strong> ones.</li>
+      <li>LLMs are strong at <strong>transforming text you provide</strong>, weak at <strong>recalling exact facts</strong> and knowing their own uncertainty.</li>
+      <li><strong>Hallucination</strong> is the mechanism working as designed; <strong>confidence ≠ correctness</strong>.</li>
+      <li>The <strong>knowledge cutoff</strong> means recent events and private data must be <strong>supplied</strong>, not assumed.</li>
+      <li>Every limit has a fix: <strong>ground (RAG), tools, evals, guardrails</strong> — the rest of this course.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your legal-research assistant keeps citing court cases that don’t exist — with realistic names and citation numbers. Which fix most directly addresses the root cause?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Retrieve real cases from a database and instruct the model to answer only from those retrieved documents, citing them.</span>
+        <div class="why">Correct. Fabricated citations are textbook hallucination: the model produces plausible-looking citations because that’s what legal text looks like. Grounding it in actual retrieved cases — and forbidding answers not supported by them — removes the need to invent. This is RAG, and it attacks the cause, not the symptom.</div></li>
+      <li data-correct="false"><span class="opt">B) Add “Do not make up cases. Only cite real ones.” to the system prompt.</span>
+        <div class="why">It helps a little, but it can’t work reliably: the model has no internal list of real cases to check against, so “only cite real ones” is an instruction it literally cannot verify. Without real data in front of it, it will still generate plausible fakes.</div></li>
+      <li data-correct="false"><span class="opt">C) Lower the temperature to 0.</span>
+        <div class="why">Temperature 0 makes it pick the <em>most likely</em> citation — which is still a fabricated one if no real case is in context. Determinism doesn’t equal truth; you’d just get the same hallucination every time.</div></li>
+      <li data-correct="false"><span class="opt">D) Use a bigger, more capable model.</span>
+        <div class="why">Bigger models hallucinate less in general, but they still confidently invent citations for things outside their knowledge. Capability reduces the rate; it doesn’t remove the root cause the way grounding in real documents does.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Sort these into “reliable” vs “risky”: (a) summarize this contract I pasted, (b) what’s our refund policy?, (c) translate this paragraph to Spanish, (d) what’s the population of this city right now?, (e) reformat these notes as bullet points.<br>
+    <strong>2.</strong> Rewrite this hallucination-prone prompt to be grounded: “What integrations does our product support?”<br>
+    <strong>3.</strong> Explain to a skeptical manager why simply telling the model “always be accurate and never make things up” doesn’t solve hallucination.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> <em>Reliable:</em> (a) summarize pasted contract, (c) translate a paragraph, (e) reformat notes — all <strong>transform text you provided</strong>. <em>Risky:</em> (b) refund policy and (d) current population — both require <strong>recalling specific facts</strong> the model may not have or that may be outdated. The tell: is the needed information <em>in the prompt</em>, or is the model being asked to remember it? In-prompt → reliable. From memory → risky.</p>
+        <p><strong>2.</strong> Ground it: retrieve your real integrations list and constrain the answer. For example: <em>“Here is our current list of supported integrations: [retrieved list]. Using only this list, answer the user’s question. If something isn’t listed, say it’s not supported.”</em> Now the model is summarizing provided text (its strength) instead of recalling from memory (its weakness).</p>
+        <p><strong>3.</strong> The instruction asks the model to do something it has no mechanism for. It can’t distinguish facts it “knows” from plausible patterns it’s generating — there’s no internal truth-check to switch on. Telling it to “be accurate” changes the style of the text, not its access to truth. Accuracy comes from <em>giving it real information</em> (grounding) and <em>verifying outputs</em> (evals/validation), not from asking nicely. Reliability is an architecture decision, not a prompt phrase.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: detecting and reducing hallucination in practice</div>
+    <p>You can’t eliminate hallucination, but you can drive it down a lot. The toolkit, roughly in order of power:</p>
+    <p><strong>Ground the model</strong> (biggest lever): put the real facts in the context and instruct it to answer only from them — and to say “I don’t know” when they’re absent. A model summarizing provided text is far more reliable than one recalling from memory. <strong>Give it tools</strong>: for math, call a calculator; for fresh facts, call search; for your data, call your API (Track 4). Don’t ask the model to <em>be</em> a database — let it <em>use</em> one. <strong>Constrain and verify the output</strong>: ask for citations and check that quoted text actually appears in the sources; validate structured fields; use a second model or rules to flag unsupported claims (Tracks 6–7). <strong>Lower the temperature</strong> for factual tasks so you’re not adding randomness on top. And <strong>design the UX for doubt</strong>: show sources, let users verify, and don’t present generated answers as infallible.</p>
+    <p>The mental model to carry into every project: <em>an LLM is a brilliant reasoner over the information you give it, and an unreliable witness about anything you don’t.</em> Build systems that play to the first half and never depend on the second.</p>
+  </div>
+
+  <p>That’s the engine, end to end: tokens, embeddings, context, attention, sampling, and the honest map of strengths and limits. Time to check it stuck — and to see what an interviewer would ask. On to the <strong>Track 1 interview check</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

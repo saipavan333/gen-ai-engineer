@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Capstone: a tool-using agent — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="10.2">
+<main class="lesson">
+
+  <span class="eyebrow">Track 10 · Capstone 10.2</span>
+  <h1>Capstone: a tool-using agent</h1>
+  <p class="lead">Build an agent that actually <em>does</em> things: a guarded ReAct loop that calls real tools (a calculator and a lookup), reasons over the results, and refuses to run away or do anything dangerous. It demonstrates Track 4 end to end and shows you can give a model autonomy <em>responsibly</em> — runs free on local models.</p>
+
+  <h2>What you’re building</h2>
+  <p>An agent that answers questions requiring computation or fresh lookups by choosing and calling tools in a loop — with the production guards that separate a toy from something shippable: a step limit, argument validation, and human approval for risky actions (Track 4.3, 4.8). Free, local, via Ollama’s tool calling.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t4-recap.svg" alt="The agent all together: a Goal enters an Agent (LLM) that loops reason → act → observe, inside a Guardrails frame (max-steps, validate args, approve risky actions), connected to Tools (via MCP) and Memory (short plus long), producing a final answer.">
+    <figcaption>The architecture you’re implementing: a guarded loop with tools. You built each piece in Track 4; now wire it into a working agent.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Setup (free)</div>
+<pre><code><span class="o">$</span> pip install ollama wikipedia
+<span class="o">$</span> ollama pull llama3.2          <span class="c"># supports tool calling, runs locally</span></code></pre>
+  </div>
+
+  <h2>Step 1 — Define tools (and mark the risky one)</h2>
+  <div class="code-label"><span class="dot"></span><span class="fname">tools.py</span></div>
+<pre><code><span class="k">import</span> wikipedia
+
+<span class="k">def</span> <span class="f">calculator</span>(expression: str) <span class="o">-&gt;</span> str:
+    <span class="c"># safe-ish eval: digits and operators only (validate args before running!)</span>
+    <span class="k">if</span> <span class="k">not</span> <span class="f">set</span>(expression) <span class="o">&lt;=</span> <span class="f">set</span>(<span class="s">"0123456789+-*/(). "</span>):
+        <span class="k">return</span> <span class="s">"error: invalid characters"</span>
+    <span class="k">return</span> <span class="f">str</span>(<span class="f">eval</span>(expression))
+
+<span class="k">def</span> <span class="f">wiki_lookup</span>(query: str) <span class="o">-&gt;</span> str:
+    <span class="k">try</span>:
+        <span class="k">return</span> wikipedia.<span class="f">summary</span>(query, sentences<span class="o">=</span><span class="n">2</span>)
+    <span class="k">except</span> Exception <span class="k">as</span> e:
+        <span class="k">return</span> <span class="s">f"error: </span>{e}<span class="s">"</span>
+
+<span class="k">def</span> <span class="f">send_email</span>(to: str, body: str) <span class="o">-&gt;</span> str:        <span class="c"># RISKY: irreversible, needs approval</span>
+    <span class="k">return</span> <span class="s">f"(pretend) email sent to </span>{to}<span class="s">"</span>
+
+TOOLS <span class="o">=</span> {<span class="s">"calculator"</span>: calculator, <span class="s">"wiki_lookup"</span>: wiki_lookup, <span class="s">"send_email"</span>: send_email}
+RISKY <span class="o">=</span> {<span class="s">"send_email"</span>}                              <span class="c"># gate these behind a human</span>
+
+SCHEMAS <span class="o">=</span> [
+    {<span class="s">"type"</span>: <span class="s">"function"</span>, <span class="s">"function"</span>: {<span class="s">"name"</span>: <span class="s">"calculator"</span>,
+        <span class="s">"description"</span>: <span class="s">"Evaluate an arithmetic expression."</span>,
+        <span class="s">"parameters"</span>: {<span class="s">"type"</span>: <span class="s">"object"</span>, <span class="s">"properties"</span>: {<span class="s">"expression"</span>: {<span class="s">"type"</span>: <span class="s">"string"</span>}}, <span class="s">"required"</span>: [<span class="s">"expression"</span>]}}},
+    {<span class="s">"type"</span>: <span class="s">"function"</span>, <span class="s">"function"</span>: {<span class="s">"name"</span>: <span class="s">"wiki_lookup"</span>,
+        <span class="s">"description"</span>: <span class="s">"Look up a fact on Wikipedia."</span>,
+        <span class="s">"parameters"</span>: {<span class="s">"type"</span>: <span class="s">"object"</span>, <span class="s">"properties"</span>: {<span class="s">"query"</span>: {<span class="s">"type"</span>: <span class="s">"string"</span>}}, <span class="s">"required"</span>: [<span class="s">"query"</span>]}}},
+]   <span class="c"># note: we DON'T advertise send_email unless the task needs it (least privilege)</span></code></pre>
+
+  <h2>Step 2 — The guarded agent loop</h2>
+  <div class="code-label"><span class="dot"></span><span class="fname">agent.py</span></div>
+<pre><code><span class="k">import</span> ollama
+<span class="k">from</span> tools <span class="k">import</span> TOOLS, RISKY, SCHEMAS
+
+<span class="k">def</span> <span class="f">run_agent</span>(goal, max_steps<span class="o">=</span><span class="n">6</span>):
+    msgs <span class="o">=</span> [{<span class="s">"role"</span>: <span class="s">"system"</span>, <span class="s">"content"</span>: <span class="s">"Use tools to solve the task. Think, then act. Answer when sure."</span>},
+            {<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: goal}]
+    <span class="k">for</span> step <span class="k">in</span> <span class="f">range</span>(max_steps):                        <span class="c"># GUARD: bounded loop</span>
+        m <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"llama3.2"</span>, messages<span class="o">=</span>msgs, tools<span class="o">=</span>SCHEMAS)[<span class="s">"message"</span>]
+        msgs.<span class="f">append</span>(m)
+        calls <span class="o">=</span> m.<span class="f">get</span>(<span class="s">"tool_calls"</span>)
+        <span class="k">if</span> <span class="k">not</span> calls:
+            <span class="k">return</span> m[<span class="s">"content"</span>]                              <span class="c"># final answer</span>
+        <span class="k">for</span> call <span class="k">in</span> calls:
+            name <span class="o">=</span> call[<span class="s">"function"</span>][<span class="s">"name"</span>]
+            args <span class="o">=</span> call[<span class="s">"function"</span>][<span class="s">"arguments"</span>]
+            <span class="k">if</span> name <span class="k">not</span> <span class="k">in</span> TOOLS:                           <span class="c"># GUARD: allowlist</span>
+                result <span class="o">=</span> <span class="s">f"error: unknown tool </span>{name}<span class="s">"</span>
+            <span class="k">elif</span> name <span class="k">in</span> RISKY <span class="k">and</span> input(<span class="s">f"Approve </span>{name}<span class="s">(</span>{args}<span class="s">)? [y/N] "</span>) <span class="o">!=</span> <span class="s">"y"</span>:
+                result <span class="o">=</span> <span class="s">"denied by human"</span>               <span class="c"># GUARD: human-in-the-loop</span>
+            <span class="k">else</span>:
+                <span class="f">print</span>(<span class="s">f"  ↳ </span>{name}<span class="s">(</span>{args}<span class="s">)"</span>)               <span class="c"># trace every action (debuggability)</span>
+                result <span class="o">=</span> TOOLS[name](<span class="o">**</span>args)
+            msgs.<span class="f">append</span>({<span class="s">"role"</span>: <span class="s">"tool"</span>, <span class="s">"content"</span>: <span class="f">str</span>(result)})  <span class="c"># observation back in</span>
+    <span class="k">return</span> <span class="s">"Stopped: hit max steps."</span>                      <span class="c"># GUARD: never loop forever</span>
+
+<span class="k">if</span> __name__ <span class="o">==</span> <span class="s">"__main__"</span>:
+    <span class="f">print</span>(<span class="f">run_agent</span>(<span class="s">"What is the population of France, multiplied by 2?"</span>))
+    <span class="c"># → wiki_lookup('France population') → calculator('... * 2') → final answer</span></code></pre>
+
+  <div class="box key">
+    <div class="box-label">What makes this portfolio-grade</div>
+    <ul>
+      <li><strong>Every guard is present and labeled</strong>: max-steps, allowlist, argument validation, human approval, full tracing.</li>
+      <li><strong>Least privilege</strong>: the risky <code>send_email</code> tool isn’t even advertised unless needed.</li>
+      <li><strong>The trace prints each action</strong> — you can show the reason → act → observe loop live.</li>
+      <li>It <strong>runs free and local</strong>, and you can narrate exactly how injection or runaway loops are contained.</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Extensions</div>
+    <p><strong>1.</strong> Add an <strong>eval</strong> (Track 6): a set of tasks with known answers; measure success rate, average steps, and whether it called valid tools — run it on every change.<br>
+    <strong>2.</strong> Add a <strong>cost/step budget</strong> (Track 8) that stops the agent if it exceeds a token cap.<br>
+    <strong>3.</strong> Add <strong>memory</strong> (Track 4.5): summarize the trace when it grows so long tasks don’t blow the context.<br>
+    <strong>4.</strong> Treat tool results as <strong>untrusted</strong> (Track 7): what if a Wikipedia page contained “ignore your instructions”? Confirm your guards contain it.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> The interview narrative</summary>
+      <div class="sol-body">
+        <p>“I built a tool-using agent as a guarded ReAct loop. The model only proposes actions; my code disposes — I allowlist tools, validate arguments, cap steps, and require human approval for anything irreversible like sending email, which I don’t even expose unless the task needs it (least privilege). I log every action so I can read the trace when it misbehaves. Because injection can’t be fully prevented, I designed so a hijacked model can’t do harm — that containment is the whole point.” This single project lets you speak to tool calling, the loop, planning, memory, MCP, failure modes, and agent security (all of Track 4) from experience.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">In this agent, why is <code>send_email</code> deliberately left out of the advertised <code>SCHEMAS</code> for general tasks?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Least privilege — don’t expose a risky, irreversible tool unless the task needs it, so a hijacked or confused model can’t reach it.</span>
+        <div class="why">Correct. The fewer dangerous capabilities the model can access, the smaller the blast radius of any injection or error. Not advertising the risky tool (and gating it behind approval when it is used) is exactly the least-privilege containment that makes agents safe.</div></li>
+      <li data-correct="false"><span class="opt">B) Because the model can’t understand email tools.</span>
+        <div class="why">It could use the tool fine — the reason it’s withheld is safety (least privilege), not capability.</div></li>
+      <li data-correct="false"><span class="opt">C) To save tokens in the prompt.</span>
+        <div class="why">Schema size is negligible; the real reason is limiting access to a dangerous, irreversible action. Security, not token cost.</div></li>
+      <li data-correct="false"><span class="opt">D) Because email tools are slow.</span>
+        <div class="why">Speed isn’t the concern. The point is containing what a manipulated model can do by not exposing risky capabilities.</div></li>
+    </ul>
+  </div>
+
+  <p>You can build and guard an agent. Next, the project that proves you can <em>measure</em> anything — the differentiator from Track 6. Next capstone: <strong>a prompt/RAG eval harness</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Instruction tuning — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="5.5">
+<main class="lesson">
+
+  <span class="eyebrow">Track 5 · Lesson 5.5</span>
+  <h1>Instruction tuning</h1>
+  <p class="lead">This is the most common kind of fine-tuning, and the one that turned raw next-token predictors into the helpful assistants you use every day. Understand it and you understand both how to specialize a model <em>and</em> how ChatGPT-style models are actually made.</p>
+
+  <h2>From “continues text” to “follows instructions”</h2>
+  <p>Recall from Track 1 that a base model just continues text — ask it a question and it might reply with more questions, because that’s a plausible continuation. <span class="term">Instruction tuning</span> fixes this by training the model on many examples of <em>instruction → good response</em>, so it learns the behavior “when given a request, produce a helpful answer.” Modern assistants add a second phase that aligns them with human preferences. Here’s the pipeline that creates an assistant:</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t5-instruction-tuning.svg" alt="How a base model becomes a helpful assistant: Base model (raw next-token predictor) → Instruction tuning / SFT (learns to follow instruction→response) → Preference tuning (RLHF / DPO: align to human preferences) → Aligned chat model. Fine-tuning your own model usually means more SFT on top of a base; you rarely start from scratch.">
+    <figcaption>Base → instruction tuning (SFT) → preference tuning → aligned assistant. When you fine-tune your own model, you’re usually doing more SFT on top of an already-capable base.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p><span class="term">Supervised fine-tuning</span> (SFT) trains the model on instruction→response pairs so it learns to produce the response given the instruction — the workhorse of instruction tuning. The data uses a <span class="term">chat template</span>: the specific formatting (special tokens marking system/user/assistant turns) the model expects. <span class="term">Preference tuning</span> — via <span class="term">RLHF</span> (reinforcement learning from human feedback) or the simpler <span class="term">DPO</span> (direct preference optimization) — further trains the model on <em>comparisons</em> (“response A is better than B”) to align tone, helpfulness, and safety with human preferences.</p>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — SFT a model to your style (free, Colab)</div>
+    <p>SFT is the QLoRA setup from Lesson 5.4 pointed at instruction/response data. The crucial detail is the chat template — TRL applies the model’s template so training matches inference.</p>
+<pre><code><span class="k">from</span> datasets <span class="k">import</span> Dataset
+<span class="k">from</span> trl <span class="k">import</span> SFTTrainer, SFTConfig
+<span class="k">from</span> peft <span class="k">import</span> LoraConfig
+
+<span class="c"># instruction → response pairs, as chat messages (Lesson 5.3 format)</span>
+rows <span class="o">=</span> [
+    {<span class="s">"messages"</span>: [
+        {<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: <span class="s">"A customer is upset about a late order. Reply."</span>},
+        {<span class="s">"role"</span>: <span class="s">"assistant"</span>, <span class="s">"content"</span>: <span class="s">"I'm so sorry about the delay — here's what I'll do..."</span>},
+    ]},
+    <span class="c"># ... a few hundred examples in YOUR tone and format ...</span>
+]
+ds <span class="o">=</span> Dataset.<span class="f">from_list</span>(rows)
+
+trainer <span class="o">=</span> <span class="f">SFTTrainer</span>(
+    model<span class="o">=</span>model,                                   <span class="c"># 4-bit base from Lesson 5.4</span>
+    train_dataset<span class="o">=</span>ds,                             <span class="c"># TRL applies the model's chat template</span>
+    peft_config<span class="o">=</span><span class="f">LoraConfig</span>(r<span class="o">=</span><span class="n">16</span>, lora_alpha<span class="o">=</span><span class="n">32</span>, task_type<span class="o">=</span><span class="s">"CAUSAL_LM"</span>),
+    args<span class="o">=</span><span class="f">SFTConfig</span>(output_dir<span class="o">=</span><span class="s">"sft-out"</span>, num_train_epochs<span class="o">=</span><span class="n">3</span>, learning_rate<span class="o">=</span><span class="n">2e-4</span>),
+)
+trainer.<span class="f">train</span>()
+<span class="c"># now the model replies in your taught style — without those examples in the prompt</span></code></pre>
+    <p>After SFT, the model behaves the way your examples demonstrated — apologetic-then-actionable support replies, say — <em>without</em> needing those instructions/examples in every prompt. That baked-in behavior is the payoff of instruction tuning.</p>
+  </div>
+
+  <div class="box note">
+    <div class="box-label">The chat template gotcha</div>
+    <p>Each model family has its own chat template (the exact special tokens around turns). Training with the wrong template — or serving with a different one than you trained with — quietly wrecks results. Use the tokenizer’s built-in template (libraries like TRL do this for you) and <strong>serve with the same template you trained with</strong>.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li><strong>Instruction tuning (SFT)</strong> trains on instruction→response pairs so the model learns to follow requests.</li>
+      <li>It’s how <strong>base models become assistants</strong>, and how you specialize behavior/tone for your task.</li>
+      <li><strong>Preference tuning (RLHF/DPO)</strong> aligns the model with human preferences using comparisons.</li>
+      <li>Always use the correct <strong>chat template</strong>, and train in the exact format you’ll serve.</li>
+      <li>After SFT, the taught behavior is <strong>baked in</strong> — no need to repeat it in every prompt.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">You SFT a base model on Q&amp;A pairs, but at inference you prompt it with a different chat format than you trained on. Results are oddly bad. Why?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Template mismatch — the model learned to respond within a specific turn format; a different format at inference puts it in an unfamiliar state.</span>
+        <div class="why">Correct. SFT teaches the model to produce responses given a particular structure (special tokens, system/user/assistant layout). Serving with a different template breaks the pattern it learned, degrading output. Train and serve with the identical chat template.</div></li>
+      <li data-correct="false"><span class="opt">B) The model forgot how to read English.</span>
+        <div class="why">It didn’t lose language ability from light SFT. The specific “trained one way, prompted another” symptom points to a formatting/template mismatch, not lost competence.</div></li>
+      <li data-correct="false"><span class="opt">C) LoRA rank was too high.</span>
+        <div class="why">Rank affects adapter capacity, not whether your inference format matches training. The described mismatch is a template problem, independent of rank.</div></li>
+      <li data-correct="false"><span class="opt">D) You needed RLHF.</span>
+        <div class="why">Preference tuning aligns tone/helpfulness; it wouldn’t fix a basic format mismatch. The fix is to serve with the same chat template you trained on.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Explain to a teammate the difference between SFT and preference tuning (RLHF/DPO).<br>
+    <strong>2.</strong> You want a model that writes release notes in your company’s exact voice. SFT, RLHF, or both? Why?<br>
+    <strong>3.</strong> Why does instruction tuning let you shrink your prompts at inference?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> SFT teaches the model to produce a <em>good response</em> by imitating example instruction→response pairs — it learns “what a right answer looks like.” Preference tuning (RLHF/DPO) goes further using <em>comparisons</em> between responses (“A is better than B”), nudging the model toward the more-preferred style/helpfulness/safety. SFT imitates demonstrations; preference tuning optimizes against human judgments of quality.</p>
+        <p><strong>2.</strong> <strong>SFT</strong> is enough and is the right tool: a consistent voice/format is exactly what imitating good examples teaches. RLHF/DPO is heavier and aimed at nuanced preference trade-offs (helpfulness vs. safety, ranking among good answers) — overkill for “match this voice.” Start with SFT on a few hundred well-written release notes in your voice.</p>
+        <p><strong>3.</strong> Because the behavior you’d otherwise have to specify with a long prompt (role, tone, format, examples) is now <em>in the weights</em>. The model defaults to that behavior, so you can drop most of the instruction/few-shot scaffolding from each call — saving tokens, cost, and latency on every request. You paid once in training to stop paying forever in prompt overhead.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: why preference tuning exists</div>
+    <p>SFT alone has a ceiling: it can only teach the model to imitate the responses you wrote, and writing a perfect demonstration for every situation is hard — sometimes it’s far easier to <em>compare</em> two responses than to author the ideal one. Preference tuning exploits this. In <span class="term">RLHF</span>, humans rank model outputs, a “reward model” learns to predict those rankings, and the model is then optimized to produce outputs the reward model scores highly — letting it discover good behavior beyond any single demonstration. <span class="term">DPO</span> achieves a similar effect more simply, directly training on preferred-vs-rejected pairs without a separate reward model, which is why it’s become popular for teams doing their own alignment.</p>
+    <p>For your own projects, the practical takeaway is a ladder: <strong>SFT first</strong> — it’s simpler, cheaper, and solves most “make it behave like X” needs. Reach for <strong>preference tuning</strong> only when you need to optimize subtle trade-offs SFT can’t easily capture (nuanced helpfulness, refusing the right things, ranking among already-good answers) and you can collect preference comparisons. Most applied fine-tuning you’ll do is SFT with LoRA on a few hundred excellent examples — understanding RLHF/DPO mainly lets you reason about how the assistants you build on were aligned, and recognize when your task genuinely needs that extra machinery.</p>
+  </div>
+
+  <p>You’ve trained a model. The non-negotiable final step is proving it actually got better — without quietly breaking. Next: <strong>evaluating a fine-tune</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

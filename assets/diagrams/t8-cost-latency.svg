@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 320" width="900" height="320" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="900" height="320" fill="#ffffff"/>
+<text x="450" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">The two numbers you must control: cost &amp; latency</text>
+<rect x="40" y="72.5" width="380" height="70" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="40" y="75" width="380" height="70" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="40" y="70" width="380" height="70" rx="13" ry="13" fill="url(#g_concept)" stroke="#2563eb" stroke-width="1.8"/>
+<text x="230.0" y="97.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1e3a8a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Cost ≈ (input + output tokens) × price</text>
+<text x="230.0" y="109.75" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">you pay for BOTH the prompt and the answer</text>
+<rect x="480" y="72.5" width="380" height="70" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="480" y="75" width="380" height="70" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="480" y="70" width="380" height="70" rx="13" ry="13" fill="url(#g_key)" stroke="#d97706" stroke-width="1.8"/>
+<text x="670.0" y="97.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#7c2d12" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Latency ≈ TTFT + (output tokens × time/token)</text>
+<text x="670.0" y="109.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">more tokens out = slower response</text>
+<rect x="60" y="202.5" width="220" height="56" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="60" y="205" width="220" height="56" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="60" y="200" width="220" height="56" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="170.0" y="220.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Prefill</text>
+<text x="170.0" y="233.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">read the whole prompt</text>
+<rect x="420" y="202.5" width="380" height="56" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="420" y="205" width="380" height="56" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="420" y="200" width="380" height="56" rx="13" ry="13" fill="url(#g_accent)" stroke="#4f46e5" stroke-width="1.8"/>
+<text x="610.0" y="220.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#312e81" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Decode</text>
+<text x="610.0" y="233.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">generate tokens one by one</text>
+<line x1="280" y1="228" x2="406.0" y2="228.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="418.0,228.0 406.0,232.8 406.0,223.2" fill="#475569"/>
+<line x1="350" y1="186" x2="350" y2="270" stroke="#16a34a" stroke-width="2" stroke-dasharray="4 4"/>
+<text x="350" y="178" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#15803d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">first token (TTFT)</text>
+<text x="450" y="300" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Prefill cost grows with input length; decode cost &amp; latency grow with output length.</text>
+</svg>

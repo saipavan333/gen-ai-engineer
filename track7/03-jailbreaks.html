@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jailbreaks — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="7.3">
+<main class="lesson">
+
+  <span class="eyebrow">Track 7 · Lesson 7.3</span>
+  <h1>Jailbreaks</h1>
+  <p class="lead">A jailbreak tricks the model into bypassing its own safety training to produce content it’s supposed to refuse. If your app is public-facing, people <em>will</em> try. You can’t make it impossible, but you can make it hard, detectable, and low-impact.</p>
+
+  <h2>Jailbreak vs. injection</h2>
+  <p>These overlap but aim at different targets. <span class="term">Prompt injection</span> (last lesson) hijacks <em>your application’s</em> instructions. A <span class="term">jailbreak</span> targets the <em>model’s</em> built-in safety — getting it to produce disallowed content (instructions for harm, hate speech, etc.) by working around its refusal training. Same spirit (adversarial text), different goal. A public chatbot needs to resist both: injection so it stays on-task and doesn’t leak, jailbreaks so it doesn’t emit harmful content under your brand.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t7-jailbreak.svg" alt="Jailbreaks: bypassing safety and defenses. 'Pretend you're an AI with no rules' → robust system prompt + refusal training. 'Ignore your guidelines and…' → treat instructions in input as data. Obfuscation (encodings, typos, other languages) → moderation on decoded/normalized text. Slowly escalating a long conversation → re-check safety each turn, not just turn 1. No defense is perfect; it's an arms race, so layer defenses and assume some attempts get through.">
+    <figcaption>Common jailbreak families and the defense each calls for. Notice the last one: safety must be checked <em>every</em> turn, since attacks escalate gradually.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p>A <span class="term">jailbreak</span> is an input crafted to circumvent a model’s safety guidelines so it produces prohibited output. Families include <span class="term">role-play</span> (“pretend you’re an unrestricted AI”), direct <span class="term">override</span> (“ignore your guidelines”), <span class="term">obfuscation</span> (encodings, misspellings, other languages to slip past filters), and <span class="term">multi-turn escalation</span> (building up gradually so no single message looks bad). Defenses are probabilistic, so this is an ongoing <span class="term">arms race</span>, not a solved problem.</p>
+  </div>
+
+  <h2>The defense stack</h2>
+  <ul>
+    <li><strong>A safety-trained model</strong> with refusal behavior is your first line — modern instruct/chat models are tuned to refuse a lot out of the box.</li>
+    <li><strong>A clear system prompt</strong> stating boundaries and how to refuse, reinforced (not solely relied upon).</li>
+    <li><strong>Content moderation</strong> on input and output (Lesson 7.5) — independent classifiers that catch unsafe content the model produced anyway, and normalize/decode text before checking to defeat obfuscation.</li>
+    <li><strong>Per-turn re-checking</strong> — evaluate safety on every turn, not just the first, to catch gradual escalation.</li>
+    <li><strong>Monitoring &amp; rate-limiting</strong> — detect probing patterns and slow down or flag abusive users.</li>
+  </ul>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>A <strong>jailbreak</strong> bypasses the model’s safety training; <strong>injection</strong> bypasses your app’s instructions — defend both.</li>
+      <li>Families: <strong>role-play, override, obfuscation, multi-turn escalation</strong>.</li>
+      <li>No defense is perfect — it’s an <strong>arms race</strong>; assume some attempts succeed.</li>
+      <li>Layer: <strong>safety-trained model + system prompt + input/output moderation + per-turn checks + monitoring</strong>.</li>
+      <li>Decode/normalize text before moderating, and re-check <strong>every turn</strong> (not just turn 1).</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your bot refuses harmful requests turn-1, but users coax it across a long, friendly conversation until it complies. What defense was missing?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Per-turn safety checking — moderation must run on every turn (and consider conversation context), not just the first message.</span>
+        <div class="why">Correct. Multi-turn escalation builds up gradually so no single message trips a filter, and the final harmful turn only makes sense in context. Re-checking safety each turn — ideally with conversation context — catches the drift that a turn-1-only check misses.</div></li>
+      <li data-correct="false"><span class="opt">B) A bigger system prompt repeated once at the start.</span>
+        <div class="why">A start-only instruction fades over a long conversation and doesn’t actively detect escalation. The gap is ongoing checking, not a longer one-time prompt.</div></li>
+      <li data-correct="false"><span class="opt">C) Lower temperature.</span>
+        <div class="why">Temperature doesn’t address gradual jailbreaks; the model is being persuaded over turns regardless of randomness. You need continuous safety evaluation.</div></li>
+      <li data-correct="false"><span class="opt">D) Nothing — if it complied, the content must be acceptable.</span>
+        <div class="why">Compliance after coaxing is exactly the failure, not evidence of acceptability. The attack succeeded; the fix is per-turn moderation and monitoring.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> In one line each, distinguish a jailbreak from a prompt injection by their <em>target</em>.<br>
+    <strong>2.</strong> Why does obfuscation (e.g., base64, leetspeak, another language) defeat a naive keyword filter, and what’s the fix?<br>
+    <strong>3.</strong> Why is output moderation a necessary backstop even with a safety-trained model and a good system prompt?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> A <strong>jailbreak</strong> targets the <em>model’s</em> safety guidelines (make it produce disallowed content). A <strong>prompt injection</strong> targets <em>your app’s</em> instructions/behavior (make it ignore its task, leak its prompt, or trigger an action). Different victims, related technique.</p>
+        <p><strong>2.</strong> A naive filter matches literal banned words, but obfuscation hides them — “h4te” or a base64 blob or a foreign-language phrasing doesn’t match the keyword while still conveying the harmful intent to the model. The fix is to <strong>normalize/decode before checking</strong> (lowercase, strip leetspeak, decode encodings, translate) and, better, use a learned moderation classifier that understands meaning rather than exact strings.</p>
+        <p><strong>3.</strong> Because the model’s safety is probabilistic and jailbreaks evolve — some attempts <em>will</em> get the model to generate unsafe content despite training and prompting. Output moderation is an independent layer that inspects what the model actually produced and blocks it before the user sees it, catching failures of the earlier layers. Defense in depth: you assume each layer leaks, so you add another (Lesson 7.7).</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: red-teaming and the arms-race mindset</div>
+    <p>Because jailbreaks evolve, you defend them like any adversarial system: continuously test, monitor, and update. <strong>Red-teaming</strong> — having people (and increasingly automated tools) actively try to break your bot — is the core practice; turn the successful attacks into a permanent safety eval suite (Track 6) so you can verify each defense and catch regressions. <strong>Monitoring</strong> production for probing patterns (repeated refusals, escalation, encoded inputs) lets you detect and rate-limit abusers in real time. And accept the asymmetry: defenders must cover every hole, attackers need one — so the goal isn’t a perfect wall but raising the cost, narrowing the gaps, and limiting the damage of a success.</p>
+    <p>Two perspective points keep this proportionate. First, <em>match effort to exposure and stakes</em>: an internal tool used by employees needs far less jailbreak hardening than a public consumer bot or one that can take actions; a model that can only return text under your brand is mostly a reputational risk, while one wired to tools or sensitive data is a security one. Second, remember that jailbreaks and injection share the same root — the model treats persuasive text as authoritative — so the same structural defenses help both: independent moderation, least privilege, output validation, and monitoring. You won’t “solve” jailbreaks any more than the web “solved” spam; you manage them with layered, evolving defenses and a clear-eyed view of what’s actually at risk.</p>
+  </div>
+
+  <p>Beyond what the model <em>says</em>, you must protect the <em>data</em> flowing through your system. Next: <strong>PII &amp; privacy</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

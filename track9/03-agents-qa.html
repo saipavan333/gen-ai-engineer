@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agents Q&amp;A — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="9.3">
+<main class="lesson">
+
+  <span class="eyebrow">Track 9 · Lesson 9.3</span>
+  <h1>Agents Q&amp;A</h1>
+  <p class="lead">Agentic system-design questions are increasingly common: design something where an LLM uses tools to reason, plan, and act. Interviewers want maturity — you give a model autonomy <em>responsibly</em>. This bank covers the questions, with the security and “when not to” judgment that signals seniority.</p>
+
+  <div class="box note">
+    <div class="box-label">What they’re really testing</div>
+    <p>Whether you can reason about <strong>when to use tools vs. pure generation</strong>, <strong>planning vs. direct tool calls</strong>, and — above all — how you keep an autonomous, tool-using system <strong>safe and bounded</strong>. The strongest signal: reaching for the <em>least</em> autonomy that solves the task.</p>
+  </div>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t4-recap.svg" alt="The agent all together: a Goal enters an Agent (LLM) that loops reason → act → observe, inside a Guardrails frame (max-steps, validate args, approve risky actions), connected to Tools (via MCP) and Memory (short plus long), producing a Cited / final answer.">
+    <figcaption>An agent is a guarded loop with tools and memory. Narrate this and name the guard on each part. (Full depth in Track 4.)</figcaption>
+  </figure>
+
+  <h2>The bank</h2>
+
+  <div class="box practice"><div class="box-label">Q · framing</div><p><strong>“When do you use tools vs. pure text generation, and when do you build an agent at all?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Answer</summary><div class="sol-body"><p>Use a tool when the task needs something the model can’t do reliably from text — fresh data, exact computation, or an action in the world. Build an <em>agent</em> (a loop) only when the path depends on what each step reveals; for fixed, single-step or known-pipeline tasks, a plain prompt or RAG is simpler and more reliable. Principle: the least autonomy that solves the task — agents add cost and failure surface, so I justify them.</p></div></details></div>
+
+  <div class="box practice"><div class="box-label">Q · tool calling</div><p><strong>“How does tool/function calling work end to end?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Answer</summary><div class="sol-body"><p>You expose tools with schemas (name, description, typed params). The model emits a structured tool call (which tool, what args) — it never runs code itself. Your code executes the function and returns the result as a tool-role message; the model continues. Tool descriptions are prompt surface (clear ones drive correct selection), and arguments are untrusted input you validate.</p></div></details></div>
+
+  <div class="box practice"><div class="box-label">Q · the loop</div><p><strong>“Explain the agent loop and why it needs a step limit.”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Answer</summary><div class="sol-body"><p>The loop repeatedly asks the model what to do: call a tool (whose observation is appended) or emit a final answer. ReAct interleaves reasoning with acting so each step builds on the last. It needs a max-step cap because the model decides when to stop, and a confused model can loop forever — the cap guarantees termination and bounds cost. I also log the full trace; agent debugging is reading traces.</p></div></details></div>
+
+  <div class="box practice"><div class="box-label">Q · planning</div><p><strong>“Planning-based agents vs. direct tool calls — when each?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Answer</summary><div class="sol-body"><p>Direct (reactive) tool calls suit short tasks where each step reveals the next. Planning — decompose the goal into steps first — suits longer, open-ended goals: you get an inspectable, approvable plan and possible parallelism. For surprise-prone tasks I prefer plan-and-reflect (re-check after each step and replan) over executing a fixed plan blindly. Best agents combine planning (structure) with reactive execution (adaptivity).</p></div></details></div>
+
+  <div class="box practice"><div class="box-label">Q · memory</div><p><strong>“How do agents remember things across steps and sessions?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Answer</summary><div class="sol-body"><p>Two layers: short-term is the context window (summarize old turns to fit), long-term is an external store you write to and retrieve from — which is just RAG over the agent’s own history (episodic events + semantic facts). The hard part is curation, not storage: extract salient facts, dedupe/update them, and retrieve precisely; and treat the memory store as sensitive data (privacy).</p></div></details></div>
+
+  <div class="box practice"><div class="box-label">Q · MCP</div><p><strong>“What is MCP and why does it matter?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Answer</summary><div class="sol-body"><p>An open standard for connecting AI apps to tools/data — “USB-C for AI.” A client connects to servers exposing tools, resources, and prompts through one protocol, so you build a connector once and any compatible agent uses it. It’s become industry-standard infrastructure, which shifts agent-building toward connecting trusted servers — and makes server trust a real security question.</p></div></details></div>
+
+  <div class="box practice"><div class="box-label">Q · multi-agent</div><p><strong>“When would you use multiple agents, and what’s the risk?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Answer</summary><div class="sol-body"><p>Use specialists + an orchestrator when roles are genuinely separable (router, pipeline, parallel). The risk is coordination overhead — lossy handoffs, compounding errors, higher cost and harder debugging. So single-agent-first: one well-tooled agent usually beats five poorly-coordinated ones; add agents only when a single agent measurably struggles.</p></div></details></div>
+
+  <div class="box practice"><div class="box-label">Q · safety (the big one)</div><p><strong>“How do you make an autonomous, tool-using agent safe for production?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Answer</summary><div class="sol-body"><p>Defense in depth: bound the loop (max steps), validate tool arguments, cap cost/time (budgets, timeouts), require human approval for irreversible/high-impact actions, apply least privilege (only the tools the task needs), sandbox dangerous capabilities, and log every step. Hard limits live in <em>code</em>, not the prompt (injection can override prompts). Treat tool/retrieved content as untrusted (injection risk). And evaluate the agent on representative tasks on every change, since I can’t eyeball dozens of autonomous actions.</p></div></details></div>
+
+  <div class="quiz">
+    <p class="quiz-q">“Design an agent that can issue refunds.” Which detail most signals seniority?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) A hard, code-level refund cap plus human approval above a threshold — never trusting the prompt for the limit, since injection can override it.</span>
+        <div class="why">Correct. Recognizing that the dangerous, irreversible action must be constrained in the trusted layer (code) — not the manipulable prompt — and gated by a human, shows you understand agent security and containment. It’s the detail that separates “I built an agent” from “I built one I’d let touch money.”</div></li>
+      <li data-correct="false"><span class="opt">B) Using the biggest available model for accuracy.</span>
+        <div class="why">A bigger model is still injectable and, with an unrestricted refund tool, can still be tricked into harm. Capability doesn’t contain impact; constraints and approval do.</div></li>
+      <li data-correct="false"><span class="opt">C) A longer system prompt forbidding large refunds.</span>
+        <div class="why">Prompt instructions can be overridden by injection and aren’t enforced. The limit must be in code, outside the model’s influence.</div></li>
+      <li data-correct="false"><span class="opt">D) Higher temperature for flexible responses.</span>
+        <div class="why">Irrelevant to safety and makes behavior less predictable. The senior detail is containment of the money-moving action.</div></li>
+    </ul>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Delivery tips</div>
+    <ul>
+      <li>State the <strong>least-autonomy principle</strong> early — show you don’t reach for agents reflexively.</li>
+      <li>For any action-taking agent, volunteer the <strong>guard stack</strong> (least privilege, code-level limits, human approval, validation, monitoring).</li>
+      <li>Treat <strong>tool/retrieved content as untrusted</strong> (injection) — security awareness is a major signal.</li>
+      <li>Mention <strong>evaluating agents</strong> on task suites — you can’t eyeball autonomous behavior.</li>
+    </ul>
+  </div>
+
+  <p>You’ve got the topic banks. Now the format that ties them together — the live whiteboard. Next: <strong>system design rounds</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

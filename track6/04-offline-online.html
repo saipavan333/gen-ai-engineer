@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Offline vs online evals — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="6.4">
+<main class="lesson">
+
+  <span class="eyebrow">Track 6 · Lesson 6.4</span>
+  <h1>Offline vs online evals</h1>
+  <p class="lead">Your golden set tells you a change is good <em>before</em> you ship. Real users tell you if it’s <em>actually</em> good <em>after</em> you ship. Mature teams use both — and know the gap between them is where surprises live.</p>
+
+  <h2>Two complementary measurements</h2>
+  <p>So far we’ve done <span class="term">offline eval</span>: run the system on a fixed golden set, score it, decide. It’s fast, cheap, and repeatable — perfect for gating changes. But a golden set is a <em>proxy</em>: it’s your best guess at what real usage looks like, and it can’t capture everything (new query types, real user behavior, edge cases you didn’t imagine). <span class="term">Online eval</span> measures the system on <em>real production traffic</em> — via A/B tests, user feedback, and outcome metrics. It’s the ground truth, but it’s slower, needs live traffic, and risks exposing users to a worse version.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t6-offline-online.svg" alt="Offline vs online evaluation. Offline (before deploy): run on your golden set; fast, cheap, repeatable; gates every change (CI); but it's a proxy for the real world. Online (in production): real traffic and users; A/B tests, user feedback, ratings; the ground-truth signal; but slower, riskier, needs traffic. You need both: offline to ship safely, online to learn what actually works.">
+    <figcaption>Offline gates changes cheaply before they ship; online reveals real-world truth after. Each covers the other’s blind spot.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p><span class="term">Offline evaluation</span> scores the system on a fixed dataset (your golden set) before deployment — fast, repeatable, cheap. <span class="term">Online evaluation</span> measures real production behavior: an <span class="term">A/B test</span> sends some users to the new version and compares outcomes; <span class="term">user feedback</span> (thumbs up/down, ratings, corrections) and <span class="term">outcome metrics</span> (task completion, resolution rate, retention) reveal true impact. Offline is a proxy; online is ground truth.</p>
+  </div>
+
+  <h2>What online signals look like</h2>
+  <div class="tbl-wrap">
+    <table class="t">
+      <tr><th>Signal</th><th>What it tells you</th><th>Watch out</th></tr>
+      <tr><td><strong>A/B test</strong></td><td>Did the new version improve a real metric vs the old?</td><td>Needs enough traffic for significance; pick the metric carefully</td></tr>
+      <tr><td><strong>Thumbs / ratings</strong></td><td>Direct quality feedback per response</td><td>Sparse and biased (mostly unhappy users click)</td></tr>
+      <tr><td><strong>Implicit signals</strong></td><td>Did they accept the answer, retry, escalate, churn?</td><td>Noisy; correlate, don’t over-interpret single events</td></tr>
+      <tr><td><strong>Guardrail metrics</strong></td><td>Did latency/cost/error rate stay healthy?</td><td>A quality win that tanks latency isn’t a win</td></tr>
+    </table>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — capture online feedback (free)</div>
+    <p>Online eval starts with logging the right things per request so you can measure real outcomes. No special service needed to begin.</p>
+<pre><code><span class="k">import</span> json, time
+
+<span class="k">def</span> <span class="f">log_interaction</span>(request_id, version, query, answer, latency_ms):
+    record <span class="o">=</span> {
+        <span class="s">"id"</span>: request_id, <span class="s">"version"</span>: version,        <span class="c"># which variant (for A/B)</span>
+        <span class="s">"query"</span>: query, <span class="s">"answer"</span>: answer,
+        <span class="s">"latency_ms"</span>: latency_ms, <span class="s">"ts"</span>: time.<span class="f">time</span>(),
+        <span class="s">"feedback"</span>: <span class="kc">None</span>,                          <span class="c"># filled in when the user reacts</span>
+    }
+    append_to_log(record)
+
+<span class="k">def</span> <span class="f">record_feedback</span>(request_id, thumb):                 <span class="c"># user clicked 👍/👎</span>
+    update_log(request_id, {<span class="s">"feedback"</span>: thumb})
+
+<span class="c"># later: compare versions on real traffic</span>
+<span class="c"># win_rate(version="B") vs win_rate(version="A")  → did B actually do better?</span></code></pre>
+    <p>This is the raw material of online eval: every interaction tagged with its version, latency, and (when available) user feedback, so you can compare variants on the only data that ultimately matters — real usage.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li><strong>Offline</strong> (golden set) is fast, cheap, repeatable — use it to <strong>gate every change</strong> before shipping.</li>
+      <li><strong>Online</strong> (A/B, feedback, outcomes) is the <strong>ground truth</strong> — use it to learn what actually works.</li>
+      <li>Offline is a <strong>proxy</strong>; the offline–online gap is where surprises (and learning) live.</li>
+      <li>Watch <strong>guardrail metrics</strong> (latency, cost, errors) alongside quality — a slow “better” answer isn’t better.</li>
+      <li>Feed online failures back into the <strong>golden set</strong> so offline gets more representative over time.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">A prompt change improves your offline golden-set score by 8%, so you ship to 100% of users immediately. Why is that risky?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Offline is a proxy — the golden set may not represent all real traffic, so you should roll out gradually (A/B) and watch real metrics before going to 100%.</span>
+        <div class="why">Correct. An offline win is necessary but not sufficient: the golden set can miss query types, real user behavior, or trade-offs (e.g., latency). A staged rollout / A/B test lets you confirm the improvement on real traffic and catch regressions the proxy missed before everyone is affected.</div></li>
+      <li data-correct="false"><span class="opt">B) It’s not risky — an 8% offline gain guarantees real-world improvement.</span>
+        <div class="why">No offline number guarantees online results; the golden set is an approximation. Shipping to everyone on offline evidence alone is how teams get blindsided by real-world regressions.</div></li>
+      <li data-correct="false"><span class="opt">C) Offline evals are useless, so the 8% means nothing.</span>
+        <div class="why">Offline evals are very useful — they’re your cheap gate. The point isn’t to distrust them, but to confirm with online data before full rollout. Both matter.</div></li>
+      <li data-correct="false"><span class="opt">D) You should have skipped offline and only tested online.</span>
+        <div class="why">Skipping offline would expose users to untested changes — the opposite of safe. Offline gates first, then online validates; you want both in sequence, not online alone.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Give one thing offline evals catch that online can’t, and one thing online catches that offline can’t.<br>
+    <strong>2.</strong> Why are thumbs-up/down ratings a biased signal, and how would you supplement them?<br>
+    <strong>3.</strong> You ship a change that improves answer quality but quietly doubles latency. Which eval should have caught it, and how?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> Offline catches regressions <em>before</em> any user is affected (cheap, repeatable, on known cases) — online can’t prevent harm before exposure. Online catches what your golden set never imagined — novel query types, real user behavior, and true outcomes (did they actually get helped?) — which offline, being a fixed proxy, structurally can’t see. They’re complementary by design.</p>
+        <p><strong>2.</strong> Ratings are sparse and self-selected: most users don’t click, and those who do skew toward extremes (especially the frustrated). So they over-represent unhappy cases and miss the silent majority. Supplement with <em>implicit</em> signals (did they accept the answer, retry, escalate, complete the task?) and periodic structured surveys or human review of sampled interactions — triangulate rather than trust one noisy signal.</p>
+        <p><strong>3.</strong> A <strong>guardrail metric</strong> on latency — measured both offline (you can time responses on the golden set) and online (monitor p95 latency per version). Quality evals alone would have shown a win and missed the regression. Always pair quality metrics with cost/latency/error guardrails so an improvement on one axis can’t silently wreck another (this is exactly Track 8’s concern).</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: closing the offline–online loop</div>
+    <p>The magic happens when offline and online feed each other. Online surfaces reality — a cluster of queries your bot handles badly, a new way users phrase things, an edge case you never tested. You harvest those failures, label them, and add them to the golden set. Now your <em>offline</em> eval is more representative, so the next change is gated against the real problems, and you catch them before shipping. Over months this loop drags your proxy ever closer to reality, which is why teams with strong observability (Lesson 6.5) improve so much faster: they have a firehose of real failures to learn from.</p>
+    <p>A few practical disciplines. Run <strong>A/B tests with a clear primary metric</strong> chosen in advance (resolution rate, task success, accepted-answer rate) and enough traffic to reach significance — don’t peek and stop early. Watch <strong>guardrail metrics</strong> (latency, cost, error/refusal rates) so a quality win can’t hide a serious regression. And remember the asymmetry: offline lets you fail safely and cheaply, online lets you learn truthfully but at the cost of real exposure — so the standard flow is <em>offline gate → small online rollout → full rollout</em>, never straight to 100%. Master this and “shipping an LLM change” becomes a controlled, measured process instead of a leap of faith.</p>
+  </div>
+
+  <p>Both offline and online eval depend on <em>seeing</em> what your system actually did on each request. That visibility is observability. Next: <strong>tracing &amp; observability</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

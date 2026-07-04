@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 332" width="820" height="332" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="820" height="332" fill="#ffffff"/>
+<text x="410" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">What LLMs are reliable at — and what to watch</text>
+<rect x="24" y="60" width="372" height="252" rx="14" ry="14" fill="#f3fbf5" stroke="#16a34a" stroke-width="2"/>
+<text x="210" y="86" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="15.5" fill="#16a34a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Reliable at</text>
+<circle cx="54" cy="120" r="5" fill="#16a34a"/>
+<text x="70" y="124" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">Rewriting &amp; reformatting text</text>
+<circle cx="54" cy="151" r="5" fill="#16a34a"/>
+<text x="70" y="155" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">Summarizing text you provide</text>
+<circle cx="54" cy="182" r="5" fill="#16a34a"/>
+<text x="70" y="186" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">Drafting, brainstorming, ideation</text>
+<circle cx="54" cy="213" r="5" fill="#16a34a"/>
+<text x="70" y="217" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">Explaining concepts &amp; code</text>
+<circle cx="54" cy="244" r="5" fill="#16a34a"/>
+<text x="70" y="248" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">Extracting structure (e.g. JSON)</text>
+<circle cx="54" cy="275" r="5" fill="#16a34a"/>
+<text x="70" y="279" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">Translation &amp; shifting tone</text>
+<rect x="424" y="60" width="372" height="252" rx="14" ry="14" fill="#fef5f4" stroke="#dc2626" stroke-width="2"/>
+<text x="610" y="86" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="15.5" fill="#dc2626" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Handle with care</text>
+<circle cx="454" cy="120" r="5" fill="#dc2626"/>
+<text x="470" y="124" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">Exact facts from memory → may invent</text>
+<circle cx="454" cy="151" r="5" fill="#dc2626"/>
+<text x="470" y="155" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">Events after its training cutoff</text>
+<circle cx="454" cy="182" r="5" fill="#dc2626"/>
+<text x="470" y="186" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">Arithmetic &amp; counting letters</text>
+<circle cx="454" cy="213" r="5" fill="#dc2626"/>
+<text x="470" y="217" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">Real citations, URLs, quotes</text>
+<circle cx="454" cy="244" r="5" fill="#dc2626"/>
+<text x="470" y="248" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">Knowing when it is unsure</text>
+<circle cx="454" cy="275" r="5" fill="#dc2626"/>
+<text x="470" y="279" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">Anything it was never shown</text>
+</svg>

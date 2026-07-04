@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Capstone: RAG assistant over your docs — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="10.1">
+<main class="lesson">
+
+  <span class="eyebrow">Track 10 · Capstone 10.1</span>
+  <h1>Capstone: a RAG assistant over your docs</h1>
+  <p class="lead">Your flagship project: a grounded, cited question-answering assistant over documents <em>you</em> provide, with a real evaluation. It runs entirely free and local, demonstrates Tracks 1–8 in one artifact, and is the single best thing to show in an interview. Build it, and you can talk about every topic in this course from experience.</p>
+
+  <h2>What you’re building</h2>
+  <p>A complete RAG system: ingest your documents, answer questions grounded in them with citations, abstain when the answer isn’t there, and <em>measure</em> retrieval and answer quality. Everything uses the free stack from this course — <strong>Ollama</strong> (local LLM), <strong>sentence-transformers / Chroma</strong> (embeddings + vector DB) — so it costs $0 and runs on your machine or free Colab.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t3-recap.svg" alt="Production RAG end to end: Knowledge base (documents chunked, embedded, vector index, built offline once); per query: Query → Embed + retrieve → Rerank → Grounded prompt → LLM → Cited answer. Index once; per query embed, retrieve, rerank, ground, generate with citations.">
+    <figcaption>The architecture you’re implementing. You built up every box across Track 3; now you assemble them into one running system.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Setup (one time, free)</div>
+    <p>Install <strong>Ollama</strong> from <code>ollama.com</code> and run <code>ollama pull llama3.2</code>. Then:</p>
+<pre><code><span class="o">$</span> pip install chromadb ollama
+<span class="c"># Chroma's default embedder (all-MiniLM-L6-v2) is free and downloads automatically.</span>
+<span class="c"># Put a few .txt/.md files in a ./docs folder (your notes, a manual, FAQs…).</span></code></pre>
+  </div>
+
+  <h2>Step 1 — Ingest: chunk, embed, store</h2>
+  <p>Read your docs, split into overlapping chunks with metadata, and store them in a vector DB (Track 3.2–3.4).</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">ingest.py</span></div>
+<pre><code><span class="k">import</span> os, glob, chromadb
+
+<span class="k">def</span> <span class="f">chunk</span>(text, size<span class="o">=</span><span class="n">120</span>, overlap<span class="o">=</span><span class="n">20</span>):
+    words <span class="o">=</span> text.<span class="f">split</span>()
+    step <span class="o">=</span> size <span class="o">-</span> overlap
+    out <span class="o">=</span> []
+    <span class="k">for</span> i <span class="k">in</span> <span class="f">range</span>(<span class="n">0</span>, <span class="f">len</span>(words), step):
+        c <span class="o">=</span> <span class="s">" "</span>.<span class="f">join</span>(words[i:i <span class="o">+</span> size])
+        <span class="k">if</span> c: out.<span class="f">append</span>(c)
+        <span class="k">if</span> i <span class="o">+</span> size <span class="o">&gt;=</span> <span class="f">len</span>(words): <span class="k">break</span>
+    <span class="k">return</span> out
+
+client <span class="o">=</span> chromadb.<span class="f">PersistentClient</span>(path<span class="o">=</span><span class="s">"./store"</span>)
+col <span class="o">=</span> client.<span class="f">get_or_create_collection</span>(<span class="s">"docs"</span>)        <span class="c"># free default embedder</span>
+
+<span class="k">for</span> path <span class="k">in</span> glob.<span class="f">glob</span>(<span class="s">"docs/**/*.*"</span>, recursive<span class="o">=</span><span class="kc">True</span>):
+    text <span class="o">=</span> open(path, encoding<span class="o">=</span><span class="s">"utf-8"</span>, errors<span class="o">=</span><span class="s">"ignore"</span>).<span class="f">read</span>()
+    <span class="k">for</span> j, ch <span class="k">in</span> <span class="f">enumerate</span>(<span class="f">chunk</span>(text)):
+        col.<span class="f">add</span>(ids<span class="o">=</span>[<span class="s">f"</span>{path}<span class="s">#</span>{j}<span class="s">"</span>], documents<span class="o">=</span>[ch],
+                metadatas<span class="o">=</span>[{<span class="s">"source"</span>: os.path.<span class="f">basename</span>(path), <span class="s">"chunk"</span>: j}])
+<span class="f">print</span>(<span class="s">"indexed"</span>, col.<span class="f">count</span>(), <span class="s">"chunks"</span>)</code></pre>
+
+  <h2>Step 2 — Answer: retrieve, ground, cite</h2>
+  <p>Retrieve the most relevant chunks, build a grounded prompt that forbids guessing and requires citations (Track 3.7), and generate with a free local model.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">rag.py</span></div>
+<pre><code><span class="k">import</span> chromadb, ollama
+
+col <span class="o">=</span> chromadb.<span class="f">PersistentClient</span>(path<span class="o">=</span><span class="s">"./store"</span>).<span class="f">get_collection</span>(<span class="s">"docs"</span>)
+
+<span class="k">def</span> <span class="f">answer</span>(question, k<span class="o">=</span><span class="n">4</span>):
+    res <span class="o">=</span> col.<span class="f">query</span>(query_texts<span class="o">=</span>[question], n_results<span class="o">=</span>k)
+    chunks <span class="o">=</span> res[<span class="s">"documents"</span>][<span class="n">0</span>]
+    sources <span class="o">=</span> [m[<span class="s">"source"</span>] <span class="k">for</span> m <span class="k">in</span> res[<span class="s">"metadatas"</span>][<span class="n">0</span>]]
+    context <span class="o">=</span> <span class="s">"\n"</span>.<span class="f">join</span>(<span class="s">f"[</span>{i+1}<span class="s">] </span>{c}<span class="s">"</span> <span class="k">for</span> i, c <span class="k">in</span> <span class="f">enumerate</span>(chunks))
+    prompt <span class="o">=</span> <span class="s">f"""Answer using ONLY the context. Cite sources as [n] after each claim.
+If the answer is not in the context, reply exactly: "I don't know based on the documents."
+
+Context:
+{context}
+
+Question: {question}"""</span>
+    out <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"llama3.2"</span>,
+            messages<span class="o">=</span>[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: prompt}],
+            options<span class="o">=</span>{<span class="s">"temperature"</span>: <span class="n">0</span>})[<span class="s">"message"</span>][<span class="s">"content"</span>]
+    <span class="k">return</span> {<span class="s">"answer"</span>: out, <span class="s">"sources"</span>: sources}
+
+<span class="k">if</span> __name__ <span class="o">==</span> <span class="s">"__main__"</span>:
+    <span class="k">while</span> <span class="kc">True</span>:
+        q <span class="o">=</span> input(<span class="s">"\nQ: "</span>)
+        r <span class="o">=</span> <span class="f">answer</span>(q)
+        <span class="f">print</span>(r[<span class="s">"answer"</span>], <span class="s">"\n— sources:"</span>, <span class="f">set</span>(r[<span class="s">"sources"</span>]))</code></pre>
+
+  <h2>Step 3 — Evaluate (the part that wins)</h2>
+  <p>Build a small golden set and measure retrieval (does the right source appear?) and grounding (does it abstain when it should?). This is what separates your project from everyone else’s (Track 6, Track 9.5).</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">eval.py</span></div>
+<pre><code><span class="k">from</span> rag <span class="k">import</span> answer
+
+golden <span class="o">=</span> [
+    {<span class="s">"q"</span>: <span class="s">"What is the refund window?"</span>,        <span class="s">"must_include"</span>: <span class="s">"30"</span>,        <span class="s">"source"</span>: <span class="s">"returns.md"</span>},
+    {<span class="s">"q"</span>: <span class="s">"How long is the warranty?"</span>,        <span class="s">"must_include"</span>: <span class="s">"year"</span>,      <span class="s">"source"</span>: <span class="s">"warranty.md"</span>},
+    {<span class="s">"q"</span>: <span class="s">"Do you ship to the Moon?"</span>,         <span class="s">"must_include"</span>: <span class="s">"don't know"</span>, <span class="s">"source"</span>: <span class="kc">None</span>},   <span class="c"># must abstain</span>
+    <span class="c"># ... add ~20 real questions, including edge cases ...</span>
+]
+
+retr_hit, ans_ok <span class="o">=</span> <span class="n">0</span>, <span class="n">0</span>
+<span class="k">for</span> ex <span class="k">in</span> golden:
+    r <span class="o">=</span> <span class="f">answer</span>(ex[<span class="s">"q"</span>])
+    <span class="k">if</span> ex[<span class="s">"source"</span>] <span class="k">is</span> <span class="kc">None</span> <span class="k">or</span> ex[<span class="s">"source"</span>] <span class="k">in</span> r[<span class="s">"sources"</span>]:
+        retr_hit <span class="o">+=</span> <span class="n">1</span>                                       <span class="c"># retrieval: right source present (or N/A)</span>
+    <span class="k">if</span> ex[<span class="s">"must_include"</span>].<span class="f">lower</span>() <span class="k">in</span> r[<span class="s">"answer"</span>].<span class="f">lower</span>():
+        ans_ok <span class="o">+=</span> <span class="n">1</span>                                        <span class="c"># answer: contains the expected fact / abstains</span>
+n <span class="o">=</span> <span class="f">len</span>(golden)
+<span class="f">print</span>(<span class="s">f"retrieval hit-rate: </span>{retr_hit/n:.2f}<span class="s">   answer correctness: </span>{ans_ok/n:.2f}<span class="s">"</span>)
+<span class="c"># Now change ONE thing (chunk size, k, model) and re-run to see if the numbers improve.</span></code></pre>
+
+  <div class="box key">
+    <div class="box-label">Make it stand out</div>
+    <ul>
+      <li><strong>Ship the eval.</strong> The <code>golden</code> set + the two numbers are your differentiator — almost no one includes them.</li>
+      <li><strong>Abstain honestly.</strong> The “I don’t know” path proves you handle the unanswerable case (no hallucination).</li>
+      <li><strong>Cite sources.</strong> Show which documents each answer came from — trust through traceability.</li>
+      <li><strong>Write a README</strong> with your design decisions (chunk size, k, why RAG), the eval results, and “what I’d do next.”</li>
+      <li>It’s <strong>$0 and runnable from a clean clone</strong> — any reviewer can try it.</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Extensions (stretch goals, each maps to a track)</div>
+    <p><strong>1.</strong> Add <strong>reranking</strong> (Track 3.5): retrieve 20, rerank to 4 with a free CrossEncoder. Measure the change in answer correctness.<br>
+    <strong>2.</strong> Add <strong>hybrid search</strong> (Track 3.6): blend BM25 with the vector search for queries containing exact terms/codes.<br>
+    <strong>3.</strong> Add <strong>caching</strong> (Track 8.3) and <strong>streaming</strong> (Track 8.2) for a snappier, cheaper UX.<br>
+    <strong>4.</strong> Add an <strong>LLM-as-judge</strong> faithfulness score (Track 6.3) to your eval, not just keyword matching.<br>
+    <strong>5.</strong> Add <strong>guardrails</strong> (Track 7): fence the question, validate the output, redact PII from logs.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> How to talk about it in an interview</summary>
+      <div class="sol-body">
+        <p>Anchor every answer to this project. <em>Fundamentals:</em> “I chunk into ~120-word pieces with overlap because tokens are the unit of retrieval and boundary ideas get lost otherwise.” <em>RAG:</em> “I separate retrieval and generation metrics so I know which half to fix.” <em>System design:</em> “Here’s how I’d scale it — a managed vector DB with ANN, hybrid + rerank, caching, and per-tenant filtering.” <em>Evals:</em> “I built a golden set and gate changes on it.” <em>Serving:</em> “At volume I’d cache and route easy queries to a smaller model.” <em>Behavioral:</em> “The trickiest bug was a retrieval miss from over-large chunks — I traced it, fixed chunking, and added an eval case so it can’t recur.” One project, every round (Track 9.4).</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">A reviewer compares two RAG take-homes: yours (works, plus a 25-example eval with results and a README explaining decisions) and another (a slicker UI, no eval). Who’s likely ranked higher, and why?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Yours — the evaluation and documented reasoning prove you can measure quality and think like an engineer, which is what the role needs.</span>
+        <div class="why">Correct. For an engineering role, demonstrating that you <em>measure</em> quality (a golden set + metrics) and can justify your decisions is the rare, hireable signal — far more than UI polish. The other submission proves it runs but not that it’s any good or that the author reasons about trade-offs.</div></li>
+      <li data-correct="false"><span class="opt">B) The other one — a nicer UI always wins.</span>
+        <div class="why">UI matters for product roles, but an engineering reviewer prioritizes correctness, evaluation, and judgment. An unmeasured system behind a pretty UI doesn’t demonstrate engineering depth.</div></li>
+      <li data-correct="false"><span class="opt">C) It’s a tie — both run.</span>
+        <div class="why">“Both run” is the floor. The eval and documented reasoning break the tie decisively in your favor; running is necessary but not sufficient.</div></li>
+      <li data-correct="false"><span class="opt">D) The other one — evals look like over-engineering.</span>
+        <div class="why">Evaluation isn’t over-engineering; it’s the core discipline of shipping reliable LLM systems. Reviewers specifically look for it, and most candidates lack it.</div></li>
+    </ul>
+  </div>
+
+  <p>You have a flagship project that answers every interview round. Next, give a model the ability to <em>act</em>. Next capstone: <strong>a tool-using agent</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

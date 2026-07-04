@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PII &amp; privacy — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="7.4">
+<main class="lesson">
+
+  <span class="eyebrow">Track 7 · Lesson 7.4</span>
+  <h1>PII &amp; privacy</h1>
+  <p class="lead">LLM apps swim in user data — and they log it, send it to third-party models, and sometimes repeat it back. Mishandling personal information isn’t just bad hygiene; it’s a legal liability. This lesson is how to handle data responsibly without crippling your app.</p>
+
+  <h2>Why privacy is a first-class concern here</h2>
+  <p>Three things make LLM apps privacy-risky. They <strong>log heavily</strong> (you need traces to debug, Track 6 — but traces contain user data). They often <strong>call third-party model APIs</strong> (your users’ data leaves your servers). And they can <strong>echo data back</strong> (a model might surface one user’s info to another, or repeat sensitive input). On top of that, regulations like GDPR give you real obligations around personal data. So you must know what <span class="term">PII</span> flows through your system and control it deliberately.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t7-pii.svg" alt="PII: redact before you log or send. User text containing PII ('I'm Jane Doe, jane@x.com, card 4111 1111 1111 1111') goes through a Redact step (detect + mask) producing safe text ('I'm [NAME], [EMAIL], card [CARD]'). Redact PII before logging, before sending to third-party models, and from outputs. Know your data-handling obligations (GDPR, etc.) — privacy is a legal duty, not just hygiene.">
+    <figcaption>Detect and mask personal data <em>before</em> it’s logged, sent to a third party, or returned — so sensitive values never sit where they shouldn’t.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p><span class="term">PII</span> (personally identifiable information) is data that identifies a person — names, emails, phone numbers, addresses, government IDs, payment details. <span class="term">Redaction</span> (masking) replaces PII with placeholders before storing or sending. <span class="term">Data minimization</span> means collecting and retaining only what you actually need. <span class="term">Retention limits</span> mean deleting data after it’s served its purpose. Together these reduce both risk and regulatory exposure.</p>
+  </div>
+
+  <h2>Try a redactor</h2>
+  <p>This catches common PII with simple patterns. Type (or use the sample) and watch it mask emails, phones, cards, and IDs before anything would be logged.</p>
+
+  <div class="demo" id="pii-demo">
+    <div class="demo-head"><span class="tag">Live demo</span><h4>PII redactor</h4></div>
+    <textarea id="pii-in" rows="3">Hi, I'm Jane Doe — email jane.doe@example.com, phone (555) 123-4567, card 4111 1111 1111 1111, SSN 123-45-6789.</textarea>
+    <div class="out" id="pii-out" style="margin-top:12px"></div>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — redact before logging (free)</div>
+    <p>Mask PII at the boundary. For production, a library like the free, open-source Microsoft Presidio detects far more than regex can.</p>
+<pre><code><span class="k">import</span> re
+
+PATTERNS <span class="o">=</span> {
+    <span class="s">"[EMAIL]"</span>: <span class="s">r"[\w.+-]+@[\w-]+\.[\w.-]+"</span>,
+    <span class="s">"[CARD]"</span>:  <span class="s">r"\b(?:\d[ -]*?){13,16}\b"</span>,
+    <span class="s">"[SSN]"</span>:   <span class="s">r"\b\d{3}-\d{2}-\d{4}\b"</span>,
+    <span class="s">"[PHONE]"</span>: <span class="s">r"\(?\d{3}\)?[ -]?\d{3}[ -]?\d{4}"</span>,
+}
+<span class="k">def</span> <span class="f">redact</span>(text):
+    <span class="k">for</span> tag, pat <span class="k">in</span> PATTERNS.<span class="f">items</span>():
+        text <span class="o">=</span> re.<span class="f">sub</span>(pat, tag, text)
+    <span class="k">return</span> text
+
+raw <span class="o">=</span> <span class="s">"Email jane@x.com, card 4111 1111 1111 1111"</span>
+log(<span class="f">redact</span>(raw))                 <span class="c"># "Email [EMAIL], card [CARD]"  → safe to store</span>
+<span class="c"># Redact at THREE points: before logging, before third-party API calls, and on outputs.</span>
+<span class="c"># For names/addresses and high accuracy, use Presidio (free) — a model-based detector.</span></code></pre>
+    <p>Regex handles structured PII (emails, cards, IDs) well; names and addresses need a model-based detector like Presidio. The key habit is redacting at the <em>boundary</em> — the moment data would leave your control or land in a log.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>LLM apps leak PII via <strong>heavy logging, third-party API calls, and echoing data back</strong>.</li>
+      <li><strong>Redact PII before logging, before sending to third parties, and from outputs</strong>.</li>
+      <li>Practice <strong>data minimization</strong> and <strong>retention limits</strong> — don’t collect or keep what you don’t need.</li>
+      <li>Regex catches structured PII; use a model-based detector (e.g., <strong>Presidio</strong>) for names/addresses.</li>
+      <li>Privacy is a <strong>legal duty</strong> (GDPR, etc.), not optional hygiene — know your obligations.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your support bot calls a third-party LLM API and logs full conversations for debugging. A privacy review flags it. What’s the right fix?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Redact PII before it’s logged and before it’s sent to the third-party API, retain logs only as long as needed, and restrict access.</span>
+        <div class="why">Correct. The two leak points are the logs and the outbound API call; redacting at both, plus minimizing retention and access, addresses the real exposure while keeping enough to debug. This is data minimization applied at the boundaries.</div></li>
+      <li data-correct="false"><span class="opt">B) Stop all logging so nothing is ever stored.</span>
+        <div class="why">Killing observability removes your ability to debug and improve (Track 6) and is overkill — redaction lets you keep useful logs without storing raw PII. Don’t trade all visibility for privacy when you can have both.</div></li>
+      <li data-correct="false"><span class="opt">C) Encrypt the logs and consider it solved.</span>
+        <div class="why">Encryption-at-rest helps but doesn’t address sending PII to a third party, nor over-retention, nor internal access to decrypted data. It’s one control, not the fix — redaction and minimization are still needed.</div></li>
+      <li data-correct="false"><span class="opt">D) Ask the model not to repeat PII.</span>
+        <div class="why">That addresses only the echo-back path, unreliably, and does nothing about logging or the outbound API call. Privacy is handled by deterministic controls at the data boundaries, not by asking the model nicely.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Name the three points in an LLM pipeline where you should redact PII.<br>
+    <strong>2.</strong> Why is regex insufficient for redacting names and addresses, and what do you use instead?<br>
+    <strong>3.</strong> A user invokes their “right to be forgotten.” What does that imply for your logs, vector store, and any fine-tune data?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> (a) Before <strong>logging/tracing</strong> (so stored traces don’t contain raw PII), (b) before <strong>sending to a third-party model/API</strong> (so data doesn’t leave your control unnecessarily), and (c) on <strong>outputs</strong> (so the model doesn’t surface PII to the wrong person). Redaction lives at every data boundary.</p>
+        <p><strong>2.</strong> Names and addresses have no fixed pattern — “Jane Doe” looks like ordinary words, and addresses vary wildly — so regex either misses them or over-matches. You use a model-based PII detector (named-entity recognition), e.g., the free Microsoft Presidio, which understands context to find person names, locations, and organizations. Use regex for structured tokens (emails, cards, SSNs) and a model for unstructured PII.</p>
+        <p><strong>3.</strong> You must be able to actually delete that person’s data wherever it lives: remove or anonymize their entries in logs/traces, delete their documents and the corresponding vectors from the vector store (and re-index), and — critically — if their data was used to <em>fine-tune</em> a model, you generally can’t “unlearn” it from the weights, so you’d need to retrain without it. This is exactly why fine-tuning on personal data is risky and why minimization and good data lineage matter from day one.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: privacy and observability must be designed together</div>
+    <p>There’s a real tension in this track: Track 6 told you to log everything for debugging and evals, and this lesson tells you to be careful what you store. The resolution isn’t to pick one — it’s to design them together. Redact PII <em>before</em> it’s written to traces (so your logs are useful but not a liability), keep raw data only transiently where you truly need it, set retention windows that auto-delete, and gate access to whatever sensitive data remains. Done right, you get full observability over <em>redacted</em> data, which is enough to debug the vast majority of issues. When you genuinely need un-redacted data (a hard bug), pull it under stricter access controls and short retention.</p>
+    <p>Two broader points for production. First, the <strong>third-party question</strong> is often the biggest one: sending user data to an external model API means it leaves your infrastructure, so you must check the provider’s data-handling terms (do they train on it? how long do they retain it?), and for the most sensitive data, consider self-hosting an open model (the free local stack from this course) so nothing leaves at all. Second, <strong>privacy is a legal and trust issue, not just technical</strong> — regulations like GDPR/CCPA carry real penalties, and users’ trust is hard to win back once lost. Treat personal data as something you’re borrowing, not owning: collect the minimum, protect it in transit and at rest, redact it from logs and outputs, delete it when done, and be able to honor deletion requests. That posture keeps you both compliant and trustworthy.</p>
+  </div>
+
+  <p>We’ve protected your instructions and your data. Now we make sure the model doesn’t produce harmful content in the first place — or at least never ships it. Next: <strong>content safety</strong>.</p>
+
+</main>
+
+<script>
+(function () {
+  var PATTERNS = [
+    ["[EMAIL]", /[\w.+-]+@[\w-]+\.[\w.-]+/g],
+    ["[SSN]", /\b\d{3}-\d{2}-\d{4}\b/g],
+    ["[CARD]", /\b(?:\d[ -]?){13,16}\b/g],
+    ["[PHONE]", /\(?\d{3}\)?[ -]?\d{3}[ -]?\d{4}/g]
+  ];
+  var inp = document.getElementById("pii-in"), out = document.getElementById("pii-out");
+  function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function render() {
+    var text = inp.value, count = 0;
+    var redacted = text;
+    PATTERNS.forEach(function (p) {
+      redacted = redacted.replace(p[1], function (m) { count++; return p[0]; });
+    });
+    // highlight tags in output
+    var shown = esc(redacted).replace(/\[(EMAIL|SSN|CARD|PHONE)\]/g,
+      '<span style="background:#fde68a;border-radius:4px;padding:0 4px;font-weight:700;color:#92400e">[$1]</span>');
+    out.innerHTML =
+      '<div style="font-size:12.5px;color:#64748b;margin-bottom:4px">Redacted (safe to log / send):</div>' +
+      '<div style="font-family:monospace;font-size:13.5px;color:#14532d;background:#f3fbf5;border:1px solid #b7e4c7;border-radius:8px;padding:10px">' + shown + '</div>' +
+      '<div style="margin-top:6px;font-size:13px;color:#475569"><b>' + count + '</b> PII item(s) masked. (Names/addresses need a model-based detector like Presidio.)</div>';
+  }
+  inp.addEventListener("input", render);
+  render();
+})();
+</script>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

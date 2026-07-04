@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 300" width="860" height="300" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="860" height="300" fill="#ffffff"/>
+<text x="430" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Hybrid search: meaning + keywords</text>
+<rect x="40" y="126.5" width="120" height="60" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="40" y="129" width="120" height="60" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="40" y="124" width="120" height="60" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="100.0" y="154.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Query</text>
+<rect x="250" y="66.5" width="250" height="60" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="250" y="69" width="250" height="60" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="250" y="64" width="250" height="60" rx="13" ry="13" fill="url(#g_concept)" stroke="#2563eb" stroke-width="1.8"/>
+<text x="375.0" y="86.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#1e3a8a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Dense / semantic</text>
+<text x="375.0" y="99.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">embeddings · catches synonyms</text>
+<rect x="250" y="186.5" width="250" height="60" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="250" y="189" width="250" height="60" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="250" y="184" width="250" height="60" rx="13" ry="13" fill="url(#g_key)" stroke="#d97706" stroke-width="1.8"/>
+<text x="375.0" y="206.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#7c2d12" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Sparse / keyword</text>
+<text x="375.0" y="219.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">BM25 · catches exact terms, IDs</text>
+<line x1="160" y1="150" x2="237.56652131128678" y2="105.92811289131433" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="248.0,100.0 239.9,110.1 235.2,101.8" fill="#475569"/>
+<line x1="160" y1="158" x2="237.6688816614282" y2="203.89524825448032" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="248.0,210.0 235.2,208.0 240.1,199.8" fill="#475569"/>
+<rect x="560" y="126.5" width="130" height="60" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="560" y="129" width="130" height="60" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="560" y="124" width="130" height="60" rx="13" ry="13" fill="url(#g_practice)" stroke="#7c3aed" stroke-width="1.8"/>
+<text x="625.0" y="154.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#4c1d95" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Fuse scores</text>
+<line x1="500" y1="94" x2="548.9110804607931" y2="136.16472453516644" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="558.0,144.0 545.8,139.8 552.0,132.5" fill="#475569"/>
+<line x1="500" y1="214" x2="548.9110804607931" y2="171.83527546483356" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="558.0,164.0 552.0,175.5 545.8,168.2" fill="#475569"/>
+<rect x="730" y="126.5" width="110" height="60" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="730" y="129" width="110" height="60" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="730" y="124" width="110" height="60" rx="13" ry="13" fill="url(#g_example)" stroke="#16a34a" stroke-width="1.8"/>
+<text x="785.0" y="154.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#14532d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Results</text>
+<line x1="690" y1="154" x2="716.0" y2="154.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="728.0,154.0 716.0,158.8 716.0,149.2" fill="#475569"/>
+<text x="430" y="280" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Dense finds “cancel my plan” ≈ “stop subscription”; sparse nails “error E-417”. Together: both.</text>
+</svg>

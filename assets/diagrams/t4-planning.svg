@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 300" width="900" height="300" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="900" height="300" fill="#ffffff"/>
+<text x="450" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Planning: break a goal into steps, then execute</text>
+<rect x="28" y="124.5" width="120" height="58" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="28" y="127" width="120" height="58" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="28" y="122" width="120" height="58" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="88.0" y="143.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Goal</text>
+<text x="88.0" y="156.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">“summarize Q3”</text>
+<rect x="180" y="124.5" width="130" height="58" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="180" y="127" width="130" height="58" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="180" y="122" width="130" height="58" rx="13" ry="13" fill="url(#g_accent)" stroke="#4f46e5" stroke-width="1.8"/>
+<text x="245.0" y="143.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="15" fill="#312e81" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Plan</text>
+<text x="245.0" y="156.5" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">decompose</text>
+<rect x="360" y="70" width="220" height="46" rx="9" ry="9" fill="#fff6ea" stroke="#d97706" stroke-width="2"/>
+<text x="378" y="93" font-family="DejaVu Sans Mono, monospace" font-size="12" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">1 · find the Q3 report</text>
+<rect x="360" y="126" width="220" height="46" rx="9" ry="9" fill="#fff6ea" stroke="#d97706" stroke-width="2"/>
+<text x="378" y="149" font-family="DejaVu Sans Mono, monospace" font-size="12" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">2 · extract key figures</text>
+<rect x="360" y="182" width="220" height="46" rx="9" ry="9" fill="#fff6ea" stroke="#d97706" stroke-width="2"/>
+<text x="378" y="205" font-family="DejaVu Sans Mono, monospace" font-size="12" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">3 · draft the summary</text>
+<rect x="640" y="124.5" width="130" height="58" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="640" y="127" width="130" height="58" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="640" y="122" width="130" height="58" rx="13" ry="13" fill="url(#g_practice)" stroke="#7c3aed" stroke-width="1.8"/>
+<text x="705.0" y="143.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#4c1d95" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Execute</text>
+<text x="705.0" y="156.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">in order</text>
+<rect x="800" y="124.5" width="80" height="58" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="800" y="127" width="80" height="58" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="800" y="122" width="80" height="58" rx="13" ry="13" fill="url(#g_example)" stroke="#16a34a" stroke-width="1.8"/>
+<text x="840.0" y="142.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#14532d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Done</text>
+<text x="840.0" y="155.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">✓</text>
+<line x1="148" y1="151" x2="166.0" y2="151.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="178.0,151.0 166.0,155.8 166.0,146.2" fill="#475569"/>
+<line x1="310" y1="151" x2="346.20553375678816" y2="144.21146242060223" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="358.0,142.0 347.1,148.9 345.3,139.5" fill="#475569"/>
+<line x1="580" y1="151" x2="626.0" y2="151.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="638.0,151.0 626.0,155.8 626.0,146.2" fill="#475569"/>
+<line x1="770" y1="151" x2="786.0" y2="151.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="798.0,151.0 786.0,155.8 786.0,146.2" fill="#475569"/>
+<text x="450" y="286" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.3" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Plan-then-execute makes long tasks reliable and debuggable — each step is checkable.</text>
+</svg>

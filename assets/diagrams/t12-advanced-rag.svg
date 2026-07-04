@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 326" width="960" height="326" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="960" height="326" fill="#ffffff"/>
+<text x="480" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Advanced RAG: the pipeline beyond “embed → top-k”</text>
+<rect x="24" y="78.5" width="170" height="72" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="24" y="81" width="170" height="72" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="24" y="76" width="170" height="72" rx="13" ry="13" fill="url(#g_concept)" stroke="#2563eb" stroke-width="1.8"/>
+<text x="109.0" y="104.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#1e3a8a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Query transform</text>
+<text x="109.0" y="116.75" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">rewrite · HyDE · split</text>
+<rect x="212" y="78.5" width="170" height="72" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="212" y="81" width="170" height="72" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="212" y="76" width="170" height="72" rx="13" ry="13" fill="url(#g_example)" stroke="#16a34a" stroke-width="1.8"/>
+<text x="297.0" y="104.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#14532d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Hybrid retrieve</text>
+<text x="297.0" y="116.75" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">dense + BM25 sparse</text>
+<line x1="194" y1="112" x2="198.0" y2="112.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="210.0,112.0 198.0,116.8 198.0,107.2" fill="#475569"/>
+<rect x="400" y="78.5" width="170" height="72" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="400" y="81" width="170" height="72" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="400" y="76" width="170" height="72" rx="13" ry="13" fill="url(#g_key)" stroke="#d97706" stroke-width="1.8"/>
+<text x="485.0" y="104.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#7c2d12" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Rerank</text>
+<text x="485.0" y="116.75" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">cross-encoder top-k</text>
+<line x1="382" y1="112" x2="386.0" y2="112.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="398.0,112.0 386.0,116.8 386.0,107.2" fill="#475569"/>
+<rect x="588" y="78.5" width="170" height="72" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="588" y="81" width="170" height="72" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="588" y="76" width="170" height="72" rx="13" ry="13" fill="url(#g_accent)" stroke="#4f46e5" stroke-width="1.8"/>
+<text x="673.0" y="104.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#312e81" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Compress context</text>
+<text x="673.0" y="116.75" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">select · dedupe · order</text>
+<line x1="570" y1="112" x2="574.0" y2="112.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="586.0,112.0 574.0,116.8 574.0,107.2" fill="#475569"/>
+<rect x="776" y="78.5" width="170" height="72" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="776" y="81" width="170" height="72" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="776" y="76" width="170" height="72" rx="13" ry="13" fill="url(#g_deep)" stroke="#0d9488" stroke-width="1.8"/>
+<text x="861.0" y="104.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#134e4a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Grounded LLM</text>
+<text x="861.0" y="116.75" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">answer + citations</text>
+<line x1="758" y1="112" x2="762.0" y2="112.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="774.0,112.0 762.0,116.8 762.0,107.2" fill="#475569"/>
+<rect x="60" y="198.5" width="840" height="56" rx="10" ry="10" fill="#0f172a" opacity="0.055"/>
+<rect x="60" y="201" width="840" height="56" rx="10" ry="10" fill="#1e293b" opacity="0.035"/>
+<rect x="60" y="196" width="840" height="56" rx="10" ry="10" fill="url(#g_practice)" stroke="#7c3aed" stroke-width="1.8"/>
+<text x="480" y="214" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#4c1d95" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Offline eval (RAGAS-style)</text>
+<text x="480" y="234" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#334155" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">faithfulness · context precision · context recall · answer relevance</text>
+<line x1="480" y1="150" x2="480.0" y2="184.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="480.0,194.0 476.0,184.0 484.0,184.0" fill="#94a3b8"/>
+<text x="660" y="178" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#64748b" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">measure every stage</text>
+<text x="480" y="286" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Each stage is a knob you can measure and tune — that's what “improving RAG” actually means.</text>
+</svg>

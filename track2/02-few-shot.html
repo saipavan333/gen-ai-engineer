@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Few-shot prompting — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="2.2">
+<main class="lesson">
+
+  <span class="eyebrow">Track 2 · Lesson 2.2</span>
+  <h1>Few-shot prompting</h1>
+  <p class="lead">The single highest-leverage upgrade to most prompts isn’t better wording — it’s a few good examples. Showing the model exactly what you want, with two or three demonstrations, often does what paragraphs of instruction can’t.</p>
+
+  <h2>Why showing beats telling</h2>
+  <p>Describing a format in words is lossy — “return the sentiment” leaves a hundred decisions unspecified (one word? a sentence? capitalized? what categories?). A couple of <em>examples</em> answer all of those at once, unambiguously. The model is, at its core, a pattern-continuer (Track 1); give it a clear pattern and it will continue it. This is why few-shot is the workhorse technique for classification, extraction, and any task with a specific output shape.</p>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p>A <span class="term">zero-shot</span> prompt asks the model to do a task with no examples. A <span class="term">few-shot</span> prompt includes a handful of worked examples (input → desired output) before the real input; <span class="term">one-shot</span> is the special case of exactly one. The model picking up the pattern from examples <em>in the prompt</em> — with no training or weight changes — is called <span class="term">in-context learning</span>. The examples teach for this one request only.</p>
+  </div>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t2-fewshot-compare.svg" alt="Show, don't just tell. Zero-shot: prompt 'Classify the sentiment: The checkout kept crashing' produces a long varying paragraph. Few-shot: prompt with two labeled examples ('Great product → positive', 'Never buying again → negative') then 'The checkout kept crashing →' produces a clean 'negative'. A few labeled examples pin both the task and the exact output shape.">
+    <figcaption>Left: words alone leave the output shape unspecified, so it wanders. Right: two examples pin the format to a single clean label.</figcaption>
+  </figure>
+
+  <p>Structurally, a few-shot prompt is just an instruction, then example pairs, then the new input left “open” for the model to complete:</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t2-fewshot-structure.svg" alt="Inside a few-shot prompt, stacked: Instruction ('Label each review as positive / negative'), Example 1 ('Loved it, works great → positive'), Example 2 ('Stopped working in a week → negative'), New input ('Arrived late but works fine → ?'). The model continues the pattern, predicting 'positive' as the next token.">
+    <figcaption>The model just continues the demonstrated pattern — predicting the next token after the new input’s arrow, in the same shape as the examples.</figcaption>
+  </figure>
+
+  <h2>Watch examples do three jobs at once</h2>
+  <p>Drag the slider to add examples one at a time. Notice they don’t just clean up the format — they also define the <em>categories</em> and can <em>bias</em> the answer. The new input is deliberately mixed (“arrived late <em>but</em> works great”).</p>
+
+  <div class="demo" id="fs-demo">
+    <div class="demo-head"><span class="tag">Live demo</span><h4>Few-shot in action</h4></div>
+    <p class="demo-hint">New input to classify: <b>“Arrived late but the blender works great.”</b></p>
+    <label>Examples included: <b><span id="fs-n">0</span></b></label>
+    <input type="range" id="fs-range" min="0" max="3" step="1" value="0">
+    <div class="row" style="margin-top:14px">
+      <div>
+        <div class="code-label"><span class="dot"></span><span class="fname">the prompt</span></div>
+        <pre style="margin-top:0;min-height:150px" id="fs-prompt"></pre>
+      </div>
+      <div>
+        <div class="code-label"><span class="dot" style="background:#818cf8"></span><span class="fname">model output</span></div>
+        <div id="fs-output" style="border:1px solid #e8e3da;border-radius:10px;padding:14px;min-height:124px;background:#fff"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — build few-shot from a list (free, Ollama)</div>
+    <p>In real code you keep examples in a list and assemble the prompt, so you can add, swap, or test them easily. (Uses the <code>ask()</code> helper from Lesson 2.1.)</p>
+<pre><code>examples <span class="o">=</span> [
+    (<span class="s">"Loved it, works great"</span>,        <span class="s">"positive"</span>),
+    (<span class="s">"Stopped working in a week"</span>,    <span class="s">"negative"</span>),
+    (<span class="s">"It's fine, nothing special"</span>,   <span class="s">"mixed"</span>),     <span class="c"># teaches the 'mixed' category</span>
+]
+
+<span class="k">def</span> <span class="f">build_fewshot</span>(review):
+    shots <span class="o">=</span> <span class="s">"\n"</span>.<span class="f">join</span>(<span class="s">f'Review: "</span>{r}<span class="s">"\nSentiment: </span>{label}<span class="s">'</span> <span class="k">for</span> (r, label) <span class="k">in</span> examples)
+    <span class="k">return</span> <span class="s">f"""Classify each review as positive, negative, or mixed.</span>
+
+{shots}
+
+<span class="s">Review: "</span>{review}<span class="s">"
+Sentiment:"""</span>
+
+<span class="f">print</span>(<span class="f">ask</span>(<span class="f">build_fewshot</span>(<span class="s">"Arrived late but the blender works great"</span>)))   <span class="c"># -> mixed</span></code></pre>
+    <p>Because the examples demonstrate the three labels <em>and</em> the exact two-line format, the model returns a clean, correctly-categorized answer — and you can drop the result straight into a database field.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">How to choose examples (this is the skill)</div>
+    <ul>
+      <li><strong>Representative &amp; diverse.</strong> Cover the real range of inputs, not three near-identical ones. Each example should teach something new.</li>
+      <li><strong>Include edge cases.</strong> One “mixed” or “I don’t know” example defines that category and gives the model permission to use it.</li>
+      <li><strong>Format examples identically.</strong> Any inconsistency in your examples becomes inconsistency in the output.</li>
+      <li><strong>Watch label balance.</strong> If every example is “positive,” the model drifts positive. Balance the labels you show.</li>
+      <li><strong>Mind the cost.</strong> Examples are tokens in every request — use the fewest that make it reliable (often 2–5).</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">You’re building an intent classifier with labels: <code>billing</code>, <code>technical</code>, <code>cancel</code>. Which set of few-shot examples is best?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) One clear example of each label, each in the identical “Message → label” format, including a slightly tricky one.</span>
+        <div class="why">Correct. Covering every label teaches the full category space; identical formatting pins the output shape; a tricky example sharpens the boundaries. This is the textbook representative-and-diverse set.</div></li>
+      <li data-correct="false"><span class="opt">B) Five examples, all of them <code>billing</code>, because billing is most common.</span>
+        <div class="why">This biases the model toward <code>billing</code> and never demonstrates <code>technical</code> or <code>cancel</code>, so it may not produce them at all. Label imbalance in examples becomes label bias in output.</div></li>
+      <li data-correct="false"><span class="opt">C) Three examples with different output formats (one word, one sentence, one JSON) to “show flexibility.”</span>
+        <div class="why">Inconsistent example formats teach inconsistency — the model won’t know which shape to use and will vary. Examples must be uniform to pin the format.</div></li>
+      <li data-correct="false"><span class="opt">D) No examples — just list the three labels in the instruction.</span>
+        <div class="why">That’s zero-shot. It can work, but it leaves format and boundary decisions unspecified. For reliable classification, a few well-chosen examples consistently outperform a bare label list.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Write three few-shot examples for extracting <code>{name, date}</code> from messages like “Hey it’s Priya, let’s meet next Tuesday.” Include one message where the date is missing.<br>
+    <strong>2.</strong> A teammate’s classifier outputs “positive” for almost everything. Their 4 few-shot examples are all positive reviews. Diagnose and fix.<br>
+    <strong>3.</strong> Why can a single well-chosen “I don’t know” example dramatically reduce hallucination on unanswerable questions?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> Keep the format identical and include the missing-date edge case so the model learns what to do when a field is absent:</p>
+<pre><code>Message: "Hey it's Priya, let's meet next Tuesday."
+Output: {"name": "Priya", "date": "next Tuesday"}
+
+Message: "This is Marcus — call me whenever."
+Output: {"name": "Marcus", "date": null}        # teaches the missing-date case
+
+Message: "Sam here, deadline is March 3."
+Output: {"name": "Sam", "date": "March 3"}</code></pre>
+        <p>The <code>null</code> example is doing real work: without it, the model would likely invent a date when none exists.</p>
+        <p><strong>2.</strong> Diagnosis: <em>label bias</em>. All four examples are positive, so the demonstrated pattern is “output positive,” and the model dutifully continues it. Fix: balance the examples across the actual labels (some negative, some mixed) so the pattern includes choosing the right label, not just one label.</p>
+        <p><strong>3.</strong> The model continues demonstrated patterns. If it’s never <em>seen</em> “I don’t know” as an acceptable output, that path has low probability, so it produces a confident guess instead. One example pairing an unanswerable question with “I don’t know” raises the probability of that response when appropriate — you’ve demonstrated that abstaining is a valid move. It’s a tiny change with an outsized effect on honesty.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: in-context learning, and when few-shot isn’t enough</div>
+    <p>The remarkable thing about few-shot is that no learning (in the training sense) happens at all — the weights never change. The model is simply conditioning its next-token predictions on the examples sitting in the context window. Researchers call this <span class="term">in-context learning</span>, and it’s an emergent property of large models: a pattern in the prompt reshapes the output distribution as if the model had been briefly “taught.” Practically, that means your examples are powerful but ephemeral — they apply only to requests that include them, and they cost tokens every time.</p>
+    <p>That cost/limit framing tells you when to graduate to other tools. If you need <em>many</em> examples (dozens+), static few-shot gets expensive and bumps the context window — at which point you either <strong>retrieve</strong> the most relevant few examples per input (dynamic few-shot, which is just RAG over your example bank — Track 3) or <strong>fine-tune</strong> the behavior into the weights so you no longer pay for examples each call (Track 5). A clean mental ladder: zero-shot → few-shot → dynamic (retrieved) few-shot → fine-tune, climbing only when the rung below stops being enough.</p>
+  </div>
+
+  <p>Few-shot pins <em>what</em> the output looks like. The next technique improves <em>how well the model reasons</em> to get there — especially on multi-step problems: <strong>chain-of-thought</strong>.</p>
+
+</main>
+
+<script>
+(function () {
+  var EX = [
+    ['Review: "Loved it, works great"', 'Sentiment: positive'],
+    ['Review: "Stopped working in a week"', 'Sentiment: negative'],
+    ['Review: "It\'s fine, nothing special"', 'Sentiment: mixed']
+  ];
+  var OUT = [
+    { t: "“It’s a bit of a mixed bag — arriving late is a downside, but they seem happy with the blender itself…”",
+      v: "No fixed label, prose varies every run.", c: "#b45309" },
+    { t: "positive", v: "Only positive examples shown → biased toward ‘positive’ (and the late arrival is ignored).", c: "#15803d" },
+    { t: "negative", v: "With positive + negative, it now picks a side — but it has no ‘mixed’ category to use.", c: "#b91c1c" },
+    { t: "mixed", v: "The ‘mixed’ example taught the right category — now it’s correct and cleanly formatted.", c: "#4f46e5" }
+  ];
+  var range = document.getElementById("fs-range");
+  var promptEl = document.getElementById("fs-prompt");
+  var outEl = document.getElementById("fs-output");
+  function render() {
+    var n = parseInt(range.value, 10);
+    document.getElementById("fs-n").textContent = n;
+    var lines = ["Classify as positive, negative, or mixed.", ""];
+    for (var i = 0; i < n; i++) { lines.push(EX[i][0]); lines.push(EX[i][1]); lines.push(""); }
+    lines.push('Review: "Arrived late but the blender works great."');
+    lines.push("Sentiment:");
+    promptEl.textContent = lines.join("\n");
+    var o = OUT[n];
+    outEl.innerHTML = '<div style="font-family:monospace;font-size:15px;font-weight:700;color:' + o.c + '">' + o.t + '</div>' +
+      '<div style="margin-top:10px;font-size:13.5px;color:#475569">' + o.v + '</div>';
+  }
+  range.addEventListener("input", render);
+  render();
+})();
+</script>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

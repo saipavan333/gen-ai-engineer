@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Interview check: Serving — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="8.8">
+<main class="lesson">
+
+  <span class="eyebrow">Track 8 · Interview check</span>
+  <h1>Interview check: Serving, Latency &amp; Cost</h1>
+  <p class="lead">Serving questions test whether you can take a working LLM feature and make it affordable and fast at scale. Interviewers want a clear cost/latency model and the right lever for each bottleneck. Here’s the set.</p>
+
+  <div class="box note">
+    <div class="box-label">The drill</div>
+    <p>Answer aloud first. The throughline: <strong>cost and latency are driven by tokens</strong>; to go <strong>cheaper</strong> cache → route → smaller models → trim tokens (→ batch if self-hosting); to go <strong>faster</strong> stream → shrink prompt → shorter output → faster model; and always <strong>measure first</strong>.</p>
+  </div>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t8-recap.svg" alt="The optimization toolkit. Go FASTER (latency): stream the output; smaller/quantized model; cache repeated work; shorter outputs (cap tokens); route to a fast model. Go CHEAPER (cost): cache (biggest single win); route easy queries to cheap models; smaller/quantized models; trim the token budget; batch for GPU efficiency. Measure first (Track 6) to find the real bottleneck, then apply the lever that targets it.">
+    <figcaption>The two-column toolkit. Knowing which lever targets latency vs. cost — and measuring first — is exactly what a serving interview probes.</figcaption>
+  </figure>
+
+  <h2>The questions teams ask</h2>
+
+  <div class="box practice"><div class="box-label">Q1 · The model</div>
+    <p><strong>“What drives the cost and latency of an LLM call?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>Tokens. Cost ≈ (input + output tokens) × price, with output usually priced higher. Latency ≈ time-to-first-token (prefill — the model reading the whole prompt) plus output tokens × time-per-token (decode). So a long prompt mainly raises TTFT and input cost; a long answer raises decode latency and output cost. Output tokens are expensive on both axes, and for agents/RAG I estimate cost <em>per task</em> (all the calls), not per call.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q2 · Latency UX</div>
+    <p><strong>“The chat feels slow but the API speed is fixed. What do you do?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>Stream the output — show tokens as they’re generated so the first words appear in a fraction of a second. Total time is unchanged but perceived latency drops dramatically, which is what users react to. I’d also shrink the prompt (lowers TTFT) and cap/shorten the output, and consider a faster model for the easy path. Streaming is the default for any chat UI — except where the consumer is code (parsing JSON/tool calls), where I collect-then-parse.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q3 · Cost</div>
+    <p><strong>“Costs are too high at scale. Where do you start?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>Measure where the tokens and calls go (Track 6 traces), then apply levers in order of ROI: caching (the biggest single win — repeats are instant and near-free; exact + semantic + prefix), model routing (send the easy majority to a cheap model, reserve the big one for hard cases), smaller/quantized models, and token budgeting (trim the largest prompt component). If self-hosting, add continuous batching to keep GPUs busy. The key is to find the actual bottleneck first — don’t optimize the part that isn’t the problem.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q4 · Routing</div>
+    <p><strong>“How does model routing save money without tanking quality?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>Most traffic is easy and doesn’t need a frontier model, so a router (rules, a small classifier, or a cascade that tries cheap-then-escalates) sends easy queries to a cheap, fast model and hard ones to a capable model. For easy queries a small model gets ~99% of the quality at a fraction of the cost, so you save a lot while the hard minority still gets full capability. I validate small-path quality on an eval set and monitor the escalation rate, tuning the router with data.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q5 · Self-hosting</div>
+    <p><strong>“When does self-hosting make sense, and what are the key levers?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>Self-host at scale (no per-token fees, just hardware), for privacy (data never leaves — Track 7), or for custom fine-tunes. The key serving levers are quantization (fewer bits per weight → fits cheaper GPUs, faster, small quality drop — measure it) and continuous batching via a serving engine like vLLM (process many requests per GPU → high throughput → low cost per request). With hosted APIs the provider already does these, so my levers there are routing, caching, and token budgeting.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q6 · Caching</div>
+    <p><strong>“What are the risks of caching LLM responses?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>Serving stale or wrong answers. Don’t cache personalized responses (one user could get another’s), time-sensitive answers (today’s price), or intentionally-varied creative output. For a semantic cache, a too-loose similarity threshold returns a near-miss answer to a different question — tune it on real query pairs. And define invalidation: tie cache expiry to source-data changes (or use a TTL) so updated docs don’t serve old answers. Cache the stable, shared, repeatable stuff with sane invalidation.</p>
+    </div></details>
+  </div>
+
+  <h2>Rapid-fire self-check</h2>
+
+  <div class="quiz">
+    <p class="quiz-q">A response feels sluggish: nothing appears for ~3 seconds, then text streams quickly. The prompt is 6,000 tokens. The biggest fix for that initial delay is…</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Shrink the prompt — the long prompt makes prefill slow, which is what delays the first token (TTFT).</span>
+        <div class="why">Correct. A 3-second gap before any text, then fast streaming, is the signature of high TTFT from a long prompt (prefill must read all 6,000 tokens first). Reducing the input context directly lowers TTFT — and usually cost and quality too.</div></li>
+      <li data-correct="false"><span class="opt">B) Generate more output tokens.</span>
+        <div class="why">More output adds decode time, not less initial delay. The gap is before generation starts (prefill), which output length doesn’t affect.</div></li>
+      <li data-correct="false"><span class="opt">C) Disable streaming.</span>
+        <div class="why">That would make it feel worse — you’d wait for the whole answer. The initial delay is prefill; streaming is already helping once tokens start.</div></li>
+      <li data-correct="false"><span class="opt">D) Raise the temperature.</span>
+        <div class="why">Temperature doesn’t affect TTFT or prompt-processing time. The fix is a shorter prompt (or faster model).</div></li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Which single lever is most often the biggest <em>cost</em> win for a high-traffic LLM app?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Caching — real traffic is repetitive, and cache hits are instant and nearly free.</span>
+        <div class="why">Correct. Production traffic has a fat head of common queries, so caching turns a large share of calls into near-free lookups — frequently the single biggest cost reducer, and it lowers latency too. (Routing and token budgeting are close behind.)</div></li>
+      <li data-correct="false"><span class="opt">B) Raising the temperature.</span>
+        <div class="why">Temperature has no effect on cost. It’s unrelated to tokens, calls, or hardware.</div></li>
+      <li data-correct="false"><span class="opt">C) Using a bigger model everywhere.</span>
+        <div class="why">That increases cost across all traffic — the opposite of a saving. Right-sizing (routing) and skipping calls (caching) are the wins.</div></li>
+      <li data-correct="false"><span class="opt">D) Longer outputs.</span>
+        <div class="why">Longer outputs cost more on both axes. The biggest cost wins come from skipping or right-sizing calls and trimming tokens, not adding output.</div></li>
+    </ul>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Can you explain each of these?</div>
+    <ul>
+      <li>The token-driven cost &amp; latency model (prefill/TTFT vs decode; input vs output).</li>
+      <li>Streaming and perceived latency (and when not to stream).</li>
+      <li>Caching (exact / semantic / prefix) and its correctness risks.</li>
+      <li>Model routing and cascades; the cost/quality frontier.</li>
+      <li>Quantization (bits → memory/speed/quality) and when it applies.</li>
+      <li>Batching/throughput and the latency trade-off (self-hosting).</li>
+      <li>Token budgeting: measure where tokens go, trim the biggest.</li>
+    </ul>
+  </div>
+
+  <p>You can now ship LLM products that are reliable, safe, fast, and affordable — the full applied-engineer toolkit. The remaining tracks help you <em>prove</em> it: Track 9, the Interview Bank, and Track 10, runnable Capstones.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

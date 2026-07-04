@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chunking strategies — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="3.2">
+<main class="lesson">
+
+  <span class="eyebrow">Track 3 · Lesson 3.2</span>
+  <h1>Chunking strategies</h1>
+  <p class="lead">Retrieval doesn’t fetch documents — it fetches <em>chunks</em>. How you cut your text into chunks quietly determines whether the right information can ever be found. This is the most underrated lever in RAG, and the easiest to get wrong.</p>
+
+  <h2>Why chunking decides everything downstream</h2>
+  <p>You can’t embed and retrieve a whole 50-page manual as one vector — a single vector can’t represent that much, and you’d retrieve the entire thing or nothing. So you split documents into smaller <span class="term">chunks</span>, embed each separately, and retrieve the few relevant ones. The catch: a chunk is the <em>unit</em> of retrieval. If a fact is split across two chunks, neither may score high enough to be retrieved. If a chunk is huge, the relevant sentence gets diluted by surrounding noise and the match weakens. Get chunking wrong and no amount of clever reranking later can recover the lost information.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t3-chunking.svg" alt="Chunking: a long document is split into chunk 1, chunk 2, chunk 3 (each about 200 to 500 tokens). Yellow strips show overlap between adjacent chunks, which repeats a little text across boundaries so a sentence is never split away from its context. Each chunk is embedded and stored separately, so retrieval can pull just the relevant piece.">
+    <figcaption>Split the document into coherent pieces, with a little <b>overlap</b> so ideas aren’t severed at boundaries. Each chunk becomes one embedded, retrievable unit.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p>A <span class="term">chunk</span> is a contiguous span of a document that you embed and store as one retrievable unit. <span class="term">Chunk size</span> is how big each one is (usually measured in tokens). <span class="term">Overlap</span> is text shared between adjacent chunks — repeating, say, the last 50 tokens at the start of the next chunk — so a sentence or idea straddling a boundary still appears intact in at least one chunk.</p>
+  </div>
+
+  <h2>The size trade-off</h2>
+  <figure class="diagram">
+    <img src="../assets/diagrams/t3-chunk-tradeoff.svg" alt="Chunk size is a trade-off. Too small: precise match but loses surrounding context, producing fragments. Just right: a coherent idea per chunk, best retrieval, often 200 to 500 tokens. Too big: lots of context but dilutes the match and wastes tokens.">
+    <figcaption>Too small loses context; too big dilutes the match and wastes tokens. Aim for “one coherent idea per chunk,” then tune with evaluation.</figcaption>
+  </figure>
+
+  <h2>Strategies, from crude to smart</h2>
+  <div class="tbl-wrap">
+    <table class="t">
+      <tr><th>Strategy</th><th>How it splits</th><th>When to use</th></tr>
+      <tr><td><strong>Fixed-size</strong></td><td>Every N tokens, with overlap</td><td>Simple baseline; works surprisingly well for prose</td></tr>
+      <tr><td><strong>Recursive / structural</strong></td><td>Prefer natural boundaries: paragraphs → sentences → words, only splitting smaller when too big</td><td>The sensible default — keeps sentences and paragraphs intact</td></tr>
+      <tr><td><strong>Document-structure aware</strong></td><td>Split on headings, list items, table rows, code blocks</td><td>Markdown, HTML, code, structured docs</td></tr>
+      <tr><td><strong>Semantic</strong></td><td>Split where the topic shifts (using embeddings)</td><td>When topic coherence matters and you can afford the extra compute</td></tr>
+    </table>
+  </div>
+
+  <h2>See chunking happen</h2>
+  <p>Drag the sliders. Watch how chunk size and overlap reshape what becomes retrievable. Tiny chunks fragment ideas; huge chunks swallow many topics into one blurry vector.</p>
+
+  <div class="demo" id="chunk-demo">
+    <div class="demo-head"><span class="tag">Live demo</span><h4>Chunk visualizer</h4></div>
+    <div class="row">
+      <div><label>Chunk size: <b><span id="cz-size">14</span></b> words</label>
+        <input type="range" id="cz-size" min="4" max="40" step="1" value="14"></div>
+      <div><label>Overlap: <b><span id="cz-ov">3</span></b> words</label>
+        <input type="range" id="cz-ov" min="0" max="12" step="1" value="3"></div>
+    </div>
+    <label>Document</label>
+    <textarea id="cz-input" rows="3">The X200 blender ships with a 3-year limited warranty. Returns are free within 30 days of delivery. To start a return, open the app and tap Orders, then Return. Refunds appear in 5 to 7 business days. The motor is rated at 1200 watts and includes overheat protection.</textarea>
+    <div class="out" id="cz-out" style="margin-top:12px"></div>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — a recursive splitter (free, no heavy deps)</div>
+    <p>A token-aware splitter with overlap, in plain Python. (In real projects, LangChain’s free <code>RecursiveCharacterTextSplitter</code> does this with nicer boundary handling — but seeing the mechanism once is worth it.)</p>
+<pre><code><span class="k">def</span> <span class="f">chunk_text</span>(text, size<span class="o">=</span><span class="n">120</span>, overlap<span class="o">=</span><span class="n">20</span>):
+    <span class="s">"""Split into ~`size`-word chunks that overlap by `overlap` words."""</span>
+    words <span class="o">=</span> text.<span class="f">split</span>()
+    step <span class="o">=</span> size <span class="o">-</span> overlap
+    chunks <span class="o">=</span> []
+    <span class="k">for</span> i <span class="k">in</span> <span class="f">range</span>(<span class="n">0</span>, <span class="f">len</span>(words), step):
+        chunk <span class="o">=</span> <span class="s">" "</span>.<span class="f">join</span>(words[i:i <span class="o">+</span> size])
+        <span class="k">if</span> chunk:
+            chunks.<span class="f">append</span>(chunk)
+        <span class="k">if</span> i <span class="o">+</span> size <span class="o">&gt;=</span> <span class="f">len</span>(words):
+            <span class="k">break</span>
+    <span class="k">return</span> chunks
+
+doc <span class="o">=</span> open(<span class="s">"manual.txt"</span>).<span class="f">read</span>()
+chunks <span class="o">=</span> <span class="f">chunk_text</span>(doc, size<span class="o">=</span><span class="n">120</span>, overlap<span class="o">=</span><span class="n">20</span>)
+<span class="f">print</span>(<span class="f">len</span>(chunks), <span class="s">"chunks"</span>)
+<span class="c"># attach metadata so you can cite + filter later — do this from day one</span>
+records <span class="o">=</span> [{<span class="s">"text"</span>: c, <span class="s">"source"</span>: <span class="s">"manual.txt"</span>, <span class="s">"chunk_id"</span>: i} <span class="k">for</span> i, c <span class="k">in</span> <span class="f">enumerate</span>(chunks)]</code></pre>
+    <p>Notice the <strong>metadata</strong> on each chunk (source, id). You’ll thank yourself later: it’s what lets you cite sources, filter by document, and debug which chunk produced an answer.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>The <strong>chunk is the unit of retrieval</strong> — chunking decides what can ever be found.</li>
+      <li>Use <strong>overlap</strong> so ideas spanning a boundary survive intact in at least one chunk.</li>
+      <li>Chunk size is a <strong>trade-off</strong>: too small fragments context, too big dilutes the match. Aim for one coherent idea (often ~200–500 tokens).</li>
+      <li>Prefer <strong>recursive/structural</strong> splitting (respect paragraphs, headings, code) over blind fixed cuts.</li>
+      <li>Attach <strong>metadata</strong> (source, id, section) to every chunk from the start — for citations, filtering, and debugging.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your RAG bot answers questions about API docs well, except it keeps missing answers that depend on a code example following a heading. What’s the most likely chunking issue?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Fixed-size splitting is cutting the heading away from its code example, so neither chunk has the full context.</span>
+        <div class="why">Correct. Blind fixed-size cuts ignore document structure, separating a heading from the example it introduces. Structure-aware splitting (keep heading + its code block together) or overlap fixes this — the answer’s context was severed at a boundary.</div></li>
+      <li data-correct="false"><span class="opt">B) The embedding model is too small.</span>
+        <div class="why">Possible in general, but the specific symptom — answers that depend on heading+code staying together — points squarely at boundaries cutting related content apart, i.e., chunking, not embedding capacity.</div></li>
+      <li data-correct="false"><span class="opt">C) The context window is too small.</span>
+        <div class="why">If retrieval fetched the right chunk, a small window wouldn’t cause <em>missing</em> the answer. The issue is upstream: the relevant content was split so it’s no longer in a single retrievable chunk.</div></li>
+      <li data-correct="false"><span class="opt">D) Temperature is too high.</span>
+        <div class="why">Temperature affects generation randomness, not which chunks are retrieved. A retrieval/chunking miss can’t be fixed by decoding settings.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> In the visualizer, set overlap to 0 and find a sentence that gets split across two chunks. Then add overlap and confirm it’s now intact somewhere. Why does this matter for retrieval?<br>
+    <strong>2.</strong> You’re chunking a CSV-like FAQ where each Q&amp;A is 1–2 sentences. What chunk strategy and size would you pick?<br>
+    <strong>3.</strong> Why is attaching <code>source</code> and <code>chunk_id</code> metadata essential for a citable RAG system?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> With no overlap, a sentence straddling a boundary is half in chunk A and half in chunk B — so the full idea isn’t in either, and a query matching that idea may retrieve neither well. Overlap repeats the boundary text, so the whole sentence appears intact in at least one chunk and can be matched and retrieved. Overlap is cheap insurance against boundary loss.</p>
+        <p><strong>2.</strong> Use <strong>structure-aware</strong> chunking: one chunk per Q&amp;A pair. Each pair is already a coherent, self-contained idea, so you don’t want to merge several (dilution) or split one (fragmentation). Size follows the content — roughly one Q&amp;A each, no fixed cut needed.</p>
+        <p><strong>3.</strong> Citations require pointing at a real source: <code>source</code> tells the user <em>which</em> document a fact came from, and <code>chunk_id</code> lets you locate the exact passage for verification or debugging. Without it, you can ground the answer but can’t say where it came from — and you can’t investigate when a chunk produces a wrong answer. Provenance is a data-modeling decision you make at chunk time.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: beyond naive chunks</div>
+    <p>Once fixed-size chunking stops being good enough, a few techniques earn their keep. <strong>Parent-document retrieval</strong>: embed and search over <em>small</em> chunks for precise matching, but return the <em>larger</em> parent section to the model so it has full context — best of both sizes. <strong>Semantic chunking</strong>: instead of cutting every N tokens, detect topic shifts (e.g., when consecutive sentences’ embeddings diverge) and split there, so each chunk is topically coherent. <strong>Contextual / “late” chunking</strong>: prepend a short summary of the document or section to each chunk before embedding, so an isolated chunk like “It costs $40” carries the context “(about the X200 blender)” and matches better.</p>
+    <p>And don’t forget non-prose. <strong>Tables</strong> often need row- or section-level chunks with the header repeated, or they retrieve as meaningless number soup. <strong>Code</strong> should be split on function/class boundaries, not arbitrary lines. The throughline: chunking is really about preserving <em>retrievable meaning</em>, so the smartest strategy is whatever keeps each unit a self-contained, matchable idea. Start with recursive splitting plus overlap and metadata; reach for these only when evaluation (Lesson 3.8) shows retrieval is the bottleneck.</p>
+  </div>
+
+  <p>You’ve got chunks. Now we turn them into searchable meaning — the embeddings step, applied to retrieval at scale. Next: <strong>embeddings for retrieval</strong>.</p>
+
+</main>
+
+<script>
+(function () {
+  var COLORS = ["#dbeafe", "#dcfce7", "#fef3c7", "#ede9fe", "#fae8ff", "#ccfbf1", "#ffe4e6", "#e0e7ff"];
+  var size = document.getElementById("cz-size"), ov = document.getElementById("cz-ov");
+  var input = document.getElementById("cz-input"), out = document.getElementById("cz-out");
+  function render() {
+    var S = parseInt(size.value, 10), O = parseInt(ov.value, 10);
+    if (O >= S) O = S - 1;
+    document.getElementById("cz-size").textContent = S;
+    document.getElementById("cz-ov").textContent = O;
+    var words = input.value.split(/\s+/).filter(Boolean);
+    var step = S - O, chunks = [];
+    for (var i = 0; i < words.length; i += step) {
+      chunks.push(words.slice(i, i + S).join(" "));
+      if (i + S >= words.length) break;
+    }
+    var html = "";
+    chunks.forEach(function (c, i) {
+      html += '<div style="background:' + COLORS[i % COLORS.length] + ';border:1px solid rgba(0,0,0,.07);border-radius:8px;padding:8px 11px;margin:6px 0;font-size:13.5px">' +
+        '<b style="color:#475569">chunk ' + (i + 1) + '</b> &nbsp;' + c + '</div>';
+    });
+    out.innerHTML = html +
+      '<p style="margin:8px 0 0;font-size:13.5px;color:#64748b"><b>' + chunks.length + ' chunks</b> · ' +
+      'each ≈ ' + S + ' words with ' + O + '-word overlap. ' +
+      (O === 0 ? 'With 0 overlap, ideas split at boundaries can be lost.' : 'Overlap keeps boundary ideas intact.') + '</p>';
+  }
+  [size, ov, input].forEach(function (el) { el.addEventListener("input", render); });
+  render();
+})();
+</script>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

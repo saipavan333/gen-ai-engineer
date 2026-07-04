@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Python fluency: the next layer — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="0.4">
+<main class="lesson">
+
+  <span class="eyebrow">Start Here · Lesson 0.4</span>
+  <h1>Python fluency: the next layer</h1>
+  <p class="lead">The primer gave you the eight basics. This lesson adds the next handful of moves that show up in almost every piece of real GenAI code — comprehensions, dictionary tricks, multi-line prompts, safe JSON, and graceful error handling. Still beginner-paced, still <code>$0</code>.</p>
+
+  <h2>Why this, and why now</h2>
+  <p>Once you start wiring real models together, the same small patterns appear over and over: <em>transform a list</em> (turn raw documents into chunks), <em>pull a field out of a dict</em> (read a model’s JSON reply), <em>build a prompt from pieces</em>, and <em>survive a call that misbehaves</em>. None of these are advanced. But if they’re unfamiliar, real code looks scarier than it is. Spend twenty minutes here and the rest of the course reads like plain English. Open a free <strong>Google Colab</strong> notebook and run every snippet — predict the output first.</p>
+
+  <p>Before the patterns, one picture. Nearly all GenAI code moves three shapes around:</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t0-python-shapes.svg" alt="Three data shapes: a list (ordered, indexed with brackets); a dict (key to value, like role and content); and a list of dicts, which is how a conversation of messages is represented.">
+    <figcaption>Lists, dicts, and lists-of-dicts. Master these three and you can read almost any AI codebase.</figcaption>
+  </figure>
+
+  <h2>1 · Comprehensions: transform a list in one line</h2>
+  <p>You constantly need to take a list and make a new list from it — lowercase every title, wrap every question in a prompt, keep only the long chunks. A <span class="term">list comprehension</span> does that in a single readable line. Read it right-to-left: “for each item in the list, compute this.”</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">comprehensions.py</span></div>
+<pre><code>docs <span class="o">=</span> [<span class="s">"  Refunds  "</span>, <span class="s">"Shipping"</span>, <span class="s">"  Returns"</span>]
+
+<span class="c"># the long way</span>
+clean <span class="o">=</span> []
+<span class="k">for</span> d <span class="k">in</span> docs:
+    clean.<span class="f">append</span>(d.<span class="f">strip</span>().<span class="f">lower</span>())
+
+<span class="c"># the comprehension way — same result, one line</span>
+clean <span class="o">=</span> [d.<span class="f">strip</span>().<span class="f">lower</span>() <span class="k">for</span> d <span class="k">in</span> docs]
+<span class="f">print</span>(clean)   <span class="c"># -> ['refunds', 'shipping', 'returns']</span></code></pre>
+  <p>You can add a filter with <code>if</code> on the end — keep only the items that pass:</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">filter.py</span></div>
+<pre><code>lengths <span class="o">=</span> [<span class="n">12</span>, <span class="n">480</span>, <span class="n">35</span>, <span class="n">900</span>]
+big <span class="o">=</span> [n <span class="k">for</span> n <span class="k">in</span> lengths <span class="k">if</span> n <span class="o">&gt;</span> <span class="n">100</span>]
+<span class="f">print</span>(big)   <span class="c"># -> [480, 900]</span></code></pre>
+  <div class="box note">
+    <div class="box-label">Don’t force it</div>
+    <p>If a comprehension gets long or needs an <code>if/else</code> in the middle, just write the plain <code>for</code> loop. Readable beats clever. Comprehensions are a convenience, not a rule.</p>
+  </div>
+
+  <h2>2 · Dictionary moves you’ll use daily</h2>
+  <p>Models hand back dicts (a parsed JSON reply is a dict). Two habits make working with them painless. First, <code>.get(key, default)</code> safely reads a key that <em>might</em> be missing instead of crashing. Second, <code>.items()</code> loops over keys and values together.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">dict_moves.py</span></div>
+<pre><code>reply <span class="o">=</span> {<span class="s">"intent"</span>: <span class="s">"refund"</span>, <span class="s">"confidence"</span>: <span class="n">0.82</span>}
+
+<span class="c"># [key] crashes if the key is absent; .get returns a fallback instead</span>
+<span class="f">print</span>(reply.<span class="f">get</span>(<span class="s">"sentiment"</span>, <span class="s">"unknown"</span>))   <span class="c"># -> "unknown" (no crash)</span>
+
+<span class="k">for</span> key, value <span class="k">in</span> reply.<span class="f">items</span>():
+    <span class="f">print</span>(key, <span class="s">"="</span>, value)
+<span class="c"># intent = refund</span>
+<span class="c"># confidence = 0.82</span></code></pre>
+  <p>That <code>.get</code> habit is a quiet superpower: model output is unpredictable, and reaching for a key that isn’t there is one of the most common ways a script blows up in production.</p>
+
+  <h2>3 · Building real prompts: multi-line and joined</h2>
+  <p>Real prompts span several lines and often stitch in a <em>list</em> of things (retrieved snippets, few-shot examples). Two tools: triple-quoted strings <code>"""..."""</code> hold multi-line text, and <code>"\n".join(list)</code> glues a list into one string with line breaks between items.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">build_prompt.py</span></div>
+<pre><code>snippets <span class="o">=</span> [
+    <span class="s">"Refunds are issued within 5 business days."</span>,
+    <span class="s">"Items must be returned within 30 days."</span>,
+]
+question <span class="o">=</span> <span class="s">"How long do refunds take?"</span>
+
+context <span class="o">=</span> <span class="s">"\n"</span>.<span class="f">join</span>(snippets)
+prompt <span class="o">=</span> <span class="s">f"""Answer using ONLY the context below.</span>
+<span class="s">Context:</span>
+{context}
+
+<span class="s">Question: </span>{question}<span class="s">"""</span>
+
+<span class="f">print</span>(prompt)</code></pre>
+  <p>That is, almost exactly, the core of a RAG prompt (Track&nbsp;3). You join your retrieved snippets into a context block, then drop it and the question into a template with an f-string.</p>
+
+  <h2>4 · Functions with sensible defaults</h2>
+  <p>A <span class="term">default argument</span> lets a function be called simply <em>or</em> with extra control. You set a value with <code>=</code> in the definition; callers can skip it or override it.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">defaults.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">ask</span>(question, model<span class="o">=</span><span class="s">"llama3.2"</span>, temperature<span class="o">=</span><span class="n">0.0</span>):
+    <span class="k">return</span> <span class="s">f"[</span>{model}<span class="s"> @ temp </span>{temperature}<span class="s">] "</span> <span class="o">+</span> question
+
+<span class="f">print</span>(<span class="f">ask</span>(<span class="s">"What is RAG?"</span>))                       <span class="c"># uses the defaults</span>
+<span class="f">print</span>(<span class="f">ask</span>(<span class="s">"Be creative."</span>, temperature<span class="o">=</span><span class="n">0.9</span>))     <span class="c"># override just one, by name</span></code></pre>
+  <p>Naming the argument you override (<code>temperature=0.9</code>) is clearer than relying on position, and it’s the style every AI library uses.</p>
+
+  <h2>5 · Safe by default: <code>try / except</code> and JSON</h2>
+  <p>Two things will go wrong constantly when you talk to models: a call fails (network, rate limit), or the model returns text that <em>isn’t</em> the clean JSON you asked for. A <span class="term">try/except</span> block runs risky code and catches the failure instead of crashing the whole program.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">safe_json.py</span></div>
+<pre><code><span class="k">import</span> json
+
+raw <span class="o">=</span> <span class="s">'{"intent": "refund"'</span>   <span class="c"># oops — model cut off, invalid JSON</span>
+
+<span class="k">try</span>:
+    data <span class="o">=</span> json.<span class="f">loads</span>(raw)
+    <span class="f">print</span>(<span class="s">"intent is"</span>, data[<span class="s">"intent"</span>])
+<span class="k">except</span> json.JSONDecodeError:
+    <span class="f">print</span>(<span class="s">"Model did not return valid JSON — retry or fall back."</span>)</code></pre>
+  <p>This pattern — <em>try to parse, handle the mess if it fails</em> — is the backbone of every reliable LLM app. You’ll meet it again in structured output (Track&nbsp;2) and guardrails (Track&nbsp;7). The opposite of a brittle demo is code that expects the model to occasionally misbehave.</p>
+
+  <h2>Putting it together</h2>
+  <p>Here’s a small program that uses every move above to turn raw support tickets into prompts and safely read a (pretend) model reply — genuinely the shape of code you’ll write in Track&nbsp;3 and beyond:</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">together.py</span></div>
+<pre><code><span class="k">import</span> json
+
+tickets <span class="o">=</span> [
+    {<span class="s">"id"</span>: <span class="n">1</span>, <span class="s">"text"</span>: <span class="s">"Where is my refund?"</span>},
+    {<span class="s">"id"</span>: <span class="n">2</span>, <span class="s">"text"</span>: <span class="s">"Can I change my address?"</span>},
+]
+
+<span class="k">def</span> <span class="f">classify_prompt</span>(text):
+    <span class="k">return</span> <span class="s">f"Classify the intent of: '</span>{text}<span class="s">'. Reply as JSON with an 'intent' key."</span>
+
+prompts <span class="o">=</span> [<span class="f">classify_prompt</span>(t[<span class="s">"text"</span>]) <span class="k">for</span> t <span class="k">in</span> tickets]   <span class="c"># comprehension over dicts</span>
+
+<span class="k">for</span> ticket, prompt <span class="k">in</span> <span class="f">zip</span>(tickets, prompts):
+    <span class="f">print</span>(<span class="s">"Ticket"</span>, ticket[<span class="s">"id"</span>], <span class="s">"->"</span>, prompt)
+
+<span class="c"># pretend this came back from the model:</span>
+raw <span class="o">=</span> <span class="s">'{"intent": "refund_status"}'</span>
+<span class="k">try</span>:
+    result <span class="o">=</span> json.<span class="f">loads</span>(raw)
+    <span class="f">print</span>(<span class="s">"Parsed intent:"</span>, result.<span class="f">get</span>(<span class="s">"intent"</span>, <span class="s">"unknown"</span>))
+<span class="k">except</span> json.JSONDecodeError:
+    <span class="f">print</span>(<span class="s">"Bad JSON — handle gracefully."</span>)</code></pre>
+  <p><code>zip</code> walks two lists together (each ticket beside its prompt); <code>.get</code> reads the reply safely. Nothing exotic — just the everyday toolkit.</p>
+
+  <h2>Live demo: build a prompt template</h2>
+  <p>Prompts are just strings you assemble from variables. Change the fields below and watch the full <em>messages</em> list (the list-of-dicts shape) build itself — exactly what you’d send to a model.</p>
+
+  <div class="demo" id="tpl-demo">
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end">
+      <label style="font-size:13px;color:#475569">Topic<br>
+        <input id="tpl-topic" type="text" value="the water cycle" style="width:170px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:8px"></label>
+      <label style="font-size:13px;color:#475569">Audience<br>
+        <input id="tpl-aud" type="text" value="a 10-year-old" style="width:150px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:8px"></label>
+      <label style="font-size:13px;color:#475569">Tone<br>
+        <select id="tpl-tone" style="padding:6px 8px;border:1px solid #cbd5e1;border-radius:8px">
+          <option>friendly</option><option>formal</option><option>playful</option></select></label>
+    </div>
+    <pre id="tpl-out" style="margin-top:14px;background:#0f172a;color:#e2e8f0;padding:14px;border-radius:10px;overflow-x:auto;font-size:12.5px"></pre>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li><strong>Comprehensions</strong> <code>[f(x) for x in items]</code> transform a list in one line; add <code>if</code> to filter.</li>
+      <li><strong><code>.get(key, default)</code></strong> reads a maybe-missing key without crashing; <strong><code>.items()</code></strong> loops keys and values.</li>
+      <li>Build prompts with <strong>triple-quoted strings</strong> and <strong><code>"\n".join(list)</code></strong> — that’s the heart of a RAG prompt.</li>
+      <li><strong>Default arguments</strong> make functions simple to call yet configurable; override by name.</li>
+      <li><strong><code>try/except</code></strong> + <strong><code>json.loads</code></strong> is how you survive flaky calls and messy model output — assume it’ll misbehave.</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Given <code>chunks = ["short", "a much longer chunk here", "tiny"]</code>, use a comprehension to build a new list of only the chunks with more than 5 characters.<br>
+    <strong>2.</strong> Write <code>safe_intent(raw)</code> that takes a string, tries to parse it as JSON, and returns the value of its <code>"intent"</code> key — or the string <code>"unknown"</code> if the JSON is invalid or the key is missing.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
+      <div class="sol-body">
+<pre><code><span class="k">import</span> json
+
+<span class="c"># 1</span>
+chunks <span class="o">=</span> [<span class="s">"short"</span>, <span class="s">"a much longer chunk here"</span>, <span class="s">"tiny"</span>]
+long_chunks <span class="o">=</span> [c <span class="k">for</span> c <span class="k">in</span> chunks <span class="k">if</span> <span class="f">len</span>(c) <span class="o">&gt;</span> <span class="n">5</span>]
+<span class="f">print</span>(long_chunks)   <span class="c"># -> ['a much longer chunk here']</span>
+
+<span class="c"># 2</span>
+<span class="k">def</span> <span class="f">safe_intent</span>(raw):
+    <span class="k">try</span>:
+        data <span class="o">=</span> json.<span class="f">loads</span>(raw)
+    <span class="k">except</span> json.JSONDecodeError:
+        <span class="k">return</span> <span class="s">"unknown"</span>
+    <span class="k">return</span> data.<span class="f">get</span>(<span class="s">"intent"</span>, <span class="s">"unknown"</span>)</code></pre>
+        <p><strong>Why it’s built this way:</strong> problem 1 filters with the trailing <code>if</code>, the single most common comprehension shape — you’ll use it to drop empty or oversized chunks. Problem 2 layers the two safety habits: <code>try/except</code> guards against text that isn’t JSON at all, and <code>.get</code> guards against valid JSON that’s simply missing the field. Real model output fails in <em>both</em> ways, so robust code defends against both. Notice the <code>return "unknown"</code> sits inside <code>except</code> so a parse failure exits early — after that line we know <code>data</code> is a usable dict.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">A model is supposed to return JSON, but sometimes returns a friendly sentence instead. You write <code>data = json.loads(reply)</code> with no guard. What happens on a “friendly sentence” day?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) <code>data</code> becomes the sentence as a string — harmless.</span>
+        <div class="why">No — <code>json.loads</code> doesn’t “fall back” to a string. Given text that isn’t valid JSON, it raises an error rather than quietly succeeding.</div></li>
+      <li data-correct="true"><span class="opt">B) The line raises <code>json.JSONDecodeError</code> and, unguarded, crashes the program.</span>
+        <div class="why">Correct. Parsing non-JSON throws <code>JSONDecodeError</code>. With no <code>try/except</code> around it, that exception propagates and stops your script — which is exactly why you wrap model-output parsing in a guard and plan a retry or fallback.</div></li>
+      <li data-correct="false"><span class="opt">C) <code>data</code> becomes <code>None</code> and the program continues.</span>
+        <div class="why">A common guess, but wrong: <code>json.loads</code> doesn’t return <code>None</code> on bad input, it <em>raises</em>. You only get a clean fallback if <em>you</em> write one in an <code>except</code> block.</div></li>
+      <li data-correct="false"><span class="opt">D) Python auto-repairs the text into valid JSON.</span>
+        <div class="why">There’s no auto-repair. Handling malformed output is your job — via guards, a re-ask, or a stricter prompt (Track 2’s structured-output techniques).</div></li>
+    </ul>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: why “assume it’ll misbehave” is the whole mindset</div>
+    <p>The jump from hobby script to production engineer is mostly a shift in assumptions. A demo assumes the happy path: the call succeeds, the JSON is clean, the key is present. Production assumes the opposite and is pleasantly surprised. That’s not pessimism — it’s arithmetic. If a single call works 99% of the time, a task that makes ten calls works only about 0.99¹⁰ ≈ 90% of the time; an agent making fifty calls is near a coin-flip. Reliability comes from handling the boring 1% everywhere it can occur.</p>
+    <p>Concretely, that mindset becomes a few reflexes you’ll see throughout this course: parse defensively (<code>try/except</code>), read fields defensively (<code>.get</code> with a default), validate that output matches the shape you expected before using it (Track&nbsp;7), and have a fallback ready (retry, a smaller request, a safe canned answer). The Python here is trivial; the discipline is the point. Learn to <em>expect</em> the messy 1%, and your software stops being a magic trick that works on stage and starts being a tool people can trust.</p>
+  </div>
+
+  <p>That’s the toolkit that makes real code legible. Next, lock it in with a short set of <strong>hands-on drills</strong> — small problems with worked solutions, so the patterns move from “I read it” to “I can write it.”</p>
+
+</main>
+
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  var topic = $("tpl-topic"), aud = $("tpl-aud"), tone = $("tpl-tone"), out = $("tpl-out");
+  if (!topic || !aud || !tone || !out) return;
+  function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function render() {
+    var sys = "You are a " + tone.value + " teacher. Explain things simply and accurately.";
+    var user = "Explain " + topic.value + " to " + aud.value + " in 3 sentences.";
+    var messages =
+      "messages = [\n" +
+      '    {"role": "system",  "content": "' + sys + '"},\n' +
+      '    {"role": "user",    "content": "' + user + '"},\n' +
+      "]";
+    out.innerHTML = esc(messages);
+  }
+  [topic, aud].forEach(function (el) { el.addEventListener("input", render); });
+  tone.addEventListener("change", render);
+  render();
+})();
+</script>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

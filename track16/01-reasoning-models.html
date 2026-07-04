@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reasoning models &amp; test-time compute — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="16.1">
+<main class="lesson">
+
+  <span class="eyebrow">Frontier &amp; Responsible AI · Lesson 16.1</span>
+  <h1>Reasoning models &amp; test-time compute</h1>
+  <p class="lead">A major shift in the field: instead of only making models bigger, we now let them <em>think longer</em> at answer time. Understanding “reasoning models” and “test-time compute” keeps you current and helps you choose the right model for a job.</p>
+
+  <h2>Two ways to make a model smarter</h2>
+  <p>For years, the recipe for a more capable model was “train a bigger one on more data.” That still works, but there’s a second lever that reshaped the field: spend more compute <em>when answering</em>, not just when training. A <span class="term">reasoning model</span> (sometimes called “o1-style,” after an early prominent one) is trained to produce a long internal <span class="term">chain-of-thought</span> — working through a problem step by step, checking itself, exploring approaches — before it commits to a final answer. That extra deliberation at inference is called <span class="term">test-time compute</span>: the model literally uses more tokens and time to think, and on hard problems that buys markedly better accuracy.</p>
+  <p>You already met the seed of this in Track&nbsp;2: chain-of-thought prompting (“think step by step”) improves reasoning. Reasoning models bake that in and take it much further, having been trained specifically to reason at length and self-correct. The result is a model that’s dramatically stronger on math, coding, logic, and multi-step planning — the tasks where a single quick pass tends to slip.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t16-reasoning.svg" alt="Two lanes. Standard model: a prompt gets one quick pass with little compute and returns a fast, cheap answer. Reasoning model: a hard-problem prompt triggers a long internal chain-of-thought (test-time compute) before returning an answer that is better on hard tasks.">
+    <figcaption>Standard models answer in one quick pass; reasoning models spend extra compute “thinking” first — better on hard problems, slower and pricier.</figcaption>
+  </figure>
+
+  <h2>When to reach for one (and when not)</h2>
+  <p>Reasoning models aren’t a free upgrade — they’re a trade. Because they generate a long internal reasoning process, they’re <strong>slower and more expensive</strong> per answer (you pay for all those thinking tokens). So the choice is task-driven. For <strong>hard, multi-step problems</strong> — complex math, tricky debugging, planning, careful analysis — the accuracy gain is well worth the cost. For <strong>simple, high-volume tasks</strong> — classification, extraction, straightforward Q&A, formatting — a standard (often smaller) model is faster, cheaper, and just as good; paying a reasoning model to “think hard” about a trivial task is waste. This is a natural extension of <strong>model routing</strong> from Track&nbsp;8: send the genuinely hard requests to a reasoning model and everything else to a cheaper one.</p>
+
+  <div class="box note">
+    <div class="box-label">The field moves fast — reason from principles</div>
+    <p>Specific model names, prices, and benchmarks change monthly, so don’t memorize them — memorize the <em>principle</em>: capability can come from more training <em>or</em> more inference-time thinking, and thinking longer trades cost/latency for accuracy on hard problems. That framing stays true no matter which model is on top this quarter. Always check current options before choosing.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>Capability comes from two levers: <strong>bigger training</strong> and <strong>more test-time compute</strong> (thinking longer at answer time).</li>
+      <li><strong>Reasoning models</strong> generate a long internal chain-of-thought and self-correct before answering — much stronger on math/code/logic.</li>
+      <li>It’s the trained-in, supercharged version of Track&nbsp;2’s <strong>chain-of-thought prompting</strong>.</li>
+      <li>They’re <strong>slower and pricier</strong> — use them for genuinely hard problems; use standard/smaller models for simple, high-volume tasks.</li>
+      <li>This is <strong>model routing</strong> (Track&nbsp;8) by difficulty: hard → reasoning model, easy → cheap model.</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p>Your product has two features: (a) categorize incoming support emails into 8 buckets, at high volume; (b) a “solve this multi-step engineering calculation” assistant used occasionally. Which should use a reasoning model, which shouldn’t, and how would you architect the choice?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>(a) Categorization → standard/small model.</strong> It’s a simple, high-volume classification task; a small fast model at temperature&nbsp;0 nails it cheaply. A reasoning model here would multiply cost and latency for no accuracy benefit — you’d be paying it to deliberate over “is this billing or shipping,” which needs no deliberation.</p>
+        <p><strong>(b) Multi-step calculation → reasoning model.</strong> This is exactly where test-time compute pays off: the problem has several dependent steps where a quick pass often slips, and the volume is low, so the higher per-call cost is affordable and the accuracy gain matters.</p>
+        <p><strong>Architecture:</strong> route by task. The system knows which feature is calling, so it selects the model accordingly — cheap model for categorization, reasoning model for the calculator — rather than using one model for everything. That’s model routing (Track&nbsp;8) applied to the reasoning/standard split, and it optimizes cost and latency without sacrificing quality where quality matters. You’d confirm the choice with evals: measure accuracy and cost per feature, and only pay for reasoning where it actually moves the number.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">What is “test-time compute,” and why does it matter?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Compute spent <em>while answering</em> — the model generates a long internal reasoning process before responding, trading cost/latency for better accuracy on hard problems.</span>
+        <div class="why">Correct. Rather than only scaling training, reasoning models spend more compute at inference by “thinking” at length (many reasoning tokens) before the final answer. On hard math/code/logic this meaningfully improves accuracy, at the price of speed and money.</div></li>
+      <li data-correct="false"><span class="opt">B) The time it takes to run your test suite in CI.</span>
+        <div class="why">Unrelated — that’s software testing. Here “test-time” means inference time (when the model is answering), as opposed to training time.</div></li>
+      <li data-correct="false"><span class="opt">C) Compute used only during training to make the model bigger.</span>
+        <div class="why">That’s train-time scaling, the older lever. Test-time compute is the <em>other</em> lever: extra thinking at answer time, independent of model size.</div></li>
+      <li data-correct="false"><span class="opt">D) A way to make every model faster and cheaper.</span>
+        <div class="why">The opposite — spending more compute at answer time makes responses slower and more expensive. The point is that it buys accuracy on hard tasks, so you use it selectively.</div></li>
+    </ul>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: why this changes how you build, not just what you buy</div>
+    <p>The rise of test-time compute has a few consequences worth carrying into interviews and design discussions. First, it adds a genuinely new dimension to the cost/latency thinking from Track&nbsp;8: “which model” is no longer just big-vs-small, it’s also how-hard-should-it-think, and both are routing decisions driven by task difficulty and your quality bar. A mature system might triage a request — cheap model first, escalate to a reasoning model only if the task looks hard or the first answer fails a check — spending expensive thinking exactly where it earns its keep. That triage is an architecture choice you can design, not a property of any single model.</p>
+    <p>Second, it reframes some problems you’d otherwise solve with elaborate agent scaffolding. A lot of early agent work manually orchestrated “think, then act, then reflect” loops (Track&nbsp;4, Track&nbsp;12) partly to squeeze more reasoning out of models that answered too quickly. As models internalize deep reasoning, some of that scaffolding gets simpler — the model does more of the careful thinking itself. But not all of it: agents still need tools, memory, and bounded loops, and reasoning models still hallucinate, still can’t know private facts, and still need grounding and evaluation. The durable lesson is that the field advances by giving models new ways to spend compute — more parameters, more data, more inference-time thinking, more tools — and your job is to <em>compose</em> those capabilities into reliable systems. Knowing that reasoning is now a dial you can turn, at a price, is what lets you make that call deliberately instead of defaulting to the most expensive model for everything.</p>
+  </div>
+
+  <p>Reasoning is one frontier shift; there are several worth a working engineer’s awareness. Next: <strong>the modern frontier.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quantization — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="8.5">
+<main class="lesson">
+
+  <span class="eyebrow">Track 8 · Lesson 8.5</span>
+  <h1>Quantization</h1>
+  <p class="lead">Quantization shrinks a model by storing its weights with fewer bits — making it smaller, faster, and runnable on cheaper hardware, with usually only a small quality cost. It’s why you can run capable models on a laptop (the free local stack of this whole course), and a key lever when you self-host.</p>
+
+  <h2>Smaller numbers, smaller model</h2>
+  <p>A model’s weights are numbers, normally stored at 16 bits each (fp16). <span class="term">Quantization</span> stores them with fewer bits — 8 (int8) or even 4 (int4) — so the model takes proportionally less memory and runs faster, because there’s less data to move and compute. The trade-off is a small loss of precision in each weight, which usually causes only a minor quality drop. You already saw this in Track 5: QLoRA quantizes the base model to 4-bit so a big model fits on a free GPU.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t8-quantization.svg" alt="Quantization: fewer bits per weight = smaller model. A 7B model at fp16 is about 14 GB; at int8 about 7 GB; at int4 about 3.5 GB. Lower bits means less memory, more speed, and a usually-small quality drop. Runs on cheaper/smaller GPUs and faster — QLoRA (Track 5) used 4-bit to fine-tune on a free GPU.">
+    <figcaption>Fewer bits per weight shrink the model roughly proportionally (a 7B model: ~14 GB at fp16 → ~3.5 GB at int4), with a usually-small quality cost. Less memory, more speed, cheaper hardware.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p><span class="term">Quantization</span> reduces the number of bits used to store each model weight (e.g., 16-bit → 8-bit → 4-bit). Lower <span class="term">precision</span> means less memory and faster compute, at the cost of some accuracy. The trade-off is usually favorable: 8-bit is often nearly lossless, and 4-bit is a popular sweet spot for running large models on modest hardware. Local runtimes like <span class="term">Ollama</span> serve quantized models (often in the <span class="term">GGUF</span> format) by default — which is how this course runs models for free.</p>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — quantized models, free (Ollama)</div>
+    <p>You’ve been using quantization all along — Ollama ships quantized models so they run on everyday hardware.</p>
+<pre><code><span class="c"># Ollama serves quantized models by default — this is why it fits on a laptop:</span>
+<span class="o">$</span> ollama pull llama3.1:8b          <span class="c"># downloads a ~4-bit quantized build (~4-5 GB, not ~16 GB)</span>
+<span class="o">$</span> ollama run llama3.1:8b           <span class="c"># runs fast on CPU/modest GPU thanks to quantization</span>
+
+<span class="c"># You can choose a quant level when available (higher q = more bits = better quality, more memory):</span>
+<span class="o">$</span> ollama pull llama3.1:8b-instruct-q4_K_M    <span class="c"># 4-bit (small, fast)</span>
+<span class="o">$</span> ollama pull llama3.1:8b-instruct-q8_0       <span class="c"># 8-bit (bigger, closer to full quality)</span></code></pre>
+    <p>The lesson: quantization isn’t exotic — it’s the default that makes free local models practical. When self-hosting, choosing a quant level is one of your main cost/quality dials.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li><strong>Quantization</strong> stores weights with fewer bits (16 → 8 → 4), shrinking the model proportionally.</li>
+      <li>Result: <strong>less memory, faster, cheaper hardware</strong> — with a <strong>usually-small quality drop</strong>.</li>
+      <li><strong>8-bit</strong> is often near-lossless; <strong>4-bit</strong> is the popular sweet spot for big models on modest hardware.</li>
+      <li>It’s the default that makes <strong>free local models</strong> (Ollama/GGUF) practical, and underpins QLoRA (Track 5).</li>
+      <li>When self-hosting, the <strong>quant level</strong> is a key cost/quality dial — measure the quality impact for your task.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">You want to run a capable open model on a single modest GPU that can’t hold the full-precision version. What’s the standard move?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Use a quantized build (e.g., 4-bit) so the model fits in less memory and runs faster, accepting a small quality trade-off.</span>
+        <div class="why">Correct. Quantization is exactly for this: a 4-bit build cuts memory ~4×, letting a model that wouldn’t otherwise fit run on modest hardware, usually with only a minor quality drop. It’s why local runtimes ship quantized models by default.</div></li>
+      <li data-correct="false"><span class="opt">B) Give up — you need a bigger GPU.</span>
+        <div class="why">You often don’t — quantization is designed to make large models fit smaller hardware. Reaching for more expensive hardware before trying quantization wastes money.</div></li>
+      <li data-correct="false"><span class="opt">C) Lower the temperature to use less memory.</span>
+        <div class="why">Temperature is a decoding setting; it has nothing to do with model memory footprint. Quantization is what reduces memory.</div></li>
+      <li data-correct="false"><span class="opt">D) Truncate the prompt to fit the model in memory.</span>
+        <div class="why">Prompt length affects the context/KV memory a bit, but it doesn’t shrink the <em>model weights</em>, which are what don’t fit here. Quantizing the weights is the right fix.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Roughly how much memory does a 13B-parameter model need at fp16 vs int4, and why?<br>
+    <strong>2.</strong> When would you <em>not</em> want to go down to 4-bit?<br>
+    <strong>3.</strong> Connect quantization to QLoRA from Track 5 — what role did it play there?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> At fp16 (2 bytes/weight), 13B params ≈ 26 GB just for weights; at int4 (~0.5 byte/weight) ≈ 6–7 GB. (Real usage adds some overhead for activations/KV cache.) The footprint scales with bits-per-weight, so dropping from 16 to 4 bits is roughly a 4× reduction — the difference between needing a big GPU and fitting on a modest one.</p>
+        <p><strong>2.</strong> When the quality drop matters for your task — e.g., high-stakes accuracy, complex reasoning, or a smaller model where 4-bit degradation is more noticeable. Aggressive quantization (4-bit and below) compounds with a model that’s already near its limits. The discipline: <em>measure</em> your task’s quality at each quant level (Track 6) and pick the lowest bits that still clear your bar — sometimes that’s 8-bit, sometimes 4-bit is fine.</p>
+        <p><strong>3.</strong> QLoRA = <strong>Q</strong>uantized + LoRA: it loads the frozen base model in 4-bit (quantization) to slash memory, then trains a small LoRA adapter on top. The quantization is precisely what let you fine-tune a large model on a single free GPU — same technique as here (shrink the model to fit cheap hardware), applied to training rather than serving.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: where quantization fits in your serving strategy</div>
+    <p>Quantization matters most when <strong>you control the serving</strong> — i.e., you self-host an open model rather than calling a hosted API. (With a pay-per-token API, the provider handles the hardware; your levers are routing, caching, and token budgeting, not quant levels.) Self-hosting becomes attractive at scale (no per-token fees, just your hardware), for privacy (data never leaves — Track 7), or for customization (your own fine-tunes). In that world, quantization is a primary dial: it determines what hardware you need and how many requests one GPU can serve, directly shaping your cost per request.</p>
+    <p>The engineering nuance is that quantization quality isn’t uniform — it depends on the method (modern schemes like GPTQ, AWQ, and the GGUF k-quants preserve quality better than naive rounding), the model (bigger models tolerate quantization better; small ones degrade more), and the task (simple tasks barely notice 4-bit; subtle reasoning may). So you don’t pick a quant level by reputation — you serve a couple of candidates and run your eval set (Track 6) to see the real quality-vs-memory trade-off for <em>your</em> workload, then choose the smallest that clears your bar. Combined with the rest of this track, the pattern for self-hosters is: quantize to fit cheap hardware, batch to keep it busy (next lesson), cache and route to avoid work, and budget tokens to keep every call lean. That stack is how teams run capable models affordably — and it’s the same stack that lets <em>you</em> run them for free on a laptop.</p>
+  </div>
+
+  <p>Quantization makes one model instance cheaper. The next technique squeezes maximum work out of that instance by serving many requests at once. Next: <strong>batching &amp; throughput</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

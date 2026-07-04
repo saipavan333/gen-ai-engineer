@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>From notebook to a service — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="14.1">
+<main class="lesson">
+
+  <span class="eyebrow">Productionization &amp; LLMOps · Lesson 14.1</span>
+  <h1>From notebook to a service</h1>
+  <p class="lead">A model call in a notebook helps exactly one person: you. To let anyone — a website, an app, a teammate — use it, you wrap it in a small web service. This lesson turns your working code into an API others can call.</p>
+
+  <h2>Why an API is the unlock</h2>
+  <p>Your capstone works in a Python file on your laptop. But a product isn’t a script someone has to run — it’s something other software can talk to over the network. A <span class="term">web service</span> (or API) is a program that listens for requests and sends back responses. Wrapping your model logic in one means a front-end, a mobile app, or another service can send a question and get an answer, without knowing or caring about the Python inside. This single step — “put it behind an endpoint” — is what turns “I built a thing” into “others can use my thing,” and it’s the first thing an interviewer means by “productionize.”</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t14-service.svg" alt="From notebook to service: your working notebook or script becomes a FastAPI service with a POST /ask endpoint, packaged into a Docker image that runs anywhere, and deployed to a public, scalable URL.">
+    <figcaption>The productionization path. This lesson is the first arrow — wrapping your logic in a callable service.</figcaption>
+  </figure>
+
+  <h2>A model service in ~15 lines</h2>
+  <p>We’ll use <strong>FastAPI</strong>, the standard, beginner-friendly Python web framework for this. It’s free, and paired with a local model (Ollama) the whole thing costs nothing to run. The idea: define an <em>endpoint</em> — a URL path like <code>/ask</code> — and a function that runs when someone POSTs to it.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">main.py</span></div>
+<pre><code><span class="k">from</span> fastapi <span class="k">import</span> FastAPI
+<span class="k">from</span> pydantic <span class="k">import</span> BaseModel
+<span class="k">import</span> ollama   <span class="c"># your free, local model</span>
+
+app <span class="o">=</span> FastAPI()
+
+<span class="k">class</span> <span class="f">Ask</span>(BaseModel):        <span class="c"># defines the shape of the request body</span>
+    question: str
+
+<span class="nd">@app.post</span>(<span class="s">"/ask"</span>)
+<span class="k">def</span> <span class="f">ask</span>(body: Ask):
+    reply <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"llama3.2"</span>,
+        messages<span class="o">=</span>[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: body.question}])
+    <span class="k">return</span> {<span class="s">"answer"</span>: reply[<span class="s">"message"</span>][<span class="s">"content"</span>]}</code></pre>
+  <p>Run it with <code>uvicorn main:app --reload</code>, and you have a live service. Anyone on your machine can now POST a question:</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">call_it.sh</span></div>
+<pre><code>curl -X POST localhost:8000/ask \
+  -H <span class="s">"Content-Type: application/json"</span> \
+  -d <span class="s">'{"question": "What is RAG in one sentence?"}'</span>
+<span class="c"># -&gt; {"answer": "RAG retrieves relevant documents and ..."}</span></code></pre>
+  <p>Two beginner-friendly wins come for free with FastAPI: the <code>Ask</code> model (from <strong>pydantic</strong>) automatically <em>validates</em> incoming requests — a request missing <code>question</code> gets a clear 422 error, not a crash — and FastAPI auto-generates interactive docs at <code>/docs</code> so you can try your endpoint in the browser.</p>
+
+  <div class="box note">
+    <div class="box-label">This is your capstone, reshaped</div>
+    <p>The body of <code>ask()</code> is just your capstone logic (RAG, an agent, text-to-SQL). Productionizing doesn’t change what your code <em>does</em> — it changes how it’s <em>reached</em>: from “run the script” to “call the endpoint.”</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>A <strong>web service (API)</strong> lets other software use your model logic over the network — the core of “productionize.”</li>
+      <li><strong>FastAPI</strong> wraps your code in endpoints (e.g. <code>POST /ask</code>) in a handful of lines; run it with <strong>uvicorn</strong>.</li>
+      <li><strong>pydantic</strong> models validate requests automatically (clear errors, not crashes); <code>/docs</code> gives you a free test UI.</li>
+      <li>The endpoint body is just your existing logic — productionization changes <em>access</em>, not behavior.</li>
+      <li>It stays free/local with Ollama; no keys or bills to stand it up.</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p>Sketch how you’d turn your Track&nbsp;10 RAG assistant into a service. What would the endpoint be, what fields would the request and response have, and what should happen if the request is missing the question?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>Endpoint:</strong> <code>POST /ask</code>. <strong>Request:</strong> a JSON body with <code>question</code> (string), optionally <code>top_k</code> (how many chunks to retrieve). <strong>Response:</strong> <code>{ "answer": "...", "sources": [...] }</code> — returning the sources is your RAG grounding/citations coming through the API, so callers can verify. <strong>Missing question:</strong> a pydantic model with a required <code>question</code> field makes FastAPI reject it automatically with a 422 and a message naming the missing field — no crash, no ambiguous 500.</p>
+        <p><strong>Why this shape:</strong> it exposes exactly what a caller needs (a question in, an answer plus sources out) and nothing about the internals (which vector store, which model). That clean contract is what lets you swap the implementation later — a bigger model, a different retriever — without breaking any caller. Returning <code>sources</code> also carries your grounding discipline all the way to the edge of the system, which is what makes the service trustworthy, not just functional.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">What does wrapping your model code in a FastAPI endpoint fundamentally change?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) How the logic is reached — other software can now call it over the network — not what the logic does.</span>
+        <div class="why">Correct. The endpoint is a doorway: the same retrieval/generation code now runs in response to a network request, so any client can use it. Productionizing is about access and reliability, not changing the core behavior.</div></li>
+      <li data-correct="false"><span class="opt">B) It makes the model itself more accurate.</span>
+        <div class="why">Wrapping code in an API doesn’t touch the model or its accuracy — it just exposes the existing logic. Quality comes from your prompts, retrieval, and evals, not from the web layer.</div></li>
+      <li data-correct="false"><span class="opt">C) It removes the need for prompts and retrieval.</span>
+        <div class="why">The opposite — the endpoint <em>runs</em> your prompts and retrieval. The API is a wrapper around that logic, not a replacement for it.</div></li>
+      <li data-correct="false"><span class="opt">D) It automatically makes the app free to run.</span>
+        <div class="why">Cost depends on the model and hosting, not on using FastAPI. (It happens to stay free here because we use a local model — but that’s the model choice, not the API.)</div></li>
+    </ul>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: an LLM service has quirks normal APIs don’t</div>
+    <p>Once your logic is an endpoint, a few realities specific to LLM services show up quickly, and knowing them marks you as someone who’s shipped. First, <strong>latency is high and variable</strong> — a model call can take seconds, so you’ll often want asynchronous handling and <em>streaming</em> (Track&nbsp;8): sending tokens as they’re generated so the user sees progress instead of a long blank wait. FastAPI supports streaming responses, and it dramatically improves perceived speed. Second, these endpoints are <strong>expensive per call</strong> compared to a typical CRUD API, so timeouts, caching (Track&nbsp;8), and per-user rate limits aren’t niceties — they’re how you avoid a surprise bill or an outage from one heavy user.</p>
+    <p>Third, and easy to forget: the endpoint is now an <strong>attack surface</strong>. Everything from Track&nbsp;7 applies at the API boundary — validate and bound inputs, guard against prompt injection in whatever text you accept, never trust the client, and don’t leak internal errors in responses. A production LLM service is your model logic plus a ring of operational concerns — latency, cost, and safety — wrapped around it. The rest of this track is about building that ring: packaging it to run anywhere, gating changes with evals, and watching it in production.</p>
+  </div>
+
+  <p>Your service runs on your laptop. To run it <em>anywhere</em> — reliably, the same every time — you package it. Next: <strong>containers and deployment.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

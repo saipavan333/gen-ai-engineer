@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 280" width="820" height="280" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="820" height="280" fill="#ffffff"/>
+<text x="410" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">The model picks from a tool registry</text>
+<rect x="40" y="70" width="250" height="48" rx="9" ry="9" fill="#eff5ff" stroke="#2563eb" stroke-width="2"/>
+<text x="58" y="94" font-family="DejaVu Sans Mono, monospace" font-size="12.5" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">get_weather(city)</text>
+<rect x="40" y="130" width="250" height="48" rx="9" ry="9" fill="#fff6ea" stroke="#d97706" stroke-width="2"/>
+<text x="58" y="154" font-family="DejaVu Sans Mono, monospace" font-size="12.5" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">web_search(query)</text>
+<rect x="40" y="190" width="250" height="48" rx="9" ry="9" fill="#f4f0ff" stroke="#7c3aed" stroke-width="2"/>
+<text x="58" y="214" font-family="DejaVu Sans Mono, monospace" font-size="12.5" fill="#1f2937" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">send_email(to, body)</text>
+<rect x="380" y="112.5" width="120" height="60" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="380" y="115" width="120" height="60" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="380" y="110" width="120" height="60" rx="13" ry="13" fill="url(#g_accent)" stroke="#4f46e5" stroke-width="1.8"/>
+<text x="440.0" y="140.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#312e81" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">LLM</text>
+<line x1="292" y1="94" x2="370.94572286452245" y2="136.2267819973027" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round"/>
+<polygon points="378.0,140.0 369.4,139.0 372.5,133.4" fill="#94a3b8"/>
+<line x1="292" y1="154" x2="370.10394184055593" y2="141.28540481665368" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round"/>
+<polygon points="378.0,140.0 370.6,144.4 369.6,138.1" fill="#94a3b8"/>
+<line x1="292" y1="214" x2="371.9359130097366" y2="145.21793531720337" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round"/>
+<polygon points="378.0,140.0 374.0,147.6 369.8,142.8" fill="#94a3b8"/>
+<rect x="560" y="112.5" width="230" height="60" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="560" y="115" width="230" height="60" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="560" y="110" width="230" height="60" rx="13" ry="13" fill="url(#g_example)" stroke="#16a34a" stroke-width="1.8"/>
+<text x="675.0" y="132.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#14532d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">chooses + fills args</text>
+<text x="675.0" y="144.75" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">get_weather(city="Paris")</text>
+<line x1="500" y1="140" x2="546.0" y2="140.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="558.0,140.0 546.0,144.8 546.0,135.2" fill="#475569"/>
+<text x="410" y="262" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Each tool has a name, description, and typed parameters — the model reads them and decides.</text>
+</svg>

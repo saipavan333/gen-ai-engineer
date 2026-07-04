@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 340" width="840" height="340" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="840" height="340" fill="#ffffff"/>
+<text x="420" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Anatomy of a hire-worthy GenAI repo</text>
+<rect x="60" y="64" width="720" height="220" rx="12" ry="12" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+<text x="96" y="104" font-family="DejaVu Sans Mono, monospace" font-size="12.5" fill="#1e293b" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">README.md</text>
+<text x="330" y="104" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#334155" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">decisions, trade-offs, EVAL RESULTS, “what's next”</text>
+<text x="96" y="146" font-family="DejaVu Sans Mono, monospace" font-size="12.5" fill="#1e3a8a" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">ingest.py · rag.py</text>
+<text x="330" y="146" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#334155" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">the working system (chunk → retrieve → ground)</text>
+<rect x="76" y="172.5" width="688" height="38" rx="8" ry="8" fill="#0f172a" opacity="0.055"/>
+<rect x="76" y="175" width="688" height="38" rx="8" ry="8" fill="#1e293b" opacity="0.035"/>
+<rect x="76" y="170" width="688" height="38" rx="8" ry="8" fill="url(#g_key)" stroke="#d97706" stroke-width="1.8"/>
+<text x="96" y="188" font-family="DejaVu Sans Mono, monospace" font-size="12.5" fill="#7c2d12" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">eval.py + golden.jsonl</text>
+<text x="330" y="188" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#334155" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">measurement — THE differentiator most repos lack</text>
+<text x="96" y="230" font-family="DejaVu Sans Mono, monospace" font-size="12.5" fill="#14532d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">tests/</text>
+<text x="330" y="230" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#334155" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">a couple of regression tests (temp 0, structural)</text>
+<text x="96" y="272" font-family="DejaVu Sans Mono, monospace" font-size="12.5" fill="#1e293b" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">requirements.txt</text>
+<text x="330" y="272" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#334155" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">runs from a clean clone — clear setup steps</text>
+<text x="420" y="312" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Anyone can wire an LLM to a vector store. The eval proves you can measure quality — that's the hire signal.</text>
+</svg>

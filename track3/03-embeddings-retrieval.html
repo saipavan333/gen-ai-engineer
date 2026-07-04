@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Embeddings for retrieval — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="3.3">
+<main class="lesson">
+
+  <span class="eyebrow">Track 3 · Lesson 3.3</span>
+  <h1>Embeddings for retrieval</h1>
+  <p class="lead">You already understand embeddings (Track 1.3). Here you put them to work as the search engine of RAG — turning every chunk into a point in meaning-space once, then finding the nearest points to each question in milliseconds.</p>
+
+  <h2>Retrieval is embedding similarity at scale</h2>
+  <p>The core of RAG retrieval is exactly the cosine similarity you met in Track 1: embed the chunks, embed the query, find the chunks whose vectors point most like the query’s. The only new ideas are <em>operational</em>: you embed all your chunks <strong>once</strong> ahead of time (indexing), and at query time you embed just the question and search. Splitting work this way is what makes retrieval fast.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t3-index-query.svg" alt="Two phases. Indexing (offline, once): Documents → Chunk → Embed → stored in the Vector DB. Querying (online, each request): Question → Embed → search the Vector DB → Top-k chunks. The same store serves both: writes during indexing, reads during querying.">
+    <figcaption>Index once (the expensive part, done offline), query cheaply (just one embedding + a search). The same vector store is written during indexing and read during querying.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p>An <span class="term">embedding model</span> maps text to a vector so that similar meanings get similar directions. In retrieval you use it twice: to embed every chunk at <span class="term">index time</span>, and to embed the query at <span class="term">query time</span>. A hard rule: you must use the <strong>same embedding model</strong> for both — vectors from different models live in different, incomparable spaces. Most retrieval also <span class="term">normalizes</span> vectors to length 1, which makes the fast dot product equal to cosine similarity.</p>
+  </div>
+
+  <div class="box warn">
+    <div class="box-label">The #1 retrieval bug</div>
+    <p>Embedding your documents with one model and your queries with another (or changing the model after indexing without re-embedding) silently destroys retrieval — the vectors aren’t comparable, so “nearest” is meaningless. <strong>Same model for docs and queries, and re-embed everything if you switch models.</strong></p>
+  </div>
+
+  <h2>Choosing an embedding model</h2>
+  <p>There are many free, open-source embedding models. They differ along axes that actually matter for your system:</p>
+  <div class="tbl-wrap">
+    <table class="t">
+      <tr><th>Consideration</th><th>What to know</th></tr>
+      <tr><td><strong>Quality vs. size/speed</strong></td><td>Bigger models retrieve better but are slower and cost more to run. A small model like <code>all-MiniLM-L6-v2</code> (384-dim) is a great, free starting point.</td></tr>
+      <tr><td><strong>Max sequence length</strong></td><td>Each model truncates input past a limit. Your <em>chunks must fit</em> — a 512-token model silently cuts off longer chunks, losing their tail.</td></tr>
+      <tr><td><strong>Domain match</strong></td><td>A model trained on general web text may underperform on legal, medical, or code. Pick (or fine-tune) for your domain when it matters.</td></tr>
+      <tr><td><strong>Multilingual</strong></td><td>If users query in multiple languages, use a multilingual model so cross-language matches work.</td></tr>
+      <tr><td><strong>Symmetric vs. asymmetric</strong></td><td>Some models (e.g. E5, BGE) expect you to prefix queries and passages differently (like <code>"query: …"</code> / <code>"passage: …"</code>). Follow the model card.</td></tr>
+    </table>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — index a corpus, retrieve top-k (free)</div>
+    <p>The retrieval half of RAG, slightly grown from Lesson 3.1: embed many chunks once, then rank by cosine. Normalizing means the dot product <em>is</em> cosine.</p>
+<pre><code><span class="k">import</span> numpy <span class="k">as</span> np
+<span class="k">from</span> sentence_transformers <span class="k">import</span> SentenceTransformer
+model <span class="o">=</span> <span class="f">SentenceTransformer</span>(<span class="s">"all-MiniLM-L6-v2"</span>)
+
+chunks <span class="o">=</span> [
+    <span class="s">"Returns are free within 30 days of delivery."</span>,
+    <span class="s">"The X200 has a 3-year limited warranty."</span>,
+    <span class="s">"To cancel your subscription, open Settings &gt; Billing."</span>,
+    <span class="s">"The motor is rated at 1200 watts."</span>,
+]
+<span class="c"># INDEX (once): embed all chunks, normalized so dot product = cosine</span>
+index <span class="o">=</span> model.<span class="f">encode</span>(chunks, normalize_embeddings<span class="o">=</span><span class="kc">True</span>)   <span class="c"># shape (4, 384)</span>
+
+<span class="k">def</span> <span class="f">search</span>(query, k<span class="o">=</span><span class="n">2</span>):
+    q <span class="o">=</span> model.<span class="f">encode</span>([query], normalize_embeddings<span class="o">=</span><span class="kc">True</span>)[<span class="n">0</span>]   <span class="c"># SAME model</span>
+    scores <span class="o">=</span> index <span class="o">@</span> q                                       <span class="c"># cosine for every chunk</span>
+    order <span class="o">=</span> np.<span class="f">argsort</span>(scores)[::<span class="o">-</span><span class="n">1</span>][:k]
+    <span class="k">return</span> [(chunks[i], <span class="f">round</span>(<span class="f">float</span>(scores[i]), <span class="n">3</span>)) <span class="k">for</span> i <span class="k">in</span> order]
+
+<span class="f">print</span>(<span class="f">search</span>(<span class="s">"how do I stop paying?"</span>))
+<span class="c"># -> [("To cancel your subscription...", 0.62), ("Returns are free...", 0.18)]</span></code></pre>
+    <p>Note the winning chunk shares almost no words with the query (“stop paying” vs “cancel subscription”) — that’s semantic retrieval doing its job. For a few thousand chunks this brute-force search is plenty fast; beyond that you’ll want a real index (next lesson).</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>Retrieval = <strong>cosine similarity between query and chunk embeddings</strong>, with chunks embedded once at index time.</li>
+      <li><strong>Same embedding model for documents and queries</strong> — different models produce incomparable vectors.</li>
+      <li><strong>Normalize</strong> vectors so the fast dot product equals cosine similarity.</li>
+      <li>Pick a model on <strong>quality vs. speed, max sequence length (chunks must fit!), domain, and language</strong>.</li>
+      <li>Some models need <strong>query/passage prefixes</strong> — read the model card.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Retrieval quality suddenly drops after a teammate “upgraded the embedding model” in the query path but didn’t touch the stored document vectors. Why?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Queries are now embedded by a different model than the documents, so the vectors live in different spaces and “nearest” is meaningless.</span>
+        <div class="why">Correct. Embeddings are only comparable within one model’s space. Changing the query model without re-embedding the documents makes similarity scores garbage. The fix: re-index all documents with the new model so both sides match.</div></li>
+      <li data-correct="false"><span class="opt">B) The new model is simply worse.</span>
+        <div class="why">Even if the new model were better, mixing two models breaks comparability entirely. The catastrophic drop points to a space mismatch, not a quality regression.</div></li>
+      <li data-correct="false"><span class="opt">C) The vector database index got corrupted.</span>
+        <div class="why">No corruption is implied — the stored vectors are fine; they’re just from a different model than the queries now use. It’s a consistency problem, not a data-integrity one.</div></li>
+      <li data-correct="false"><span class="opt">D) The chunks are now too long.</span>
+        <div class="why">Chunk length didn’t change — only the query-side model did. The issue is that documents and queries are no longer embedded by the same model.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> In the example, why does “how do I stop paying?” match the cancel-subscription chunk over the warranty chunk, despite sharing no words?<br>
+    <strong>2.</strong> Your chunks are ~800 tokens but your embedding model’s max input is 512 tokens. What happens, and how do you fix it?<br>
+    <strong>3.</strong> You want to keep storage small but retrieval good. Name two levers and their trade-offs.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> The embedding model places “stop paying” and “cancel your subscription” near each other in meaning-space because they express the same intent — billing cessation — even with no shared words. The warranty chunk is about a different topic, so its vector points elsewhere and scores lower. Semantic match is about direction in meaning-space, not word overlap.</p>
+        <p><strong>2.</strong> The model silently truncates each chunk to 512 tokens, so the last ~300 tokens of every chunk are never embedded — any fact living there becomes unretrievable. Fix by making chunks fit the model’s limit (smaller chunks) or choosing a model with a longer max length. Always check that <em>chunk size ≤ model max length</em>.</p>
+        <p><strong>3.</strong> (a) <strong>Smaller embedding dimension</strong> (or a smaller model): less storage and faster search, but usually slightly lower retrieval quality. (b) <strong>Quantizing the vectors</strong> (e.g., store as int8): big storage/speed savings for a small accuracy hit. Both trade a little quality for a lot of footprint — measure with evaluation before committing.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: asymmetric search, and not trusting your gut on models</div>
+    <p>Two things separate people who “use embeddings” from people who get retrieval right. First, <strong>asymmetric retrieval</strong>: a question (“how do I cancel?”) and a passage (“To end your plan, go to Settings…”) are different kinds of text, and several modern models are trained to embed them with explicit instructions or prefixes (E5’s <code>"query:"</code>/<code>"passage:"</code>, BGE’s instruction prompts). Using the wrong prefix — or none — quietly costs you recall. Always read the model card and follow its recipe; a “bad model” is often just a mis-used one.</p>
+    <p>Second, <strong>measure, don’t guess</strong>. Intuition about which embedding model is best is unreliable; the leaderboard for your data is your own data. Public benchmarks like MTEB are a starting filter, but the real test is building a small labeled set of (query, relevant-chunk) pairs and measuring recall@k for each candidate model on <em>your</em> corpus (Lesson 3.8). Teams routinely find a tiny free model beats a famous one on their domain. Embedding choice is an empirical decision, not a brand decision — and getting it right is one of the highest-leverage things you can do in RAG.</p>
+  </div>
+
+  <p>Brute-force cosine over a NumPy array is fine for thousands of chunks. For millions, you need a purpose-built store with a clever index. Next: <strong>vector databases &amp; indexes</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

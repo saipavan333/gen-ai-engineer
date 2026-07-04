@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Interview check: Multimodal — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="15.5">
+<main class="lesson">
+
+  <span class="eyebrow">Multimodal AI · Interview check</span>
+  <h1>Interview check: Multimodal</h1>
+  <p class="lead">Multimodal questions test whether you can recognize when a problem is really a vision or audio problem, pick the right tool, and apply your existing discipline to richer inputs. Here’s what teams ask, with strong answers.</p>
+
+  <div class="box note">
+    <div class="box-label">How to use this</div>
+    <p>Answer aloud first. The bar for this track: could you design a system that turns images, documents, or audio into trustworthy structured output — and explain the accuracy and verification decisions? Multimodal is a fast-growing area, so fluency here sets you apart.</p>
+  </div>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t15-vlm.svg" alt="Track summary: an image is split into patches, encoded into vectors, turned into image tokens alongside the text prompt, and a vision-language model reasons over both.">
+    <figcaption>The core idea: images become tokens, and then your whole LLM toolkit applies.</figcaption>
+  </figure>
+
+  <h2>The questions teams ask</h2>
+
+  <div class="box practice">
+    <div class="box-label">Q1 · Warm-up</div>
+    <p><strong>“How does a vision-language model actually process an image?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> The image is split into patches; a vision encoder turns each patch into a vector — meaning-as-vectors, like text embeddings; those become image tokens placed in the context window alongside the text tokens, and the model attends over both jointly to answer. Once the image is tokens, it’s the same next-token machinery as a text LLM.</p>
+        <p><strong>Testing:</strong> Whether you understand multimodality mechanically (patches → tokens), not as magic. Connecting it to embeddings shows real understanding.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q2 · Document AI</div>
+    <p><strong>“We extract fields from thousands of invoices with brittle OCR-plus-regex rules. What would you change?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> Move to a VLM that reads the document and returns structured JSON, because it understands layout and finds fields across varied formats without per-vendor rules. Validate the JSON against a schema so bad extractions fail loudly. For accuracy-critical fields (totals, account numbers) I’d cross-check with OCR and flag disagreements, and add human review above a risk threshold. And I’d measure field-level accuracy on a golden set, broken down by field and vendor, to know where to invest.</p>
+        <p><strong>Testing:</strong> That you know why VLMs beat brittle rules (layout understanding), and that you pair them with validation, verification, and evaluation — not blind trust.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q3 · The trap</div>
+    <p><strong>“Can we just let the VLM read the invoice and auto-pay the total?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> Not without verification. A VLM can misread a digit or hallucinate a plausible value with valid-looking JSON, and paying money is high-stakes and hard to reverse. I’d cross-check the total and account number with OCR, apply sanity rules (expected range, account format), surface a confidence signal, and require human confirmation above a threshold. The automation level should scale with how costly and reversible a mistake is.</p>
+        <p><strong>Testing:</strong> Judgment. They want to hear that you don’t fully automate irreversible, high-cost actions on a single confident model output.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q4 · Audio</div>
+    <p><strong>“Design a meeting-notes assistant. Where’s the biggest quality risk?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> Pipeline: record → transcribe with Whisper → LLM summarizes into decisions and action items → return (optionally TTS). The biggest risk is the <em>transcript</em>: every later stage reasons over text, not audio, so STT errors (accents, jargon, cross-talk) propagate into a confident but wrong summary. I’d use a good Whisper model, clean the audio, and for high-stakes meetings let a human skim the transcript. It’s garbage-in-confident-garbage-out — the conversion step caps everything downstream.</p>
+        <p><strong>Testing:</strong> That you understand pipeline error propagation and that the audio→text step is the quality bottleneck.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q5 · Multimodal RAG</div>
+    <p><strong>“How would you let users search a catalog of product photos by description?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> Multimodal RAG. Either CLIP shared-space embeddings — images and text in one vector space, so a text query finds matching images by cosine similarity — or caption-then-embed (a VLM describes each image, then normal text RAG over captions), or both fused as hybrid search. CLIP suits visual similarity with sparse text; captions suit searching stated specifics. Then ground answers by handing retrieved images to a VLM. I’d pick based on a recall@k evaluation on our own data, since the winner is corpus-dependent.</p>
+        <p><strong>Testing:</strong> That you map this onto Track 3, know the two approaches and their trade-offs, and let evaluation decide.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q6 · Cost &amp; judgment</div>
+    <p><strong>“Any gotchas with running vision models in production?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> Images are token-hungry, so VLM calls are slower and more expensive than text — Track 8’s cost/latency discipline matters more, not less (resize images, cache, route only when vision is truly needed). VLMs are weak at precise spatial reasoning, counting, and small/dense text, and they hallucinate visually, so I verify critical reads (e.g. OCR cross-check) and ask non-leading questions. And I evaluate with a golden set, since “looks impressive” isn’t “is accurate.”</p>
+        <p><strong>Testing:</strong> That you carry cost, reliability, and evaluation instincts into multimodal rather than treating it as a shiny exception.</p>
+      </div>
+    </details>
+  </div>
+
+  <h2>Rapid-fire self-check</h2>
+
+  <div class="quiz">
+    <p class="quiz-q">Why do VLMs outperform brittle “OCR + regex” rules for extracting fields from varied document layouts?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) They understand layout and meaning, identifying the right field regardless of position — no per-format rules needed.</span>
+        <div class="why">Correct. Regex rules are tied to specific layouts and break on every new format; a VLM reads the document holistically and locates fields by meaning and context, which is what makes it robust across vendors.</div></li>
+      <li data-correct="false"><span class="opt">B) They’re guaranteed correct, so no validation is required.</span>
+        <div class="why">They still err and hallucinate — validation, cross-checks, and human review for critical fields remain necessary. The win is layout flexibility, not perfection.</div></li>
+      <li data-correct="false"><span class="opt">C) They avoid reading the document’s text entirely.</span>
+        <div class="why">They read the text <em>and</em> understand which field is which — that combination is the advantage over pure OCR.</div></li>
+      <li data-correct="false"><span class="opt">D) OCR cannot be run for free.</span>
+        <div class="why">OCR has strong free options (Tesseract). The reason to prefer VLMs is robustness to layout, not cost.</div></li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">CLIP is useful for image search because it…</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) embeds images and text into a shared vector space, so a text query retrieves matching images by similarity.</span>
+        <div class="why">Correct. The shared space means an image vector and a matching text vector are close, so you retrieve images with the same cosine-similarity search you use for text — that’s what makes true text-to-image retrieval work.</div></li>
+      <li data-correct="false"><span class="opt">B) generates captions that are always perfectly accurate.</span>
+        <div class="why">CLIP isn’t a captioner; it produces embeddings. Captioning is the separate “caption-then-embed” approach, and captions aren’t guaranteed accurate.</div></li>
+      <li data-correct="false"><span class="opt">C) turns images into raw text the model reads byte by byte.</span>
+        <div class="why">It produces semantic embeddings, not raw text/bytes. Raw bytes wouldn’t support meaningful similarity search.</div></li>
+      <li data-correct="false"><span class="opt">D) makes vision models cheaper to run.</span>
+        <div class="why">CLIP is about comparable image/text embeddings for retrieval, not about inference cost. Its value is enabling image search, not reducing price.</div></li>
+    </ul>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Can you explain each of these? (the real test)</div>
+    <ul>
+      <li>How an image becomes tokens (patches → vectors → tokens) and what VLMs are weak at.</li>
+      <li><strong>Document AI</strong>: VLM + structured output + validation, and OCR cross-checks for critical fields.</li>
+      <li>Why <strong>irreversible high-stakes actions</strong> need verification and human-in-the-loop.</li>
+      <li>The <strong>voice pipeline</strong> (STT → LLM → TTS) and why transcription errors propagate.</li>
+      <li><strong>Multimodal RAG</strong>: CLIP shared-space vs caption-then-embed, and evaluating with recall@k.</li>
+      <li>Cost/latency of vision, and carrying evaluation discipline into multimodal.</li>
+    </ul>
+  </div>
+
+  <p>You can now build across text, images, documents, and audio — real range. Next, we look at where the field is heading and how to build it responsibly: <strong>Track&nbsp;16, Frontier &amp; Responsible AI.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

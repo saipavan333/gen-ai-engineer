@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 372" width="900" height="372" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="900" height="372" fill="#ffffff"/>
+<text x="450" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="15.5" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Your data-engineering experience IS GenAI infra experience</text>
+<text x="190" y="66" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#475569" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">You already have</text>
+<text x="680" y="66" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#475569" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">GenAI equivalent</text>
+<rect x="30" y="88.5" width="330" height="44" rx="9" ry="9" fill="#0f172a" opacity="0.055"/>
+<rect x="30" y="91" width="330" height="44" rx="9" ry="9" fill="#1e293b" opacity="0.035"/>
+<rect x="30" y="86" width="330" height="44" rx="9" ry="9" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="46" y="108.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#1f2937" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">ETL / data pipelines</text>
+<line x1="366" y1="108.0" x2="393.0" y2="108.0" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/>
+<polygon points="402.0,108.0 393.0,111.6 393.0,104.4" fill="#16a34a"/>
+<rect x="408" y="88.5" width="462" height="44" rx="9" ry="9" fill="#0f172a" opacity="0.055"/>
+<rect x="408" y="91" width="462" height="44" rx="9" ry="9" fill="#1e293b" opacity="0.035"/>
+<rect x="408" y="86" width="462" height="44" rx="9" ry="9" fill="url(#g_accent)" stroke="#4f46e5" stroke-width="1.8"/>
+<text x="424" y="108.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#312e81" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">RAG ingestion &amp; indexing pipelines</text>
+<rect x="30" y="140.5" width="330" height="44" rx="9" ry="9" fill="#0f172a" opacity="0.055"/>
+<rect x="30" y="143" width="330" height="44" rx="9" ry="9" fill="#1e293b" opacity="0.035"/>
+<rect x="30" y="138" width="330" height="44" rx="9" ry="9" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="46" y="160.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#1f2937" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">SQL / data modeling</text>
+<line x1="366" y1="160.0" x2="393.0" y2="160.0" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/>
+<polygon points="402.0,160.0 393.0,163.6 393.0,156.4" fill="#16a34a"/>
+<rect x="408" y="140.5" width="462" height="44" rx="9" ry="9" fill="#0f172a" opacity="0.055"/>
+<rect x="408" y="143" width="462" height="44" rx="9" ry="9" fill="#1e293b" opacity="0.035"/>
+<rect x="408" y="138" width="462" height="44" rx="9" ry="9" fill="url(#g_accent)" stroke="#4f46e5" stroke-width="1.8"/>
+<text x="424" y="160.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#312e81" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">vector DBs, metadata filtering, retrieval</text>
+<rect x="30" y="192.5" width="330" height="44" rx="9" ry="9" fill="#0f172a" opacity="0.055"/>
+<rect x="30" y="195" width="330" height="44" rx="9" ry="9" fill="#1e293b" opacity="0.035"/>
+<rect x="30" y="190" width="330" height="44" rx="9" ry="9" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="46" y="212.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#1f2937" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Cloud / scaling / orchestration</text>
+<line x1="366" y1="212.0" x2="393.0" y2="212.0" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/>
+<polygon points="402.0,212.0 393.0,215.6 393.0,208.4" fill="#16a34a"/>
+<rect x="408" y="192.5" width="462" height="44" rx="9" ry="9" fill="#0f172a" opacity="0.055"/>
+<rect x="408" y="195" width="462" height="44" rx="9" ry="9" fill="#1e293b" opacity="0.035"/>
+<rect x="408" y="190" width="462" height="44" rx="9" ry="9" fill="url(#g_accent)" stroke="#4f46e5" stroke-width="1.8"/>
+<text x="424" y="212.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#312e81" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">LLM serving, batching, cost &amp; latency</text>
+<rect x="30" y="244.5" width="330" height="44" rx="9" ry="9" fill="#0f172a" opacity="0.055"/>
+<rect x="30" y="247" width="330" height="44" rx="9" ry="9" fill="#1e293b" opacity="0.035"/>
+<rect x="30" y="242" width="330" height="44" rx="9" ry="9" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="46" y="264.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#1f2937" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Data quality / testing</text>
+<line x1="366" y1="264.0" x2="393.0" y2="264.0" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/>
+<polygon points="402.0,264.0 393.0,267.6 393.0,260.4" fill="#16a34a"/>
+<rect x="408" y="244.5" width="462" height="44" rx="9" ry="9" fill="#0f172a" opacity="0.055"/>
+<rect x="408" y="247" width="462" height="44" rx="9" ry="9" fill="#1e293b" opacity="0.035"/>
+<rect x="408" y="242" width="462" height="44" rx="9" ry="9" fill="url(#g_accent)" stroke="#4f46e5" stroke-width="1.8"/>
+<text x="424" y="264.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#312e81" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">evals, golden sets, regression gates</text>
+<rect x="30" y="296.5" width="330" height="44" rx="9" ry="9" fill="#0f172a" opacity="0.055"/>
+<rect x="30" y="299" width="330" height="44" rx="9" ry="9" fill="#1e293b" opacity="0.035"/>
+<rect x="30" y="294" width="330" height="44" rx="9" ry="9" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="46" y="316.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#1f2937" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Production monitoring</text>
+<line x1="366" y1="316.0" x2="393.0" y2="316.0" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/>
+<polygon points="402.0,316.0 393.0,319.6 393.0,312.4" fill="#16a34a"/>
+<rect x="408" y="296.5" width="462" height="44" rx="9" ry="9" fill="#0f172a" opacity="0.055"/>
+<rect x="408" y="299" width="462" height="44" rx="9" ry="9" fill="#1e293b" opacity="0.035"/>
+<rect x="408" y="294" width="462" height="44" rx="9" ry="9" fill="url(#g_accent)" stroke="#4f46e5" stroke-width="1.8"/>
+<text x="424" y="316.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#312e81" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">tracing, guardrails, observability</text>
+<text x="450" y="356" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Don't apply as a beginner — apply as a data engineer who builds production GenAI.</text>
+</svg>

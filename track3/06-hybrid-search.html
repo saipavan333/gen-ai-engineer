@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hybrid search — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="3.6">
+<main class="lesson">
+
+  <span class="eyebrow">Track 3 · Lesson 3.6</span>
+  <h1>Hybrid search</h1>
+  <p class="lead">Semantic search has a blind spot: exact strings. Product codes, names, error IDs, rare jargon — embeddings blur them together. Keyword search nails them but misses paraphrases. Hybrid search runs both and fuses the results, so you stop choosing between meaning and precision.</p>
+
+  <h2>Why one kind of search isn’t enough</h2>
+  <p>Dense (embedding) retrieval is brilliant at meaning: it matches “stop paying” to “cancel subscription.” But ask it for error code <code>E-417</code> or SKU <code>X200-BLK</code>, and it often fails — these tokens carry little semantic meaning, so their vectors don’t stand out, and a near-miss code looks just as “similar.” Meanwhile classic <strong>keyword search</strong> matches exact terms perfectly but is helpless with synonyms (“stop paying” shares no words with “cancel subscription”). The two methods fail in <em>opposite</em> situations — which is exactly why combining them is so effective.</p>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p><span class="term">Dense retrieval</span> uses embedding vectors and cosine similarity (semantic match). <span class="term">Sparse retrieval</span> uses keyword statistics — the classic algorithm is <span class="term">BM25</span>, which scores documents by how many query terms they contain, weighted by how rare and frequent those terms are. <span class="term">Hybrid search</span> runs both retrievers and <span class="term">fuses</span> their rankings into one list. A popular, robust fusion method is <span class="term">Reciprocal Rank Fusion</span> (RRF), which combines results by their <em>ranks</em> rather than their (incomparable) raw scores.</p>
+  </div>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t3-hybrid.svg" alt="Hybrid search: a Query goes to both Dense/semantic search (embeddings, catches synonyms) and Sparse/keyword search (BM25, catches exact terms and IDs). Both feed into Fuse scores, which produces the Results. Dense finds 'cancel my plan' equals 'stop subscription'; sparse nails 'error E-417'. Together: both.">
+    <figcaption>Run dense and sparse in parallel, then fuse. Dense brings the synonym matches; sparse brings the exact-term matches; fusion gives you a ranking that has both.</figcaption>
+  </figure>
+
+  <h2>Which method wins when</h2>
+  <p>See the complementary strengths directly:</p>
+
+  <div class="demo" id="hy-demo">
+    <div class="demo-head"><span class="tag">Live demo</span><h4>Dense vs. sparse vs. hybrid</h4></div>
+    <p class="demo-hint">Two queries, each a failure case for one method. Watch how hybrid gets both right.</p>
+    <label for="hy-q">Query</label>
+    <select id="hy-q">
+      <option value="para">“stop paying every month” (needs synonyms)</option>
+      <option value="code">“error E-417” (needs exact match)</option>
+    </select>
+    <div class="out" id="hy-out" style="margin-top:14px"></div>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — BM25 + dense + RRF (free)</div>
+    <p>Hybrid retrieval with two free libraries and rank-based fusion:</p>
+<pre><code><span class="o">!</span>pip install rank-bm25 sentence-transformers numpy
+<span class="k">import</span> numpy <span class="k">as</span> np
+<span class="k">from</span> rank_bm25 <span class="k">import</span> BM25Okapi
+<span class="k">from</span> sentence_transformers <span class="k">import</span> SentenceTransformer
+
+chunks <span class="o">=</span> [...]                                <span class="c"># your corpus</span>
+bi <span class="o">=</span> <span class="f">SentenceTransformer</span>(<span class="s">"all-MiniLM-L6-v2"</span>)
+dense_index <span class="o">=</span> bi.<span class="f">encode</span>(chunks, normalize_embeddings<span class="o">=</span><span class="kc">True</span>)
+bm25 <span class="o">=</span> <span class="f">BM25Okapi</span>([c.<span class="f">lower</span>().<span class="f">split</span>() <span class="k">for</span> c <span class="k">in</span> chunks])
+
+<span class="k">def</span> <span class="f">rrf</span>(rank_lists, k<span class="o">=</span><span class="n">60</span>):
+    <span class="s">"""Reciprocal Rank Fusion: combine rankings by 1/(k+rank)."""</span>
+    scores <span class="o">=</span> {}
+    <span class="k">for</span> ranking <span class="k">in</span> rank_lists:
+        <span class="k">for</span> rank, idx <span class="k">in</span> <span class="f">enumerate</span>(ranking):
+            scores[idx] <span class="o">=</span> scores.<span class="f">get</span>(idx, <span class="n">0</span>) <span class="o">+</span> <span class="n">1.0</span> <span class="o">/</span> (k <span class="o">+</span> rank)
+    <span class="k">return</span> <span class="f">sorted</span>(scores, key<span class="o">=</span>scores.get, reverse<span class="o">=</span><span class="kc">True</span>)
+
+<span class="k">def</span> <span class="f">hybrid</span>(query, top<span class="o">=</span><span class="n">5</span>):
+    dense_rank <span class="o">=</span> np.<span class="f">argsort</span>(dense_index <span class="o">@</span> bi.<span class="f">encode</span>([query], normalize_embeddings<span class="o">=</span><span class="kc">True</span>)[<span class="n">0</span>])[::<span class="o">-</span><span class="n">1</span>]
+    sparse_rank <span class="o">=</span> np.<span class="f">argsort</span>(bm25.<span class="f">get_scores</span>(query.<span class="f">lower</span>().<span class="f">split</span>()))[::<span class="o">-</span><span class="n">1</span>]
+    fused <span class="o">=</span> <span class="f">rrf</span>([<span class="f">list</span>(dense_rank), <span class="f">list</span>(sparse_rank)])
+    <span class="k">return</span> [chunks[i] <span class="k">for</span> i <span class="k">in</span> fused[:top]]</code></pre>
+    <p>RRF is the workhorse because it needs no score calibration — dense cosines (0–1) and BM25 scores (unbounded) aren’t comparable, but their <em>ranks</em> always are. Add a reranker (Lesson 3.5) on top of the fused list for the strongest pipeline.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li><strong>Dense</strong> catches meaning/synonyms; <strong>sparse (BM25)</strong> catches exact terms, codes, names, rare words.</li>
+      <li>They fail in <strong>opposite</strong> cases, so <strong>hybrid search</strong> (run both, fuse) is more robust than either alone.</li>
+      <li><strong>RRF</strong> fuses by rank, sidestepping the fact that dense and sparse scores aren’t comparable.</li>
+      <li>Hybrid especially helps with <strong>identifiers, jargon, and mixed natural-language + keyword queries</strong>.</li>
+      <li>Best pipeline: <strong>hybrid retrieve → rerank → ground</strong>.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Users search your docs for exact error codes like <code>ERR_2043</code> and your pure-semantic retriever keeps returning vaguely-related errors instead. Best fix?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Add keyword (BM25) retrieval and fuse it with the semantic results.</span>
+        <div class="why">Correct. Exact identifiers are precisely where dense embeddings struggle and keyword search excels. Hybrid search lets BM25 nail the exact code while semantic still handles natural-language queries — covering both kinds of search in one ranking.</div></li>
+      <li data-correct="false"><span class="opt">B) Increase the number of semantic results returned.</span>
+        <div class="why">Returning more semantically-similar errors still won’t surface the exact code reliably — embeddings don’t distinguish <code>ERR_2043</code> from <code>ERR_2044</code> well. You need a method that matches the literal string.</div></li>
+      <li data-correct="false"><span class="opt">C) Use a larger embedding model.</span>
+        <div class="why">Bigger embeddings improve semantic nuance but still smear arbitrary identifiers — the code carries little learnable meaning. The structural fix is adding keyword search, not a heavier embedder.</div></li>
+      <li data-correct="false"><span class="opt">D) Lower the LLM temperature.</span>
+        <div class="why">Temperature is a generation setting and has nothing to do with which documents the retriever finds. This is a retrieval-method problem.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Give two query examples from a developer-docs RAG where keyword search beats semantic, and two where semantic beats keyword.<br>
+    <strong>2.</strong> Why does RRF combine rankings instead of just adding the dense and sparse scores together?<br>
+    <strong>3.</strong> You add hybrid search and quality improves on identifier queries but slightly worsens on some natural-language ones. What knob might fix it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> Keyword wins: exact symbol/function names (<code>useEffect</code>), error codes (<code>ENOENT</code>), version strings (<code>v2.3.1</code>) — literal tokens with little semantic content. Semantic wins: “how do I run code when a component mounts?” (→ <code>useEffect</code>), “why does my file-not-found error happen?”, “stop the app from crashing on startup” — intent expressed in the user’s own words. Real users mix both, which is why you want both retrievers.</p>
+        <p><strong>2.</strong> Dense cosine scores live in roughly 0–1; BM25 scores are unbounded and depend on term rarity — adding them directly lets one method’s scale dominate arbitrarily. RRF uses only each document’s <em>rank</em> in each list (via 1/(k+rank)), which is unit-free and comparable across methods, so it fuses robustly without fragile score normalization.</p>
+        <p><strong>3.</strong> Re-weight the fusion: if keyword results are crowding out good semantic matches on natural-language queries, give the dense ranking more weight (or BM25 less) in the fusion — many implementations support per-retriever weights, or you can adjust RRF’s <code>k</code>. Tune the balance against an evaluation set (Lesson 3.8) rather than by feel, since the right mix depends on your query distribution.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: learned sparse, and the limits of fusion</div>
+    <p>The dense/sparse split is softening. <strong>Learned sparse</strong> models like SPLADE keep the exact-term precision and interpretability of keyword search but use a trained model to also include important <em>related</em> terms (a kind of learned query expansion), narrowing the synonym gap. And many vector databases now offer hybrid search natively, so you don’t hand-roll fusion. But the engineering judgment stays the same: know <em>why</em> each retriever exists, and reach for hybrid when your queries mix natural language with literal identifiers — which, for technical and enterprise search, is almost always.</p>
+    <p>Two cautions. Fusion can’t rescue content that <em>neither</em> retriever finds — if the right chunk is missing from both candidate sets (bad chunking, wrong embedding model), hybrid won’t conjure it; you’re back to recall fundamentals. And more retrievers means more moving parts to tune and monitor; add hybrid because your evaluation shows a real gap on identifier or mixed queries, not because it sounds sophisticated. As always in RAG, let measurement — not vibes — decide which knobs you turn.</p>
+  </div>
+
+  <p>You can now find the right chunks reliably. The final step is making the model <em>use</em> them faithfully and tell you where each fact came from. Next: <strong>grounding &amp; citations</strong>.</p>
+
+</main>
+
+<script>
+(function () {
+  var DATA = {
+    para: {
+      dense: { txt: "Pausing your subscription stops the monthly charges.", ok: true, note: "✓ matches meaning despite no shared words" },
+      sparse: { txt: "Our plans are billed monthly to your card.", ok: false, note: "✗ matched “monthly” but it’s the wrong topic" },
+      hybrid: { txt: "Pausing your subscription stops the monthly charges.", ok: true, note: "✓ dense supplies the synonym match" }
+    },
+    code: {
+      dense: { txt: "A configuration error can interrupt processing.", ok: false, note: "✗ vaguely related; the exact code is blurred away" },
+      sparse: { txt: "Error E-417 means the filter is clogged; clean and retry.", ok: true, note: "✓ exact-term match on “E-417”" },
+      hybrid: { txt: "Error E-417 means the filter is clogged; clean and retry.", ok: true, note: "✓ sparse supplies the exact-code match" }
+    }
+  };
+  var sel = document.getElementById("hy-q"), out = document.getElementById("hy-out");
+  function card(name, color, d) {
+    return '<div style="flex:1;min-width:200px;border:1px solid #e8e3da;border-radius:10px;padding:12px;background:#fff">' +
+      '<div style="font-weight:700;color:' + color + ';margin-bottom:6px">' + name + '</div>' +
+      '<div style="font-size:13px;color:#334155">' + d.txt + '</div>' +
+      '<div style="margin-top:8px;font-size:12.5px;font-weight:650;color:' + (d.ok ? "#15803d" : "#b91c1c") + '">' + d.note + '</div></div>';
+  }
+  function render() {
+    var d = DATA[sel.value];
+    out.innerHTML = '<div style="display:flex;gap:12px;flex-wrap:wrap">' +
+      card("Dense (semantic)", "#2563eb", d.dense) +
+      card("Sparse (keyword)", "#b45309", d.sparse) +
+      card("Hybrid (fused)", "#15803d", d.hybrid) + '</div>';
+  }
+  sel.addEventListener("change", render);
+  render();
+})();
+</script>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

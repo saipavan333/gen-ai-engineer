@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Content safety — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="7.5">
+<main class="lesson">
+
+  <span class="eyebrow">Track 7 · Lesson 7.5</span>
+  <h1>Content safety</h1>
+  <p class="lead">Even a well-behaved model can be pushed into producing harmful content, and a public app that does so under your brand is a serious problem. Content moderation is the independent safety net: classifiers that check what comes in and what goes out, separate from the model itself.</p>
+
+  <h2>Why moderate both sides</h2>
+  <p>The model’s own refusal behavior is a good first line, but it’s probabilistic and beatable (jailbreaks, Lesson 7.3). <span class="term">Content moderation</span> adds an <em>independent</em> check: classify the user’s input (block abusive or disallowed requests before they reach the model) and classify the model’s output (catch unsafe content the model generated anyway before the user sees it). Two gates, on opposite sides of the model, so a failure of one is caught by the other.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t7-content-safety.svg" alt="Content safety: moderate the input AND the output. User input → Input moderation → LLM → Output moderation → Response. Input moderation can block/refuse unsafe input; output moderation can block/regenerate unsafe output. Classifiers catch unsafe input before the model, and unsafe output before the user.">
+    <figcaption>Independent classifiers on both sides: one stops unsafe input from reaching the model, the other stops unsafe output from reaching the user. Defense in depth around the model.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p><span class="term">Content moderation</span> uses a classifier to score text for unsafe categories (hate, harassment, self-harm, sexual content, violence, illegal activity, etc.). <span class="term">Input moderation</span> screens user messages before the model; <span class="term">output moderation</span> screens the model’s responses before the user. These are usually separate, purpose-built models (e.g., the free, open-source <span class="term">Llama Guard</span>, or hosted moderation endpoints) — independent of your main model, so they catch its mistakes.</p>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — moderation gates (free, Ollama / Llama Guard)</div>
+    <p>Wrap the model with two checks. Use a free safety classifier; here shown schematically.</p>
+<pre><code><span class="k">def</span> <span class="f">is_unsafe</span>(text):
+    <span class="c"># a dedicated safety classifier (e.g., Llama Guard via Ollama — free &amp; local)</span>
+    verdict <span class="o">=</span> safety_model.<span class="f">classify</span>(text)      <span class="c"># -&gt; "safe" or a category like "violence"</span>
+    <span class="k">return</span> verdict <span class="o">!=</span> <span class="s">"safe"</span>
+
+<span class="k">def</span> <span class="f">safe_chat</span>(user_msg):
+    <span class="k">if</span> <span class="f">is_unsafe</span>(user_msg):                       <span class="c"># INPUT gate</span>
+        <span class="k">return</span> <span class="s">"I can't help with that request."</span>
+    answer <span class="o">=</span> <span class="f">llm</span>(user_msg)
+    <span class="k">if</span> <span class="f">is_unsafe</span>(answer):                         <span class="c"># OUTPUT gate (catches what slipped through)</span>
+        <span class="k">return</span> <span class="s">"I'm not able to provide that."</span>       <span class="c"># block or regenerate</span>
+    <span class="k">return</span> answer</code></pre>
+    <p>The output gate is the crucial backstop: even if a jailbreak coaxes the model into unsafe text, an independent classifier inspects the result and blocks it before it reaches the user. Belt and suspenders.</p>
+  </div>
+
+  <div class="box note">
+    <div class="box-label">Tune the threshold for your context</div>
+    <p>Moderation is a precision/recall trade-off. Too strict and you block legitimate users (a medical app discussing symptoms, a security tool discussing exploits defensively); too loose and harmful content slips through. Calibrate categories and thresholds to <em>your</em> domain and audience, and measure false positives/negatives like any other metric (Track 6).</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li><strong>Moderate input and output</strong> with independent classifiers — two gates around the model.</li>
+      <li>The <strong>output gate is the backstop</strong> for content the model produced despite its training.</li>
+      <li>Use purpose-built safety models (free <strong>Llama Guard</strong>, hosted moderation) — separate from your main model.</li>
+      <li>Moderation is a <strong>precision/recall trade-off</strong>; calibrate thresholds to your domain and measure them.</li>
+      <li>Normalize/decode text before moderating to defeat obfuscation (Lesson 7.3).</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">You rely solely on the main model’s built-in refusals for safety. Why add a separate output moderation classifier?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) The model’s refusals are probabilistic and beatable; an independent output classifier catches unsafe content the model generated anyway, before the user sees it.</span>
+        <div class="why">Correct. Built-in safety can be jailbroken, so it will sometimes produce unsafe output. An independent classifier on the output is a second, separately-failing layer that inspects the actual result and blocks it — defense in depth. Relying on one probabilistic layer is a single point of failure.</div></li>
+      <li data-correct="false"><span class="opt">B) It makes the model faster.</span>
+        <div class="why">Adding a moderation step adds latency, not speed. Its purpose is safety coverage, not performance.</div></li>
+      <li data-correct="false"><span class="opt">C) Because the main model can’t refuse anything.</span>
+        <div class="why">Modern models do refuse a lot by default — that’s the first line. The point is that it’s imperfect and beatable, so you add an independent backstop, not that refusals don’t exist.</div></li>
+      <li data-correct="false"><span class="opt">D) To reduce token costs.</span>
+        <div class="why">Moderation adds cost (an extra classification call), it doesn’t reduce it. The benefit is catching unsafe outputs the model’s own safety missed.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Why moderate the <em>input</em> at all if you already moderate the output?<br>
+    <strong>2.</strong> A medical-info app keeps getting legitimate questions blocked by an over-strict filter. How do you approach it?<br>
+    <strong>3.</strong> Why use a <em>separate</em> model for moderation rather than asking your main model “is this safe?”</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> Input moderation blocks abusive/disallowed requests <em>before</em> you spend a model call on them, reduces the chance of generating something unsafe at all, and lets you respond appropriately to clearly bad requests. Output moderation is the backstop, but stopping the bad input early is cheaper and reduces risk. Two gates cover different failure modes.</p>
+        <p><strong>2.</strong> Treat it as a precision/recall problem: measure the false-positive rate on real legitimate queries, then loosen or re-scope the categories/thresholds for this domain (medical discussion of symptoms isn’t “harmful”), possibly using a domain-appropriate moderation policy. The goal is to block genuine harm without blocking the app’s legitimate purpose — and you tune it with data, not guesses, like any metric (Track 6).</p>
+        <p><strong>3.</strong> Independence. If the same model both generates and judges, a jailbreak that fools the generator can fool the judge identically (shared blind spots), and a hijacked model could rate its own unsafe output as safe. A separate, purpose-built safety classifier fails differently from your main model, so it can catch the main model’s mistakes — which is the whole point of a backstop.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: moderation as a measurable, layered system</div>
+    <p>Content safety isn’t a single switch; it’s a tunable subsystem you evaluate like everything else. Build a safety eval set (Track 6) of both unsafe inputs that <em>should</em> be blocked and legitimate-but-edgy inputs that should <em>not</em> be — then measure your moderation’s false-positive and false-negative rates and tune thresholds against real numbers. Categories matter: most moderation APIs/classifiers return per-category scores (hate, self-harm, sexual, violence, etc.), and the right policy differs by app — a kids’ product is strict everywhere, a security research tool must allow defensive discussion of exploits, a mental-health app must handle self-harm topics with care rather than blunt refusal.</p>
+    <p>Layer it with the rest of the track. Moderation sits alongside the model’s own refusals, your system prompt, and per-turn re-checking for jailbreaks — no single one is trusted. And remember moderation is only the content layer: it stops harmful <em>text</em>, but it doesn’t stop prompt injection (the text may be perfectly “safe” while still hijacking your app) or unsafe <em>actions</em>. So content safety is necessary but not sufficient; it’s one independent guard among several, and its job is specifically to keep harmful content from entering or leaving. Wire it on both sides, measure it, tune it to your domain, and treat its thresholds as living configuration.</p>
+  </div>
+
+  <p>Moderation checks whether output is <em>harmful</em>. But even harmless-looking output is dangerous if you feed it into code, queries, or actions unchecked. Next: <strong>output validation</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

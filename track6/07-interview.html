@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Interview check: Evals — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="6.7">
+<main class="lesson">
+
+  <span class="eyebrow">Track 6 · Interview check</span>
+  <h1>Interview check: Evals &amp; Observability</h1>
+  <p class="lead">This is the topic that most reveals seniority. Anyone can build a demo; only people who measure can ship and improve. Interviewers probe hard here — they want to hear a measurement mindset, not prompt-tinkering.</p>
+
+  <div class="box note">
+    <div class="box-label">The drill</div>
+    <p>Answer aloud first. The throughline: <strong>you can’t improve what you can’t measure</strong>; gate changes <strong>offline</strong>, learn <strong>online</strong>, see everything via <strong>tracing</strong>, and let the <strong>golden set</strong> grow forever.</p>
+  </div>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t6-recap.svg" alt="The evaluation flywheel: Golden set (+ LLM-judge) → Offline eval (CI gate) → Ship (to production) → Tracing (watch every request) → Online eval (A/B + feedback), looping back to fold production failures into the golden set. Measure offline to ship safely, watch online to learn, and keep growing the golden set.">
+    <figcaption>The flywheel: golden set → offline gate → ship → trace → online eval → fold failures back in. Narrate this and you can run an evals interview.</figcaption>
+  </figure>
+
+  <h2>The questions teams ask</h2>
+
+  <div class="box practice"><div class="box-label">Q1 · Framing</div>
+    <p><strong>“Why do evals matter, and what does a basic one need?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>Because LLM outputs are open-ended and non-deterministic, so without measurement every change is a guess and regressions go unnoticed. A basic eval needs three things: a golden set (representative inputs with known-good answers/criteria), a metric (exact match, keywords, or LLM-as-judge), and a baseline to compare against. The loop is change → score → compare → keep or revert. Evals are what turn “feels better” into “is better.”</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q2 · Golden sets</div>
+    <p><strong>“How do you build a good evaluation set?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>Mine real inputs (not invented happy-path), label correct answers or acceptance criteria, deliberately include edge cases and known failures, and cover all categories so a fix to one can’t silently break another. Keep it held out (don’t overfit) and living (every production failure becomes a permanent case). Small and representative (30–50 sharp cases) beats large and random. Score per category to localize regressions.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q3 · LLM-as-judge</div>
+    <p><strong>“How do you evaluate open-ended outputs, and what are the risks?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>Use LLM-as-judge: prompt a capable model with a clear rubric (and a reference when available) to score the output, forcing a structured verdict you can aggregate. Pairwise (“which is better?”) is often more reliable than absolute scores. Risks: verbosity, position, and self-preference biases, and leniency. Mitigate with a rubric that says what to ignore, swapping positions, using a different model family as judge, and — essential — validating the judge against human labels before trusting it.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q4 · Offline vs online</div>
+    <p><strong>“Difference between offline and online evaluation?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>Offline runs on a fixed golden set before deploy — fast, cheap, repeatable, great for gating changes, but it’s a proxy. Online measures real production traffic — A/B tests, user feedback, outcome metrics — the ground truth, but slower and riskier. You need both: offline to ship safely, online to learn what actually works. Standard flow is offline gate → small online rollout → full rollout, never straight to 100%, and always watch guardrail metrics (latency, cost, errors).</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q5 · Observability</div>
+    <p><strong>“A RAG bot gives a wrong answer in production. How does tracing help?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>A trace records each step (span) of the request with inputs/outputs/timing/cost. I open that request’s trace and check the retrieve span: if the relevant chunk wasn’t fetched, it’s a retrieval problem; if it was fetched but the answer ignored it, it’s a generation/grounding problem. Logging the exact assembled prompt and retrieved context is what makes the failure reproducible. Tracing turns “it’s broken” into a precise, single-request diagnosis — and it’s a privacy-sensitive log, so redact PII.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q6 · Regression testing</div>
+    <p><strong>“How do you stop prompt changes from silently breaking things?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>Treat prompts like code: version them, and run the eval suite as a CI gate on every change. The gate blocks merges that regress critical cases or drop the overall score. Keep tests non-flaky with temperature 0 and structural/keyword or judge-threshold assertions instead of exact strings. Every production incident becomes a new permanent test, so the same bug can’t ship twice. It’s unit tests + CI applied to LLM behavior.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q7 · Applied</div>
+    <p><strong>“How would you evaluate a RAG system end to end?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>Measure the two stages separately (Track 3.8): retrieval with recall@k / MRR on a golden set of (query → relevant chunk) labels, and generation with faithfulness and answer correctness via LLM-as-judge. Run it offline as a CI gate, trace production to mine new failures into the golden set, and A/B test changes online watching answer quality plus latency/cost guardrails. Separating retrieval from generation tells me which half to fix — the core RAG debugging skill.</p>
+    </div></details>
+  </div>
+
+  <h2>Rapid-fire self-check</h2>
+
+  <div class="quiz">
+    <p class="quiz-q">The single most defensible asset in an applied-GenAI team is usually…</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) A well-built, growing evaluation set that captures what “good” means for the task.</span>
+        <div class="why">Correct. Prompts are easy to copy and models are a commodity, but a sharp eval set encoding your task’s definition of quality, edge cases, and failures is hard-won and lets you adopt new models, refactor safely, and prove improvement. It’s the real moat and the engine of fast iteration.</div></li>
+      <li data-correct="false"><span class="opt">B) The exact wording of the system prompt.</span>
+        <div class="why">Prompts are trivial to copy and frequently rewritten; they’re not defensible. What lets you improve prompts safely is the eval set behind them.</div></li>
+      <li data-correct="false"><span class="opt">C) Access to the largest model.</span>
+        <div class="why">Models are widely available and change constantly; access isn’t a durable advantage. The ability to <em>measure</em> which model/config is best for your task is.</div></li>
+      <li data-correct="false"><span class="opt">D) A big GPU cluster.</span>
+        <div class="why">Hardware is rentable and not task-specific. The differentiator is knowing what to optimize for — which your evaluation defines.</div></li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your offline eval improves but you still A/B test before full rollout. Why bother, if offline already passed?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Offline is a proxy that can miss real-world query types, behaviors, and trade-offs; online confirms true impact and catches what the golden set didn’t.</span>
+        <div class="why">Correct. An offline win is necessary but not sufficient — the golden set can’t capture everything. A staged A/B validates on real traffic and surfaces regressions (including latency/cost) the proxy missed, before exposing all users.</div></li>
+      <li data-correct="false"><span class="opt">B) Because offline evals are unreliable and shouldn’t be trusted.</span>
+        <div class="why">Offline evals are your essential gate — the point isn’t distrust, it’s that they’re a proxy to be confirmed online. Both stages matter.</div></li>
+      <li data-correct="false"><span class="opt">C) To slow down releases on principle.</span>
+        <div class="why">The goal is safety and learning, not slowness. A/B testing is about validating impact and catching surprises, not adding friction for its own sake.</div></li>
+      <li data-correct="false"><span class="opt">D) A/B tests replace the need for offline evals.</span>
+        <div class="why">They’re complementary: offline gates cheaply before exposure; online validates truthfully after. You use both in sequence, not one instead of the other.</div></li>
+    </ul>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Can you explain each of these?</div>
+    <ul>
+      <li>Why evals matter, and the change → score → compare loop.</li>
+      <li>Building a golden set (real inputs, edge cases, living, per-category).</li>
+      <li>LLM-as-judge: rubric, pairwise, biases, validate against humans.</li>
+      <li>Offline vs online; the staged rollout; guardrail metrics.</li>
+      <li>Tracing/spans for debugging, and PII in logs.</li>
+      <li>Regression testing as CI; keeping LLM tests non-flaky.</li>
+      <li>Evaluating RAG (retrieval vs generation) and agents end to end.</li>
+    </ul>
+  </div>
+
+  <p>You can now measure and trust an LLM system — the skill that makes every other one safe to ship. Next, we defend it against the adversarial world: Track 7, Guardrails &amp; Safety.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

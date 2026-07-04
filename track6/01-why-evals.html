@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Why evals decide everything — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="6.1">
+<main class="lesson">
+
+  <span class="eyebrow">Track 6 · Lesson 6.1</span>
+  <h1>Why evals decide everything</h1>
+  <p class="lead">Every track so far ended with the same word: <em>measure it</em>. This is the track that makes measuring a first-class skill. Evals are the single biggest thing separating people who demo LLM features from people who ship reliable ones — and most teams underinvest here badly.</p>
+
+  <h2>The problem: you can’t improve what you can’t measure</h2>
+  <p>LLM outputs are non-deterministic and open-ended, so “does it work?” has no obvious answer. Without a way to measure quality, every change — a new prompt, a different model, a tweaked RAG setting — is a guess. You change something, eyeball a few outputs, decide it “seems better,” and ship. Then it silently regresses on cases you didn’t check. <span class="term">Evals</span> replace that vibe-driven loop with a measured one: define what “good” means, score it on a fixed set of examples, and only keep changes that move the number.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t6-why-evals.svg" alt="Evals turn 'I think it's better' into 'it is better'. Loop: Change something (prompt, model, RAG) → Run evals (score on golden set) → Better? (compare to baseline) → yes: Ship it; no: Revert (loops back). Without evals, every change is a guess; with them, improvement becomes a measurable loop.">
+    <figcaption>The eval-driven loop. Every change is scored against a baseline; you ship only what measurably improves, and revert what doesn’t. This is the difference between engineering and guessing.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p>An <span class="term">eval</span> (evaluation) measures the quality of an LLM system’s outputs against some definition of “good.” The core ingredients: a <span class="term">golden set</span> (examples with known-good answers, Lesson 6.2), a <span class="term">metric</span> (how you score an output — exact match, a rule, or an LLM-as-judge), and a <span class="term">baseline</span> (the current version, so you can tell if a change helped). Run the metric over the golden set, compare to baseline, decide.</p>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — a 12-line eval harness (free)</div>
+    <p>You don’t need a framework to start. This compares two prompt versions on a fixed set — the seed of every eval system.</p>
+<pre><code><span class="c"># golden set: inputs with a known-correct answer/keyword</span>
+cases <span class="o">=</span> [
+    {<span class="s">"q"</span>: <span class="s">"What's the refund window?"</span>,   <span class="s">"must_include"</span>: <span class="s">"30 days"</span>},
+    {<span class="s">"q"</span>: <span class="s">"How do I reset my password?"</span>, <span class="s">"must_include"</span>: <span class="s">"Settings"</span>},
+    {<span class="s">"q"</span>: <span class="s">"Do you ship to Antarctica?"</span>,  <span class="s">"must_include"</span>: <span class="s">"don't know"</span>},   <span class="c"># edge case</span>
+]
+
+<span class="k">def</span> <span class="f">score</span>(system_fn):
+    passed <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> c <span class="k">in</span> cases:
+        out <span class="o">=</span> <span class="f">system_fn</span>(c[<span class="s">"q"</span>]).<span class="f">lower</span>()
+        <span class="k">if</span> c[<span class="s">"must_include"</span>].<span class="f">lower</span>() <span class="k">in</span> out:
+            passed <span class="o">+=</span> <span class="n">1</span>
+    <span class="k">return</span> passed <span class="o">/</span> <span class="f">len</span>(cases)
+
+<span class="f">print</span>(<span class="s">"prompt v1:"</span>, <span class="f">score</span>(answer_v1))   <span class="c"># e.g. 0.67  (baseline)</span>
+<span class="f">print</span>(<span class="s">"prompt v2:"</span>, <span class="f">score</span>(answer_v2))   <span class="c"># e.g. 1.00  → keep v2</span></code></pre>
+    <p>Crude keyword checks are just the start (Lesson 6.3 adds LLM-as-judge for fuzzy quality), but even this turns “v2 feels better” into “v2 scores 1.00 vs 0.67.” That’s the whole leap.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>LLM outputs are open-ended, so <strong>without evals every change is a guess</strong>.</li>
+      <li>An eval needs a <strong>golden set</strong>, a <strong>metric</strong>, and a <strong>baseline</strong> to compare against.</li>
+      <li>The loop: <strong>change → score → compare → keep or revert</strong>. Improvement becomes measurable.</li>
+      <li>Evals catch <strong>silent regressions</strong> you’d never spot by eyeballing a few outputs.</li>
+      <li>You can start with a <strong>12-line harness</strong> — having <em>any</em> eval beats having none.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">A teammate says “I improved the prompt — the three examples I tried look better, let’s ship.” What’s the most important pushback?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Three hand-picked examples aren’t a measurement — run it against a fixed golden set and compare the score to the current version before shipping.</span>
+        <div class="why">Correct. Eyeballing a few cherry-picked outputs can’t reveal regressions on the dozens of cases you didn’t check. A fixed golden set scored against the baseline gives an honest, repeatable comparison — the core discipline of evals.</div></li>
+      <li data-correct="false"><span class="opt">B) Nothing — if it looks better on a few examples, it’s better.</span>
+        <div class="why">This is exactly the vibe-driven trap. A change can improve three cases while breaking ten others; only a representative, fixed eval set tells you the net effect.</div></li>
+      <li data-correct="false"><span class="opt">C) Ask them to also raise the temperature.</span>
+        <div class="why">Irrelevant to the real issue, which is the lack of measurement. Temperature is a separate decoding choice, not a substitute for evaluating the change.</div></li>
+      <li data-correct="false"><span class="opt">D) Require a bigger model before shipping any prompt change.</span>
+        <div class="why">Model size has nothing to do with whether this prompt change is an improvement. The missing thing is an eval against a baseline, not more compute.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Name three things that can silently regress when you “just tweak the prompt,” that eyeballing a few outputs would miss.<br>
+    <strong>2.</strong> Why is comparing to a <em>baseline</em> essential, rather than just looking at the new version’s score?<br>
+    <strong>3.</strong> Your eval is just keyword matching and a teammate calls it “too crude to bother.” Defend starting with it anyway.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> Examples: edge cases (the “I don’t know” path now hallucinates), format consistency (it sometimes drops the JSON structure), tone/safety (it got more verbose or less careful), and previously-working categories (fixing billing answers broke technical ones). A few hand-picked happy-path examples reveal none of these — only a broad, fixed set does.</p>
+        <p><strong>2.</strong> A score in isolation is meaningless — is 0.82 good? You only know if a change <em>helped</em> by comparing to what you had. The baseline is the reference point that turns a number into a decision (“up from 0.74 → keep; down → revert”). Evaluation is fundamentally comparative.</p>
+        <p><strong>3.</strong> Because <em>any</em> measurement beats none, and a crude eval still catches the most important failures (missing the key fact, breaking an edge case) and gives a repeatable score to compare versions. It’s the foundation you improve incrementally — add an LLM-as-judge for fuzzy quality later (6.3). Perfect is the enemy of started; a crude eval today prevents shipping a regression today.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: evals are the real moat</div>
+    <p>Here’s the uncomfortable truth that separates senior practitioners: in applied GenAI, your <em>evaluation</em> is more valuable and more defensible than your prompt or even your model. Prompts are easy to copy and models are a commodity everyone can call — but a well-built eval set that captures exactly what “good” means for <em>your</em> task, including your edge cases and failure modes, is hard-won institutional knowledge. It’s what lets you adopt a new model the day it launches (just re-run the evals), confidently refactor prompts, and prove to stakeholders that quality went up. Teams that move fastest aren’t the ones with the cleverest prompts; they’re the ones with the tightest measurement loop.</p>
+    <p>This reframes the whole job. “Building an LLM feature” is really “building the eval that defines the feature, then optimizing against it.” The flywheel: ship something, watch where it fails in production, fold those failures into the golden set, and now your eval is sharper and your next iteration is safer (Lessons 6.4–6.7 make each part concrete). Most teams skip this because writing evals is less glamorous than prompt-crafting — which is exactly why doing it well is a competitive advantage. Treat the eval set as a first-class, growing asset, and everything else in this field gets easier.</p>
+  </div>
+
+  <p>Every eval rests on one thing: a set of examples with known-good answers. Let’s build that foundation well. Next: <strong>golden sets</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

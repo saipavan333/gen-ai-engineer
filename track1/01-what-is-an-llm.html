@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>What is a language model? — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="1.1">
+<main class="lesson">
+
+  <span class="eyebrow">Track 1 · Lesson 1.1</span>
+  <h1>What is a language model?</h1>
+  <p class="lead">Almost everything confusing about AI gets clear once you understand the one simple thing these models actually do. It’s not magic, it’s not a search engine, and it’s not a database. It’s a next-word guesser — and that idea, taken seriously, explains the rest of this course.</p>
+
+  <h2>Why this is the first thing to learn</h2>
+  <p>People assume a large language model “looks up” answers, or “understands” the way a person does. Both assumptions lead you astray — they make hallucinations baffling, prompting feel like superstition, and limits feel arbitrary. The reality is simpler and far more useful to hold in your head: a language model is a machine that, given some text, predicts what text comes next. That’s it. Once that clicks, you can reason about <em>why</em> it behaves the way it does, instead of memorizing rules.</p>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p>A <span class="term">language model</span> (LM) is a program that takes some text and predicts what comes next. A <span class="term">large language model</span> (LLM) is just a language model with a very large number of internal numbers — its <span class="term">parameters</span> — trained on a very large amount of text. “Large” today means billions of parameters and trillions of words of training text.</p>
+  </div>
+
+  <h2>The one move: predict the next token</h2>
+  <p>Models don’t read whole words at a time. They read <span class="term">tokens</span> — short chunks of text (a token is roughly a word or a word-piece; we’ll dissect them in the very next lesson). Given the tokens so far, the model outputs a <strong>probability for every possible next token</strong> in its vocabulary. Not one answer — a ranked distribution over tens of thousands of options.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t1-next-token.svg" alt="The next-token loop: the context 'The cat sat on the ___' goes into the LLM, which outputs a probability for each possible next token (mat 0.41, rug 0.18, floor 0.11, sofa 0.07, others 0.23). One token is sampled ('mat'), appended to the context, and the loop repeats.">
+    <figcaption>The entire engine. Text in → a probability for every possible next token → pick one → append it → repeat. Generating a paragraph is just doing this hundreds of times.</figcaption>
+  </figure>
+
+  <p>Then the model (or rather, the program around it) <strong>picks one token</strong> from that distribution, sticks it onto the end of the text, and runs the whole thing again to get the next one. Doing this repeatedly — each new token feeding back in as input — is called <span class="term">autoregression</span> (“auto” = self, “regression” = predicting from previous values; here, predicting from its own previous outputs). A full essay is nothing more than this single guess, repeated one token at a time.</p>
+
+  <div class="box example">
+    <div class="box-label">Worked example — watch it think</div>
+    <p>Give the model the text <code>"The capital of France is"</code>. Internally it produces something like:</p>
+    <p style="margin:6px 0 0"><code>Paris</code> → 0.92 &nbsp;·&nbsp; <code>a</code> → 0.02 &nbsp;·&nbsp; <code>the</code> → 0.02 &nbsp;·&nbsp; <code>located</code> → 0.01 &nbsp;·&nbsp; <em>(everything else)</em> → 0.03</p>
+    <p>It’s very confident, so <code>Paris</code> gets picked. Now feed in <code>"The capital of France is Paris"</code> and it might predict <code>,</code> or <code>.</code> next, then maybe <code>which</code>, then <code>is</code>… and a sentence assembles itself. The model never “decided to tell you about France.” It just kept answering “what’s a likely next token?” — and likely-next-token, over and over, <em>looks</em> like knowing the answer.</p>
+  </div>
+
+  <div class="demo" id="nt-demo">
+    <div class="demo-head"><span class="tag">Live demo</span><h4>Next-token predictor</h4></div>
+    <p class="demo-hint">Pick a starting context and see a realistic distribution over the next token. Notice how the model’s <em>confidence</em> changes with the context.</p>
+    <label for="nt-select">Context</label>
+    <select id="nt-select">
+      <option value="france">The capital of France is&nbsp;___</option>
+      <option value="cat">The cat sat on the&nbsp;___</option>
+      <option value="once">Once upon a&nbsp;___</option>
+      <option value="math">2 + 2 =&nbsp;___</option>
+      <option value="weather">I can’t decide what to have for&nbsp;___</option>
+    </select>
+    <div class="out" id="nt-out"></div>
+  </div>
+
+  <h2>Where the “knowledge” comes from: training</h2>
+  <p>So how does guessing the next token end up encoding facts, grammar, and reasoning? Through <span class="term">training</span>. The model is shown enormous amounts of text and, for each spot, asked to predict the next token. When it’s wrong, an algorithm nudges its parameters slightly so it would be a little less wrong next time. Repeat across trillions of tokens and billions of tiny adjustments, and the parameters gradually come to encode the patterns of language — and, as a side effect, a great deal of the knowledge expressed <em>in</em> that language.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t1-pretraining.svg" alt="Pre-training in one picture: a huge pile of text (books, websites, code, conversations) goes into Training (guess the next word, nudge the weights, repeat billions of times), producing a Trained model (fixed weights that encode patterns).">
+    <figcaption>Pre-training. The text is its own answer key — the “correct” next token is simply the one that actually came next — so no human has to label anything. This is why it scales.</figcaption>
+  </figure>
+
+  <p>This trick — using the data’s own continuation as the right answer — is called <span class="term">self-supervised learning</span>. It’s the reason training can scale to the entire web: nobody has to hand-label examples. The end product is a fixed set of numbers (the <span class="term">weights</span>, another word for parameters). At that point the model is frozen; running it to generate text is called <span class="term">inference</span>, and it doesn’t learn anything new while doing so.</p>
+
+  <div class="box note">
+    <div class="box-label">A crucial consequence</div>
+    <p>Because the knowledge is baked into frozen weights at training time, the model has a <strong>knowledge cutoff</strong>: it knows nothing that happened after its training data ends, and it doesn’t “remember” your previous conversations unless that text is fed back into it. Hold onto this — it explains a lot in Tracks 3 (RAG) and 4 (agents).</p>
+  </div>
+
+  <h2>Why ChatGPT feels different from a “next-word guesser”</h2>
+  <p>A model fresh out of pre-training (a <span class="term">base model</span>) just continues text — give it a question and it might continue with <em>more questions</em>, because that’s a plausible continuation of a document. To make it a helpful assistant that follows instructions, model builders add a second phase: they fine-tune it on examples of instructions-and-good-responses, and further shape it using human preferences. The result is an <span class="term">instruction-tuned</span> or <span class="term">chat</span> model. We’ll go deep on how that works in Track 5; for now just know the assistant you talk to is a base next-token predictor that’s been <em>taught manners</em>.</p>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>An LLM does one thing: given the tokens so far, output a <strong>probability for every possible next token</strong>.</li>
+      <li>It generates text by <strong>sampling one token, appending it, and repeating</strong> — that loop is <strong>autoregression</strong>.</li>
+      <li>It learned by <strong>predicting the next token over trillions of words</strong> (self-supervised pre-training), which bakes patterns and knowledge into frozen <strong>weights</strong>.</li>
+      <li>Frozen weights ⇒ a <strong>knowledge cutoff</strong> and no memory of past chats unless that text is supplied again.</li>
+      <li>Chat assistants are base models <strong>instruction-tuned</strong> to follow directions — same engine, better manners.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">You ask an LLM, “What did I tell you my name was yesterday?” and it confidently makes up a name. From what you now know, why?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) It has a memory bug that should be reported.</span>
+        <div class="why">It’s not a bug. A plain LLM keeps no memory between conversations — its weights are frozen and yesterday’s chat isn’t in front of it. Producing <em>some</em> plausible name is the model doing exactly its job: predicting likely text.</div></li>
+      <li data-correct="true"><span class="opt">B) Nothing from yesterday is in its input, so it just predicts a plausible-sounding name to continue the text.</span>
+        <div class="why">Correct. With no access to yesterday’s tokens, the model can’t retrieve the real name. It still must output <em>something</em> likely, so it generates a name that fits — which looks like confident lying but is really just next-token prediction with no grounding.</div></li>
+      <li data-correct="false"><span class="opt">C) It’s searching its training data and found the wrong entry.</span>
+        <div class="why">LLMs don’t search a database of stored conversations at inference time. There’s no lookup happening — only prediction from the current input and frozen weights.</div></li>
+      <li data-correct="false"><span class="opt">D) The knowledge cutoff means it forgot recent world events, including your name.</span>
+        <div class="why">The cutoff is about world knowledge frozen at training time. Your name from “yesterday” was never in training at all — the real reason is simply that it isn’t in the current input.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> In your own words, explain why generating a 300-word answer is “the same operation done ~400 times.”<br>
+    <strong>2.</strong> A friend says “The model looked up that Paris is the capital of France.” Correct them precisely.<br>
+    <strong>3.</strong> Predict: for the context <code>"The mitochondria is the powerhouse of the"</code>, will the model be very confident or unsure about the next token? Why?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> Each token is one forward pass that yields a probability distribution; you sample a token, append it, and feed the longer text back in. A 300-word answer is roughly 400 tokens, so it’s that single predict-sample-append step repeated ~400 times. There’s no separate “planning the whole answer” step — coherence emerges from each step conditioning on everything generated so far.</p>
+        <p><strong>2.</strong> It didn’t “look up” anything. During training it saw “capital of France is Paris” in countless forms, which shaped its weights so that, given that context, <code>Paris</code> has overwhelmingly high next-token probability. At inference it computes that probability and samples — no database, no retrieval, just learned likelihood.</p>
+        <p><strong>3.</strong> Very confident. “the powerhouse of the cell” is an extremely common phrase in training text, so <code>cell</code> will dominate the next-token distribution — a near-deterministic continuation. Contrast that with “I can’t decide what to have for ___,” where many continuations are equally plausible and the model is far less certain. Confidence is just how peaked the distribution is.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: is predicting the next word really “thinking”?</div>
+    <p>It’s fair to be skeptical that something so simple could write code or pass exams. Here’s the intuition for why it works. To predict the next token <em>well</em> across all of human text, a model is pushed to internalize whatever structure makes text predictable: grammar, of course, but also facts (“the capital of France is ___”), arithmetic patterns, the rules of chess notation, the shape of a valid Python function, even the gist of an argument (“therefore, ___”). Getting the next token right at scale <em>requires</em> capturing these regularities. So “mere” prediction, pushed hard enough, produces something that behaves a lot like understanding for many tasks.</p>
+    <p>But the same lens shows the limits. The model optimizes for <em>plausible</em>, not <em>true</em>. When a fluent continuation and a correct continuation diverge — an obscure fact, a fresh event, a tricky calculation — it will happily produce the fluent one. That’s hallucination, and it’s not a glitch bolted on; it’s the flip side of the very mechanism that makes the model powerful. Much of this course — grounding with RAG, tool use, evals, guardrails — is about systematically closing the gap between “plausible” and “true.”</p>
+  </div>
+
+  <p>You now know what the engine does. Next, let’s zoom into the fuel it runs on: <strong>tokens</strong> — what they are, why they’re weird, and why they quietly control your costs and limits.</p>
+
+</main>
+
+<script>
+(function () {
+  var DATA = {
+    france:  [["Paris", .92, "#4f46e5"], ["a", .02], ["the", .02], ["located", .01], ["one", .01], ["…", .02]],
+    cat:     [["mat", .41, "#4f46e5"], ["rug", .15], ["floor", .12], ["couch", .08], ["bed", .06], ["…", .18]],
+    once:    [["time", .97, "#4f46e5"], ["midnight", .01], ["star", .005], ["…", .015]],
+    math:    [["4", .89, "#4f46e5"], ["5", .03], ["four", .025], ["3", .02], ["…", .035]],
+    weather: [["dinner", .22, "#4f46e5"], ["lunch", .19], ["breakfast", .14], ["tonight", .08], ["once", .05], ["…", .32]]
+  };
+  var sel = document.getElementById("nt-select");
+  var out = document.getElementById("nt-out");
+  function render(key) {
+    var rows = DATA[key];
+    var html = "";
+    rows.forEach(function (r) {
+      var tok = r[0], p = r[1], col = r[2] || "#a5b4fc";
+      var pct = Math.round(p * 100);
+      html += '<div class="bar-row"><span class="lbl">' + tok + '</span>' +
+        '<span class="bar" style="width:' + (p * 240) + 'px;background:' + col + '"></span>' +
+        '<span class="val">' + (p < .01 ? p.toFixed(3) : p.toFixed(2)) + '</span></div>';
+    });
+    var top = rows[0];
+    html += '<p style="margin:12px 0 0;font-size:14px;color:#475569">Most likely next token: <b>' +
+      top[0] + '</b> — the model would usually pick it. A peaked distribution means high confidence; a flat one means many continuations are plausible.</p>';
+    out.innerHTML = html;
+  }
+  sel.addEventListener("change", function () { render(sel.value); });
+  render("france");
+})();
+</script>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

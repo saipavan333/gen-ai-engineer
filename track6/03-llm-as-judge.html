@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LLM-as-judge — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="6.3">
+<main class="lesson">
+
+  <span class="eyebrow">Track 6 · Lesson 6.3</span>
+  <h1>LLM-as-judge</h1>
+  <p class="lead">How do you score “is this answer helpful, faithful, and well-written?” at scale, when there’s no single right string? You use a model to grade the output. It’s the workhorse of modern evals — powerful, scalable, and full of pitfalls you must know about.</p>
+
+  <h2>Why we need a model to grade models</h2>
+  <p>Exact-match and keyword checks work for closed outputs, but most LLM outputs are open-ended: a summary, an explanation, a support reply. There are countless valid wordings, so string matching either falsely fails good answers or lets bad ones through. Humans can judge quality, but they don’t scale to thousands of outputs on every change. The pragmatic answer is <span class="term">LLM-as-judge</span>: prompt a capable model to score an output against a rubric (and often a reference answer), returning a structured verdict you can aggregate.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t6-llm-judge.svg" alt="LLM-as-judge: a Candidate answer (from your system) and a Reference/rubric (what good looks like) both go into a Judge LLM that reads both and scores by rubric, producing a Verdict like {score: 4/5, reason: missing the deadline}. Use a strong model and a clear rubric, then validate the judge against human labels. Great for fuzzy quality where exact-match scoring breaks.">
+    <figcaption>The judge reads the candidate answer plus a rubric (and optionally a reference), and returns a structured score with reasoning you can log and aggregate.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p><span class="term">LLM-as-judge</span> uses a model to evaluate outputs. A <span class="term">rubric</span> is the explicit criteria it scores against (“correct? complete? grounded? concise?”). <span class="term">Reference-based</span> judging compares the answer to a known-good answer; <span class="term">reference-free</span> judging scores against the rubric alone. <span class="term">Pointwise</span> judging scores one answer; <span class="term">pairwise</span> judging picks the better of two (often more reliable). Because the judge is itself an LLM, you must <span class="term">validate</span> it against human labels before trusting it.</p>
+  </div>
+
+  <h2>Judge an answer yourself</h2>
+  <p>Question: <em>“What’s the refund window?”</em> Reference: <em>“30 days from delivery.”</em> Pick a candidate answer and see how a rubric-based judge scores it — and where judge biases creep in.</p>
+
+  <div class="demo" id="j-demo">
+    <div class="demo-head"><span class="tag">Live demo</span><h4>LLM-as-judge</h4></div>
+    <label for="j-sel">Candidate answer</label>
+    <select id="j-sel">
+      <option value="good">“You can return items within 30 days of delivery for a full refund.”</option>
+      <option value="partial">“There’s a refund window of about a month.”</option>
+      <option value="wrong">“Refunds are available within 14 days of purchase.”</option>
+      <option value="verbose">“Great question! Refunds… [5 paragraphs] … within 30 days of delivery …”</option>
+    </select>
+    <div class="out" id="j-out" style="margin-top:14px;min-height:80px"></div>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — a judge in code (free, Ollama)</div>
+    <p>Force a structured verdict so you can aggregate scores across your golden set. A clear rubric is the whole game.</p>
+<pre><code><span class="k">import</span> json, ollama
+
+<span class="k">def</span> <span class="f">judge</span>(question, reference, answer):
+    prompt <span class="o">=</span> <span class="s">f"""You are a strict grader. Score the ANSWER from 1-5 for correctness
+and completeness vs the REFERENCE. Penalize wrong facts heavily; ignore style/length.
+Return JSON: {{"score": &lt;1-5&gt;, "reason": "&lt;one sentence&gt;"}}.
+
+QUESTION: {question}
+REFERENCE: {reference}
+ANSWER: {answer}"""</span>
+    out <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"llama3.2"</span>,
+            messages<span class="o">=</span>[{<span class="s">"role"</span>:<span class="s">"user"</span>,<span class="s">"content"</span>:prompt}], format<span class="o">=</span><span class="s">"json"</span>)[<span class="s">"message"</span>][<span class="s">"content"</span>]
+    <span class="k">return</span> json.<span class="f">loads</span>(out)
+
+v <span class="o">=</span> <span class="f">judge</span>(<span class="s">"What's the refund window?"</span>, <span class="s">"30 days from delivery"</span>,
+          <span class="s">"Refunds are available within 14 days."</span>)
+<span class="f">print</span>(v)   <span class="c"># {"score": 1, "reason": "States 14 days; reference says 30 — factually wrong."}</span></code></pre>
+    <p>Run the judge over every golden-set case and average the scores — now you have a quality metric for open-ended outputs that you can track release over release.</p>
+  </div>
+
+  <div class="box warn">
+    <div class="box-label">Judges are biased — know the traps</div>
+    <p>LLM judges have well-documented biases: <strong>verbosity bias</strong> (preferring longer answers), <strong>position bias</strong> (favoring the first option in pairwise), <strong>self-preference</strong> (a model rating its own family’s outputs higher), and <strong>leniency</strong>. Mitigate by: a clear rubric that says what to ignore (style/length), swapping positions in pairwise comparisons, using a <em>different</em> model family as judge, and — most importantly — <strong>validating the judge against human labels</strong> so you know its scores correlate with reality.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li><strong>LLM-as-judge</strong> scores open-ended outputs where exact-match fails — at human-like quality, at scale.</li>
+      <li>Give it a <strong>clear rubric</strong> (and a reference when you have one); force a <strong>structured verdict</strong> to aggregate.</li>
+      <li><strong>Pairwise</strong> (“which is better?”) is often more reliable than absolute scoring.</li>
+      <li>Judges have <strong>biases</strong> (verbosity, position, self-preference) — mitigate, and <strong>validate against humans</strong>.</li>
+      <li>Use code metrics for closed outputs, the judge for fuzzy quality — <strong>match the tool to the output</strong>.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your LLM-judge consistently rates longer, more elaborate answers higher — even when a short answer is fully correct. What’s happening and how do you fix it?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Verbosity bias — add a rubric instruction to ignore length/style and score only correctness/completeness, and validate against human labels.</span>
+        <div class="why">Correct. Preferring longer answers is the classic verbosity bias. An explicit rubric (“ignore length and style; a correct concise answer scores full marks”) curbs it, and checking the judge’s scores against human ratings confirms whether the fix worked. Always make the rubric say what NOT to reward.</div></li>
+      <li data-correct="false"><span class="opt">B) The judge model is broken; switch to a smaller one.</span>
+        <div class="why">It’s not broken — verbosity bias is a known tendency of LLM judges, and a smaller model is likelier to be <em>more</em> biased, not less. The fix is rubric design and validation, not downgrading the model.</div></li>
+      <li data-correct="false"><span class="opt">C) Nothing — longer answers are generally better.</span>
+        <div class="why">Length isn’t quality; a correct concise answer can be ideal. Rewarding verbosity will push your system toward padded, worse outputs. This bias must be corrected, not embraced.</div></li>
+      <li data-correct="false"><span class="opt">D) Raise the judge’s temperature for variety.</span>
+        <div class="why">More randomness makes the judge less consistent, not less biased. You want a deterministic, rubric-anchored judge (low temperature) with explicit instructions about what to ignore.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Write a 3-criterion rubric for judging a RAG answer (hint: think faithfulness, relevance, and one more).<br>
+    <strong>2.</strong> Why might pairwise judging (“is A or B better?”) be more reliable than scoring each 1–5?<br>
+    <strong>3.</strong> Before trusting your judge in CI, what one validation step is essential?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> e.g.: <em>Faithfulness</em> — every claim is supported by the retrieved context (no invented facts); <em>Relevance</em> — the answer actually addresses the question; <em>Completeness/clarity</em> — it covers the key points and is understandable. (Citations could be a fourth.) A good rubric is specific enough that two judges would agree.</p>
+        <p><strong>2.</strong> Because picking the better of two is an easier, more grounded task than assigning an absolute number — “4 vs 5” is fuzzy and drifts, but “A is more correct than B” is a concrete comparison. Pairwise tends to be more consistent and is great for comparing two prompt/model versions head-to-head (just remember to swap positions to cancel position bias).</p>
+        <p><strong>3.</strong> Validate the judge against <strong>human labels</strong>: have humans score a sample, then check the judge’s scores correlate with theirs. If they don’t, your “metric” is noise and any decision based on it is unreliable. A judge you haven’t validated is a vibe with extra steps — confirm it tracks human judgment before you let it gate releases.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: when to trust the judge, and when not to</div>
+    <p>LLM-as-judge is indispensable but not infallible, so calibrate how much weight you put on it. It’s most trustworthy for <em>relative</em> comparisons (did v2 beat v1?) and for coarse quality bands (clearly-good vs clearly-bad), and least trustworthy for fine absolute scores (is this a 4 or a 5?) or for domains needing real expertise (medical, legal correctness) where the judge may be as wrong as the system. The professional pattern is a hierarchy: use cheap code checks where you can (exact fields, format, regexes), use the LLM judge for fuzzy quality, and keep a human in the loop for a sample — especially for high-stakes decisions and for periodically re-validating the judge.</p>
+    <p>A subtle risk worth naming: the judge and the system can share blind spots. If your generator and your judge are the same model family, the judge may rate confident hallucinations highly because it would make the same mistake — which is why using a different, ideally stronger, model as judge helps, and why human spot-checks remain essential. Treat the judge as a fast, scalable approximation of human judgment that you continuously verify, not as ground truth. Done this way, LLM-as-judge lets a small team measure quality across thousands of cases on every change — the capability that makes the eval flywheel actually spin.</p>
+  </div>
+
+  <p>You can now score quality offline. But the truest signal comes from real users. Next we contrast measuring before vs. after you ship. Next: <strong>offline vs online evals</strong>.</p>
+
+</main>
+
+<script>
+(function () {
+  var V = {
+    good:    { score: 5, reason: "Matches the reference exactly: 30 days from delivery. Correct and complete.", c: "#15803d" },
+    partial: { score: 3, reason: "“about a month” is close but vague — not the precise 30-day figure a user needs.", c: "#b45309" },
+    wrong:   { score: 1, reason: "States 14 days; the reference says 30. Factually wrong — penalized heavily.", c: "#b91c1c" },
+    verbose: { score: 5, reason: "Correct (30 days) — but note: a naive judge might over-reward the length. A good rubric ignores verbosity.", c: "#15803d" }
+  };
+  var sel = document.getElementById("j-sel"), out = document.getElementById("j-out");
+  function render() {
+    var v = V[sel.value];
+    var stars = "★".repeat(v.score) + "☆".repeat(5 - v.score);
+    out.innerHTML =
+      '<div style="font-size:13px;color:#64748b">Rubric: score 1–5 for correctness &amp; completeness; ignore style/length.</div>' +
+      '<div style="margin-top:8px;font-family:monospace;font-size:14px">{ "score": <b style="color:' + v.c + '">' + v.score + '</b>/5,&nbsp;&nbsp;<span style="color:' + v.c + '">' + stars + '</span></div>' +
+      '<div style="font-family:monospace;font-size:13px;color:#334155">&nbsp;&nbsp;"reason": "' + v.reason + '" }</div>';
+  }
+  sel.addEventListener("change", render);
+  render();
+})();
+</script>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

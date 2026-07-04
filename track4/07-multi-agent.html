@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Multi-agent &amp; orchestration — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="4.7">
+<main class="lesson">
+
+  <span class="eyebrow">Track 4 · Lesson 4.7</span>
+  <h1>Multi-agent &amp; orchestration</h1>
+  <p class="lead">When one agent juggling a dozen tools and roles starts getting confused, the fix is often to split the work: focused specialist agents, coordinated by an orchestrator. Done right it’s cleaner and more reliable. Done reflexively it’s needless complexity — so we’ll be honest about when to reach for it.</p>
+
+  <h2>Why split one agent into several</h2>
+  <p>A single agent with 20 tools and instructions to be a researcher, coder, and editor all at once tends to make worse decisions — too many options, blurred focus, a bloated prompt. Splitting into <span class="term">specialist agents</span>, each with a narrow role and just the tools it needs, mirrors how human teams work: a focused expert outperforms a generalist spread thin. An <span class="term">orchestrator</span> then decides who does what and combines the results. The wins are modularity (build and test each agent separately), clarity (each prompt is simple), and reliability (a narrow agent makes fewer mistakes).</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t4-multiagent.svg" alt="Multi-agent: an orchestrator routes to specialists. A User goal goes to an Orchestrator (plan, route, combine), which delegates to specialist agents — Researcher, Coder, Writer — each with its own tools, and gathers their results, then returns an Answer. Each specialist has a focused role and its own tools; the orchestrator delegates and merges results.">
+    <figcaption>An orchestrator plans, routes sub-tasks to focused specialists (each with its own tools), and merges their results. Each specialist stays simple; the coordination logic lives in one place.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p>A <span class="term">multi-agent</span> system uses several LLM agents that collaborate. An <span class="term">orchestrator</span> (or supervisor) coordinates them — deciding which agent handles what and combining outputs. A <span class="term">specialist</span> is an agent with a narrow role and toolset. A <span class="term">handoff</span> is passing control (and context) from one agent to another. The coordination shape is the <span class="term">orchestration pattern</span>.</p>
+  </div>
+
+  <h2>The orchestration patterns</h2>
+  <div class="tbl-wrap">
+    <table class="t">
+      <tr><th>Pattern</th><th>Shape</th><th>Use when</th></tr>
+      <tr><td><strong>Router</strong></td><td>Classify the request, send it to one specialist</td><td>Distinct request types (billing vs. technical)</td></tr>
+      <tr><td><strong>Sequential pipeline</strong></td><td>Agent A’s output feeds agent B feeds C</td><td>A clear assembly line (draft → edit → fact-check)</td></tr>
+      <tr><td><strong>Supervisor / hierarchical</strong></td><td>A manager agent delegates to and reviews workers</td><td>Open tasks needing planning + delegation</td></tr>
+      <tr><td><strong>Parallel</strong></td><td>Several agents work at once, results merged</td><td>Independent sub-tasks (research 3 competitors)</td></tr>
+    </table>
+  </div>
+
+  <h2>A router in action</h2>
+  <p>The simplest, most useful pattern: classify the request, hand it to the right specialist. Type something and watch it route.</p>
+
+  <div class="demo" id="mr-demo">
+    <div class="demo-head"><span class="tag">Live demo</span><h4>Router</h4></div>
+    <p class="demo-hint">(Routing here is a simple keyword classifier; a real router uses the LLM to classify. Same shape.)</p>
+    <label for="mr-q">Customer request</label>
+    <input type="text" id="mr-q" value="I was charged twice on my last invoice">
+    <div class="out" id="mr-out" style="margin-top:14px"></div>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — orchestrator routes to specialists (free, Ollama)</div>
+    <p>An LLM classifies the request, then a focused specialist (its own system prompt + tools) handles it.</p>
+<pre><code><span class="k">import</span> json, ollama
+
+SPECIALISTS <span class="o">=</span> {
+    <span class="s">"billing"</span>:   <span class="s">"You are a billing specialist. Be precise about charges and refunds."</span>,
+    <span class="s">"technical"</span>: <span class="s">"You are a technical support engineer. Diagnose and give clear steps."</span>,
+    <span class="s">"sales"</span>:     <span class="s">"You are a sales rep. Be helpful about plans and upgrades."</span>,
+}
+
+<span class="k">def</span> <span class="f">route</span>(request):
+    prompt <span class="o">=</span> <span class="s">f'Classify into one of [billing, technical, sales]. Return JSON {{"team":"..."}}.\nRequest: </span>{request}<span class="s">'</span>
+    out <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"llama3.2"</span>,
+            messages<span class="o">=</span>[{<span class="s">"role"</span>:<span class="s">"user"</span>,<span class="s">"content"</span>:prompt}], format<span class="o">=</span><span class="s">"json"</span>)[<span class="s">"message"</span>][<span class="s">"content"</span>]
+    <span class="k">return</span> json.<span class="f">loads</span>(out)[<span class="s">"team"</span>]
+
+<span class="k">def</span> <span class="f">handle</span>(request):
+    team <span class="o">=</span> <span class="f">route</span>(request)                       <span class="c"># orchestrator picks the specialist</span>
+    <span class="k">return</span> <span class="f">ask</span>(request, system<span class="o">=</span>SPECIALISTS[team])   <span class="c"># that specialist answers</span>
+
+<span class="f">print</span>(<span class="f">handle</span>(<span class="s">"I was charged twice this month"</span>))   <span class="c"># routed to billing</span></code></pre>
+    <p>Each specialist prompt stays simple and testable. Adding a new team is one entry in the dictionary — that modularity is the practical payoff of multi-agent design.</p>
+  </div>
+
+  <div class="box warn">
+    <div class="box-label">Single-agent first</div>
+    <p>Multi-agent systems are fashionable and often <em>over</em>-used. Every extra agent adds coordination overhead, more places to fail, more cost, and harder debugging. Start with one well-tooled agent. Reach for multiple agents only when roles are <strong>genuinely separable</strong> and a single agent is measurably struggling — not because diagrams with many boxes look impressive.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li><strong>Specialist agents</strong> with narrow roles + an <strong>orchestrator</strong> beat one agent doing everything — when roles are separable.</li>
+      <li>Common patterns: <strong>router, sequential pipeline, supervisor/hierarchical, parallel</strong>.</li>
+      <li>Benefits: <strong>modularity, simpler prompts, reliability, parallelism</strong>.</li>
+      <li>Costs: <strong>coordination overhead, more failure points, harder debugging, higher cost</strong>.</li>
+      <li><strong>Single-agent first</strong> — add agents only when the task genuinely needs it.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">You’re tempted to build five collaborating agents for a task a single agent with three tools already handles well in testing. What’s the right call?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Keep the single agent — it works; five agents would add coordination overhead, cost, and failure points for no benefit.</span>
+        <div class="why">Correct. The single-agent-first principle: don’t add agents (or any complexity) the task doesn’t need. If one agent already succeeds, a five-agent system is more to build, debug, and pay for, with more ways to fail. Reserve multi-agent for genuinely separable roles where a single agent struggles.</div></li>
+      <li data-correct="false"><span class="opt">B) Build the five agents — more agents means more capability.</span>
+        <div class="why">More agents means more <em>coordination</em>, not automatically more capability — and often worse reliability. Complexity is a cost, not a feature; add it only when it buys measurable improvement.</div></li>
+      <li data-correct="false"><span class="opt">C) Build five agents to future-proof the design.</span>
+        <div class="why">Speculative complexity is premature. Build the simplest thing that works now; refactor into specialists later <em>if</em> the task grows to need them. You can always split a working agent.</div></li>
+      <li data-correct="false"><span class="opt">D) Build five agents because it’s the modern best practice.</span>
+        <div class="why">Multi-agent is a tool, not a mandate — and it’s frequently over-applied. The actual best practice is matching architecture to need: single-agent first, multi-agent when justified.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Pick an orchestration pattern for each: (a) support inbox triaged to billing/tech/sales, (b) blog post drafted then edited then fact-checked, (c) research 4 competitors simultaneously.<br>
+    <strong>2.</strong> Name two concrete costs a multi-agent system adds over a single agent.<br>
+    <strong>3.</strong> When a sequential pipeline’s final output is wrong, how do you find which agent caused it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> (a) <strong>router</strong> — classify and send to one team; (b) <strong>sequential pipeline</strong> — draft → edit → fact-check, each stage’s output feeding the next; (c) <strong>parallel</strong> — four independent research agents run at once, results merged. Match the pattern to the task’s shape (one-of, assembly-line, or independent-fan-out).</p>
+        <p><strong>2.</strong> (a) <strong>Coordination/communication overhead</strong> — agents must pass context cleanly, and handoffs lose or distort information; (b) <strong>more cost and latency</strong> — each agent is its own LLM call(s), so five agents can mean many times the tokens and time. (Also: harder debugging and more failure points.)</p>
+        <p><strong>3.</strong> Inspect the <em>intermediate outputs</em> at each handoff — the same “read the trace” discipline as single agents, applied per stage. Because a pipeline is modular, you can check each agent’s input and output in isolation: if the editor received a good draft but produced a bad one, the editor is at fault. Logging every inter-agent message is what makes multi-agent systems debuggable; without it, you’re blind.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: communication is the bottleneck</div>
+    <p>The hidden cost of multi-agent systems is <em>communication</em>. When agent A hands off to agent B, everything B needs must be packed into that message — and natural-language handoffs are lossy. Subtle context (a constraint mentioned early, a tentative decision) gets dropped, and errors compound down a chain: a small misunderstanding at stage one becomes a wrong deliverable at stage four. This is why naive “just add more agents” designs often perform <em>worse</em> than a single capable agent — the coordination tax exceeds the specialization benefit. Techniques that help: a shared state/“blackboard” all agents can read and write (so context isn’t re-transmitted and distorted), structured handoffs (pass typed data, not just prose), and an orchestrator that validates each result before passing it on.</p>
+    <p>The strategic read for the current year: the industry has cooled on sprawling multi-agent architectures and warmed to “one strong agent with great tools, memory, and guards, plus a few specialists only where roles are truly distinct.” The reasons are exactly the above — coordination overhead and lost context. So treat multi-agent as a targeted technique: use a router when request types are clearly different, a pipeline when there’s a real assembly line, parallelism for independent work — and resist the urge to model your org chart in agents. The best multi-agent system is usually the smallest one that the task genuinely requires.</p>
+  </div>
+
+  <p>Whether one agent or many, autonomy without guardrails is dangerous. The final engineering lesson of this track is how to keep agents safe, bounded, and trustworthy. Next: <strong>failure modes &amp; guards</strong>.</p>
+
+</main>
+
+<script>
+(function () {
+  var RULES = [
+    { team: "Billing", color: "#2563eb", kw: ["charge", "charged", "invoice", "refund", "bill", "payment", "subscription", "price", "cost"], does: "Looks up the account, explains charges, issues refunds." },
+    { team: "Technical", color: "#b45309", kw: ["error", "crash", "bug", "not working", "broken", "login", "slow", "fix", "install"], does: "Diagnoses the issue and gives step-by-step troubleshooting." },
+    { team: "Sales", color: "#15803d", kw: ["upgrade", "plan", "pricing tier", "demo", "buy", "trial", "features", "enterprise"], does: "Explains plans and helps with upgrades or trials." }
+  ];
+  var qel = document.getElementById("mr-q"), out = document.getElementById("mr-out");
+  function route() {
+    var q = qel.value.toLowerCase();
+    var best = { team: "General", color: "#64748b", score: 0, does: "Handles anything that doesn’t fit a specialist." };
+    RULES.forEach(function (r) {
+      var s = r.kw.filter(function (k) { return q.indexOf(k) >= 0; }).length;
+      if (s > best.score) best = { team: r.team, color: r.color, score: s, does: r.does };
+    });
+    out.innerHTML =
+      '<div style="font-size:13px;color:#64748b">Orchestrator classifies →</div>' +
+      '<div style="font-size:20px;font-weight:800;color:' + best.color + ';margin:4px 0">' + best.team + ' specialist</div>' +
+      '<div style="font-size:13.5px;color:#334155">' + best.does + '</div>';
+  }
+  qel.addEventListener("input", route);
+  route();
+})();
+</script>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

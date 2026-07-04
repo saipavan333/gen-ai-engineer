@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" width="900" height="420" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="900" height="420" fill="#ffffff"/>
+<text x="450" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">What graders actually score in a take-home</text>
+<rect x="24" y="64" width="340" height="44" rx="9" ry="9" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+<text x="40" y="86.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1f2937" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Works end-to-end</text>
+<line x1="370" y1="86.0" x2="397.0" y2="86.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="406.0,86.0 397.0,89.6 397.0,82.4" fill="#94a3b8"/>
+<rect x="412" y="64" width="464" height="44" rx="9" ry="9" fill="#eefaf0" stroke="#16a34a" stroke-width="2"/>
+<text x="428" y="86.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#14532d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">runs from a clean clone; clear setup steps</text>
+<rect x="24" y="118" width="340" height="44" rx="9" ry="9" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+<text x="40" y="140.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1f2937" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Evaluation included</text>
+<line x1="370" y1="140.0" x2="397.0" y2="140.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="406.0,140.0 397.0,143.6 397.0,136.4" fill="#94a3b8"/>
+<rect x="412" y="118" width="464" height="44" rx="9" ry="9" fill="#eefaf0" stroke="#16a34a" stroke-width="2"/>
+<text x="428" y="140.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#14532d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">a golden set + metrics — the #1 differentiator</text>
+<rect x="24" y="172" width="340" height="44" rx="9" ry="9" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+<text x="40" y="194.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1f2937" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Handles failures / edge cases</text>
+<line x1="370" y1="194.0" x2="397.0" y2="194.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="406.0,194.0 397.0,197.6 397.0,190.4" fill="#94a3b8"/>
+<rect x="412" y="172" width="464" height="44" rx="9" ry="9" fill="#eefaf0" stroke="#16a34a" stroke-width="2"/>
+<text x="428" y="194.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#14532d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">abstains, validates, doesn't crash</text>
+<rect x="24" y="226" width="340" height="44" rx="9" ry="9" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+<text x="40" y="248.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1f2937" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Right architecture, justified</text>
+<line x1="370" y1="248.0" x2="397.0" y2="248.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="406.0,248.0 397.0,251.6 397.0,244.4" fill="#94a3b8"/>
+<rect x="412" y="226" width="464" height="44" rx="9" ry="9" fill="#eefaf0" stroke="#16a34a" stroke-width="2"/>
+<text x="428" y="248.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#14532d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">RAG vs prompt vs agent — and why</text>
+<rect x="24" y="280" width="340" height="44" rx="9" ry="9" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+<text x="40" y="302.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1f2937" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Cost / latency awareness</text>
+<line x1="370" y1="302.0" x2="397.0" y2="302.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="406.0,302.0 397.0,305.6 397.0,298.4" fill="#94a3b8"/>
+<rect x="412" y="280" width="464" height="44" rx="9" ry="9" fill="#eefaf0" stroke="#16a34a" stroke-width="2"/>
+<text x="428" y="302.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#14532d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">token counts, caching, model choice noted</text>
+<rect x="24" y="334" width="340" height="44" rx="9" ry="9" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+<text x="40" y="356.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1f2937" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Clear README &amp; reasoning</text>
+<line x1="370" y1="356.0" x2="397.0" y2="356.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="406.0,356.0 397.0,359.6 397.0,352.4" fill="#94a3b8"/>
+<rect x="412" y="334" width="464" height="44" rx="9" ry="9" fill="#eefaf0" stroke="#16a34a" stroke-width="2"/>
+<text x="428" y="356.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#14532d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">decisions and trade-offs explained</text>
+<text x="450" y="404" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">“It works” is the floor. Evaluation + judgment is what makes you stand out.</text>
+</svg>

@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 360" width="900" height="360" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="900" height="360" fill="#ffffff"/>
+<text x="450" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">The agent, all together</text>
+<rect x="190" y="84" width="360" height="170" rx="14" ry="14" fill="#fbfdff" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="6 5"/>
+<text x="370" y="104" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Guardrails: max-steps · validate args · approve risky actions</text>
+<rect x="30" y="152.5" width="120" height="60" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="30" y="155" width="120" height="60" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="30" y="150" width="120" height="60" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="90.0" y="180.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Goal</text>
+<rect x="250" y="130.5" width="240" height="96" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="250" y="133" width="240" height="96" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="250" y="128" width="240" height="96" rx="13" ry="13" fill="url(#g_accent)" stroke="#4f46e5" stroke-width="1.8"/>
+<text x="370.0" y="161.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#312e81" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Agent (LLM)</text>
+<text x="370.0" y="175.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">reason → act → observe</text>
+<text x="370.0" y="189.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">loop until done</text>
+<line x1="150" y1="178" x2="236.00249817843866" y2="176.24484697595022" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="248.0,176.0 236.1,181.0 235.9,171.4" fill="#475569"/>
+<rect x="620" y="112.5" width="230" height="56" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="620" y="115" width="230" height="56" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="620" y="110" width="230" height="56" rx="13" ry="13" fill="url(#g_key)" stroke="#d97706" stroke-width="1.8"/>
+<text x="735.0" y="138.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#7c2d12" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Tools  (via MCP)</text>
+<rect x="620" y="198.5" width="230" height="56" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="620" y="201" width="230" height="56" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="620" y="196" width="230" height="56" rx="13" ry="13" fill="url(#g_concept)" stroke="#2563eb" stroke-width="1.8"/>
+<text x="735.0" y="224.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1e3a8a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Memory (short + long)</text>
+<line x1="492" y1="150" x2="609.0405407466544" y2="138.85328183365195" stroke="#475569" stroke-width="2" stroke-linecap="round"/>
+<polygon points="618.0,138.0 609.4,142.4 608.7,135.3" fill="#475569"/>
+<line x1="618" y1="138" x2="500.9594592533456" y2="149.14671816634805" stroke="#475569" stroke-width="2" stroke-linecap="round"/>
+<polygon points="492.0,150.0 500.6,145.6 501.3,152.7" fill="#475569"/>
+<line x1="492" y1="202" x2="609.1112802438198" y2="220.58909210219363" stroke="#475569" stroke-width="2" stroke-linecap="round"/>
+<polygon points="618.0,222.0 608.5,224.1 609.7,217.0" fill="#475569"/>
+<line x1="618" y1="222" x2="500.8887197561802" y2="203.41090789780637" stroke="#475569" stroke-width="2" stroke-linecap="round"/>
+<polygon points="492.0,202.0 501.5,199.9 500.3,207.0" fill="#475569"/>
+<rect x="290" y="292.5" width="200" height="50" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="290" y="295" width="200" height="50" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="290" y="290" width="200" height="50" rx="13" ry="13" fill="url(#g_example)" stroke="#16a34a" stroke-width="1.8"/>
+<text x="390.0" y="315.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#14532d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Cited / final answer</text>
+<line x1="370" y1="256" x2="377.0172500686405" y2="278.4552002196497" stroke="#16a34a" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="380.0,288.0 373.2,279.6 380.8,277.3" fill="#16a34a"/>
+<text x="450" y="352" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Goal in; a guarded loop reasons, calls tools, and uses memory; a verified answer out.</text>
+</svg>

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Monitoring in production — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="14.4">
+<main class="lesson">
+
+  <span class="eyebrow">Productionization &amp; LLMOps · Lesson 14.4</span>
+  <h1>Monitoring in production</h1>
+  <p class="lead">Your evals test what you thought of. Real users do what you didn’t. Monitoring is how you see the truth of your system in the wild — and turn its failures into the next round of improvements.</p>
+
+  <h2>Why monitoring is non-negotiable</h2>
+  <p>A golden set can only contain cases you imagined. Production is full of cases you didn’t: phrasings you never anticipated, edge inputs, and slow <span class="term">drift</span> as the world changes and your data grows stale. On top of that, cost and latency behave differently under real traffic than on your laptop. So you instrument the running service to answer three questions continuously: <em>What is it actually doing? Is it healthy (fast, affordable, not erroring)? Is it any good?</em> Without monitoring, you’re flying blind — you only learn something is wrong when a user complains, which is the most expensive way to find out.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t14-monitoring.svg" alt="What to watch in production and why: traces of every request let you see what happened when it breaks; cost and latency per call catch runaway bills and slowdowns; quality signals and user feedback tell you if answers are getting worse; errors, retries, and refusals surface problems before users report them.">
+    <figcaption>The four things to watch, and the payoff of each. Everything feeds back into improvement.</figcaption>
+  </figure>
+
+  <h2>What to watch</h2>
+  <p><strong>Traces</strong> — the full record of each request: the prompt, retrieved context, tool calls, the model output, tokens, and timing. This is Track&nbsp;6’s observability at production scale, and it’s what lets you debug a specific bad answer by seeing <em>exactly</em> what happened (was the retrieval wrong, or the generation?). <strong>Cost &amp; latency per request</strong> — so a prompt that ballooned or a slow model shows up as a metric, not a surprise invoice. <strong>Quality signals</strong> — thumbs up/down, whether the user re-asked or abandoned, and periodic <span class="term">online evals</span> (an LLM judge scoring a sample of live traffic) to catch quality drift the golden set missed. <strong>Errors, retries, refusals</strong> — spikes here are your earliest warning that something broke upstream.</p>
+  <p>Free and open tools exist for all of this — for example, an open-source tracing/eval platform like Langfuse, or simply structured logging plus OpenTelemetry — but the concept matters more than the vendor: capture every request as a trace, roll traces up into metrics and dashboards, and alert on the ones that matter.</p>
+
+  <h2>The loop that makes it worth it</h2>
+  <p>Monitoring isn’t just dashboards to stare at — it’s the input to a loop. When you spot a class of failure in production (a question type that gets bad answers, an injection that slipped past), you do two things: fix it, and <strong>add it to your golden set</strong> so the eval gate (last lesson) prevents it forever. Real user thumbs-downs become new test cases; live traffic becomes the source of your next eval improvements. This is the flywheel from Track&nbsp;6 and Track&nbsp;12, now closed end to end: monitor → find failures → fix + add to golden set → the gate blocks that failure forever → monitor again. A system wired this way gets <em>more</em> reliable the longer it runs.</p>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>Golden sets test the anticipated; <strong>production reveals the unanticipated</strong> — new phrasings, edge cases, and drift.</li>
+      <li>Watch four things: <strong>traces</strong>, <strong>cost &amp; latency</strong>, <strong>quality signals (feedback + online evals)</strong>, and <strong>errors/retries/refusals</strong>.</li>
+      <li><strong>Traces</strong> let you debug a specific bad answer by seeing retrieval vs generation — Track&nbsp;6 at scale.</li>
+      <li>Close the loop: <strong>production failures become new golden-set cases</strong>, so the eval gate prevents recurrence.</li>
+      <li>A monitored, feedback-wired system gets <strong>more reliable over time</strong>.</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p>Users report that your assistant “feels dumber this week,” but nothing errors and no deploy went out. Your golden-set eval still passes. Using what production monitoring gives you, how would you investigate — and why might the golden set look fine while users are unhappy?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>Investigate:</strong> pull traces for recent low-rated (thumbs-down) sessions and read what actually happened — check whether retrieval is returning worse context, whether a data source went stale, whether inputs shifted to topics you handle poorly, and whether latency/cost moved. Compare this week’s traffic mix and quality signals to last week’s. Run an online eval (LLM judge) on a sample of live traffic to get a number on real usage, not just the golden set.</p>
+        <p><strong>Why the golden set looks fine:</strong> it’s a fixed snapshot of cases <em>you</em> chose. If real users have drifted to new question types, or your underlying documents/data changed (so retrieval now surfaces stale or wrong context), the live experience degrades while the frozen golden set — which doesn’t include those new cases and may use cached data — still passes. That gap is exactly why you monitor production and run online evals: the golden set proves you didn’t regress on the known cases; monitoring reveals the unknown ones. The fix loop: identify the failing category from traces, add representative cases to the golden set, and address the root cause (refresh data, improve retrieval, adjust the prompt) — now the gate covers it going forward.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your CI eval gate passes on every deploy, yet users are hitting bad answers in production. What’s the most likely explanation?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Real usage includes cases your fixed golden set doesn’t cover (new phrasings, drift, stale data) — which is why you also monitor live traffic.</span>
+        <div class="why">Correct. The golden set only guarantees you didn’t regress on the cases in it. Production has cases you never enumerated, plus drift as data ages. Monitoring, feedback, and online evals catch that live-only degradation — and the failing cases then get added to the golden set.</div></li>
+      <li data-correct="false"><span class="opt">B) The eval gate must be broken, since passing means the app is perfect.</span>
+        <div class="why">Passing the gate means “no regression on known cases,” not “perfect on all possible inputs.” A green gate and unhappy users isn’t a contradiction — it’s the normal reason you need production monitoring on top of CI.</div></li>
+      <li data-correct="false"><span class="opt">C) Monitoring can’t tell you anything a golden set doesn’t.</span>
+        <div class="why">Monitoring tells you about <em>real</em> inputs and outcomes the golden set never contained — exactly the blind spot here. It’s complementary to, not redundant with, offline evals.</div></li>
+      <li data-correct="false"><span class="opt">D) You should delete the golden set and rely only on user complaints.</span>
+        <div class="why">User complaints are the slowest, most expensive signal. You keep the golden set (it prevents known regressions) <em>and</em> add monitoring/online evals to catch the unknown — you don’t trade one for the other.</div></li>
+    </ul>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: offline and online evals are two halves of one system</div>
+    <p>It’s worth being precise about the division of labor, because interviewers probe it. <strong>Offline evals</strong> (the golden set in CI, Track&nbsp;6 and the last lesson) run before you ship and answer “did this change break anything we already know about?” They’re reproducible, gate deploys, and protect against regression. <strong>Online evals</strong> run against live production traffic and answer “how are we actually doing right now, on real inputs?” They catch drift, novel failure modes, and quality changes that have nothing to do with a deploy — a data source going stale, a shift in what users ask. Neither replaces the other: offline is your regression shield, online is your reality check, and they feed each other, because online failures become offline test cases.</p>
+    <p>Two practical techniques round this out. <strong>Sampling for human review</strong>: no team can read every trace, so you review a small random (and a targeted low-rated) sample regularly — a habit that surfaces subtle issues no metric names. And <strong>guarded rollouts</strong>: when you change a model or prompt, release it to a small slice of traffic first and compare its online quality, cost, and latency to the current version before going wide — the online equivalent of the eval gate, catching problems that only appear on real users. Put together, the full picture of production LLM quality is a pipeline: offline evals gate the deploy, a canary tests it on real traffic, monitoring watches the fleet, human review samples the truth, and every failure flows back into the golden set. That closed loop is what “LLMOps” actually means, and describing it is how you show you can keep an AI product healthy, not just launch one.</p>
+  </div>
+
+  <p>You can now build, package, gate, deploy, and watch an LLM service. Let’s consolidate it the way an interviewer will test it. Next: the <strong>interview check</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

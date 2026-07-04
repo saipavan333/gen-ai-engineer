@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 320" width="900" height="320" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="900" height="320" fill="#ffffff"/>
+<text x="450" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Caching: don't pay twice for the same work</text>
+<rect x="30" y="122.5" width="120" height="56" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="30" y="125" width="120" height="56" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="30" y="120" width="120" height="56" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="90.0" y="148.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Request</text>
+<rect x="200" y="122.5" width="150" height="56" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="200" y="125" width="150" height="56" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="200" y="120" width="150" height="56" rx="13" ry="13" fill="url(#g_key)" stroke="#d97706" stroke-width="1.8"/>
+<text x="275.0" y="148.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#7c2d12" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Cache check</text>
+<rect x="420" y="82.5" width="200" height="48" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="420" y="85" width="200" height="48" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="420" y="80" width="200" height="48" rx="13" ry="13" fill="url(#g_example)" stroke="#16a34a" stroke-width="1.8"/>
+<text x="520.0" y="96.5" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#14532d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Hit → cached answer</text>
+<text x="520.0" y="108.75" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">instant, ~free</text>
+<rect x="420" y="170.5" width="150" height="48" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="420" y="173" width="150" height="48" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="420" y="168" width="150" height="48" rx="13" ry="13" fill="url(#g_accent)" stroke="#4f46e5" stroke-width="1.8"/>
+<text x="495.0" y="192.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#312e81" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Miss → call model</text>
+<rect x="640" y="170.5" width="130" height="48" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="640" y="173" width="130" height="48" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="640" y="168" width="130" height="48" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="705.0" y="192.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">store result</text>
+<line x1="150" y1="148" x2="186.0" y2="148.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="198.0,148.0 186.0,152.8 186.0,143.2" fill="#475569"/>
+<line x1="350" y1="130" x2="409.5935334863402" y2="107.21423719639932" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/>
+<polygon points="418.0,104.0 410.9,110.6 408.3,103.9" fill="#16a34a"/>
+<text x="385" y="92" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10" fill="#15803d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">hit</text>
+<line x1="350" y1="166" x2="409.513086997754" y2="187.00461894038375" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+<polygon points="418.0,190.0 408.3,190.4 410.7,183.6" fill="#dc2626"/>
+<text x="385" y="205" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10" fill="#b91c1c" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">miss</text>
+<line x1="570" y1="192" x2="626.0" y2="192.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="638.0,192.0 626.0,196.8 626.0,187.2" fill="#475569"/>
+<text x="64" y="250" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#2563eb" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Exact cache</text>
+<text x="64" y="268" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#64748b" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">same prompt → stored answer</text>
+<text x="340" y="250" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#7c3aed" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Semantic cache</text>
+<text x="340" y="268" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#64748b" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">similar prompt (embeddings) → reuse</text>
+<text x="640" y="250" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#15803d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Prefix cache</text>
+<text x="640" y="268" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#64748b" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">reuse computed prompt prefix</text>
+<text x="450" y="304" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Cache hits cost almost nothing and return instantly — huge wins for repeated queries.</text>
+</svg>

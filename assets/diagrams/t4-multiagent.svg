@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 320" width="900" height="320" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="900" height="320" fill="#ffffff"/>
+<text x="450" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Multi-agent: an orchestrator routes to specialists</text>
+<rect x="30" y="94.5" width="120" height="58" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="30" y="97" width="120" height="58" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="30" y="92" width="120" height="58" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="90.0" y="121.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">User goal</text>
+<rect x="210" y="90.5" width="180" height="64" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="210" y="93" width="180" height="64" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="210" y="88" width="180" height="64" rx="13" ry="13" fill="url(#g_accent)" stroke="#4f46e5" stroke-width="1.8"/>
+<text x="300.0" y="112.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="15" fill="#312e81" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Orchestrator</text>
+<text x="300.0" y="125.75" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">plan + route + combine</text>
+<rect x="740" y="94.5" width="130" height="58" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="740" y="97" width="130" height="58" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="740" y="92" width="130" height="58" rx="13" ry="13" fill="url(#g_example)" stroke="#16a34a" stroke-width="1.8"/>
+<text x="805.0" y="121.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#14532d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Answer</text>
+<line x1="150" y1="121" x2="196.0" y2="121.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="208.0,121.0 196.0,125.8 196.0,116.2" fill="#475569"/>
+<line x1="390" y1="121" x2="726.0" y2="121.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="738.0,121.0 726.0,125.8 726.0,116.2" fill="#475569"/>
+<rect x="120" y="226.5" width="160" height="56" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="120" y="229" width="160" height="56" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="120" y="224" width="160" height="56" rx="13" ry="13" fill="url(#g_concept)" stroke="#2563eb" stroke-width="1.8"/>
+<text x="200.0" y="244.5" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1e3a8a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Researcher</text>
+<text x="200.0" y="257.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">+ its own tools</text>
+<line x1="300" y1="152" x2="207.37308728467136" y2="216.83883890073005" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round"/>
+<polygon points="200.0,222.0 205.3,213.9 209.4,219.8" fill="#94a3b8"/>
+<line x1="200" y1="222" x2="294.2115144855133" y2="157.93617014985097" stroke="#cbd5e1" stroke-width="1.4" stroke-linecap="round"/>
+<polygon points="300.0,154.0 295.8,160.3 292.6,155.6" fill="#cbd5e1"/>
+<rect x="350" y="226.5" width="160" height="56" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="350" y="229" width="160" height="56" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="350" y="224" width="160" height="56" rx="13" ry="13" fill="url(#g_key)" stroke="#d97706" stroke-width="1.8"/>
+<text x="430.0" y="244.5" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#7c2d12" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Coder</text>
+<text x="430.0" y="257.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">+ its own tools</text>
+<line x1="300" y1="152" x2="422.07576010070045" y2="217.73310159268485" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round"/>
+<polygon points="430.0,222.0 420.4,220.9 423.8,214.6" fill="#94a3b8"/>
+<line x1="430" y1="222" x2="306.20268748966174" y2="157.2444826869" stroke="#cbd5e1" stroke-width="1.4" stroke-linecap="round"/>
+<polygon points="300.0,154.0 307.5,154.8 304.9,159.7" fill="#cbd5e1"/>
+<rect x="580" y="226.5" width="160" height="56" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="580" y="229" width="160" height="56" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="580" y="224" width="160" height="56" rx="13" ry="13" fill="url(#g_practice)" stroke="#7c3aed" stroke-width="1.8"/>
+<text x="660.0" y="244.5" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#4c1d95" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Writer</text>
+<text x="660.0" y="257.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">+ its own tools</text>
+<line x1="300" y1="152" x2="651.1654614929828" y2="220.28217306807997" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round"/>
+<polygon points="660.0,222.0 650.5,223.8 651.9,216.7" fill="#94a3b8"/>
+<line x1="660" y1="222" x2="306.8783687116228" y2="155.29924742330653" stroke="#cbd5e1" stroke-width="1.4" stroke-linecap="round"/>
+<polygon points="300.0,154.0 307.4,152.5 306.4,158.1" fill="#cbd5e1"/>
+<text x="450" y="306" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Each specialist has a focused role and its own tools; the orchestrator delegates and merges results.</text>
+</svg>

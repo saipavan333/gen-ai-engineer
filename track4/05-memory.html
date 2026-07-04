@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Memory — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="4.5">
+<main class="lesson">
+
+  <span class="eyebrow">Track 4 · Lesson 4.5</span>
+  <h1>Memory</h1>
+  <p class="lead">An agent that forgets everything between steps — or between sessions — can’t accomplish much. Memory is how an agent holds onto what it has learned, despite a small context window. And the good news: you already know the core trick. It’s RAG, pointed at the agent’s own history.</p>
+
+  <h2>Why memory is a real design problem</h2>
+  <p>Recall from Track 1.4 that the model only knows what’s in its context window right now, and that window is finite. For a long agent run — dozens of steps, a multi-turn conversation, a task spanning days — the full history won’t fit, and re-sending everything is expensive and invites “lost in the middle.” So you need a strategy for <em>what to keep in the window, what to store outside it, and how to bring the right past information back when it’s relevant</em>. That strategy is memory.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t4-memory.svg" alt="Two kinds of memory. An Agent connects to a User. Above the agent, Short-term memory: the recent turns held in the context window. To the right, Long-term memory: a vector store of past facts and summaries, with a green 'write: summarize and store' arrow from the agent and a blue 'read: retrieve when relevant' arrow back. Context is working memory (fast, limited); the vector store is long-term recall, retrieved like RAG.">
+    <figcaption>Two layers: <b>short-term</b> memory is what fits in the context window (fast, limited); <b>long-term</b> memory is an external store you write to and retrieve from — exactly like RAG, but over the agent’s own experience.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p><span class="term">Short-term memory</span> is the information currently in the context window — the recent conversation and the current task’s trace. <span class="term">Long-term memory</span> is information stored <em>outside</em> the model (a database or vector store) that you retrieve and inject when relevant. Within long-term memory, <span class="term">episodic memory</span> recalls specific past events (“last time, the user preferred email”), while <span class="term">semantic memory</span> holds distilled facts (“the user’s timezone is IST”). Writing to memory and reading from it are deliberate steps you build.</p>
+  </div>
+
+  <h2>The two techniques you’ll actually use</h2>
+  <p><strong>Summarization (managing short-term memory).</strong> When the conversation grows past a budget, compress older turns into a running summary and keep recent turns verbatim. The summary preserves the gist while freeing tokens — a controlled forgetting.</p>
+  <p><strong>Vector memory (long-term recall).</strong> Store facts/summaries as embeddings; when a new query arrives, retrieve the most relevant memories and add them to the context. This is RAG (Track 3) with the knowledge base being the agent’s own history — and it’s how an assistant “remembers” your preferences across sessions.</p>
+
+  <div class="box example">
+    <div class="box-label">Worked example — summarize + retrieve memory (free)</div>
+    <p>Both techniques, minimal. Summarize to fit; store and retrieve to recall.</p>
+<pre><code><span class="k">import</span> numpy <span class="k">as</span> np, ollama
+<span class="k">from</span> sentence_transformers <span class="k">import</span> SentenceTransformer
+embed <span class="o">=</span> <span class="f">SentenceTransformer</span>(<span class="s">"all-MiniLM-L6-v2"</span>)
+
+<span class="c"># --- short-term: summarize old turns when the convo gets long ---</span>
+<span class="k">def</span> <span class="f">compress</span>(old_turns):
+    text <span class="o">=</span> <span class="s">"\n"</span>.<span class="f">join</span>(old_turns)
+    <span class="k">return</span> <span class="f">ask</span>(<span class="s">f"Summarize this conversation in 3 bullet points, keeping key facts:\n</span>{text}<span class="s">"</span>)
+
+<span class="c"># --- long-term: a tiny vector memory you write to and read from ---</span>
+memory, mem_vecs <span class="o">=</span> [], <span class="kc">None</span>
+<span class="k">def</span> <span class="f">remember</span>(fact):
+    <span class="k">global</span> mem_vecs
+    memory.<span class="f">append</span>(fact)
+    mem_vecs <span class="o">=</span> embed.<span class="f">encode</span>(memory, normalize_embeddings<span class="o">=</span><span class="kc">True</span>)
+<span class="k">def</span> <span class="f">recall</span>(query, k<span class="o">=</span><span class="n">2</span>):
+    <span class="k">if</span> <span class="k">not</span> memory: <span class="k">return</span> []
+    q <span class="o">=</span> embed.<span class="f">encode</span>([query], normalize_embeddings<span class="o">=</span><span class="kc">True</span>)[<span class="n">0</span>]
+    top <span class="o">=</span> np.<span class="f">argsort</span>(mem_vecs <span class="o">@</span> q)[::<span class="o">-</span><span class="n">1</span>][:k]
+    <span class="k">return</span> [memory[i] <span class="k">for</span> i <span class="k">in</span> top]
+
+<span class="f">remember</span>(<span class="s">"User prefers metric units and replies in the morning."</span>)
+<span class="f">remember</span>(<span class="s">"User is based in Bengaluru (IST)."</span>)
+<span class="f">print</span>(<span class="f">recall</span>(<span class="s">"what timezone should I schedule for?"</span>))   <span class="c"># -> ["User is based in Bengaluru (IST)."]</span></code></pre>
+    <p>That’s the whole idea: <em>summarize</em> to keep the window lean, <em>store and retrieve</em> to recall the right thing later. Long-term memory is just RAG whose corpus is the agent’s experience.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li><strong>Short-term memory</strong> = the context window (fast, limited); <strong>long-term memory</strong> = an external store you retrieve from.</li>
+      <li><strong>Summarize</strong> old turns to fit the window; <strong>store + retrieve</strong> facts for cross-session recall.</li>
+      <li>Long-term memory is <strong>RAG over the agent’s own history</strong> — the same embed/retrieve you already know.</li>
+      <li>Distinguish <strong>episodic</strong> (past events) from <strong>semantic</strong> (distilled facts) memory.</li>
+      <li>Memory is a <strong>deliberate write/read design</strong>, not something that happens for free.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">A user tells your assistant “I’m vegetarian” in week 1. In week 3 they ask for dinner ideas and it suggests steak. What’s the fix?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Long-term memory: store the preference as a fact and retrieve relevant memories into the prompt for later sessions.</span>
+        <div class="why">Correct. Week-1’s message is long gone from the context window, so the model can’t “remember” it — you must persist it externally and retrieve it when relevant (here, on a food-related query). That’s vector memory: RAG over the user’s history.</div></li>
+      <li data-correct="false"><span class="opt">B) Increase the context window so the whole history fits.</span>
+        <div class="why">Even a huge window won’t hold weeks of conversation indefinitely, and re-sending everything is costly and invites “lost in the middle.” Selective long-term memory (store + retrieve) scales; brute-force context does not.</div></li>
+      <li data-correct="false"><span class="opt">C) Lower the temperature.</span>
+        <div class="why">Temperature affects randomness, not whether a week-old fact is available to the model. The information simply isn’t in the context — a memory problem, not a decoding one.</div></li>
+      <li data-correct="false"><span class="opt">D) Fine-tune the model on this user.</span>
+        <div class="why">Fine-tuning per user is wildly impractical and is for behavior, not fast-changing personal facts. Storing the preference as retrievable memory is immediate, cheap, and updatable.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Classify as short-term or long-term memory: (a) the last 3 messages, (b) “the user’s account ID,” (c) the current task’s tool trace, (d) “last month the user complained about slow support.”<br>
+    <strong>2.</strong> Why summarize old turns instead of just dropping them when the window fills?<br>
+    <strong>3.</strong> What could go wrong if you store <em>everything</em> a user ever says in long-term memory and retrieve aggressively?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> (a) short-term (recent context), (b) long-term (a durable fact), (c) short-term (this run’s working state), (d) long-term (a past episode worth recalling). The line is roughly “needed for this immediate step” (short-term) vs “might matter again later” (long-term).</p>
+        <p><strong>2.</strong> Dropping old turns loses information the agent may still need (a fact established early, a decision made). Summarizing preserves the <em>gist</em> and key facts in far fewer tokens, so you free window space without amnesia. It’s controlled forgetting — keep the essence, discard the verbatim bulk.</p>
+        <p><strong>3.</strong> Several failures: the memory store fills with noise, so retrieval surfaces irrelevant or stale facts that derail the agent; privacy risk grows (you’re hoarding personal data — Track 7); and contradictions accumulate (an old preference conflicting with a new one). Good memory is curated: store distilled, useful facts; prune or expire stale ones; and retrieve precisely, not greedily.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: memory is a curation problem</div>
+    <p>The hard part of agent memory isn’t storing — it’s deciding <em>what’s worth remembering</em> and <em>when to surface it</em>. Naively dumping every message into a vector store creates a swamp: retrieval returns near-duplicates, outdated facts, and irrelevant chatter that crowds the prompt. Mature memory systems do active curation: they extract <em>salient</em> facts (preferences, decisions, entities) rather than raw transcripts, deduplicate and update them (a new timezone overwrites the old), attach timestamps so recency can be weighed, and sometimes maintain a structured <span class="term">user profile</span> alongside free-text memories. Retrieval then pulls a small, high-quality set rather than a noisy haystack.</p>
+    <p>Two more realities. First, memory inherits every RAG concern — chunking, embedding quality, retrieval evaluation — because it <em>is</em> RAG; if recall is poor, the agent “forgets” even though the fact is stored. Second, memory is where privacy and safety get serious: you’re persisting user data across sessions, so you need consent, retention limits, the ability to delete, and care that one user’s memories never leak into another’s context (Track 7). Treat the memory store as sensitive production data, not a convenience cache. Done well, memory is what makes an assistant feel like it actually knows you; done carelessly, it’s a liability that also gives worse answers.</p>
+  </div>
+
+  <p>Your agents can reason, act, plan, and remember. But wiring each tool and data source by hand is tedious and non-standard. A new protocol fixes that. Next: <strong>MCP (Model Context Protocol)</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

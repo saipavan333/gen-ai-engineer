@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 452" width="640" height="452" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="640" height="452" fill="#ffffff"/>
+<text x="320" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Similar meanings land near each other</text>
+<ellipse cx="200" cy="165" rx="104" ry="80" fill="#eefaf0" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5 5" opacity="0.9"/>
+<ellipse cx="478" cy="165" rx="104" ry="80" fill="#eff5ff" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="5 5" opacity="0.9"/>
+<ellipse cx="330" cy="322" rx="104" ry="80" fill="#f4f0ff" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="5 5" opacity="0.9"/>
+<circle cx="160" cy="150" r="6" fill="#16a34a"/>
+<text x="172" y="150" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1f2937" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">cat</text>
+<circle cx="230" cy="130" r="6" fill="#16a34a"/>
+<text x="242" y="130" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1f2937" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">kitten</text>
+<circle cx="185" cy="200" r="6" fill="#16a34a"/>
+<text x="197" y="200" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1f2937" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">dog</text>
+<circle cx="250" cy="185" r="6" fill="#16a34a"/>
+<text x="262" y="185" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1f2937" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">puppy</text>
+<circle cx="450" cy="145" r="6" fill="#2563eb"/>
+<text x="462" y="145" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1f2937" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">car</text>
+<circle cx="505" cy="130" r="6" fill="#2563eb"/>
+<text x="517" y="130" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1f2937" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">truck</text>
+<circle cx="470" cy="205" r="6" fill="#2563eb"/>
+<text x="482" y="205" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1f2937" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">van</text>
+<circle cx="300" cy="307" r="6" fill="#7c3aed"/>
+<text x="312" y="307" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1f2937" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">king</text>
+<circle cx="372" cy="319" r="6" fill="#7c3aed"/>
+<text x="384" y="319" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1f2937" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">queen</text>
+<circle cx="330" cy="359" r="6" fill="#7c3aed"/>
+<text x="342" y="359" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1f2937" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">prince</text>
+<text x="320" y="436" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">The model places the points; we just read the map. Closeness = similarity.</text>
+</svg>

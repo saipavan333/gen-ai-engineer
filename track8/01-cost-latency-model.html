@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The cost &amp; latency model — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="8.1">
+<main class="lesson">
+
+  <span class="eyebrow">Track 8 · Lesson 8.1</span>
+  <h1>The cost &amp; latency model</h1>
+  <p class="lead">A feature that works in a demo can be unaffordable or unbearably slow at scale. To ship for real, you need a mental model of where the dollars and the milliseconds actually go. Both come down to one thing you already understand: tokens.</p>
+
+  <h2>Cost and latency are both about tokens</h2>
+  <p>Every LLM call has two costs that matter in production: <strong>money</strong> and <strong>time</strong>. Both are driven by tokens (Track 1.2). You pay for the tokens going <em>in</em> (your prompt) and the tokens coming <em>out</em> (the answer) — often at different prices. And the response takes time proportional to how many tokens it must read and generate. Model these two numbers and you can predict, budget, and optimize; ignore them and you’ll be surprised by the bill and the lag.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t8-cost-latency.svg" alt="The two numbers you must control: cost and latency. Cost ≈ (input + output tokens) × price (you pay for both the prompt and the answer). Latency ≈ TTFT + (output tokens × time/token) (more tokens out = slower). A request flows through Prefill (read the whole prompt) to the first token (TTFT), then Decode (generate tokens one by one). Prefill cost grows with input length; decode cost and latency grow with output length.">
+    <figcaption>Cost scales with total tokens; latency is the time to the first token (prefill) plus the time to generate each output token (decode). Output length hits you on both axes.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p>Providers price per token, usually with <strong>input tokens cheaper than output tokens</strong>. <span class="term">Latency</span> splits into <span class="term">prefill</span> (the model reads your whole prompt — this sets the <span class="term">time to first token</span>, TTFT) and <span class="term">decode</span> (it generates the answer one token at a time — this scales with output length). So a long <em>prompt</em> mainly raises TTFT and input cost; a long <em>answer</em> raises both decode latency and output cost. Output tokens are the expensive ones, on both axes.</p>
+  </div>
+
+  <h2>Estimate your bill</h2>
+  <p>Set the tokens, prices (use your provider’s — they vary), and traffic. Watch how output tokens and request volume drive the monthly cost.</p>
+
+  <div class="demo" id="cost-demo">
+    <div class="demo-head"><span class="tag">Live demo</span><h4>Cost calculator</h4></div>
+    <div class="row">
+      <div><label>Input tokens / request: <b><span id="cv-in">1200</span></b></label>
+        <input type="range" id="c-in" min="100" max="8000" step="100" value="1200"></div>
+      <div><label>Output tokens / request: <b><span id="cv-out">350</span></b></label>
+        <input type="range" id="c-out" min="50" max="2000" step="50" value="350"></div>
+    </div>
+    <div class="row">
+      <div><label>$ / 1M input tokens: <b>$<span id="cv-pin">0.50</span></b></label>
+        <input type="range" id="c-pin" min="0.05" max="10" step="0.05" value="0.50"></div>
+      <div><label>$ / 1M output tokens: <b>$<span id="cv-pout">1.50</span></b></label>
+        <input type="range" id="c-pout" min="0.1" max="30" step="0.1" value="1.50"></div>
+    </div>
+    <label>Requests / day: <b><span id="cv-req">20000</span></b></label>
+    <input type="range" id="c-req" min="100" max="200000" step="100" value="20000">
+    <div class="out" id="cost-out" style="margin-top:14px"></div>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — count tokens before you ship (free)</div>
+    <p>Estimate cost from token counts using free <code>tiktoken</code> — do this <em>before</em> launch, not after the invoice.</p>
+<pre><code><span class="k">import</span> tiktoken
+enc <span class="o">=</span> tiktoken.<span class="f">get_encoding</span>(<span class="s">"cl100k_base"</span>)
+
+prompt <span class="o">=</span> system_prompt <span class="o">+</span> retrieved_context <span class="o">+</span> user_question
+in_tokens  <span class="o">=</span> <span class="f">len</span>(enc.<span class="f">encode</span>(prompt))
+out_tokens <span class="o">=</span> <span class="n">350</span>                                   <span class="c"># estimate or cap your answer length</span>
+
+PRICE_IN, PRICE_OUT <span class="o">=</span> <span class="n">0.50</span>, <span class="n">1.50</span>                 <span class="c"># $ per 1M tokens (use YOUR provider's)</span>
+cost <span class="o">=</span> (in_tokens <span class="o">*</span> PRICE_IN <span class="o">+</span> out_tokens <span class="o">*</span> PRICE_OUT) <span class="o">/</span> <span class="n">1_000_000</span>
+<span class="f">print</span>(<span class="s">f"~$</span>{cost:.5f}<span class="s"> per request, ~$</span>{cost*20000*30:.0f}<span class="s">/month at 20k/day"</span>)</code></pre>
+    <p>This five-line estimate is the single most useful habit in serving: it turns “is this affordable?” from a post-launch panic into a pre-launch number you can design against.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>Cost ≈ <strong>(input + output tokens) × price</strong>; input and output are usually priced differently (output costs more).</li>
+      <li>Latency ≈ <strong>TTFT (prefill) + output tokens × time-per-token (decode)</strong>.</li>
+      <li><strong>Output tokens are the expensive ones</strong> — on both cost and latency.</li>
+      <li>A long <em>prompt</em> raises TTFT/input cost; a long <em>answer</em> raises decode latency/output cost.</li>
+      <li><strong>Estimate cost from token counts before launch</strong> — and watch how request volume multiplies it.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your RAG feature stuffs 6,000 tokens of context into every prompt and asks for a 200-token answer. Costs are high and responses feel sluggish before any text appears. What’s the biggest lever, and why?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Reduce the input context (retrieve fewer/smaller chunks) — it cuts input cost and shortens prefill, which lowers time-to-first-token.</span>
+        <div class="why">Correct. The 6,000-token prompt dominates both input cost and prefill latency (the “sluggish before text appears” is high TTFT from a long prompt). Retrieving less relevant context directly attacks both — and usually improves answer quality too (less “lost in the middle”). The 200-token output is already small.</div></li>
+      <li data-correct="false"><span class="opt">B) Increase the max output tokens so it can explain more.</span>
+        <div class="why">That raises cost and decode latency — the wrong direction. The bottleneck here is the huge input (prefill/TTFT), not a too-short answer.</div></li>
+      <li data-correct="false"><span class="opt">C) Raise the temperature.</span>
+        <div class="why">Temperature affects randomness, not cost or latency. It does nothing for the token-driven bill or the prefill delay.</div></li>
+      <li data-correct="false"><span class="opt">D) Switch to a bigger model.</span>
+        <div class="why">A bigger model is typically slower and pricier per token — worsening both problems. The issue is prompt size, not model capability.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Why does the same model feel slower to “start replying” on a long prompt than a short one, even before any output differs?<br>
+    <strong>2.</strong> A teammate halves the output length and is surprised cost barely moved. The prompt is 5,000 tokens, output was 400. Explain.<br>
+    <strong>3.</strong> An agent makes 6 LLM calls per task, each re-sending the growing history. What does that do to cost, and what would you check?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> Because of prefill: before generating anything, the model must process the entire prompt, and a longer prompt takes longer to read — raising time-to-first-token. So a long prompt delays the <em>start</em> of the reply independent of how long the reply is. Short prompt → fast first token; long prompt → you wait, then it streams.</p>
+        <p><strong>2.</strong> Because input dominates here. With 5,000 input vs 400 output tokens, the prompt is ~92% of the tokens; even though output is priced higher per token, halving 400 → 200 only removes 200 of ~5,400 tokens. Cost is driven by wherever the tokens actually are — and here that’s the input. To cut this bill, shrink the prompt.</p>
+        <p><strong>3.</strong> It multiplies cost roughly 6× (six calls) and worse, because each call re-sends an ever-larger history, so input tokens balloon across the task — agents are token-hungry. I’d check the total tokens across the whole task (trace it, Track 6), summarize or trim the history between steps, retrieve less, and cap output per step. Agents and RAG make per-call token discipline matter a lot, since the costs compound.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: the economics of LLM features</div>
+    <p>Two facts reshape how you design once you internalize the cost model. First, <strong>at scale, small per-call savings are huge</strong>: trimming 1,000 tokens off a prompt that runs a million times a day is a million-token-a-day saving, every day. This is why teams obsess over prompt size, caching, and routing — the multipliers are enormous. Second, <strong>the expensive features are the compound ones</strong>: an agent that loops, or a RAG pipeline that stuffs context, multiplies tokens per task, so a “cheap per call” model can still produce a scary bill. Always estimate cost <em>per task</em> (all the calls), not per call.</p>
+    <p>This also clarifies the optimization priorities for the rest of this track. To cut <strong>cost</strong>, your levers are caching (don’t pay twice), routing (don’t use a big model when a small one works), smaller/quantized models, and token budgeting (trim the prompt) — covered next. To cut <strong>latency</strong>, you stream (for perceived speed), shrink prompts (for TTFT), shorten outputs (for decode time), and pick faster models. And — connecting to Track 6 — you don’t optimize blind: measure cost and latency per request (they’re guardrail metrics on every change), find the actual bottleneck, then apply the lever that targets it. Premature optimization wastes effort; measured optimization is where serving becomes engineering.</p>
+  </div>
+
+  <p>The cheapest latency win requires no model change at all — it just changes <em>when</em> the user sees the words. Next: <strong>streaming</strong>.</p>
+
+</main>
+
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  var ids = { in: "c-in", out: "c-out", pin: "c-pin", pout: "c-pout", req: "c-req" };
+  function render() {
+    var inT = +$(ids.in).value, outT = +$(ids.out).value, pin = +$(ids.pin).value, pout = +$(ids.pout).value, req = +$(ids.req).value;
+    $("cv-in").textContent = inT.toLocaleString(); $("cv-out").textContent = outT.toLocaleString();
+    $("cv-pin").textContent = pin.toFixed(2); $("cv-pout").textContent = pout.toFixed(2);
+    $("cv-req").textContent = req.toLocaleString();
+    var perReq = (inT * pin + outT * pout) / 1e6;
+    var perMonth = perReq * req * 30;
+    var inShare = inT * pin, outShare = outT * pout, tot = inShare + outShare;
+    $("cost-out").innerHTML =
+      '<div style="display:flex;gap:22px;flex-wrap:wrap">' +
+      '<div><div style="font-size:12.5px;color:#64748b">per request</div><div style="font-size:22px;font-weight:800;color:#4f46e5">$' + perReq.toFixed(5) + '</div></div>' +
+      '<div><div style="font-size:12.5px;color:#64748b">per month (' + (req).toLocaleString() + '/day)</div><div style="font-size:22px;font-weight:800;color:#15803d">$' + perMonth.toLocaleString(undefined, { maximumFractionDigits: 0 }) + '</div></div>' +
+      '</div>' +
+      '<div style="margin-top:10px;font-size:13px;color:#475569">Of each request’s cost: <b style="color:#2563eb">' + Math.round(inShare / tot * 100) + '% input</b>, <b style="color:#0d9488">' + Math.round(outShare / tot * 100) + '% output</b>. ' +
+      (inShare > outShare ? "Input dominates → trim the prompt." : "Output dominates → shorten answers / use a cheaper model.") + '</div>';
+  }
+  Object.values(ids).forEach(function (id) { $(id).addEventListener("input", render); });
+  render();
+})();
+</script>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

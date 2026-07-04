@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 430" width="560" height="430" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="560" height="430" fill="#ffffff"/>
+<text x="280" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="15.5" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Cosine similarity = angle between vectors</text>
+<line x1="95" y1="350" x2="515" y2="350" stroke="#e2e8f0" stroke-width="1.5" stroke-linecap="round"/>
+<line x1="95" y1="350" x2="95" y2="50" stroke="#e2e8f0" stroke-width="1.5" stroke-linecap="round"/>
+<line x1="95" y1="350" x2="390.41888099662356" y2="127.22510613369371" stroke="#16a34a" stroke-width="2.6" stroke-linecap="round"/>
+<polygon points="400.0,120.0 393.3,131.1 387.5,123.4" fill="#16a34a"/>
+<line x1="95" y1="350" x2="409.52992780860336" y2="173.86324042718212" stroke="#16a34a" stroke-width="2.6" stroke-linecap="round"/>
+<polygon points="420.0,168.0 411.9,178.1 407.2,169.7" fill="#16a34a"/>
+<line x1="95" y1="350" x2="428.0451129416518" y2="321.0395553963781" stroke="#dc2626" stroke-width="2.6" stroke-linecap="round"/>
+<polygon points="440.0,320.0 428.5,325.8 427.6,316.3" fill="#dc2626"/>
+<text x="410" y="112" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#15803d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">cat</text>
+<text x="430" y="168" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#15803d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">kitten</text>
+<text x="452" y="322" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#b91c1c" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">car</text>
+<text x="150" y="104" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#15803d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">small angle  →  cosine ≈ 1</text>
+<text x="150" y="130" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#b91c1c" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">wide angle  →  cosine low</text>
+<text x="280" y="410" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Same direction → 1.   Perpendicular → 0.   Opposite → −1.</text>
+</svg>

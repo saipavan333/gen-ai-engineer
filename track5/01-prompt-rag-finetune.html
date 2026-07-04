@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prompt vs RAG vs fine-tune — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="5.1">
+<main class="lesson">
+
+  <span class="eyebrow">Track 5 · Lesson 5.1</span>
+  <h1>Prompt vs RAG vs fine-tune</h1>
+  <p class="lead">Fine-tuning sounds like the “serious” option, so people reach for it first — and usually shouldn’t. Knowing exactly when fine-tuning is the right tool (and when prompting or RAG wins) is one of the clearest markers of an experienced GenAI engineer. Let’s build that judgment before we build a model.</p>
+
+  <h2>Three ways to change what a model does</h2>
+  <p>You now have three levers. <strong>Prompting</strong> (Track 2) changes the <em>input</em> — instant, free, great for instructions and one-offs. <strong>RAG</strong> (Track 3) changes the <em>input too</em>, by injecting retrieved knowledge — perfect for facts that are large, private, or changing. <strong>Fine-tuning</strong> changes the <em>weights</em> — you continue training the model on your examples so a behavior becomes baked in. Each is the right answer to a different question.</p>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p><span class="term">Fine-tuning</span> is further training a pretrained model on your own examples, updating its weights so it reliably produces a desired <em>behavior</em> — a format, a style, a tone, or strong performance on a narrow task. Unlike prompting and RAG (which change the input at run time), fine-tuning changes the model itself, once, ahead of time.</p>
+  </div>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t5-decision.svg" alt="Prompt vs RAG vs fine-tune decision flow. Needs fresh/private knowledge? yes → RAG (Track 3); no → A better prompt/few-shot solves it? yes → Prompt engineering (Track 2); no → Need durable behavior/style/format or a smaller cheaper specialized model? yes → Fine-tune (this track). RAG for knowledge, prompting for instructions, fine-tuning for behavior. Try them in that order.">
+    <figcaption>Walk the questions top to bottom. Most problems are solved before you reach fine-tuning — which is exactly why it’s the last resort, not the first.</figcaption>
+  </figure>
+
+  <h2>What fine-tuning is (and isn’t) for</h2>
+  <div class="tbl-wrap">
+    <table class="t">
+      <tr><th>Fine-tune when you want…</th><th>Don’t fine-tune for…</th></tr>
+      <tr><td>A consistent <strong>format/style/tone</strong> hard to get with prompting alone</td><td><strong>Fresh or changing facts</strong> → that’s RAG (re-index, don’t retrain)</td></tr>
+      <tr><td>Reliable performance on a <strong>narrow, repeated task</strong></td><td>A <strong>one-off task</strong> a good prompt already handles</td></tr>
+      <tr><td>A <strong>smaller/cheaper/faster</strong> model to match a big one on your task</td><td>Adding <strong>private documents as knowledge</strong> → that’s RAG</td></tr>
+      <tr><td>To <strong>shrink your prompt</strong> (bake in instructions/examples you currently pay for every call)</td><td>When you <strong>haven’t tried prompting + RAG</strong> yet</td></tr>
+    </table>
+  </div>
+
+  <div class="demo" id="ft-demo">
+    <div class="demo-head"><span class="tag">Live demo</span><h4>Should you fine-tune?</h4></div>
+    <p class="demo-hint">Answer three questions; get a recommendation with the reasoning.</p>
+    <div id="ft-q"></div>
+    <div class="out" id="ft-out" style="margin-top:12px;min-height:60px"></div>
+  </div>
+
+  <div class="box note">
+    <div class="box-label">They combine</div>
+    <p>These aren’t mutually exclusive. A common production stack is <strong>fine-tune + RAG</strong>: fine-tune the model to follow your format and tone reliably, <em>and</em> use RAG to feed it current facts. Fine-tuning fixes <em>how</em> it answers; RAG supplies <em>what</em> it knows. Reach for both when you need both.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>Prompting &amp; RAG change the <strong>input</strong>; fine-tuning changes the <strong>weights</strong>.</li>
+      <li><strong>RAG for knowledge, prompting for instructions, fine-tuning for behavior</strong> — try them in that order.</li>
+      <li>Fine-tune for <strong>consistent format/style/tone, narrow repeated tasks, or a smaller cheaper model</strong>.</li>
+      <li><strong>Don’t</strong> fine-tune for fresh/changing facts (RAG) or one-offs (prompt).</li>
+      <li>Fine-tuning and RAG often <strong>combine</strong>: behavior from fine-tuning, knowledge from RAG.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">A bank wants an assistant that (a) always answers in a strict, compliant format and tone, and (b) uses the latest, frequently-updated policy documents. Best approach?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Fine-tune for the compliant format/tone, and use RAG for the changing policy documents.</span>
+        <div class="why">Correct. Two different needs, two different tools. The strict format/tone is durable <em>behavior</em> — ideal for fine-tuning. The frequently-updated policies are <em>knowledge</em> — ideal for RAG (re-index on change). Combining them gives consistent behavior over current facts.</div></li>
+      <li data-correct="false"><span class="opt">B) Fine-tune on the policy documents so it knows them.</span>
+        <div class="why">Policies change frequently, so baking them into weights means retraining constantly — slow, costly, and un-citable. Changing facts belong in RAG, not in the weights.</div></li>
+      <li data-correct="false"><span class="opt">C) Just use a very detailed prompt for everything.</span>
+        <div class="why">A prompt can attempt the format, but strict, repeated compliance is more reliable when fine-tuned, and the prompt can’t supply the latest policies without retrieval. This needs fine-tuning <em>and</em> RAG, not prompting alone.</div></li>
+      <li data-correct="false"><span class="opt">D) RAG for both the format and the policies.</span>
+        <div class="why">RAG supplies knowledge, not behavior — it won’t reliably enforce a strict output format/tone. The format is a behavior to fine-tune; only the policies belong in RAG.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> For each, pick prompt / RAG / fine-tune (or a combo): (a) answer support questions from our docs, (b) always output our exact JSON ticket schema, (c) write in our brand’s quirky voice, (d) summarize a pasted email.<br>
+    <strong>2.</strong> Your prompt is 2,000 tokens of instructions + 8 examples, sent on every call, and it’s getting expensive. How might fine-tuning help?<br>
+    <strong>3.</strong> Why is “fine-tune it on our knowledge base” usually the wrong instinct?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> (a) <strong>RAG</strong> — knowledge from docs. (b) <strong>fine-tune</strong> (or strong prompt + JSON mode) — a durable format behavior. (c) <strong>fine-tune</strong> — a consistent style. (d) <strong>prompt</strong> — a one-off transformation of provided text. Notice (b) and (c) are behaviors, (a) is knowledge, (d) is an instruction — matching the three-tool map.</p>
+        <p><strong>2.</strong> If those instructions and examples are baked into the weights by fine-tuning, you can drop most of them from the prompt — the model already behaves that way. You pay a one-time training cost to stop paying 2,000+ tokens on every single call, which at volume can be a large, ongoing saving in cost and latency. Fine-tuning to <em>shrink the prompt</em> is an underrated, very practical use.</p>
+        <p><strong>3.</strong> Because knowledge bases change, and weights are expensive and slow to update — you’d be retraining constantly, and the model still couldn’t cite sources or guarantee it isn’t blending facts. Worse, fine-tuning on documents teaches <em>style</em> more than reliable recall; models don’t store facts as crisply as a retriever does. For knowledge, retrieval is both cheaper and more trustworthy. Fine-tune behavior; retrieve knowledge.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: the real costs, and distillation</div>
+    <p>Fine-tuning carries costs prompting and RAG don’t: you need a curated dataset (the hard part), compute to train, an evaluation to prove it helped, and a pipeline to version and deploy the result — and every base-model upgrade may mean re-tuning. That’s why the discipline is “prompt and RAG first”: they’re reversible, instant to iterate, and require no training. Fine-tuning earns its cost when a behavior is stable, valuable, and high-volume enough that baking it in pays off — and when you can <em>measure</em> the improvement (Lesson 5.6).</p>
+    <p>One powerful pattern worth knowing: <span class="term">distillation</span>. You use a large, expensive model to generate high-quality examples for your task, then fine-tune a small, cheap model on those examples — “teaching” the small model to imitate the big one on your narrow task. Done well, you get most of the big model’s quality at a fraction of the cost and latency, which is exactly the “smaller/cheaper specialized model” cell in the table. It’s how many teams turn an expensive prototype into an affordable production model. But notice it still obeys the rule: you’re fine-tuning for <em>behavior</em> (match the teacher on this task), not stuffing in changing facts. Keep the map in your head and the right tool is almost always obvious.</p>
+  </div>
+
+  <p>To use fine-tuning well, you need a feel for what “training” actually does to a model. Let’s demystify it — gently, with a runnable toy. Next: <strong>how training actually works</strong>.</p>
+
+</main>
+
+<script>
+(function () {
+  var QS = [
+    { q: "Is the core need fresh or private <b>knowledge</b> (facts)?", key: "knowledge" },
+    { q: "Could a better <b>prompt or few-shot</b> plausibly solve it?", key: "prompt" },
+    { q: "Do you need durable <b>behavior/style/format</b>, or a smaller/cheaper specialized model?", key: "behavior" }
+  ];
+  var ans = {};
+  var qDiv = document.getElementById("ft-q"), out = document.getElementById("ft-out");
+  function build() {
+    qDiv.innerHTML = QS.map(function (item, i) {
+      return '<div style="margin:8px 0"><div style="font-size:14px;margin-bottom:4px">' + (i + 1) + '. ' + item.q + '</div>' +
+        '<button class="run" data-k="' + item.key + '" data-v="yes" style="background:#eefaf0;color:#15803d;margin-right:6px">Yes</button>' +
+        '<button class="run" data-k="' + item.key + '" data-v="no" style="background:#fef1ef;color:#b91c1c">No</button>' +
+        ' <span id="a-' + item.key + '" style="font-weight:700;margin-left:8px"></span></div>';
+    }).join("");
+    qDiv.querySelectorAll("button").forEach(function (b) {
+      b.addEventListener("click", function () {
+        ans[b.getAttribute("data-k")] = b.getAttribute("data-v");
+        document.getElementById("a-" + b.getAttribute("data-k")).textContent = b.getAttribute("data-v");
+        recommend();
+      });
+    });
+  }
+  function recommend() {
+    if (Object.keys(ans).length < 3) { out.innerHTML = '<span style="color:#94a3b8">Answer all three…</span>'; return; }
+    var rec, why, col;
+    if (ans.knowledge === "yes") { rec = "Use RAG"; col = "#2563eb"; why = "The core need is knowledge — retrieve it at query time and keep it current by re-indexing, not retraining."; }
+    else if (ans.prompt === "yes") { rec = "Use prompting / few-shot"; col = "#b45309"; why = "If a prompt can do it, that's the cheapest, fastest, most reversible option — start there."; }
+    else if (ans.behavior === "yes") { rec = "Fine-tune (likely + RAG)"; col = "#4f46e5"; why = "Durable behavior/style/format or a cheaper specialized model is exactly fine-tuning's sweet spot. Add RAG if it also needs current facts."; }
+    else { rec = "Probably prompting"; col = "#64748b"; why = "No clear need for knowledge, a complex prompt, or durable behavior — a simple prompt likely suffices. Don't add complexity you don't need."; }
+    out.innerHTML = '<div style="font-size:18px;font-weight:800;color:' + col + '">' + rec + '</div>' +
+      '<div style="font-size:13.5px;color:#475569;margin-top:4px">' + why + '</div>';
+  }
+  build(); recommend();
+})();
+</script>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

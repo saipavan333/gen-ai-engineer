@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Evaluating a fine-tune — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="5.6">
+<main class="lesson">
+
+  <span class="eyebrow">Track 5 · Lesson 5.6</span>
+  <h1>Evaluating a fine-tune</h1>
+  <p class="lead">A fine-tune that <em>feels</em> better is worthless; you need proof. And the dangerous failure isn’t obvious badness — it’s a model that aced your task while quietly getting worse at everything else. This lesson is how to know, with numbers, whether you actually improved things.</p>
+
+  <h2>Two questions every fine-tune must answer</h2>
+  <p>After training, ask: (1) <strong>Did it get better at the target task?</strong> and (2) <strong>Did it get worse at anything else?</strong> The first is obvious; the second is where teams get burned. Fine-tuning hard on a narrow task can cause <span class="term">catastrophic forgetting</span> — the model improves on your task but regresses on general ability (grammar, reasoning, refusing bad requests). You only catch this by measuring both, against the original base model, on data the model never trained on.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t5-ft-eval.svg" alt="Did fine-tuning actually help? Two bar groups. Target task: base 0.55 vs fine-tuned 0.88 (up = good). General ability: base 0.80 vs fine-tuned 0.73 (down here = regression). Goal: raise the target task WITHOUT hurting general ability; also watch train-vs-held-out for overfitting.">
+    <figcaption>Compare fine-tuned vs. base on a held-out set. You want the target task <em>up</em> and general ability <em>not down</em>. A drop on the right is a regression you must catch before shipping.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p>You evaluate against a <span class="term">baseline</span> — the original base model — on a <span class="term">held-out set</span> (examples never used in training). Measure a <span class="term">task metric</span> (accuracy, exact match, or an LLM-as-judge score) <em>and</em> a <span class="term">general-ability</span> check (a few diverse prompts or a small benchmark). Watch for <span class="term">overfitting</span> (great on train, poor on held-out) and <span class="term">regression / catastrophic forgetting</span> (better on the task, worse generally).</p>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — compare fine-tuned vs base (free)</div>
+    <p>The minimum honest evaluation: score both models on the same held-out task, and sanity-check general ability. Never deploy a fine-tune you didn’t compare to the base.</p>
+<pre><code><span class="k">def</span> <span class="f">accuracy</span>(model, examples):
+    correct <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> ex <span class="k">in</span> examples:
+        out <span class="o">=</span> <span class="f">generate</span>(model, ex[<span class="s">"input"</span>])
+        <span class="k">if</span> <span class="f">matches</span>(out, ex[<span class="s">"expected"</span>]):       <span class="c"># exact match, regex, or LLM-judge</span>
+            correct <span class="o">+=</span> <span class="n">1</span>
+    <span class="k">return</span> correct <span class="o">/</span> <span class="f">len</span>(examples)
+
+held_out <span class="o">=</span> load(<span class="s">"val.jsonl"</span>)                 <span class="c"># NEVER trained on</span>
+general  <span class="o">=</span> load(<span class="s">"general_probe.jsonl"</span>)      <span class="c"># diverse, off-task prompts</span>
+
+<span class="f">print</span>(<span class="s">"target task — base:"</span>, <span class="f">accuracy</span>(base_model, held_out))
+<span class="f">print</span>(<span class="s">"target task — tuned:"</span>, <span class="f">accuracy</span>(tuned_model, held_out))   <span class="c"># should be higher</span>
+<span class="f">print</span>(<span class="s">"general    — base:"</span>, <span class="f">accuracy</span>(base_model, general))
+<span class="f">print</span>(<span class="s">"general    — tuned:"</span>, <span class="f">accuracy</span>(tuned_model, general))    <span class="c"># should NOT be much lower</span></code></pre>
+    <p>If the target task rose and general ability held, ship it. If general ability dropped, you over-fit your task — train for fewer epochs, use more/diverse data, a lower learning rate, or a smaller LoRA rank, and re-measure.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>Always <strong>compare to the base model</strong> on a <strong>held-out set</strong> — “feels better” isn’t evidence.</li>
+      <li>Measure the <strong>target task</strong> (should rise) <em>and</em> <strong>general ability</strong> (should not fall).</li>
+      <li>Watch for <strong>overfitting</strong> (train ≫ held-out) and <strong>catastrophic forgetting</strong> (task up, general down).</li>
+      <li>If general ability drops: fewer epochs, more/diverse data, lower learning rate, smaller rank — then re-measure.</li>
+      <li>Evaluation is what turns fine-tuning from a gamble into <strong>engineering</strong>.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your fine-tune scores 0.91 on the target task (base was 0.60) — a clear win. What must you check before celebrating?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Whether general ability regressed — score both models on diverse off-task prompts to rule out catastrophic forgetting.</span>
+        <div class="why">Correct. A big target-task gain can hide a general-ability loss from over-specialization. Until you’ve checked the fine-tune didn’t get worse at off-task behavior (reasoning, formatting, safety), you don’t actually know it’s a net win. Always measure both axes.</div></li>
+      <li data-correct="false"><span class="opt">B) Nothing — a big jump on the task is sufficient proof.</span>
+        <div class="why">A task jump alone can mask a regression elsewhere. Shipping on the task metric alone is exactly how teams deploy a model that’s great at one thing and worse at everything else.</div></li>
+      <li data-correct="false"><span class="opt">C) Whether training loss reached zero.</span>
+        <div class="why">Near-zero training loss is a warning sign (memorization), not a goal. Held-out performance and general ability are what matter, not how low training loss went.</div></li>
+      <li data-correct="false"><span class="opt">D) Whether the adapter file is small.</span>
+        <div class="why">Adapter size is an efficiency detail, irrelevant to whether the model is actually better overall. The real check is general-ability regression on held-out prompts.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Why must your evaluation set be held out from training, and what goes wrong if it isn’t?<br>
+    <strong>2.</strong> Your fine-tune is better on the task but noticeably worse at following unrelated instructions. Name two fixes.<br>
+    <strong>3.</strong> Free-text answers make exact-match scoring brittle. What’s a more robust way to score them?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> Held-out data is your only honest read on <em>generalization</em>. If evaluation examples were in training (or near-duplicates), the model may have memorized them, so your score measures recall of seen answers, not ability on new inputs — it’ll look great and fail in production. Independence of the eval set is what makes the number trustworthy.</p>
+        <p><strong>2.</strong> That’s catastrophic forgetting from over-specialization. Fixes: <strong>train less aggressively</strong> (fewer epochs, lower learning rate, smaller LoRA rank) so you nudge rather than overwrite; and <strong>mix in some general/diverse examples</strong> with your task data so the model retains broad ability. Then re-measure both axes.</p>
+        <p><strong>3.</strong> Use a more semantic check: an <strong>LLM-as-judge</strong> that reads the model’s answer and the expected answer (or a rubric) and scores correctness, or check key facts/fields rather than exact strings. This tolerates valid wording differences while still catching wrong answers — it’s the heart of Track 6 (Evals), which generalizes exactly this problem.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: evaluate before you deploy, and keep evaluating</div>
+    <p>Fine-tuning makes a permanent change to a deployed behavior, so the discipline is stricter than for a prompt tweak. Before shipping: compare against the base on a frozen held-out set, check general-ability probes, and ideally run a small <strong>regression suite</strong> — a fixed set of prompts (including edge cases and safety checks) that must not get worse. After shipping: prefer an <strong>A/B test</strong> or a careful rollout, watching real-world quality and user signals, because offline metrics never capture everything. A fine-tune that wins offline can still lose on the messiness of production traffic.</p>
+    <p>This is the moment the whole course converges: evaluating a fine-tune is the same skill as evaluating a prompt or a RAG pipeline — define what “good” means, build a held-out set, measure against a baseline, and never trust a vibe. That’s why <strong>Track 6 (Evals &amp; Observability)</strong> is next and arguably the most important track for shipping: it turns these per-technique checks into a systematic capability. If you remember one thing from fine-tuning, let it be this: the model you can <em>measure</em> is the only one you can safely ship.</p>
+  </div>
+
+  <p>You can now decide on, prepare for, run, and evaluate a fine-tune. Time to pressure-test it. On to the <strong>Track 5 interview check</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

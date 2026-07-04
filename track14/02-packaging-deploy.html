@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Packaging &amp; deploy — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="14.2">
+<main class="lesson">
+
+  <span class="eyebrow">Productionization &amp; LLMOps · Lesson 14.2</span>
+  <h1>Packaging &amp; deploy</h1>
+  <p class="lead">“It works on my machine” is not a deployment strategy. Containers make your service run the same everywhere, and a little discipline with config and secrets keeps it safe. This lesson gets your API off your laptop.</p>
+
+  <h2>Why containers: kill “works on my machine”</h2>
+  <p>Your service depends on a specific Python version, specific libraries at specific versions, and system bits underneath. Move it to another computer and any mismatch breaks it — the classic “works on my machine” failure. A <span class="term">container</span> solves this by packaging your code <em>together with</em> its entire environment (Python, libraries, config) into one portable image that runs identically on your laptop, a teammate’s machine, or a cloud server. <strong>Docker</strong> is the standard tool for building and running these images. The payoff: build once, run anywhere, with no “but it worked here” surprises.</p>
+  <p>You describe the environment in a <code>Dockerfile</code> — a recipe:</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">Dockerfile</span></div>
+<pre><code><span class="k">FROM</span> python:3.11-slim              <span class="c"># a known, fixed base</span>
+<span class="k">WORKDIR</span> /app
+<span class="k">COPY</span> requirements.txt .
+<span class="k">RUN</span> pip install -r requirements.txt   <span class="c"># pinned versions = reproducible</span>
+<span class="k">COPY</span> . .
+<span class="k">CMD</span> [<span class="s">"uvicorn"</span>, <span class="s">"main:app"</span>, <span class="s">"--host"</span>, <span class="s">"0.0.0.0"</span>, <span class="s">"--port"</span>, <span class="s">"8000"</span>]</code></pre>
+  <p><code>docker build -t my-llm-app .</code> bakes the image; <code>docker run -p 8000:8000 my-llm-app</code> runs it. That image is now a sealed unit you can hand to any host and it just works — which is exactly what deployment platforms expect.</p>
+
+  <h2>Config and secrets: never bake them in</h2>
+  <p>Your service has settings that change per environment — which model, which database URL, and (if you ever use a paid API) an API key. The rule: <strong>configuration comes from the environment, never from hardcoded values in your code</strong>. You read settings from <span class="term">environment variables</span>:</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">config.py</span></div>
+<pre><code><span class="k">import</span> os
+
+MODEL <span class="o">=</span> os.<span class="f">environ</span>.<span class="f">get</span>(<span class="s">"MODEL"</span>, <span class="s">"llama3.2"</span>)      <span class="c"># default for local</span>
+DB_URL <span class="o">=</span> os.<span class="f">environ</span>.<span class="f">get</span>(<span class="s">"DB_URL"</span>, <span class="s">"sqlite:///local.db"</span>)
+API_KEY <span class="o">=</span> os.<span class="f">environ</span>.<span class="f">get</span>(<span class="s">"API_KEY"</span>)          <span class="c"># NEVER a literal in code</span></code></pre>
+  <p>This matters for two reasons. First, <strong>secrets</strong>: a hardcoded API key committed to a repo is a leak — anyone with the code has your credentials, and public GitHub repos get scraped for keys within minutes. Keep secrets in environment variables (or a secret manager), and add files like <code>.env</code> to <code>.gitignore</code> so they’re never committed. Second, <strong>portability</strong>: the same image runs against your local SQLite in dev and a real database in production, just by changing environment variables — no code change, no rebuild.</p>
+
+  <h2>Where to deploy (free options)</h2>
+  <p>A container can run on many hosts. For learning, free tiers are plenty: <strong>Render</strong>, <strong>Railway</strong>, and <strong>Fly.io</strong> all deploy a Docker image or a repo to a public URL on a free/starter plan. Push your code, point the platform at it, set your environment variables in their dashboard, and you have a live endpoint. (Heavier local models need more RAM than free tiers give — a good reason your app should read <code>MODEL</code> from config, so it can use a small hosted or local model in dev and swap in production.) You don’t have to deploy anything to complete this course, but knowing the path — container → host → URL → env-var config — is exactly what interviews probe.</p>
+
+  <div class="box warn">
+    <div class="box-label">The leak that ends interviews</div>
+    <p>A hardcoded API key (<code>api_key = "sk-abc123..."</code>) pushed to GitHub is the single most common, most damaging beginner mistake. Reviewers look for it. Secrets live in environment variables and secret managers — <em>never</em> in code or version control.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li><strong>Containers (Docker)</strong> package code + its whole environment so it runs identically everywhere — no “works on my machine.”</li>
+      <li>A <strong>Dockerfile</strong> is the recipe; pinned <code>requirements.txt</code> versions make builds reproducible.</li>
+      <li><strong>Config from environment variables</strong>, never hardcoded — same image runs in dev and prod by changing env vars.</li>
+      <li><strong>Secrets never go in code or git.</strong> Use env vars / secret managers; <code>.gitignore</code> your <code>.env</code>.</li>
+      <li>Deploy a container to a free host (<strong>Render / Railway / Fly.io</strong>) to get a public URL.</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p>A teammate’s service has <code>API_KEY = "sk-live-9f3..."</code> at the top of <code>main.py</code>, and the database URL is hardcoded to their laptop’s local Postgres. List what’s wrong and how you’d fix each issue.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>Problem 1 — the hardcoded API key:</strong> it’s a secret leak. If this file is in git (especially anything public), the key is compromised and must be rotated immediately. Fix: read it from <code>os.environ["API_KEY"]</code>, set the real value as an environment variable on the host, and add any <code>.env</code> file to <code>.gitignore</code>. Consider a secret manager for production.</p>
+        <p><strong>Problem 2 — the hardcoded DB URL:</strong> it ties the code to one machine, so it can’t run anywhere else without editing source. Fix: read <code>DB_URL</code> from the environment with a sensible local default. Now the same image points at local SQLite in dev and the real database in prod purely via config.</p>
+        <p><strong>Why this is the pattern:</strong> code should be identical across environments; only configuration differs, and it flows in from outside. That separation is what makes a service portable, safe to open-source, and deployable to any host — and getting it right is a basic professional expectation that reviewers specifically check.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Why package an LLM service in a Docker container instead of just copying the Python files to a server?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) The container bundles the exact environment (Python, libraries, versions), so it runs identically everywhere — eliminating environment mismatches.</span>
+        <div class="why">Correct. Copying just the files leaves the target machine to supply the right Python and library versions, which is where “works on my machine” bugs come from. A container ships the whole environment as one reproducible image, so dev and prod behave the same.</div></li>
+      <li data-correct="false"><span class="opt">B) Containers make the model’s answers more accurate.</span>
+        <div class="why">Containers are about reproducible environments and deployment, not model quality. Accuracy comes from your prompts, retrieval, and evals — unchanged by packaging.</div></li>
+      <li data-correct="false"><span class="opt">C) Docker stores your API keys securely for you.</span>
+        <div class="why">Docker doesn’t manage secrets for you — in fact, baking secrets into an image is a mistake. Secrets belong in environment variables or a secret manager, injected at run time.</div></li>
+      <li data-correct="false"><span class="opt">D) Containers remove the need for a requirements file.</span>
+        <div class="why">The opposite — a pinned <code>requirements.txt</code> is what makes the image reproducible. The Dockerfile installs from it during the build.</div></li>
+    </ul>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: the twelve-factor habits that make services deployable</div>
+    <p>What you just did — config from the environment, dependencies pinned, one command to run — are pieces of a widely used checklist for cloud services often called the “twelve-factor app.” A few of its ideas are worth carrying everywhere. <strong>Strict separation of config from code</strong> (what you practiced) means the same build runs in every environment. <strong>Statelessness</strong> means your service shouldn’t store important data in its own memory or local disk between requests, because a deployment might run several copies of it and replace them at any time; anything that must persist goes to a database or object store. This is what lets a platform run three, then ten, copies of your container behind a load balancer to handle traffic — horizontal scaling — without any of them stepping on each other.</p>
+    <p>For LLM services specifically, statelessness has a twist worth naming in interviews: conversation “memory” must live outside the process (a database or cache keyed by session), never in a local variable, precisely because the next request might hit a different container. Combine that with the operational ring from the last lesson — timeouts, rate limits, caching, streaming — and you have the shape of a real deployment: a stateless, containerized, env-configured service with persistence and state pushed to backing stores. You don’t need to memorize the whole twelve-factor list; you need the instinct that <em>code is fixed, config and state live outside it</em>, because that instinct is what makes something you can actually run at scale.</p>
+  </div>
+
+  <p>Your service can run anywhere. But every change you make risks breaking quality — so before anything ships, it should have to pass your evals. Next: <strong>CI for prompts &amp; evals.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vision-language models — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="15.1">
+<main class="lesson">
+
+  <span class="eyebrow">Multimodal AI · Lesson 15.1</span>
+  <h1>Beyond text: vision-language models</h1>
+  <p class="lead">Everything so far has been words in, words out. But a huge amount of the world’s information is visual — screenshots, receipts, charts, product photos, scanned forms. Vision-language models let a system <em>see</em>, and that unlocks a whole class of products.</p>
+
+  <h2>What a vision-language model is</h2>
+  <p>A <span class="term">vision-language model</span> (VLM, or “multimodal LLM”) is an LLM that accepts images alongside text and reasons about both together. You can hand it a photo and ask “what’s in this picture?”, give it a screenshot and ask “what does this error mean?”, or show it a chart and ask “what was the trend in Q3?”. It’s the same next-token machine from Track&nbsp;1, extended so that images can enter the prompt as tokens.</p>
+  <p>How does an image become tokens? The model splits the image into a grid of small <span class="term">patches</span>, and a <span class="term">vision encoder</span> turns each patch into a vector — the same “meaning as vectors” idea as text embeddings (Track&nbsp;1), but for pixels. Those vectors become <em>image tokens</em> that sit in the context window right next to your text tokens, so the model attends over words and image regions jointly. That’s the whole trick: once an image is tokens, the LLM machinery you already understand handles the rest.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t15-vlm.svg" alt="How a vision-language model sees: an image is split into a grid of patches, a vision encoder turns patches into vectors, those become image tokens placed alongside your text prompt, and the model reasons over both to answer.">
+    <figcaption>An image becomes patches, then vectors, then tokens in the context window — reasoned over jointly with your text.</figcaption>
+  </figure>
+
+  <h2>What it looks like (free and local)</h2>
+  <p>You don’t need a paid API to try this: open VLMs like <strong>LLaVA</strong> run locally through Ollama, so the whole thing stays <code>$0</code>. The call looks almost exactly like a normal chat, with an image attached:</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">describe.py</span></div>
+<pre><code><span class="k">import</span> ollama
+
+reply <span class="o">=</span> ollama.<span class="f">chat</span>(
+    model<span class="o">=</span><span class="s">"llava"</span>,                        <span class="c"># an open vision-language model</span>
+    messages<span class="o">=</span>[{
+        <span class="s">"role"</span>: <span class="s">"user"</span>,
+        <span class="s">"content"</span>: <span class="s">"What is happening in this image? List the objects you see."</span>,
+        <span class="s">"images"</span>: [<span class="s">"receipt.jpg"</span>],           <span class="c"># the image goes right in the message</span>
+    }],
+)
+<span class="f">print</span>(reply[<span class="s">"message"</span>][<span class="s">"content"</span>])</code></pre>
+  <p>The interface barely changed — an <code>images</code> field — but the capability jumped enormously. Common uses: describing images, <span class="term">visual question answering</span> (“how many people are in this photo?”), reading text in an image, understanding charts and diagrams, and extracting structured data from documents (the next lesson).</p>
+
+  <h2>Where VLMs break</h2>
+  <p>VLMs are impressive and unreliable in specific, predictable ways — and naming these is a senior signal. They’re weak at <strong>precise spatial reasoning</strong> (exact positions, “is A to the left of B”), <strong>counting</strong> many objects, and reading <strong>small or dense text</strong> reliably. And they <strong>hallucinate visually</strong> just like text models hallucinate facts — confidently describing an object that isn’t there, especially if your question presupposes it (“what breed is the dog?” when there’s no dog). The mitigations are familiar: ask neutral questions, don’t presuppose, verify critical extractions, and for exact text use OCR as a check. Treat a VLM’s reading of an image the way you treat any model output — useful, fluent, and to be verified when it matters.</p>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>A <strong>vision-language model (VLM)</strong> takes images + text and reasons over both — an LLM extended to see.</li>
+      <li>Images become tokens: <strong>split into patches → vision encoder → vectors → image tokens</strong> in the context window.</li>
+      <li>Uses: description, <strong>visual Q&amp;A</strong>, reading text, chart/diagram understanding, document extraction.</li>
+      <li>Free/local is possible — open VLMs like <strong>LLaVA via Ollama</strong>; the API just adds an <code>images</code> field.</li>
+      <li>Weaknesses: <strong>precise spatial reasoning, counting, small text, and visual hallucination</strong> — verify when it matters.</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p>You’re building a feature where users upload a photo of a whiteboard and ask questions about it. Name two things a VLM will handle well, one thing it may get wrong, and how you’d reduce the risk of that failure.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>Handles well:</strong> summarizing the general content (“this is a system-design sketch with three boxes and arrows”), and answering high-level questions about legible text or obvious structure. <strong>May get wrong:</strong> reading messy handwriting precisely, transcribing dense or small text accurately, or exact spatial claims (“the arrow goes from the second box to the fourth”) — and it may confidently invent a label that isn’t there.</p>
+        <p><strong>Reducing the risk:</strong> for anything that depends on exact text, run OCR as a second, verifiable source and cross-check; ask non-leading questions (“what text can you read?” rather than “what’s the deadline written here?”, which invites a confident guess); and, for consequential extractions, show the user what the model read and let them confirm. The general rule from the whole course applies: match the amount of trust you place in the output to the cost of it being wrong, and verify the pieces that matter.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">How does an image get into a vision-language model so it can be reasoned about with text?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) It’s split into patches, encoded into vectors, and those become image tokens placed alongside the text tokens in the context window.</span>
+        <div class="why">Correct. The image is tiled into patches, a vision encoder turns each into a vector (meaning-as-vectors, like text embeddings), and those become tokens the model attends over jointly with your words. Once it’s tokens, the familiar LLM machinery takes over.</div></li>
+      <li data-correct="false"><span class="opt">B) The model reads the raw pixel file byte by byte like text.</span>
+        <div class="why">It doesn’t consume raw bytes as characters — pixels are turned into patch vectors by a vision encoder first. Feeding an image as raw bytes wouldn’t give the model any visual understanding.</div></li>
+      <li data-correct="false"><span class="opt">C) The image is converted to a text caption first, and the model only ever sees that caption.</span>
+        <div class="why">That’s one <em>separate</em> technique (caption-then-process), but a true VLM ingests the image itself as tokens and can attend to regions — it isn’t limited to a pre-written caption.</div></li>
+      <li data-correct="false"><span class="opt">D) The model has a built-in camera that looks at your screen.</span>
+        <div class="why">Nothing looks at your screen — you explicitly pass an image into the prompt, and it’s encoded into tokens. There’s no live vision.</div></li>
+    </ul>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: why “multimodal” is a product unlock, not just a feature</div>
+    <p>The reason multimodal matters commercially is that an enormous share of real business information was never text you could query — it lived in images and documents: receipts and invoices, ID cards, insurance forms, medical scans, product photos, screenshots in support tickets, slides, engineering diagrams, shelf photos in retail. For decades, using that information meant either manual data entry or brittle, narrow computer-vision pipelines that took months to build per use case. A capable VLM collapses much of that into a prompt: “read this form and return the fields as JSON,” “is this product damaged?”, “what does this screenshot show the user doing?” Whole workflows that required humans looking at pictures become automatable.</p>
+    <p>For you, this connects directly to everything else in the course rather than replacing it. A VLM is still an LLM, so prompting (Track&nbsp;2), structured output (Track&nbsp;2), grounding and hallucination management (Tracks&nbsp;1, 3, 7), evaluation (Track&nbsp;6), and serving cost (Track&nbsp;8 — images are token-hungry and pricier) all carry over unchanged. The new skill is knowing <em>when</em> a problem is actually a vision problem, choosing between a VLM and a specialized tool like OCR, and combining them. That’s the theme of this track: not a new field, but your existing toolkit pointed at images, documents, and audio — which is exactly how the highest-value multimodal products get built.</p>
+  </div>
+
+  <p>The single most valuable business application of vision is turning documents into data. Next: <strong>document AI &amp; OCR.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

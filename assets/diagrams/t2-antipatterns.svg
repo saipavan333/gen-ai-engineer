@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 436" width="860" height="436" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="860" height="436" fill="#ffffff"/>
+<text x="430" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Anti-patterns  →  fixes</text>
+<rect x="24" y="62" width="372" height="48" rx="9" ry="9" fill="#fef1ef" stroke="#dc2626" stroke-width="2"/>
+<text x="40" y="86.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#7f1d1d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">✗  “Summarize this” (vague)</text>
+<line x1="402" y1="86.0" x2="436.0" y2="86.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="446.0,86.0 436.0,90.0 436.0,82.0" fill="#94a3b8"/>
+<rect x="452" y="62" width="384" height="48" rx="9" ry="9" fill="#eefaf0" stroke="#16a34a" stroke-width="2"/>
+<text x="470" y="86.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#14532d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">✓  Specify task, format, and length</text>
+<rect x="24" y="120" width="372" height="48" rx="9" ry="9" fill="#fef1ef" stroke="#dc2626" stroke-width="2"/>
+<text x="40" y="144.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#7f1d1d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">✗  Contradictory instructions</text>
+<line x1="402" y1="144.0" x2="436.0" y2="144.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="446.0,144.0 436.0,148.0 436.0,140.0" fill="#94a3b8"/>
+<rect x="452" y="120" width="384" height="48" rx="9" ry="9" fill="#eefaf0" stroke="#16a34a" stroke-width="2"/>
+<text x="470" y="144.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#14532d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">✓  One consistent instruction set</text>
+<rect x="24" y="178" width="372" height="48" rx="9" ry="9" fill="#fef1ef" stroke="#dc2626" stroke-width="2"/>
+<text x="40" y="202.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#7f1d1d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">✗  Only saying what NOT to do</text>
+<line x1="402" y1="202.0" x2="436.0" y2="202.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="446.0,202.0 436.0,206.0 436.0,198.0" fill="#94a3b8"/>
+<rect x="452" y="178" width="384" height="48" rx="9" ry="9" fill="#eefaf0" stroke="#16a34a" stroke-width="2"/>
+<text x="470" y="202.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#14532d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">✓  Say what TO do, with an example</text>
+<rect x="24" y="236" width="372" height="48" rx="9" ry="9" fill="#fef1ef" stroke="#dc2626" stroke-width="2"/>
+<text x="40" y="260.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#7f1d1d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">✗  Kitchen-sink mega-prompt</text>
+<line x1="402" y1="260.0" x2="436.0" y2="260.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="446.0,260.0 436.0,264.0 436.0,256.0" fill="#94a3b8"/>
+<rect x="452" y="236" width="384" height="48" rx="9" ry="9" fill="#eefaf0" stroke="#16a34a" stroke-width="2"/>
+<text x="470" y="260.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#14532d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">✓  Decompose into steps or calls</text>
+<rect x="24" y="294" width="372" height="48" rx="9" ry="9" fill="#fef1ef" stroke="#dc2626" stroke-width="2"/>
+<text x="40" y="318.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#7f1d1d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">✗  Trusting memory for facts</text>
+<line x1="402" y1="318.0" x2="436.0" y2="318.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="446.0,318.0 436.0,322.0 436.0,314.0" fill="#94a3b8"/>
+<rect x="452" y="294" width="384" height="48" rx="9" ry="9" fill="#eefaf0" stroke="#16a34a" stroke-width="2"/>
+<text x="470" y="318.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#14532d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">✓  Provide &amp; cite the context</text>
+<rect x="24" y="352" width="372" height="48" rx="9" ry="9" fill="#fef1ef" stroke="#dc2626" stroke-width="2"/>
+<text x="40" y="376.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#7f1d1d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">✗  Key instruction buried in the middle</text>
+<line x1="402" y1="376.0" x2="436.0" y2="376.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="446.0,376.0 436.0,380.0 436.0,372.0" fill="#94a3b8"/>
+<rect x="452" y="352" width="384" height="48" rx="9" ry="9" fill="#eefaf0" stroke="#16a34a" stroke-width="2"/>
+<text x="470" y="376.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#14532d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">✓  Put it first or last</text>
+<text x="430" y="422" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.3" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Most “the model is dumb” moments are really one of these anti-patterns.</text>
+</svg>

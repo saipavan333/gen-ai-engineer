@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Interview check: Frontier &amp; Responsible AI — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="16.5">
+<main class="lesson">
+
+  <span class="eyebrow">Frontier &amp; Responsible AI · Interview check</span>
+  <h1>Interview check: Frontier &amp; Responsible AI</h1>
+  <p class="lead">These questions test something subtle: not just whether you can build, but whether you have <em>judgment</em> — about new capabilities, trade-offs, and the consequences of what you ship. This is often what separates a senior hire from a mid one.</p>
+
+  <div class="box note">
+    <div class="box-label">How to use this</div>
+    <p>Answer aloud first. The bar for this track: can you reason calmly about a fast-moving field and about the human impact of your systems — showing maturity, not hype and not hand-wringing? That balance is exactly what these questions probe.</p>
+  </div>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t16-eu-ai-act.svg" alt="Risk-based regulation summary: unacceptable uses banned, high-risk uses face strict rules, limited-risk uses must disclose they are AI, minimal-risk uses are free.">
+    <figcaption>A theme of the track: match your engineering rigor — and your caution — to the stakes.</figcaption>
+  </figure>
+
+  <h2>The questions teams ask</h2>
+
+  <div class="box practice">
+    <div class="box-label">Q1 · Staying current</div>
+    <p><strong>“What are reasoning models, and when would you use one?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> They’re models trained to produce a long internal chain-of-thought before answering — spending “test-time compute” to think and self-correct, which sharply improves hard math, code, and logic. The trade is cost and latency, since you pay for all that thinking. So I’d route by difficulty: use a reasoning model for genuinely hard, low-volume problems and a cheaper/smaller model for simple, high-volume tasks — and confirm the split with evals, paying for reasoning only where it moves accuracy.</p>
+        <p><strong>Testing:</strong> That you understand the second scaling lever (inference-time compute) and treat it as a cost-aware routing decision, not a default.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q2 · The hype filter</div>
+    <p><strong>“Context windows are huge now — is RAG dead?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> No — it shifts the balance, not the principle. Large context helps for bounded, self-contained content, but pasting everything is slow, expensive, distraction-prone (“lost in the middle”), can’t handle changing data, and won’t fit most corpora. Retrieval remains how you give the model just the relevant, current slice cheaply. I’d use big context to simplify small cases and keep RAG for scale and freshness — matching the tool to the data.</p>
+        <p><strong>Testing:</strong> Whether you resist hype and reason from cost, latency, accuracy, and freshness rather than chanting a slogan.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q3 · A real design choice</div>
+    <p><strong>“Open-weight model you host vs a closed API — how do you choose?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> Trade-off. Closed APIs often have the highest peak capability and zero infra, but you send data out, pay per token, and can’t control versioning. Open-weight models you run give privacy (data stays in your environment), control, predictable cost at scale, and no lock-in, at the price of running infrastructure and sometimes lower peak capability. So: privacy-sensitive or high-volume internal tools lean open/local; low-volume features needing top capability lean closed. I’d decide per use case and validate on our own evals.</p>
+        <p><strong>Testing:</strong> That you can weigh privacy, cost, control, and capability — not just reach for the biggest API.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q4 · Responsibility (they’re watching your judgment)</div>
+    <p><strong>“We’re building an AI to screen job candidates. What are your concerns?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> This is high-risk — it affects livelihoods and can inherit bias from training data. Before shipping I’d run disaggregated evaluation (accuracy per group, plus matched résumés differing only by name/school) to detect disparate treatment, remove proxy features doing hidden discrimination, keep a human in the loop so no one is auto-rejected on the model’s word, document limitations in a model card, and build audit logs. It’s also likely regulated as high-risk, which mandates much of this. If a fairness gap can’t be closed, the responsible choice is to assist reviewers rather than automate the decision.</p>
+        <p><strong>Testing:</strong> Maturity. They want to hear disaggregated evaluation, human oversight, documentation, and the willingness to <em>not</em> fully automate a consequential decision.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q5 · Regulation literacy</div>
+    <p><strong>“How does something like the EU AI Act affect how you build?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> It’s risk-based — obligations scale with the use case’s potential harm. So the first thing I do is identify the tier: unacceptable (banned), high-risk (hiring/credit/medical — strict rules), limited (disclose it’s AI), or minimal (free). For high-risk, I build in evaluation, human oversight, documentation, and audit logging from the start, because retrofitting is painful and most of it is just responsible engineering made auditable. I’d also mind data privacy (GDPR) and sector rules. I’m not a lawyer, so for real decisions I’d loop in legal — but I design so compliance is achievable.</p>
+        <p><strong>Testing:</strong> That you know regulation is risk-tiered and that compliance overlaps heavily with evals, oversight, and logging you already do.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q6 · The meta-question</div>
+    <p><strong>“The field changes so fast — how do you keep up without burning out?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> Two layers. Fundamentals — tokens, embeddings, RAG, agents, evaluation, safety, cost — barely change, so I keep those deep; a new model still predicts tokens, hallucinates, and needs grounding and evals. Specifics — best model, prices, context sizes — churn, so I treat them as lookups and check when needed. When something new appears, I ask principled questions: what capability does it add, what does it cost, and how do I evaluate it on my use case? That “measure it on my data” reflex keeps me current and grounded instead of chasing headlines.</p>
+        <p><strong>Testing:</strong> That you have a durable, evaluation-first mindset — the thing that makes someone reliable over years, not just this quarter.</p>
+      </div>
+    </details>
+  </div>
+
+  <h2>Rapid-fire self-check</h2>
+
+  <div class="quiz">
+    <p class="quiz-q">A reasoning model and a small classifier both cost money. When is paying for the reasoning model justified?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) On genuinely hard, multi-step problems where its extra test-time thinking improves accuracy enough to justify the higher cost and latency.</span>
+        <div class="why">Correct. Reasoning models earn their cost on hard math/code/logic/planning; for simple, high-volume tasks a small model is faster, cheaper, and just as good. It’s a per-task routing decision validated by evals.</div></li>
+      <li data-correct="false"><span class="opt">B) Always — reasoning models are strictly better, so use them everywhere.</span>
+        <div class="why">They’re slower and pricier, and add no benefit on simple tasks. Using them everywhere wastes money and latency — the opposite of good routing.</div></li>
+      <li data-correct="false"><span class="opt">C) Never — thinking longer can’t improve answers.</span>
+        <div class="why">It demonstrably does on hard problems; that’s the whole point of test-time compute. The nuance is that it’s not worth it for easy tasks, not that it never helps.</div></li>
+      <li data-correct="false"><span class="opt">D) Only for formatting and classification tasks.</span>
+        <div class="why">Those simple tasks are exactly where a reasoning model is <em>wasted</em>. It pays off on complex, multi-step reasoning, not lightweight formatting.</div></li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Which is the strongest signal of responsibility when building an AI that makes consequential decisions about people?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Disaggregated evaluation across groups, human oversight, documentation, and a willingness not to fully automate if fairness can’t be assured.</span>
+        <div class="why">Correct. Measuring per-group performance, keeping humans in the loop, documenting limits, and declining to automate when it isn’t safe are the concrete practices that make a people-affecting system responsible — and they overlap with high-risk compliance requirements.</div></li>
+      <li data-correct="false"><span class="opt">B) A high overall accuracy number.</span>
+        <div class="why">Aggregate accuracy can hide serious per-group disparities. It’s necessary but nowhere near sufficient for fairness on decisions about people.</div></li>
+      <li data-correct="false"><span class="opt">C) Using the largest available model.</span>
+        <div class="why">Model size doesn’t confer fairness or oversight — a bigger model can be just as biased. Responsibility comes from measurement, oversight, and design, not scale.</div></li>
+      <li data-correct="false"><span class="opt">D) Shipping fast and fixing issues if users complain.</span>
+        <div class="why">For consequential decisions, “ship and wait for complaints” risks real harm to real people. Responsible practice catches disparities <em>before</em> deployment via disaggregated evaluation and oversight.</div></li>
+    </ul>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Can you explain each of these? (the real test)</div>
+    <ul>
+      <li><strong>Reasoning models / test-time compute</strong>, and routing by task difficulty.</li>
+      <li>Why <strong>long context complements rather than replaces RAG</strong>.</li>
+      <li><strong>Open vs closed</strong> models: privacy, cost, control vs peak capability.</li>
+      <li><strong>Bias</strong>: where it comes from, disaggregated evaluation, and layered mitigation.</li>
+      <li><strong>Risk-based regulation</strong> (tiers), and that high-risk overlaps with evals/oversight/logging.</li>
+      <li>The <strong>two-layer</strong> way to stay current: deep fundamentals, specifics as lookups, measure-it-on-my-data.</li>
+    </ul>
+  </div>
+
+  <div class="box note">
+    <div class="box-label">You’ve reached the end of the whole course</div>
+    <p>Sixteen tracks, from “what is a token?” to routing reasoning models and reasoning about the EU AI Act. You can build across text, data, images, and audio; ground, evaluate, secure, serve, and ship it; and think clearly about where the field is going and what it owes the people it affects. That is a genuinely job-ready applied GenAI engineer.</p>
+  </div>
+
+  <p>The only thing left isn’t reading — it’s doing. Build the capstones (Track&nbsp;10), run your plan and apply (Track&nbsp;11), and lean on the areas that fit your data background hardest — RAG, text-to-SQL, evals, and productionization. You’ve done the hard part of learning it. Now go build something real, and go get the role. You’re ready.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

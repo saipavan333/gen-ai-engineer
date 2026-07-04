@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Why RAG exists — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="3.1">
+<main class="lesson">
+
+  <span class="eyebrow">Track 3 · Lesson 3.1</span>
+  <h1>Why RAG exists</h1>
+  <p class="lead">This is the technique that turns a general-purpose model into <em>your</em> expert — answering from your documents, your policies, today’s data — with citations you can check. It’s the single most common architecture in production GenAI, and it’s built entirely from things you already understand.</p>
+
+  <h2>The problem RAG solves</h2>
+  <p>From Track 1 you know three hard limits of a bare LLM: it has a <strong>knowledge cutoff</strong>, it can’t see your <strong>private data</strong>, and when it doesn’t know something it <strong>hallucinates</strong> a confident guess. So how do you build a support bot that answers from <em>your</em> help docs, or an assistant that knows <em>this week’s</em> numbers? You can’t retrain the model for every change, and you can’t fit a 500-page manual into one prompt. The answer is to stop relying on the model’s memory and instead <strong>fetch the relevant facts and hand them to the model at question time</strong>.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t3-rag-vs-plain.svg" alt="Why RAG: grounded beats guessing. LLM alone: a question produces a 'plausible' answer from frozen memory that may be outdated or made up. With RAG: a question plus retrieved facts produces a grounded answer from real documents that is current, verifiable, and cited. Same model — RAG changes the inputs, not the weights.">
+    <figcaption>RAG doesn’t change the model — it changes the model’s <em>input</em>, supplying real facts so the answer is grounded instead of guessed.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p><span class="term">Retrieval-Augmented Generation</span> (RAG) is a pattern where, for each query, you <em>retrieve</em> the most relevant pieces of text from a knowledge source and put them in the prompt, so the model <em>generates</em> its answer grounded in those pieces. The collection of source text is your <span class="term">knowledge base</span>. <span class="term">Grounding</span> means the answer is based on supplied evidence rather than the model’s memory. <span class="term">Retrieval</span> is the act of finding the relevant pieces — which, as you’ll see, is just the embedding similarity from Track 1.3 at scale.</p>
+  </div>
+
+  <h2>How it works, at a glance</h2>
+  <p>The whole pattern is one loop: turn the question into a vector, find the nearest chunks in a vector store, paste them into the prompt, and let the model answer from them.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t3-rag-overview.svg" alt="Retrieval-Augmented Generation end to end: a Question is embedded into a vector, used to search a Vector DB by similarity, returning the top-k most relevant chunks. Those chunks plus the question are fed into a prompt, then the LLM produces a grounded answer with sources.">
+    <figcaption>Every RAG system is a refinement of this. The rest of the track makes each box better: smarter chunking, faster search, reranking, hybrid retrieval, tighter grounding, and evaluation.</figcaption>
+  </figure>
+
+  <div class="box example">
+    <div class="box-label">Worked example — “hello world” RAG in 20 lines (free, local)</div>
+    <p>This is a complete, runnable RAG system using a free embedding model and a free local LLM. We’ll reuse and grow it across the track.</p>
+<pre><code><span class="o">!</span>pip install sentence-transformers numpy ollama
+<span class="k">import</span> numpy <span class="k">as</span> np, ollama
+<span class="k">from</span> sentence_transformers <span class="k">import</span> SentenceTransformer
+embed <span class="o">=</span> <span class="f">SentenceTransformer</span>(<span class="s">"all-MiniLM-L6-v2"</span>)        <span class="c"># free, 384-dim</span>
+
+<span class="c"># 1) knowledge base — your chunks of text</span>
+docs <span class="o">=</span> [
+    <span class="s">"The X200 blender has a 3-year limited warranty."</span>,
+    <span class="s">"Returns are free within 30 days of delivery."</span>,
+    <span class="s">"The X200 motor is rated at 1200 watts."</span>,
+]
+D <span class="o">=</span> embed.<span class="f">encode</span>(docs, normalize_embeddings<span class="o">=</span><span class="kc">True</span>)        <span class="c"># pre-embed once</span>
+
+<span class="k">def</span> <span class="f">retrieve</span>(q, k<span class="o">=</span><span class="n">2</span>):
+    qv <span class="o">=</span> embed.<span class="f">encode</span>([q], normalize_embeddings<span class="o">=</span><span class="kc">True</span>)[<span class="n">0</span>]
+    scores <span class="o">=</span> D <span class="o">@</span> qv                                  <span class="c"># cosine (vectors are unit-length)</span>
+    top <span class="o">=</span> scores.<span class="f">argsort</span>()[::<span class="o">-</span><span class="n">1</span>][:k]                  <span class="c"># highest first</span>
+    <span class="k">return</span> [docs[i] <span class="k">for</span> i <span class="k">in</span> top]
+
+<span class="k">def</span> <span class="f">rag</span>(q):
+    chunks <span class="o">=</span> <span class="f">retrieve</span>(q)
+    context <span class="o">=</span> <span class="s">"\n"</span>.<span class="f">join</span>(<span class="s">f"[</span>{i+1}<span class="s">] </span>{c}<span class="s">"</span> <span class="k">for</span> i, c <span class="k">in</span> <span class="f">enumerate</span>(chunks))
+    prompt <span class="o">=</span> (<span class="s">"Answer ONLY from the context. Cite as [n]. "</span>
+              <span class="s">"If the answer isn't there, say you don't know.\n\n"</span>
+              <span class="s">f"Context:\n</span>{context}<span class="s">\n\nQuestion: </span>{q}<span class="s">"</span>)
+    <span class="k">return</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"llama3.2"</span>,
+                       messages<span class="o">=</span>[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: prompt}])[<span class="s">"message"</span>][<span class="s">"content"</span>]
+
+<span class="f">print</span>(<span class="f">rag</span>(<span class="s">"How long is the warranty?"</span>))   <span class="c"># -> "The warranty is 3 years [1]."</span></code></pre>
+    <p>That’s genuinely it — retrieval is one matrix multiply (cosine), generation is one grounded prompt. Everything else in this track makes these two steps robust at real scale.</p>
+  </div>
+
+  <h2>When to use RAG (and when not to)</h2>
+  <p>RAG is the right tool when you need a model to use <strong>knowledge that is large, changing, private, or must be cited</strong>. But it’s one of three ways to give a model knowledge, and a senior engineer picks deliberately:</p>
+  <div class="tbl-wrap">
+    <table class="t">
+      <tr><th>Approach</th><th>Best for</th><th>Watch out</th></tr>
+      <tr><td><strong>Long context</strong> (paste it all in)</td><td>A handful of small docs that fit comfortably in the window</td><td>Cost, latency, “lost in the middle” at scale (Track 1.4)</td></tr>
+      <tr><td><strong>RAG</strong> (retrieve, then generate)</td><td>Large/changing/private knowledge; you want citations</td><td>Quality is capped by retrieval quality (Lesson 3.8)</td></tr>
+      <tr><td><strong>Fine-tuning</strong> (train the weights)</td><td>Durable <em>behavior</em>, format, or style — not fast-changing facts</td><td>Costly to update; wrong tool for fresh knowledge (Track 5)</td></tr>
+    </table>
+  </div>
+
+  <div class="box note">
+    <div class="box-label">The mantra</div>
+    <p><strong>RAG is for knowledge; fine-tuning is for behavior.</strong> If the question is “how do I make it <em>know</em> X?”, reach for RAG. If it’s “how do I make it <em>act</em> like X?”, consider fine-tuning. Most “make it answer about our docs” problems are RAG.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>RAG fixes the LLM’s cutoff/private-data/hallucination limits by <strong>supplying relevant facts at query time</strong>.</li>
+      <li>The loop: <strong>embed the query → retrieve nearest chunks → put them in the prompt → generate grounded</strong>.</li>
+      <li>It changes the <strong>input, not the weights</strong> — so updating knowledge is just re-indexing.</li>
+      <li>Choose among <strong>long-context, RAG, and fine-tuning</strong>: RAG for large/changing/private/cited knowledge.</li>
+      <li>RAG’s ceiling is <strong>retrieval quality</strong> — if the right chunk isn’t fetched, the answer can’t be right.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your company’s product catalog changes weekly. You need a bot that answers questions about current products, with sources. Best approach?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) RAG over the catalog: re-index when it changes and have the model answer from retrieved entries with citations.</span>
+        <div class="why">Correct. Weekly-changing factual knowledge that needs citations is the textbook RAG case. Updating is just re-indexing the catalog; the model always answers from the latest retrieved entries and can cite them.</div></li>
+      <li data-correct="false"><span class="opt">B) Fine-tune the model on the catalog every week.</span>
+        <div class="why">Fine-tuning bakes knowledge into weights and would need re-running on every change — slow, costly, and it can’t easily cite sources. Fine-tuning is for behavior, not fast-changing facts.</div></li>
+      <li data-correct="false"><span class="opt">C) Paste the entire catalog into every prompt.</span>
+        <div class="why">For a large catalog this blows the context window and budget, and invites “lost in the middle.” Long context only suits a few small documents; here you want to retrieve just the relevant entries.</div></li>
+      <li data-correct="false"><span class="opt">D) Rely on the base model’s built-in knowledge.</span>
+        <div class="why">The base model has a training cutoff and never saw your private catalog — it would hallucinate. This is exactly the limitation RAG exists to remove.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Run the “hello world” RAG above, then ask it “What’s the motor wattage?” and “Do you ship to Mars?” What should each return, and why?<br>
+    <strong>2.</strong> For each, pick long-context / RAG / fine-tune: (a) answer from a 2-paragraph email, (b) answer from 10,000 support articles, (c) always reply in your brand’s quirky voice.<br>
+    <strong>3.</strong> Explain why RAG can <em>cite</em> sources but a bare LLM fundamentally cannot.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> “Motor wattage” retrieves chunk [3] and answers “1200 watts [3].” “Ship to Mars?” retrieves the nearest chunks, but none contain shipping-to-Mars info, so a well-grounded model says “I don’t know” (because you told it to abstain when the answer isn’t in context). That contrast — confident when grounded, honest when not — is the whole value of RAG.</p>
+        <p><strong>2.</strong> (a) <strong>long context</strong> — it’s tiny, just paste it. (b) <strong>RAG</strong> — far too much to paste; retrieve the relevant few. (c) <strong>fine-tune</strong> — that’s a durable behavior/style, not knowledge, so train it in (or a strong system prompt for a lighter touch).</p>
+        <p><strong>3.</strong> Citations require knowing <em>where</em> a fact came from. A bare LLM generates facts from diffuse patterns in its weights — there’s no source to point to, so any “citation” it offers is itself generated (and often fake). RAG retrieves specific, identifiable chunks, so the system knows exactly which document each fact came from and can attach a real reference. Provenance comes from retrieval, not generation.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: RAG is a systems problem, not a model problem</div>
+    <p>The seductive thing about RAG is how simple the core is — embed, search, stuff, generate. The reason it’s a <em>discipline</em> is that quality lives in the unglamorous parts around the model. Your answer can only be as good as the chunk you retrieved, which depends on how you split documents (Lesson 3.2), which embedding model you chose (3.3), how your index trades speed for accuracy (3.4), whether you rerank (3.5) or blend keyword and semantic search (3.6), and how strictly you ground and cite (3.7). And you won’t know any of it is working without measuring retrieval and answer quality (3.8). That’s the whole track.</p>
+    <p>A useful way to hold it: <strong>RAG moves the hard problem from “does the model know?” to “can I find the right text?”</strong> — and finding the right text is a search-and-data problem you can engineer, test, and improve incrementally. That’s a much better place to stand than hoping a model memorized your docs. The model becomes a reliable reasoner over evidence you control, which is exactly the relationship you want with a system that’s brilliant but an unreliable witness.</p>
+  </div>
+
+  <p>The first lever on retrieval quality is how you cut your documents into pieces. Get this wrong and nothing downstream can save you. Next: <strong>chunking strategies</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

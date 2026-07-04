@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Interview check: Agents — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="4.9">
+<main class="lesson">
+
+  <span class="eyebrow">Track 4 · Interview check</span>
+  <h1>Interview check: Agents &amp; Tool Use</h1>
+  <p class="lead">Agent questions test whether you can give a model autonomy <em>responsibly</em> — real tool use, a bounded loop, memory, and guards. Interviewers are listening for engineering maturity, not buzzwords. Here’s the set.</p>
+
+  <div class="box note">
+    <div class="box-label">The drill</div>
+    <p>Answer aloud first. The throughline: an agent is <strong>LLM + tools + a guarded loop</strong>; you reach for <strong>the least autonomy that works</strong>; and you treat tools and autonomy as a <strong>security boundary</strong>.</p>
+  </div>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t4-recap.svg" alt="The agent all together: a Goal enters an Agent (LLM) that loops reason → act → observe, inside a dashed Guardrails frame (max-steps, validate args, approve risky actions). The agent connects with double arrows to Tools (via MCP) and Memory (short plus long), and produces a Cited / final answer. Goal in; a guarded loop reasons, calls tools, and uses memory; a verified answer out.">
+    <figcaption>The whole track in one architecture: a guarded loop, tools (via MCP), and memory. If you can narrate this and name the guard on each part, you can run an agent design round.</figcaption>
+  </figure>
+
+  <h2>The questions teams ask</h2>
+
+  <div class="box practice"><div class="box-label">Q1 · Framing</div>
+    <p><strong>“What makes something an agent, and when would you <em>not</em> build one?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>An agent is an LLM in a loop that can call tools and use the results to decide its next step — decide, act, observe, repeat. I’d <em>not</em> build one when the task is fixed and single-step (a calculation, a known pipeline): an agent adds cost, latency, and failure modes for no benefit. Use the least autonomy that solves the task; reach for an agent only when the path depends on what each step reveals.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q2 · Tool calling</div>
+    <p><strong>“How does function/tool calling work end to end?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>You expose tools with schemas (name, description, typed params). The model emits a structured tool call (which tool, what args) — it never runs code itself. Your code executes the function and returns the result as a tool-role message; the model continues. Native tool-calling constrains the output so the call is valid. Tool descriptions are prompt surface — clear ones drive correct selection — and arguments are untrusted input you validate.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q3 · The loop</div>
+    <p><strong>“Explain the agent loop and why it needs a step limit.”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>The loop repeatedly asks the model what to do: it either calls a tool (whose observation is appended) or emits a final answer (ending the loop). ReAct interleaves reasoning with acting, so each step builds on the last. It needs a max-step cap because the model decides when to stop, and a confused model can loop forever — the cap guarantees termination and bounds cost. I also log the full trace; agent debugging is reading traces.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q4 · Planning &amp; memory</div>
+    <p><strong>“When do you add planning, and how do agents remember things?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>Add planning for longer, open-ended goals — decompose into steps you can inspect, approve, and parallelize; prefer plan-and-reflect when results surprise the plan. Memory has two layers: short-term is the context window (summarize old turns to fit), long-term is an external store you write to and retrieve from — which is just RAG over the agent’s own history, with episodic (events) and semantic (facts) memories. Memory’s hard part is curation, not storage.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q5 · MCP</div>
+    <p><strong>“What is MCP and why does it matter?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>MCP is an open standard for connecting AI apps to tools and data — “USB-C for AI.” A client (your agent) connects to servers exposing tools, resources, and prompts through one protocol, so you build a connector once and any compatible agent uses it. It’s become industry-standard infrastructure (broad platform support, thousands of public servers, Linux Foundation governance), which shifts agent-building toward connecting trusted servers — and makes server trust a real security question.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q6 · Multi-agent</div>
+    <p><strong>“When would you use multiple agents, and what’s the risk?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>Use specialists + an orchestrator when roles are genuinely separable (router for distinct request types, pipeline for an assembly line, parallel for independent sub-tasks). The risk is coordination overhead: handoffs are lossy, errors compound, cost and debugging difficulty rise. So single-agent-first — one well-tooled agent beats five poorly-coordinated ones; add agents only when a single agent measurably struggles.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q7 · Safety design</div>
+    <p><strong>“How do you make an autonomous agent safe for production?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>Defense in depth: bound the loop (max steps), validate tool arguments, cap cost/time (budgets, timeouts), require human approval for irreversible/high-impact actions, apply least privilege (only the tools the task needs), sandbox dangerous capabilities, and log every step (observability). Critically, hard limits live in <em>code</em>, not the prompt, because prompts can be overridden by injection. And I evaluate the agent on representative tasks on every change, since I can’t eyeball dozens of autonomous actions.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q8 · System design</div>
+    <p><strong>“Design an agent that books meetings from incoming emails.”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>Tools: <code>read_email</code>, <code>check_calendar</code>, <code>propose_times</code>, <code>create_event</code>, <code>send_reply</code>. Loop: parse the request → check availability → pick times → (book) → reply. Memory: the user’s preferences (timezone, meeting length, working hours) in long-term memory; the current email thread in short-term. Guards: validate parsed details, <em>human approval before sending replies or creating events</em> (irreversible/visible), a step cap, and least privilege (no access to unrelated mailboxes). Treat email content as untrusted (injection risk). Evaluate on sample threads with known-correct bookings.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q9 · Security</div>
+    <p><strong>“Your agent reads web pages / documents as tool results. How do you defend against prompt injection through them?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>Treat all tool/retrieved content as untrusted data, never instructions: fence it with delimiters and instruct the model to never follow instructions found inside it. Don’t expose dangerous tools to a context that ingests untrusted text, or gate them behind human approval and hard code-level limits. Apply least privilege so a hijacked agent can do little, validate outputs and actions, and log everything. It’s an arms race (full treatment in Track 7), but the core is: untrusted-in means constrained-action-out.</p>
+    </div></details>
+  </div>
+
+  <h2>Rapid-fire self-check</h2>
+
+  <div class="quiz">
+    <p class="quiz-q">The single most important reason to put a hard refund cap in code rather than the system prompt is…</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Prompts can be overridden (by injection or a confused model); code-level limits run outside the model’s influence.</span>
+        <div class="why">Correct. Security controls must live in the trusted layer. A prompt is a suggestion to a probabilistic, manipulable system; code enforces the limit no matter what the model is convinced to do.</div></li>
+      <li data-correct="false"><span class="opt">B) Prompts are slower to process.</span>
+        <div class="why">Performance isn’t the issue — enforceability is. A prompt limit could be ignored regardless of speed.</div></li>
+      <li data-correct="false"><span class="opt">C) Code is easier to write than a prompt.</span>
+        <div class="why">Not the point. The reason is that code-level guards can’t be overridden by injected instructions, unlike prompt text.</div></li>
+      <li data-correct="false"><span class="opt">D) The model can’t read numbers in prompts.</span>
+        <div class="why">It can read numbers fine. The issue is that it might be manipulated into ignoring the limit — so the limit belongs in code.</div></li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">An agent keeps looping on a task, repeating the same failing tool call. Best first debugging move?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Read the full trace (thoughts, tool calls + args, observations) to see why the action fails and isn’t recognized as failing.</span>
+        <div class="why">Correct. Agent debugging is trace-reading. The repetition usually reveals a tool error returned unclearly, a bad argument, or an observation the model can’t use — all visible in the trace, all fixable once seen.</div></li>
+      <li data-correct="false"><span class="opt">B) Increase the max-step limit.</span>
+        <div class="why">That lets it fail <em>more</em> times, not succeed. The loop indicates a stuck state; raising the cap wastes more budget without addressing the cause.</div></li>
+      <li data-correct="false"><span class="opt">C) Raise the temperature so it varies its actions.</span>
+        <div class="why">Randomness might mask the bug occasionally but won’t fix the underlying broken tool/argument/observation. Diagnose via the trace, then fix the real cause.</div></li>
+      <li data-correct="false"><span class="opt">D) Switch to a bigger model.</span>
+        <div class="why">A bigger model may paper over it, but if a tool is erroring or its result is unreadable, the right fix is in your scaffolding — found by reading the trace.</div></li>
+    </ul>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Can you explain each of these?</div>
+    <ul>
+      <li>Chatbot vs agent, and choosing the least autonomy that works.</li>
+      <li>Tool calling end to end (schema → call → execute → result back).</li>
+      <li>The ReAct loop and why it needs a step limit; reading the trace.</li>
+      <li>Planning (plan-then-execute vs reflect) and memory (short/long, = RAG).</li>
+      <li>MCP: client/server, tools/resources/prompts, why it’s a standard.</li>
+      <li>Multi-agent patterns and single-agent-first.</li>
+      <li>Failure modes and the full guard stack (code-level limits, HITL, least privilege, observability).</li>
+    </ul>
+  </div>
+
+  <p>You can now build agents that act — reliably and safely. Next, the other way to change a model’s behavior when prompting and RAG hit their limits: Track 5, Fine-tuning &amp; Adapters.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

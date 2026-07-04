@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 340" width="900" height="340" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="900" height="340" fill="#ffffff"/>
+<text x="450" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Retrieval-Augmented Generation, end to end</text>
+<rect x="30" y="66.5" width="130" height="60" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="30" y="69" width="130" height="60" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="30" y="64" width="130" height="60" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="95.0" y="94.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Question</text>
+<rect x="190" y="66.5" width="120" height="60" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="190" y="69" width="120" height="60" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="190" y="64" width="120" height="60" rx="13" ry="13" fill="url(#g_concept)" stroke="#2563eb" stroke-width="1.8"/>
+<text x="250.0" y="86.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#1e3a8a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Embed</text>
+<text x="250.0" y="99.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">→ vector</text>
+<rect x="340" y="66.5" width="150" height="60" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="340" y="69" width="150" height="60" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="340" y="64" width="150" height="60" rx="13" ry="13" fill="url(#g_accent)" stroke="#4f46e5" stroke-width="1.8"/>
+<text x="415.0" y="86.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#312e81" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Vector DB</text>
+<text x="415.0" y="99.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">similarity search</text>
+<rect x="520" y="66.5" width="150" height="60" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="520" y="69" width="150" height="60" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="520" y="64" width="150" height="60" rx="13" ry="13" fill="url(#g_key)" stroke="#d97706" stroke-width="1.8"/>
+<text x="595.0" y="86.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#7c2d12" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Top-k chunks</text>
+<text x="595.0" y="98.75" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">most relevant</text>
+<line x1="160" y1="94" x2="176.0" y2="94.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="188.0,94.0 176.0,98.8 176.0,89.2" fill="#475569"/>
+<line x1="310" y1="94" x2="326.0" y2="94.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="338.0,94.0 326.0,98.8 326.0,89.2" fill="#475569"/>
+<line x1="490" y1="94" x2="506.0" y2="94.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="518.0,94.0 506.0,98.8 506.0,89.2" fill="#475569"/>
+<line x1="595" y1="124" x2="595" y2="168" stroke="#16a34a" stroke-width="2.2" stroke-linecap="round"/>
+<line x1="595" y1="168" x2="150" y2="168" stroke="#16a34a" stroke-width="2.2" stroke-linecap="round"/>
+<line x1="150" y1="168" x2="150.0" y2="194.0" stroke="#16a34a" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="150.0,206.0 145.2,194.0 154.8,194.0" fill="#16a34a"/>
+<text x="372" y="160" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#16a34a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">feed the chunks + the question into the prompt</text>
+<rect x="40" y="210.5" width="220" height="60" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="40" y="213" width="220" height="60" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="40" y="208" width="220" height="60" rx="13" ry="13" fill="url(#g_practice)" stroke="#7c3aed" stroke-width="1.8"/>
+<text x="150.0" y="238.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#4c1d95" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Prompt: question + chunks</text>
+<rect x="300" y="210.5" width="120" height="60" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="300" y="213" width="120" height="60" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="300" y="208" width="120" height="60" rx="13" ry="13" fill="url(#g_accent)" stroke="#4f46e5" stroke-width="1.8"/>
+<text x="360.0" y="238.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#312e81" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">LLM</text>
+<rect x="460" y="210.5" width="240" height="60" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="460" y="213" width="240" height="60" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="460" y="208" width="240" height="60" rx="13" ry="13" fill="url(#g_example)" stroke="#16a34a" stroke-width="1.8"/>
+<text x="580.0" y="238.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#14532d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Grounded answer + sources</text>
+<line x1="260" y1="238" x2="286.0" y2="238.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="298.0,238.0 286.0,242.8 286.0,233.2" fill="#475569"/>
+<line x1="420" y1="238" x2="446.0" y2="238.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="458.0,238.0 446.0,242.8 446.0,233.2" fill="#475569"/>
+<text x="450" y="300" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.3" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">The model answers from retrieved facts it never trained on — and can cite them.</text>
+</svg>

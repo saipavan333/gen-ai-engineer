@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Capstone: a fine-tuned domain model — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="10.4">
+<main class="lesson">
+
+  <span class="eyebrow">Track 10 · Capstone 10.4</span>
+  <h1>Capstone: a fine-tuned domain model</h1>
+  <p class="lead">Fine-tune a small open model to adopt a specific behavior — a consistent format, tone, or narrow skill — using QLoRA on a free Colab GPU, then <em>prove</em> it improved without breaking general ability. This demonstrates Track 5 end to end and shows you can do the thing most candidates only talk about.</p>
+
+  <h2>What you’re building</h2>
+  <p>A LoRA/QLoRA fine-tune of a small model (e.g., Qwen2.5-0.5B) on a few hundred instruction→response examples that teach a behavior — say, replying in a strict support format. Then an evaluation comparing the fine-tuned model to the base on a held-out set, checking the target task improved <em>and</em> general ability didn’t regress. All free on Colab’s GPU.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t5-recap.svg" alt="The fine-tuning pipeline: Formatted data (instruction→response) → LoRA train (frozen base + adapter) → Evaluate vs base (on a held-out set) → Deploy adapter (tiny, swappable). Most fine-tuning today is LoRA/QLoRA: cheap to train, tiny to ship, easy to evaluate against the base.">
+    <figcaption>The pipeline you’re implementing. The two parts most candidates skip — good <b>data</b> and an honest <b>evaluation vs. base</b> — are exactly what make this impressive.</figcaption>
+  </figure>
+
+  <div class="box note">
+    <div class="box-label">Setup (free GPU)</div>
+    <p>In Colab: <em>Runtime → Change runtime type → GPU</em>. Then <code>!pip install transformers peft trl bitsandbytes datasets</code>. (Library APIs shift across versions — treat the code as the shape and adjust arg names if needed.)</p>
+  </div>
+
+  <h2>Step 1 — Data: your behavior as instruction→response pairs</h2>
+  <div class="code-label"><span class="dot"></span><span class="fname">data.py</span></div>
+<pre><code><span class="k">from</span> datasets <span class="k">import</span> Dataset
+<span class="c"># ~200-500 clean, CONSISTENT examples in the exact format you want (Track 5.3)</span>
+rows <span class="o">=</span> [
+    {<span class="s">"messages"</span>: [
+        {<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: <span class="s">"Customer: my order is late and I'm upset."</span>},
+        {<span class="s">"role"</span>: <span class="s">"assistant"</span>, <span class="s">"content"</span>: <span class="s">"I'm sorry for the delay. Here's what I'll do: 1) track it now, 2) ..."</span>},
+    ]},
+    <span class="c"># ... your domain's voice/format, repeated consistently ...</span>
+]
+train <span class="o">=</span> Dataset.<span class="f">from_list</span>(rows[:<span class="o">-</span><span class="n">40</span>])         <span class="c"># hold out 40 for eval — NEVER train on these</span>
+held_out <span class="o">=</span> rows[<span class="o">-</span><span class="n">40</span>:]</code></pre>
+
+  <h2>Step 2 — QLoRA fine-tune (free GPU)</h2>
+  <div class="code-label"><span class="dot"></span><span class="fname">train.py</span></div>
+<pre><code><span class="k">import</span> torch
+<span class="k">from</span> transformers <span class="k">import</span> AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+<span class="k">from</span> peft <span class="k">import</span> LoraConfig
+<span class="k">from</span> trl <span class="k">import</span> SFTTrainer, SFTConfig
+
+model_id <span class="o">=</span> <span class="s">"Qwen/Qwen2.5-0.5B"</span>
+bnb <span class="o">=</span> <span class="f">BitsAndBytesConfig</span>(load_in_4bit<span class="o">=</span><span class="kc">True</span>, bnb_4bit_quant_type<span class="o">=</span><span class="s">"nf4"</span>,
+                         bnb_4bit_compute_dtype<span class="o">=</span>torch.bfloat16)       <span class="c"># QLoRA</span>
+model <span class="o">=</span> AutoModelForCausalLM.<span class="f">from_pretrained</span>(model_id, quantization_config<span class="o">=</span>bnb, device_map<span class="o">=</span><span class="s">"auto"</span>)
+tok <span class="o">=</span> AutoTokenizer.<span class="f">from_pretrained</span>(model_id)
+
+trainer <span class="o">=</span> <span class="f">SFTTrainer</span>(model<span class="o">=</span>model, train_dataset<span class="o">=</span>train,
+    peft_config<span class="o">=</span><span class="f">LoraConfig</span>(r<span class="o">=</span><span class="n">16</span>, lora_alpha<span class="o">=</span><span class="n">32</span>, task_type<span class="o">=</span><span class="s">"CAUSAL_LM"</span>),
+    args<span class="o">=</span><span class="f">SFTConfig</span>(output_dir<span class="o">=</span><span class="s">"adapter"</span>, num_train_epochs<span class="o">=</span><span class="n">3</span>, learning_rate<span class="o">=</span><span class="n">2e-4</span>))
+trainer.<span class="f">train</span>()
+trainer.<span class="f">save_model</span>(<span class="s">"adapter"</span>)                <span class="c"># a few MB — the whole "fine-tune"</span></code></pre>
+
+  <h2>Step 3 — Evaluate vs. base (the part that proves it)</h2>
+  <div class="code-label"><span class="dot"></span><span class="fname">compare.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">format_score</span>(model, examples):
+    <span class="s">"""Does the reply match the taught format? (e.g., starts with apology + numbered steps)"""</span>
+    hits <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> ex <span class="k">in</span> examples:
+        out <span class="o">=</span> <span class="f">generate</span>(model, ex[<span class="s">"messages"</span>][<span class="n">0</span>][<span class="s">"content"</span>])
+        <span class="k">if</span> <span class="f">looks_like_target_format</span>(out): hits <span class="o">+=</span> <span class="n">1</span>      <span class="c"># your format check (or LLM-judge)</span>
+    <span class="k">return</span> hits <span class="o">/</span> <span class="f">len</span>(examples)
+
+<span class="c"># 1) target task: did the FORMAT improve on held-out examples?</span>
+<span class="f">print</span>(<span class="s">"format — base :"</span>, <span class="f">format_score</span>(base_model, held_out))    <span class="c"># e.g. 0.40</span>
+<span class="f">print</span>(<span class="s">"format — tuned:"</span>, <span class="f">format_score</span>(tuned_model, held_out))   <span class="c"># e.g. 0.92  ← improved</span>
+
+<span class="c"># 2) general ability: did it REGRESS? (catch catastrophic forgetting — Track 5.6)</span>
+general <span class="o">=</span> [<span class="s">"Translate 'hello' to French."</span>, <span class="s">"What is 12 * 8?"</span>, <span class="s">"Summarize: ..."</span>]
+<span class="f">print</span>(<span class="s">"general — base :"</span>, <span class="f">general_score</span>(base_model, general))
+<span class="f">print</span>(<span class="s">"general — tuned:"</span>, <span class="f">general_score</span>(tuned_model, general))  <span class="c"># should NOT be much lower</span></code></pre>
+
+  <div class="box key">
+    <div class="box-label">What makes this stand out</div>
+    <ul>
+      <li>You actually <strong>fine-tuned a model</strong> — most candidates have only read about it.</li>
+      <li>You used <strong>QLoRA on a free GPU</strong> — demonstrating you know the modern, accessible method.</li>
+      <li>You <strong>evaluated against the base</strong> on held-out data AND checked for regression — the rigorous, honest part.</li>
+      <li>You can articulate <strong>why you fine-tuned</strong> (behavior, not knowledge) vs. when you’d use RAG instead (Track 5.1).</li>
+      <li>The adapter is a tiny artifact you can show and explain.</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Extensions</div>
+    <p><strong>1.</strong> Replace the format check with an <strong>LLM-as-judge</strong> (reuse your harness from 10.3) for richer quality scoring.<br>
+    <strong>2.</strong> Demonstrate <strong>prompt-shrinking</strong> (Track 8.7): show the fine-tuned model needs a shorter prompt than the base to get the same behavior — quantify the token savings.<br>
+    <strong>3.</strong> Try <strong>distillation</strong> (Track 5.1 deep dive): use a bigger model to generate training data for the small one.<br>
+    <strong>4.</strong> Combine with <strong>RAG</strong> (10.1): fine-tune for format/tone, retrieve for facts — the production pattern.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> The interview narrative</summary>
+      <div class="sol-body">
+        <p>“I QLoRA-fine-tuned a small open model on a few hundred clean examples to bake in a consistent support format, on a free GPU. The key parts: curated, consistent data (the real work), and an honest evaluation — I compared the fine-tune to the base on held-out examples, confirmed the target format improved a lot, and verified general ability didn’t regress (catastrophic forgetting). I chose fine-tuning because the need was durable <em>behavior</em>, not changing facts — for those I’d use RAG, and in production I’d combine both.” This proves you can execute fine-tuning <em>and</em> reason about when it’s the right tool — the senior framing from Track 5.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your fine-tune improves the target format from 0.40 → 0.92. Before you call it a success, what must you also check?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) That general ability didn’t regress — score both models on diverse off-task prompts to rule out catastrophic forgetting.</span>
+        <div class="why">Correct. A big target-task gain can hide a loss of general ability from over-specialization. Until you’ve confirmed the fine-tune didn’t get worse at off-task behavior, you don’t know it’s a net win — always measure both the target task and general ability against the base.</div></li>
+      <li data-correct="false"><span class="opt">B) Nothing — a 0.40 → 0.92 jump is conclusive.</span>
+        <div class="why">A target jump alone can mask a regression elsewhere. Shipping on one metric is how teams deploy a model that’s great at one thing and worse at everything else.</div></li>
+      <li data-correct="false"><span class="opt">C) That the adapter file is small.</span>
+        <div class="why">Adapter size is an efficiency detail, irrelevant to whether the model is better overall. The real check is general-ability regression.</div></li>
+      <li data-correct="false"><span class="opt">D) That training loss reached zero.</span>
+        <div class="why">Near-zero training loss is a warning sign (memorization), not a success criterion. Held-out target quality and general ability are what matter.</div></li>
+    </ul>
+  </div>
+
+  <p>You can build, measure, agent-ify, and fine-tune. The final capstone makes it all fast and cheap enough to actually run. Next: <strong>a cost &amp; latency-optimized chat service</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Foundations Q&amp;A — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="9.1">
+<main class="lesson">
+
+  <span class="eyebrow">Track 9 · Lesson 9.1</span>
+  <h1>Foundations Q&amp;A</h1>
+  <p class="lead">Fundamentals are table stakes: every candidate is expected to know tokens, embeddings, context, and sampling cold. This is a rapid-fire bank to make those answers automatic. Say each one aloud before opening it — fluency, not recognition, is the goal.</p>
+
+  <div class="box note">
+    <div class="box-label">How interviewers grade fundamentals</div>
+    <p>They’re checking that you <em>understand the machine</em>, not that you memorized definitions. Lead with the mechanism (next-token prediction), then the practical consequence (cost, limits, failure modes). A crisp, consequence-aware answer beats a textbook one every time.</p>
+  </div>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t1-recap.svg" alt="The whole engine in one picture: Your text → Tokenize (1.2) → Embeddings + attention inside the model (1.3-1.4) → Next-token odds (1.1) → Sample (1.5), then append the chosen token and repeat — autoregression.">
+    <figcaption>If you can narrate this picture end to end, you can answer most foundations questions. (Full depth in Tracks 1–2.)</figcaption>
+  </figure>
+
+  <h2>The bank</h2>
+
+  <div class="box practice"><div class="box-label">Q · core</div><p><strong>“In one breath, how does an LLM generate text?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Answer</summary><div class="sol-body"><p>It predicts the next token given the tokens so far — a probability over its whole vocabulary — then samples one, appends it, and repeats (autoregression). All its “knowledge” is patterns learned by doing this over huge amounts of text.</p></div></details></div>
+
+  <div class="box practice"><div class="box-label">Q · tokens</div><p><strong>“What’s a token, and why care about counts?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Answer</summary><div class="sol-body"><p>A chunk of text (often a word-piece) from the model’s fixed vocabulary, produced by a sub-word tokenizer (e.g., BPE). Tokens are the unit of cost (billing), context limits (windows), and latency. ~4 chars/token in English; code and many languages cost more. They also explain why models miscount letters — they see tokens, not characters.</p></div></details></div>
+
+  <div class="box practice"><div class="box-label">Q · embeddings</div><p><strong>“What’s an embedding and how do you compare two?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Answer</summary><div class="sol-body"><p>A vector representing a text’s meaning, from an embedding model trained so similar meanings get similar directions. Compare with cosine similarity (+1 similar, 0 unrelated, −1 opposite). They power semantic search and RAG — matching meaning even without shared words. (Distinct from the model’s internal token representations; for retrieval we mean text/sentence embeddings.)</p></div></details></div>
+
+  <div class="box practice"><div class="box-label">Q · context</div><p><strong>“What is the context window, and what happens when you exceed it?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Answer</summary><div class="sol-body"><p>The max tokens the model can process at once, shared by instructions, history, retrieved context, and the output. Exceed it and the oldest tokens get truncated (chat “memory” is just re-sent history). Bigger isn’t free — more cost, more latency, and “lost in the middle,” which motivates RAG over dumping everything in.</p></div></details></div>
+
+  <div class="box practice"><div class="box-label">Q · attention</div><p><strong>“What is attention, and why is long context expensive?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Answer</summary><div class="sol-body"><p>Attention lets each token weigh how much every other token matters, which is how references and meaning get resolved (the transformer’s core). Because every token compares against every other, the work scales with the square of sequence length — doubling context roughly quadruples attention cost. That’s the deep reason long prompts are slow and pricey.</p></div></details></div>
+
+  <div class="box practice"><div class="box-label">Q · sampling</div><p><strong>“Explain temperature and top-p; settings for extraction vs brainstorming?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Answer</summary><div class="sol-body"><p>Temperature reshapes the probability distribution before sampling — low sharpens toward the top token (deterministic), high flattens it (varied). Top-p (nucleus) samples from the smallest set of tokens summing to p, adapting to confidence. Extraction/JSON/classification → temperature 0 (consistency); brainstorming → ~0.8–1.0 with top-p ~0.9 (diversity).</p></div></details></div>
+
+  <div class="box practice"><div class="box-label">Q · hallucination</div><p><strong>“Why do LLMs hallucinate, and how do you reduce it?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Answer</summary><div class="sol-body"><p>Because they generate the most <em>plausible</em> next tokens, not the most <em>true</em>, with no built-in “I don’t know” — and confidence is uncorrelated with correctness. Reduce it by grounding in retrieved real data (RAG) with “answer only from context + cite,” giving tools for facts/math, lowering temperature, validating outputs, and showing sources. You manage hallucination with architecture, not by asking the model to be accurate.</p></div></details></div>
+
+  <div class="box practice"><div class="box-label">Q · base vs instruct</div><p><strong>“Base model vs instruct/chat model?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Answer</summary><div class="sol-body"><p>A base model is the raw next-token predictor from pre-training — it just continues text. An instruct/chat model is a base model further trained on instruction–response examples and shaped with human preferences (RLHF/DPO), so it follows directions like an assistant. Same engine, extra alignment training.</p></div></details></div>
+
+  <div class="box practice"><div class="box-label">Q · prompting</div><p><strong>“Your classifier returns inconsistent formats. What do you do?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Answer</summary><div class="sol-body"><p>Pin the output: add a few-shot examples in the exact format, specify the allowed labels and shape explicitly, and use temperature 0. Inconsistency is unspecified format — specificity narrows the distribution. For machine consumption, use JSON mode + validate + retry.</p></div></details></div>
+
+  <div class="box practice"><div class="box-label">Q · CoT</div><p><strong>“When does chain-of-thought help, and can you trust the reasoning?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Answer</summary><div class="sol-body"><p>It helps on multi-step tasks because each written step becomes context the answer builds on, instead of a one-token leap. But the reasoning is generated text — it can look logical and be wrong, and isn’t guaranteed to be the real cause. So use CoT for accuracy but verify high-stakes results (tools, checks, self-consistency); skip it for simple single-step tasks where it just adds cost.</p></div></details></div>
+
+  <div class="box practice"><div class="box-label">Q · judgment</div><p><strong>“Name a task you would NOT hand to an LLM.”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Answer</summary><div class="sol-body"><p>Anything where a confident wrong answer is costly and the truth isn’t in the prompt — e.g., computing an exact refund from billing rules, or a specific medical/legal determination. The model may produce a fluent, wrong answer with no uncertainty signal. I’d route the exact computation to deterministic code/tools, ground it in authoritative data and verify, or keep a human in the loop. Knowing when <em>not</em> to use an LLM is the senior signal.</p></div></details></div>
+
+  <div class="quiz">
+    <p class="quiz-q">An interviewer asks the “one-line” LLM description as a warm-up. Which answer signals the strongest mental model?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) “A next-token predictor that generates text by repeatedly sampling from a probability distribution over its vocabulary.”</span>
+        <div class="why">Correct — it leads with the actual mechanism, which is what everything else (cost, limits, hallucination) follows from. This framing lets you answer follow-ups crisply.</div></li>
+      <li data-correct="false"><span class="opt">B) “A database that retrieves the best stored answer.”</span>
+        <div class="why">Wrong model — no retrieval of stored answers happens; it computes a distribution from weights. This framing leads to wrong predictions about its behavior.</div></li>
+      <li data-correct="false"><span class="opt">C) “An AI that understands language like a human.”</span>
+        <div class="why">Overclaims and obscures the mechanism; it predicts plausible text, which is exactly why it can be confidently wrong. Interviewers want precision, not hype.</div></li>
+      <li data-correct="false"><span class="opt">D) “A reasoning engine that always computes the correct answer.”</span>
+        <div class="why">False — it optimizes for plausible, not provably correct, output. This is the opposite of the truth and signals a shaky mental model.</div></li>
+    </ul>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Delivery tips</div>
+    <ul>
+      <li><strong>Lead with the mechanism</strong>, then the practical consequence (cost / limit / failure mode).</li>
+      <li>Reach for the <strong>recap picture</strong>: text → tokens → embeddings+attention → next-token odds → sample → repeat.</li>
+      <li>Show <strong>judgment</strong>: mention when <em>not</em> to use an LLM, and how you’d verify.</li>
+      <li>Keep it <strong>tight</strong> — 30–45 seconds per answer, then stop and let them follow up.</li>
+    </ul>
+  </div>
+
+  <p>Fundamentals down. Now the most heavily-tested area in modern GenAI interviews. Next: <strong>RAG Q&amp;A</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

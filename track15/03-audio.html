@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Audio: speech-to-text &amp; TTS — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="15.3">
+<main class="lesson">
+
+  <span class="eyebrow">Multimodal AI · Lesson 15.3</span>
+  <h1>Audio: speech-to-text &amp; TTS</h1>
+  <p class="lead">Voice is how people most naturally communicate, and it’s now cheap to work with. This lesson covers turning speech into text, text into speech, and how they combine with an LLM to build voice applications — meeting notes, assistants, call analytics.</p>
+
+  <h2>The two halves of audio AI</h2>
+  <p><span class="term">Speech-to-text</span> (STT, or automatic speech recognition) turns spoken audio into a transcript. The open model <strong>Whisper</strong> made this remarkably good and completely free — it runs locally or on free Colab, handles many languages, and is robust to accents and background noise. <span class="term">Text-to-speech</span> (TTS) does the reverse: turns text into natural-sounding spoken audio, so your system can talk back. Free/open TTS options exist too. Neither is an LLM — they’re specialized audio models — but they’re the ears and mouth you bolt onto an LLM to make it conversational by voice.</p>
+  <p>Transcription with Whisper is a couple of lines:</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">transcribe.py</span></div>
+<pre><code><span class="k">import</span> whisper                       <span class="c"># open, free, runs on CPU or free Colab GPU</span>
+
+model <span class="o">=</span> whisper.<span class="f">load_model</span>(<span class="s">"base"</span>)   <span class="c"># small model, no API, no cost</span>
+result <span class="o">=</span> model.<span class="f">transcribe</span>(<span class="s">"meeting.mp3"</span>)
+<span class="f">print</span>(result[<span class="s">"text"</span>])              <span class="c"># -> the full transcript</span></code></pre>
+
+  <h2>The voice-app pipeline</h2>
+  <p>Most voice applications are a pipeline of parts you now recognize, chained end to end: <strong>audio in → STT (transcript) → LLM (understand &amp; respond) → answer text → TTS (audio out)</strong>. A voice assistant hears you (Whisper), thinks (an LLM, maybe with RAG or tools), and speaks the reply (TTS). Because the middle is just an LLM taking text, <em>everything you already know applies</em> — prompting, RAG for grounding, agents for actions, guardrails, evaluation. Audio models simply convert between sound and text at the two ends.</p>
+  <p>This unlocks a lot with little new code: <strong>meeting transcription and summarization</strong> (Whisper → LLM “summarize and list action items”), <strong>call-center analytics</strong> (transcribe calls → classify sentiment, extract topics), <strong>voice assistants</strong>, and <strong>accessibility</strong> tools. A meeting-notes tool — record, transcribe, summarize into decisions and action items — is a genuinely useful weekend project built entirely from free parts, and a great portfolio piece.</p>
+
+  <h2>What makes voice hard</h2>
+  <p>Two honest challenges. <strong>Accuracy degrades</strong> on heavy accents, cross-talk, jargon, and noisy audio, and STT usually doesn’t know <em>who</em> spoke (separating speakers is “diarization,” a harder add-on). Errors in the transcript then propagate into everything downstream — a misheard word can flip a summary. <strong>Latency</strong> is the big one for <em>real-time</em> voice: a back-and-forth conversation feels broken if there’s a long pause, and now you have three models in series (STT + LLM + TTS), each adding delay. Real-time voice agents fight hard for every millisecond — streaming each stage, starting the LLM before the user finishes, and speaking the reply as it’s generated. For non-real-time uses (transcribe a recording, summarize later), latency doesn’t matter and the whole thing is easy.</p>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li><strong>Speech-to-text</strong> (Whisper — free/open) makes transcripts; <strong>text-to-speech</strong> makes audio replies. Neither is an LLM.</li>
+      <li>Voice apps are a pipeline: <strong>audio → STT → LLM → TTS → audio</strong>; the LLM middle uses everything you already know.</li>
+      <li>Big, easy wins: <strong>meeting notes, call analytics, voice assistants, accessibility</strong> — buildable from free parts.</li>
+      <li><strong>Transcription errors propagate</strong> downstream; accents, noise, and speaker separation are real accuracy challenges.</li>
+      <li><strong>Real-time latency</strong> is hard (three models in series) — stream each stage; non-real-time uses are simple.</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p>Sketch a free “meeting assistant” that produces a summary and action items from a recording. What are the stages, and which single failure would most degrade the final summary — and why?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>Stages:</strong> (1) record/upload the audio; (2) transcribe with Whisper; (3) send the transcript to an LLM with a prompt like “summarize this meeting and list decisions and action items with owners”; (4) return the summary (optionally speak it with TTS). Every part is free and local.</p>
+        <p><strong>The failure that hurts most:</strong> a poor <em>transcript</em>. Everything downstream reads the transcript, not the audio, so if STT mangles names, numbers, or key terms (common with accents, jargon, or cross-talk), the LLM will faithfully summarize the wrong words — a confident summary of a garbled input. That’s why the transcription stage is worth the most care: use a good Whisper model size, clean the audio if possible, and for high-stakes meetings let a human skim the transcript before trusting the summary. It’s the same “garbage in, confident garbage out” lesson as document extraction — the model can only reason about what it’s given, so the quality of the conversion step (audio→text, or image→text) caps the quality of everything after it.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">In a voice assistant built as STT → LLM → TTS, why does the transcription (STT) stage deserve special care?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Every later stage reasons over the transcript, so STT errors propagate — a misheard word can corrupt the LLM’s response and the spoken reply.</span>
+        <div class="why">Correct. The LLM never hears the audio; it only sees the transcript. If STT mishears “can’t” as “can,” the model reasons over the wrong input and produces a confident, wrong answer that TTS then speaks. Errors at the first conversion step cascade through the whole pipeline.</div></li>
+      <li data-correct="false"><span class="opt">B) Because STT is the only part that uses an LLM.</span>
+        <div class="why">STT isn’t an LLM — it’s a specialized speech model (like Whisper). The LLM is the middle stage. STT matters because of error propagation, not because it’s the model.</div></li>
+      <li data-correct="false"><span class="opt">C) Because TTS can’t work unless STT is perfect.</span>
+        <div class="why">TTS just speaks whatever text it’s given — it works regardless of STT quality. The issue is that poor STT feeds bad text into the LLM (and ultimately TTS), not that TTS fails.</div></li>
+      <li data-correct="false"><span class="opt">D) It doesn’t — the LLM fixes any transcription mistakes automatically.</span>
+        <div class="why">The LLM can’t reliably recover information that was mistranscribed — it has no access to the original audio. It may even lend false confidence to the error by summarizing it fluently. STT quality genuinely caps the pipeline.</div></li>
+    </ul>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: pipelines vs end-to-end, and the latency budget</div>
+    <p>The STT → LLM → TTS pipeline is the pragmatic, buildable way to do voice today, and it has a real virtue: each stage is separately swappable, testable, and gradable. You can evaluate transcription accuracy on its own, improve the LLM prompt without touching audio, and pick a TTS voice independently — the modularity that makes systems maintainable. Its cost is <em>latency</em>: three models in series, each adding delay, which is fine for batch jobs (transcribe a recording, summarize overnight) and challenging for live conversation. The frontier is moving toward more <em>end-to-end</em> speech models that take audio in and produce audio out directly, cutting the hops and enabling near-instant, natural back-and-forth — worth knowing exists, and a good thing to mention as “where this is heading.”</p>
+    <p>For real-time voice specifically, think in a <strong>latency budget</strong>, which ties straight back to Track&nbsp;8. Natural conversation wants a response within a few hundred milliseconds, and you’re spending that budget across capturing speech, transcribing, thinking, and speaking. The techniques are all streaming: transcribe incrementally as the person talks, detect when they’ve stopped, start the LLM immediately, stream its tokens into TTS so speech begins before the full answer exists, and keep prompts tight so time-to-first-token is low. Designing a voice agent is largely a latency-engineering problem wrapped around an LLM — which, again, is systems work you’re well suited to. The lesson of this whole track holds: multimodal doesn’t replace your skills, it points them at richer inputs, and the winners are the people who can make the plumbing fast, accurate, and reliable.</p>
+  </div>
+
+  <p>You can now bring vision and audio into your systems. The natural next step is retrieving over them. Next: <strong>multimodal RAG.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

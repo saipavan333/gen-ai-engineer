@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 300" width="840" height="300" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="840" height="300" fill="#ffffff"/>
+<text x="420" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Chatbot answers; agent acts</text>
+<text x="200" y="62" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14.5" fill="#2563eb" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Chatbot</text>
+<rect x="70" y="86.5" width="110" height="54" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="70" y="89" width="110" height="54" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="70" y="84" width="110" height="54" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="125.0" y="111.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Question</text>
+<rect x="70" y="170.5" width="110" height="54" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="70" y="173" width="110" height="54" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="70" y="168" width="110" height="54" rx="13" ry="13" fill="url(#g_example)" stroke="#16a34a" stroke-width="1.8"/>
+<text x="125.0" y="195.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#14532d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Answer</text>
+<rect x="240" y="122.5" width="96" height="54" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="240" y="125" width="96" height="54" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="240" y="120" width="96" height="54" rx="13" ry="13" fill="url(#g_accent)" stroke="#4f46e5" stroke-width="1.8"/>
+<text x="288.0" y="147.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="15" fill="#312e81" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">LLM</text>
+<line x1="180" y1="111" x2="226.59629166637495" y2="126.26430244243318" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="238.0,130.0 225.1,130.8 228.1,121.7" fill="#475569"/>
+<line x1="238" y1="164" x2="193.0297403602167" y2="183.27296841704998" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="182.0,188.0 191.1,178.9 194.9,187.7" fill="#475569"/>
+<text x="640" y="62" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14.5" fill="#15803d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Agent</text>
+<rect x="430" y="122.5" width="96" height="54" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="430" y="125" width="96" height="54" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="430" y="120" width="96" height="54" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="478.0" y="147.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Goal</text>
+<rect x="580" y="94.5" width="150" height="50" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="580" y="97" width="150" height="50" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="580" y="92" width="150" height="50" rx="13" ry="13" fill="url(#g_concept)" stroke="#2563eb" stroke-width="1.8"/>
+<text x="655.0" y="117.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1e3a8a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Think</text>
+<rect x="580" y="158.5" width="150" height="50" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="580" y="161" width="150" height="50" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="580" y="156" width="150" height="50" rx="13" ry="13" fill="url(#g_key)" stroke="#d97706" stroke-width="1.8"/>
+<text x="655.0" y="181.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#7c2d12" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Act (tool)</text>
+<rect x="770" y="126.5" width="50" height="50" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="770" y="129" width="50" height="50" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="770" y="124" width="50" height="50" rx="13" ry="13" fill="url(#g_example)" stroke="#16a34a" stroke-width="1.8"/>
+<text x="795.0" y="149.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="18" fill="#14532d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">✓</text>
+<line x1="526" y1="140" x2="566.7998527255633" y2="124.30774895170643" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="578.0,120.0 568.5,128.8 565.1,119.8" fill="#475569"/>
+<line x1="655" y1="142" x2="655.0" y2="142.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="655.0,154.0 650.2,142.0 659.8,142.0" fill="#475569"/>
+<path d="M 578 181 Q 540 181 540 140 Q 540 110 578 110" fill="none" stroke="#94a3b8" stroke-width="2"/>
+<polygon points="578,110 568,104 569,116" fill="#94a3b8"/>
+<text x="540" y="220" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">observe &amp; loop</text>
+<line x1="730" y1="150" x2="756.0" y2="150.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="768.0,150.0 756.0,154.8 756.0,145.2" fill="#475569"/>
+<text x="420" y="285" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.3" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">An agent runs a loop — think, call a tool, observe the result — until the goal is done.</text>
+</svg>

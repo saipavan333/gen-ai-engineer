@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chain-of-thought &amp; reasoning — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="2.3">
+<main class="lesson">
+
+  <span class="eyebrow">Track 2 · Lesson 2.3</span>
+  <h1>Chain-of-thought &amp; reasoning</h1>
+  <p class="lead">For anything multi-step — math, logic, planning, careful analysis — one tweak reliably boosts accuracy: ask the model to reason before it answers. It’s simple, it’s backed by how the engine works, and it’s a staple of real prompts.</p>
+
+  <h2>Why blurting fails</h2>
+  <p>Recall from Track 1 that the model generates one token at a time, each conditioned on everything so far. If you demand the final answer immediately, the model must commit to an answer token having done no intermediate work — there’s nowhere for the “calculation” to happen. For a one-step lookup that’s fine. For a multi-step problem, it’s like being forced to shout the answer to a word problem before working it out: you’ll often be wrong. Letting the model write the steps first gives those intermediate results a place to live — the context — which the final answer can then build on.</p>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p><span class="term">Chain-of-thought</span> (CoT) prompting asks the model to produce its intermediate reasoning steps <em>before</em> the final answer. The simplest form is <span class="term">zero-shot CoT</span>: just add “Let’s think step by step.” The stronger form is <span class="term">few-shot CoT</span>: show a couple of examples that include worked reasoning, so the model imitates that reasoning style on the new problem.</p>
+  </div>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t2-cot-compare.svg" alt="Give the model room to think. Answer directly: the apple word problem produces '6' in one leap, which is wrong. Think step by step: the same problem with 'Let's think step by step' produces the worked steps (Start 3 apples; Eat 1 → 2; Buy 2 bags of 4 → 2+8=10; Give away half → 5; Answer 5) which is correct.">
+    <figcaption>Same model, same question. The only difference is an invitation to reason — and that’s enough to flip a wrong answer to a right one.</figcaption>
+  </figure>
+
+  <p>The reason this works follows directly from autoregression: each reasoning step you let the model write becomes part of the context for the next token, so the final answer is computed from real intermediate results instead of produced in a single risky leap.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t2-cot-why.svg" alt="Why it works: a chain from Question to Step 1 to Step 2 to Step 3 to Answer, each feeding the next. Each written step is appended to the context, so the final token is computed from real intermediate results, not guessed in a single leap.">
+    <figcaption>Reasoning out loud literally builds a scratchpad in the context window that the answer can lean on.</figcaption>
+  </figure>
+
+  <h2>Feel it on a trick question</h2>
+  <p>Here’s a problem engineered to trip up fast thinking (humans fail it too). Try “answer fast,” then “reason it out.”</p>
+
+  <div class="demo" id="cot-demo">
+    <div class="demo-head"><span class="tag">Live demo</span><h4>Reason vs. blurt</h4></div>
+    <p class="demo-hint"><b>A bat and a ball cost $1.10 together. The bat costs $1.00 more than the ball. How much is the ball?</b></p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="run" id="cot-fast" style="background:#fef1ef;color:#b91c1c">Answer fast</button>
+      <button class="run" id="cot-slow">Reason it out</button>
+    </div>
+    <div class="out" id="cot-out" style="margin-top:14px;min-height:60px"></div>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — CoT, then extract just the answer (free, Ollama)</div>
+    <p>In production you often want the reasoning to happen but only <em>use</em> the final answer. The pattern: ask it to reason, then put the answer on a predictable last line you can parse. (Uses the <code>ask()</code> helper from 2.1.)</p>
+<pre><code>q <span class="o">=</span> <span class="s">"A shirt is $40. It is 25% off, then 8% sales tax is added. What is the final price?"</span>
+
+<span class="c"># Direct: the model may slip on the multi-step arithmetic</span>
+<span class="f">print</span>(<span class="f">ask</span>(q <span class="o">+</span> <span class="s">" Answer with just the number."</span>))
+
+<span class="c"># Chain-of-thought, with a parseable final line</span>
+prompt <span class="o">=</span> q <span class="o">+</span> <span class="s">"""
+Think step by step. Then, on the last line, write exactly:
+Final: &lt;number&gt;"""</span>
+out <span class="o">=</span> <span class="f">ask</span>(prompt)
+<span class="f">print</span>(out)                                  <span class="c"># full reasoning, for your eyes/logs</span>
+final <span class="o">=</span> out.<span class="f">strip</span>().<span class="f">splitlines</span>()[<span class="o">-</span><span class="n">1</span>]        <span class="c"># grab just "Final: 32.40"</span>
+<span class="f">print</span>(<span class="s">"parsed →"</span>, final)</code></pre>
+    <p>$40 × 0.75 = $30, then × 1.08 = <strong>$32.40</strong>. The reasoning makes the model far more likely to get there, and the “Final:” convention lets your code use the answer without the prose. This “reason in a scratchpad, then emit a clean answer” pattern is everywhere in production.</p>
+  </div>
+
+  <div class="box warn">
+    <div class="box-label">Don’t over-trust the reasoning</div>
+    <p>The steps the model writes are still <em>generated text</em>, not a verified proof. A chain can look perfectly logical and still reach a wrong answer, and the stated reasoning isn’t guaranteed to be the “real” reason for the output. CoT improves accuracy on average; it doesn’t make the model correct or honest by construction. For anything high-stakes, verify the result (tools, a checker, or self-consistency below) rather than trusting the narration.</p>
+  </div>
+
+  <div class="box note">
+    <div class="box-label">A word on “reasoning models”</div>
+    <p>Some newer models are trained to do this step-by-step reasoning internally and may hide it, exposing only the final answer. That’s great, but it doesn’t make this lesson obsolete: you’ll still write CoT-style prompts for many models, you’ll often <em>want</em> the explicit steps so you can inspect or verify them, and the underlying idea — give multi-step problems room to be worked — is exactly what those models were trained to do. Understanding it is what lets you use either kind well.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li><strong>Chain-of-thought</strong> = make the model reason step by step before answering; it boosts accuracy on multi-step tasks.</li>
+      <li>It works because <strong>each step becomes context</strong> the final answer can build on (autoregression).</li>
+      <li><strong>Zero-shot CoT</strong> = “Let’s think step by step”; <strong>few-shot CoT</strong> = show examples that include reasoning.</li>
+      <li>Use the <strong>“reason, then put the answer on a parseable last line”</strong> pattern to keep clean outputs.</li>
+      <li>Reasoning is still generated text — <strong>verify high-stakes answers</strong>; and skip CoT for simple lookups where it just adds cost/latency.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">For which task is chain-of-thought most worth the extra tokens and latency?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Computing whether a customer’s usage qualifies for a refund under multi-condition rules.</span>
+        <div class="why">Correct. This is multi-step conditional reasoning — exactly where blurting fails and step-by-step working pays off. Letting the model lay out each rule check before deciding markedly improves accuracy.</div></li>
+      <li data-correct="false"><span class="opt">B) Classifying a tweet as English or Spanish.</span>
+        <div class="why">A near-instant, single-step judgment. CoT adds tokens, latency, and cost for no accuracy gain — reserve it for problems that actually have steps.</div></li>
+      <li data-correct="false"><span class="opt">C) Echoing back the user’s name from a greeting.</span>
+        <div class="why">Pure extraction with no reasoning involved. Step-by-step thinking is wasted here; a direct prompt is faster and just as correct.</div></li>
+      <li data-correct="false"><span class="opt">D) Returning today’s date.</span>
+        <div class="why">There’s nothing to reason through (and the model shouldn’t guess the date anyway — that’s a tool’s job). CoT offers no benefit on trivial or non-reasoning tasks.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Rewrite this prompt to use CoT with a parseable answer: “What’s 15% tip on a $76 bill split between 4 people?”<br>
+    <strong>2.</strong> Your high-volume sentiment classifier runs CoT on every tweet and is now slow and expensive. What do you change, and what’s the trade-off?<br>
+    <strong>3.</strong> A model’s chain-of-thought is impeccable but the final number is wrong. What does this reveal, and what’s your move?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> <em>“Compute the 15% tip on $76 and split it among 4 people. Think step by step, then on the last line write: <code>Final: $&lt;amount per person&gt;</code>.”</em> The steps (76 × 0.15 = 11.40; 11.40 ÷ 4 = 2.85) make the arithmetic reliable, and the <code>Final:</code> line lets your code extract <code>$2.85</code> cleanly.</p>
+        <p><strong>2.</strong> Drop CoT for this task — sentiment is a single-step judgment, so few-shot (Lesson 2.2) gives reliable labels without the reasoning overhead. Trade-off: you lose the model’s “explanation,” but for a simple, high-volume classification that explanation wasn’t earning its cost. Match technique to task complexity.</p>
+        <p><strong>3.</strong> It reveals that the reasoning is generated narration, not a guaranteed-correct computation — a plausible chain can still land on a wrong answer (and the “reason” shown isn’t necessarily the true cause). Your move: don’t trust the prose; verify. Route the actual arithmetic to a tool/calculator (Track 4), or use self-consistency (sample several chains and take the majority answer). Reliability comes from verification, not from a confident-looking explanation.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: self-consistency, and reasoning you can trust</div>
+    <p>One powerful upgrade is <span class="term">self-consistency</span>: instead of taking a single chain of thought, sample several (with temperature &gt; 0 so they differ), then take the <em>majority</em> final answer. The intuition is that there are many wrong paths but they disagree with each other, while correct reasoning tends to converge — so voting across chains filters out one-off slips. It costs more (you run the model several times) but meaningfully boosts accuracy on hard reasoning, and it’s a great pattern when correctness matters more than latency.</p>
+    <p>The deeper lesson is about <em>faithfulness</em>. Research has shown a model’s stated reasoning doesn’t always reflect what actually drove its answer — it can rationalize. So treat CoT as two separate wins that usually but don’t always coincide: (1) it genuinely improves answers by giving the computation room to happen, and (2) it gives you a human-readable trace to inspect. Lean on (1) for accuracy, use (2) for debugging — but when stakes are high, close the loop with real verification: tools for anything computable, a second model or rules to check claims (Tracks 6–7), and self-consistency for judgment calls. That’s how you turn “sounds right” into “is right.”</p>
+  </div>
+
+  <p>You can now shape the output and strengthen the reasoning. Next, we make outputs that software can actually consume: reliable <strong>structured output and JSON</strong>.</p>
+
+</main>
+
+<script>
+(function () {
+  var out = document.getElementById("cot-out");
+  document.getElementById("cot-fast").addEventListener("click", function () {
+    out.innerHTML = '<div style="font-family:monospace;font-size:18px;font-weight:800;color:#b91c1c">10¢　✗</div>' +
+      '<div style="margin-top:8px;color:#475569;font-size:14px">The tempting intuitive answer — and it’s wrong. ' +
+      '$1.00 + $0.10 = $1.10, but then the bat ($1.00) is only $0.90 more than the ball, not $1.00. Blurting commits before checking.</div>';
+  });
+  document.getElementById("cot-slow").addEventListener("click", function () {
+    var steps = [
+      "Let ball = x dollars.",
+      "Bat costs $1.00 more → bat = x + 1.00.",
+      "Together: x + (x + 1.00) = 1.10.",
+      "2x + 1.00 = 1.10  →  2x = 0.10  →  x = 0.05.",
+      "Ball = $0.05 (5¢), bat = $1.05.  Check: 0.05 + 1.05 = 1.10 ✓"
+    ];
+    out.innerHTML = "";
+    steps.forEach(function (s, i) {
+      setTimeout(function () {
+        var d = document.createElement("div");
+        d.style.cssText = "font-family:monospace;font-size:13.5px;color:#1f2937;margin:3px 0;opacity:0;transition:opacity .25s";
+        d.textContent = s;
+        out.appendChild(d);
+        requestAnimationFrame(function () { d.style.opacity = "1"; });
+        if (i === steps.length - 1) {
+          var f = document.createElement("div");
+          f.style.cssText = "margin-top:10px;font-size:18px;font-weight:800;color:#15803d";
+          f.textContent = "5¢　✓";
+          out.appendChild(f);
+        }
+      }, i * 450);
+    });
+  });
+})();
+</script>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

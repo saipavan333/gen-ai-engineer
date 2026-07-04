@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 292" width="820" height="292" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="820" height="292" fill="#ffffff"/>
+<text x="410" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="15.5" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Attention: each word looks back at the words that matter</text>
+<rect x="26" y="202.5" width="47.599999999999994" height="40" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="26" y="205" width="47.599999999999994" height="40" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="26" y="200" width="47.599999999999994" height="40" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="49.8" y="220.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">The</text>
+<rect x="81.6" y="202.5" width="75.19999999999999" height="40" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="81.6" y="205" width="75.19999999999999" height="40" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="81.6" y="200" width="75.19999999999999" height="40" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="119.19999999999999" y="220.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">animal</text>
+<rect x="164.79999999999998" y="202.5" width="75.19999999999999" height="40" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="164.79999999999998" y="205" width="75.19999999999999" height="40" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="164.79999999999998" y="200" width="75.19999999999999" height="40" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="202.39999999999998" y="220.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">didn’t</text>
+<rect x="247.99999999999997" y="202.5" width="66.0" height="40" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="247.99999999999997" y="205" width="66.0" height="40" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="247.99999999999997" y="200" width="66.0" height="40" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="281.0" y="220.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">cross</text>
+<rect x="322.0" y="202.5" width="47.599999999999994" height="40" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="322.0" y="205" width="47.599999999999994" height="40" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="322.0" y="200" width="47.599999999999994" height="40" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="345.8" y="220.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">the</text>
+<rect x="377.6" y="202.5" width="75.19999999999999" height="40" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="377.6" y="205" width="75.19999999999999" height="40" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="377.6" y="200" width="75.19999999999999" height="40" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="415.20000000000005" y="220.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">street</text>
+<rect x="460.8" y="202.5" width="84.39999999999999" height="40" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="460.8" y="205" width="84.39999999999999" height="40" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="460.8" y="200" width="84.39999999999999" height="40" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="503.0" y="220.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">because</text>
+<rect x="553.2" y="202.5" width="40" height="40" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="553.2" y="205" width="40" height="40" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="553.2" y="200" width="40" height="40" rx="13" ry="13" fill="url(#g_key)" stroke="#d97706" stroke-width="1.8"/>
+<text x="573.2" y="220.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#7c2d12" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">it</text>
+<rect x="601.2" y="202.5" width="47.599999999999994" height="40" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="601.2" y="205" width="47.599999999999994" height="40" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="601.2" y="200" width="47.599999999999994" height="40" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="625.0" y="220.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">was</text>
+<rect x="656.8000000000001" y="202.5" width="66.0" height="40" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="656.8000000000001" y="205" width="66.0" height="40" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="656.8000000000001" y="200" width="66.0" height="40" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="689.8000000000001" y="220.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">tired</text>
+<path d="M 573.2 198 Q 346.20000000000005 101.6 119.19999999999999 198" fill="none" stroke="#4f46e5" stroke-width="5.0" opacity="0.73"/>
+<polygon points="119.19999999999999,198 114.19999999999999,188 124.19999999999999,188" fill="#4f46e5" opacity="0.73"/>
+<text x="346.20000000000005" y="93.6" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#4f46e5" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">0.7</text>
+<path d="M 573.2 198 Q 494.20000000000005 97.6 415.20000000000005 198" fill="none" stroke="#94a3b8" stroke-width="2.5" opacity="0.46"/>
+<polygon points="415.20000000000005,198 410.20000000000005,188 420.20000000000005,188" fill="#94a3b8" opacity="0.46"/>
+<text x="494.20000000000005" y="89.6" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">0.2</text>
+<text x="410" y="272" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">“it” attends most to “animal” — that’s how the model knows what “it” refers to.</text>
+</svg>

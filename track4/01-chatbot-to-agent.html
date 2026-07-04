@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>From chatbot to agent — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="4.1">
+<main class="lesson">
+
+  <span class="eyebrow">Track 4 · Lesson 4.1</span>
+  <h1>From chatbot to agent</h1>
+  <p class="lead">A chatbot answers what you ask. An agent <em>accomplishes a goal</em> — it can look things up, run calculations, call APIs, and take multiple steps, deciding what to do next based on what it sees. This is how LLMs move from “talks well” to “gets things done.”</p>
+
+  <h2>Why agents exist</h2>
+  <p>You already know the LLM’s limits: it can’t fetch fresh data, do exact math, or affect the outside world — it just predicts text. RAG (Track 3) fixed one limit by feeding it knowledge. Agents fix the rest by giving the model <strong>tools</strong> it can choose to use, and a <strong>loop</strong> in which it acts, observes the result, and decides what to do next. “What’s the weather and should I bring an umbrella?” becomes: call a weather API, read the result, then answer. “Summarize the latest sales and email it to my team” becomes: query the database, summarize, send the email — several actions, chosen and sequenced by the model.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t4-chatbot-vs-agent.svg" alt="Chatbot answers; agent acts. Chatbot: Question goes to the LLM and back as an Answer, one shot. Agent: a Goal enters a loop of Think then Act (tool), observing the result and looping until the goal is done, then producing a checkmark/answer.">
+    <figcaption>The difference is the <b>loop</b> and the <b>tools</b>. A chatbot is one round-trip; an agent thinks, acts, observes, and repeats until the goal is met.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p>An <span class="term">agent</span> is an LLM placed in a loop where it can call <span class="term">tools</span> (functions the model can invoke — a calculator, a search API, your database) and use their results to decide its next step. The repeating cycle of <em>decide an action → run it → observe the result → decide again</em> is the <span class="term">agent loop</span>. <span class="term">Autonomy</span> is how much the agent decides on its own versus following a fixed script — a spectrum, not a switch.</p>
+  </div>
+
+  <h2>The autonomy spectrum</h2>
+  <p>“Agent” isn’t binary. It’s a dial, and you should turn it only as far as the task needs:</p>
+  <div class="tbl-wrap">
+    <table class="t">
+      <tr><th>Level</th><th>What it does</th><th>Example</th></tr>
+      <tr><td><strong>Plain LLM</strong></td><td>Answers from the prompt only</td><td>“Rewrite this email.”</td></tr>
+      <tr><td><strong>Tool-augmented</strong></td><td>Can call one or more tools when needed</td><td>“What’s 18% of this invoice?” → calculator</td></tr>
+      <tr><td><strong>Agent loop</strong></td><td>Chooses tools over multiple steps toward a goal</td><td>“Research X and draft a brief.”</td></tr>
+      <tr><td><strong>Autonomous / multi-agent</strong></td><td>Plans, delegates, and runs many steps with little supervision</td><td>“Triage these 50 tickets and respond.”</td></tr>
+    </table>
+  </div>
+
+  <div class="box warn">
+    <div class="box-label">Autonomy is power and risk</div>
+    <p>Every step of autonomy you add multiplies both capability <em>and</em> failure surface: more steps to go wrong, more tools to misuse, more cost to run away. The engineering goal is the <strong>least autonomy that solves the task</strong>. If a fixed pipeline (RAG → format) works, don’t build a free-roaming agent. We’ll spend Lesson 4.8 on guarding the autonomy you do use.</p>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — a tiny agent that can do math (free, Ollama)</div>
+    <p>The smallest real agent: the model decides whether to use a calculator tool, we run it, and feed the result back. This previews tool calling (4.2) and the loop (4.3).</p>
+<pre><code><span class="k">import</span> json, ollama
+
+<span class="k">def</span> <span class="f">calculator</span>(expression):
+    <span class="k">return</span> <span class="f">str</span>(<span class="f">eval</span>(expression, {<span class="s">"__builtins__"</span>: {}}))   <span class="c"># toy tool (never eval untrusted input in prod!)</span>
+
+<span class="k">def</span> <span class="f">agent</span>(question):
+    prompt <span class="o">=</span> <span class="s">f"""You can use a calculator. Reply with JSON:
+either {{"tool":"calculator","expression":"..."}} to compute,
+or {{"answer":"..."}} if you already know.
+Question: </span>{question}<span class="s">"""</span>
+    step <span class="o">=</span> json.<span class="f">loads</span>(ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"llama3.2"</span>,
+              messages<span class="o">=</span>[{<span class="s">"role"</span>:<span class="s">"user"</span>,<span class="s">"content"</span>:prompt}], format<span class="o">=</span><span class="s">"json"</span>)[<span class="s">"message"</span>][<span class="s">"content"</span>])
+    <span class="k">if</span> <span class="s">"tool"</span> <span class="k">in</span> step:                                  <span class="c"># the model chose to act</span>
+        result <span class="o">=</span> <span class="f">calculator</span>(step[<span class="s">"expression"</span>])           <span class="c"># we run the tool</span>
+        <span class="k">return</span> <span class="f">ask</span>(<span class="s">f"The calculator returned </span>{result}<span class="s">. Answer the question: </span>{question}<span class="s">"</span>)   <span class="c"># feed result back</span>
+    <span class="k">return</span> step[<span class="s">"answer"</span>]
+
+<span class="f">print</span>(<span class="f">agent</span>(<span class="s">"What is 23.5% of 1840?"</span>))   <span class="c"># model → calculator → "432.4"</span></code></pre>
+    <p>Notice the shape: the model <em>decides</em> to act (structured output from Track 2.4), <em>your code</em> runs the action, and the result goes back into the model. That decide-act-observe shape is the seed of every agent — the next lessons make each part robust.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>A <strong>chatbot answers; an agent accomplishes goals</strong> by calling tools in a loop.</li>
+      <li>An agent = <strong>LLM + tools + a decide-act-observe loop</strong> (+ optionally memory and planning).</li>
+      <li>Autonomy is a <strong>spectrum</strong>: plain LLM → tool-augmented → agent loop → autonomous/multi-agent.</li>
+      <li>Use the <strong>least autonomy that solves the task</strong> — more autonomy means more power <em>and</em> more risk.</li>
+      <li>The core shape: the model <strong>decides</strong> an action, <strong>your code</strong> executes it, the result is <strong>fed back</strong>.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your task: “Given an invoice amount, return the total with 8% tax as a number.” It’s the same calculation every time. Should you build an agent?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) No — this is a fixed, single computation; just call a calculator (or compute in code) directly. No agent loop needed.</span>
+        <div class="why">Correct. The task is deterministic and single-step, so there’s nothing for an agent to <em>decide</em>. Adding an agent loop adds cost, latency, and failure modes for zero benefit. Use the least machinery that works — here, plain code or one tool call.</div></li>
+      <li data-correct="false"><span class="opt">B) Yes — agents are more advanced, so they’ll be more reliable.</span>
+        <div class="why">More machinery isn’t more reliable; it’s more surface for things to go wrong. For a fixed calculation, an agent is strictly worse — slower, pricier, and less predictable than just doing the math.</div></li>
+      <li data-correct="false"><span class="opt">C) Yes — so it can choose between many tools.</span>
+        <div class="why">There’s only one operation needed, so there’s nothing to choose between. Tool-choosing autonomy is wasted when the action is fixed and known in advance.</div></li>
+      <li data-correct="false"><span class="opt">D) Yes — to make it future-proof.</span>
+        <div class="why">“Future-proofing” by adding autonomy you don’t need is premature complexity. Build the simple version now; add agentic behavior only when a real task requires multi-step decisions.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Classify each as plain LLM / tool-augmented / agent loop: (a) “translate this paragraph,” (b) “what’s the current Bitcoin price?”, (c) “research three competitors and write a comparison.”<br>
+    <strong>2.</strong> In the example, why must <em>your code</em> run the calculator rather than the model computing it directly?<br>
+    <strong>3.</strong> Give a task where a fixed pipeline beats an agent, and one where an agent is genuinely necessary.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> (a) <strong>plain LLM</strong> — pure text transformation, no external info. (b) <strong>tool-augmented</strong> — needs one live data fetch (a price API), then answer. (c) <strong>agent loop</strong> — multiple steps (search each competitor, gather, compare, write), with the model deciding what to look up next. Match the machinery to the number and openness of steps.</p>
+        <p><strong>2.</strong> Because the model only predicts text — it doesn’t actually execute anything, and its “mental math” is unreliable (Track 1). Routing the computation to real code gives an exact, trustworthy result, then the model explains it. The division of labor — model decides, code executes — is what makes agents reliable.</p>
+        <p><strong>3.</strong> <em>Fixed pipeline wins:</em> “summarize this document and return JSON” — known steps, no decisions, so a RAG-or-prompt pipeline is simpler and more reliable. <em>Agent necessary:</em> “debug why this failing test breaks and propose a fix” — the steps depend on what each tool reveals (read logs → inspect code → run test → adjust), which can’t be scripted in advance. Agents earn their complexity when the path is unknown until you’re walking it.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: agents are mostly an engineering problem</div>
+    <p>It’s tempting to think a better model makes a better agent, and capability does matter. But in practice, reliable agents are won and lost in the scaffolding around the model: the quality of the tool definitions, how cleanly results are fed back, how errors are handled, how the loop is bounded, and how state is tracked across steps. A modest model with excellent tools, tight prompts, and solid guards beats a frontier model wired up carelessly. The model is the reasoner; <em>you</em> build the environment it reasons in.</p>
+    <p>This reframes the whole track. “Building an agent” is really building a small, well-instrumented system: define tools the model can’t misuse, design a loop that can’t run away, give it the memory it needs and no more, and verify what it does. The model’s job is to choose the next action; your job is to make every possible action safe, observable, and recoverable. Keep that division in mind and agents stop feeling like magic and start feeling like software — which is exactly what makes them shippable.</p>
+  </div>
+
+  <p>The foundation of every agent is the ability for the model to call a function reliably. Let’s make that precise and robust. Next: <strong>tool / function calling</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Positioning your experience — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="11.3">
+<main class="lesson">
+
+  <span class="eyebrow">Get Hired · Lesson 11.3</span>
+  <h1>Positioning your experience</h1>
+  <p class="lead">If you’re coming from data engineering, your decade of work is an asset, not a gap to apologize for — but only if you frame it right. This lesson shows how to translate what you’ve already done into the language GenAI teams are hiring for.</p>
+
+  <h2>Why framing is the biggest lever you have</h2>
+  <p>The same résumé can read two completely different ways. Framed badly, a data engineer pivoting to AI looks like “someone with no GenAI experience starting over.” Framed well, the very same person looks like “a production engineer who already knows how to move, model, scale, and quality-check data — now applying it to LLM systems.” Nothing about your history changed; the <em>interpretation</em> did. For an experienced engineer, getting this framing right is worth more than any single new skill, because it moves you out of the giant pile of beginners and into the small pile of people who can actually ship.</p>
+  <p>And the reframing is honest, not spin. Production GenAI is, to a surprising degree, a data and systems problem wearing an AI hat. Retrieval is a data pipeline. Evaluation is data quality and testing. Serving is throughput, caching, and cost. You have done the hard, unglamorous version of all of these for years.</p>
+
+  <h2>Translate what you’ve done</h2>
+  <figure class="diagram">
+    <img src="../assets/diagrams/t11-positioning.svg" alt="A mapping from data-engineering skills to their GenAI equivalents: ETL and data pipelines map to RAG ingestion and indexing pipelines; SQL and data modeling map to vector databases, metadata filtering and retrieval; cloud, scaling and orchestration map to LLM serving, batching, cost and latency; data quality and testing map to evals, golden sets and regression gates; production monitoring maps to tracing, guardrails and observability.">
+    <figcaption>Your experience already <em>is</em> GenAI infrastructure experience. Name it in their vocabulary.</figcaption>
+  </figure>
+
+  <p>Now rewrite your résumé bullets through that lens. Keep the real accomplishment and the metrics; change the framing so the transferable skill is obvious. For example:</p>
+
+  <div class="box example">
+    <div class="box-label">Before → after</div>
+    <p><strong>Before:</strong> “Built and maintained ETL pipelines ingesting 2&nbsp;TB/day into Snowflake.”<br>
+    <strong>After:</strong> “Built large-scale ingestion pipelines (2&nbsp;TB/day) — the same chunking, deduplication, and metadata-tagging work that powers retrieval (RAG) systems.”</p>
+    <p><strong>Before:</strong> “Owned data quality monitoring and alerting across 40+ tables.”<br>
+    <strong>After:</strong> “Designed data-quality checks and regression gates — directly analogous to LLM evaluation: golden datasets, automated quality metrics, and catching regressions before release.”</p>
+    <p><strong>Before:</strong> “Optimized Spark jobs to cut cloud spend 35%.”<br>
+    <strong>After:</strong> “Cut compute cost 35% through batching and caching — the same levers that control LLM serving cost and latency at scale.”</p>
+  </div>
+
+  <p>See the move: you’re not inventing experience, you’re <strong>naming the bridge</strong> to the hiring manager so they don’t have to. Add a short “GenAI projects” section at the top with your capstones, and the story completes itself — proven production engineer, plus demonstrated GenAI skills.</p>
+
+  <h2>Aim at the right roles</h2>
+  <p>Target titles where your background is an advantage, not a mismatch: <strong>AI/ML Engineer, Applied AI Engineer, GenAI Engineer, RAG/Platform Engineer, AI Data Engineer, LLM Infrastructure</strong>. These roles are about building reliable systems around models — your wheelhouse. <em>Avoid</em> aiming first at “ML Research Scientist” or “Research Engineer” roles: those want deep math, model training from scratch, and often a PhD — a different game this course doesn’t target. Knowing which pile to stand in is half the battle.</p>
+
+  <div class="box note">
+    <div class="box-label">Your one-line pitch</div>
+    <p>Have this ready for recruiters and the top of your résumé: <em>“Data engineer with 10 years building production data systems, now focused on applied GenAI — I build and evaluate RAG and agent systems, with the data, scaling, and reliability background to run them in production.”</em> It states the pivot, the proof, and the edge in one breath.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>Framing is your biggest lever: the same history reads as “no experience” or “production-ready” depending on wording.</li>
+      <li>Production GenAI is largely <strong>data + systems</strong> work — retrieval, evals, and serving map straight onto your background.</li>
+      <li><strong>Rewrite bullets</strong> to name the bridge (ETL→RAG ingestion, data quality→evals, cost tuning→serving), keeping real metrics.</li>
+      <li>Target <strong>applied/infra roles</strong> (AI/ML Engineer, RAG/Platform, AI Data Engineer) — not research-scientist roles.</li>
+      <li>Lead with a <strong>one-line pitch</strong>: proven engineer + demonstrated GenAI projects + production edge.</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p>Take three real bullets from your current résumé and rewrite each to name its GenAI bridge, keeping the metrics. Then write your one-line pitch in your own words.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> A worked rewrite</summary>
+      <div class="sol-body">
+        <p><strong>Original:</strong> “Migrated batch reporting to a streaming architecture, reducing data latency from 6 hours to 5 minutes.”</p>
+        <p><strong>Rewritten:</strong> “Re-architected a batch system into low-latency streaming (6 hrs → 5 min) — the same latency engineering (streaming, incremental processing) that makes LLM applications feel responsive.”</p>
+        <p><strong>Why it works:</strong> it keeps the impressive, verifiable metric (the reviewer still sees a real win) but adds a clause that connects the skill to LLM serving, which is exactly what Track&nbsp;8 is about. You’re handing the interviewer the talking point — “tell me about latency optimization” — and you’ll answer it from a decade of real experience, not a tutorial. That’s a conversation you win.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">You’re a data engineer with no <em>commercial</em> GenAI experience and you keep hesitating to apply. What’s the most effective move?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Reframe your production/data experience in GenAI terms and pair it with your capstone projects as proof.</span>
+        <div class="why">Correct. “Commercial GenAI experience” is largely production data/systems experience plus demonstrated LLM skills — and you have the first in depth and can show the second with capstones. Naming the bridge and attaching evidence is what turns a perceived gap into a clear advantage.</div></li>
+      <li data-correct="false"><span class="opt">B) Apply only to junior roles and accept a big title/pay reset to “start over.”</span>
+        <div class="why">Resetting to junior undersells a decade of transferable skill. Most of what makes you valuable in an applied role — pipelines, scaling, reliability, data quality — carries straight over. Aim at mid/senior applied roles and let the projects close the GenAI-specific gap.</div></li>
+      <li data-correct="false"><span class="opt">C) Hide the data-engineering background so you look like a “pure” AI candidate.</span>
+        <div class="why">That throws away your single biggest edge. Teams shipping GenAI desperately need people who can productionize it; your data background is the differentiator, not something to conceal.</div></li>
+      <li data-correct="false"><span class="opt">D) Wait until you’ve completed a fine-tuning project, since that’s “real” AI.</span>
+        <div class="why">Most production GenAI never fine-tunes; RAG, evals, and serving are far more in demand. Waiting on fine-tuning delays you for a skill many roles won’t even ask about.</div></li>
+    </ul>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: leveling, comp, and the “experience” objection</div>
+    <p>A real worry for career-changers is downleveling — being offered a junior title and pay because the GenAI piece is new. The way to resist it is to make the interview about the 90% that isn’t new. Seniority is judged largely on system design, production judgment, and the ability to reason about trade-offs and failure modes — all of which you have in abundance. When you steer the conversation toward how you’d scale retrieval, control cost, catch regressions, and handle incidents, you’re interviewing as a senior engineer who happens to be applying that judgment to LLMs, not as a beginner who happens to have a long résumé.</p>
+    <p>It also helps to preempt the objection out loud. Saying “my LLM-specific experience is from projects rather than production, but the production engineering around models — data pipelines, scaling, reliability, cost — is exactly what I’ve done for ten years” is disarming because it’s honest and it reframes in the same sentence. Most interviewers aren’t looking for someone who has done <em>everything</em> before; they’re looking for someone who will clearly succeed, quickly. A confident, specific account of your transferable strengths plus tangible projects is a far more convincing answer to “can this person do the job?” than a year of someone else’s mediocre GenAI experience.</p>
+  </div>
+
+  <p>You can now present your work and yourself. The last rehearsal before the real thing: putting it all together under interview pressure. Next: <strong>the mock interview drill.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

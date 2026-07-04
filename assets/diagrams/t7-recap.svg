@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 380" width="880" height="380" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="880" height="380" fill="#ffffff"/>
+<text x="440" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Threat → defense map</text>
+<rect x="24" y="66" width="300" height="50" rx="9" ry="9" fill="#fef1ef" stroke="#dc2626" stroke-width="2"/>
+<text x="40" y="91.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#7f1d1d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Prompt injection</text>
+<line x1="330" y1="91.0" x2="357.0" y2="91.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="366.0,91.0 357.0,94.6 357.0,87.4" fill="#94a3b8"/>
+<rect x="372" y="66" width="484" height="50" rx="9" ry="9" fill="#eef0fe" stroke="#4f46e5" stroke-width="2"/>
+<text x="388" y="91.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#312e81" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Fence input as data + least-privilege tools</text>
+<rect x="24" y="126" width="300" height="50" rx="9" ry="9" fill="#fef1ef" stroke="#dc2626" stroke-width="2"/>
+<text x="40" y="151.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#7f1d1d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Jailbreaks</text>
+<line x1="330" y1="151.0" x2="357.0" y2="151.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="366.0,151.0 357.0,154.6 357.0,147.4" fill="#94a3b8"/>
+<rect x="372" y="126" width="484" height="50" rx="9" ry="9" fill="#eef0fe" stroke="#4f46e5" stroke-width="2"/>
+<text x="388" y="151.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#312e81" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Strong system prompt + moderation + retest each turn</text>
+<rect x="24" y="186" width="300" height="50" rx="9" ry="9" fill="#fef1ef" stroke="#dc2626" stroke-width="2"/>
+<text x="40" y="211.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#7f1d1d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">PII leakage</text>
+<line x1="330" y1="211.0" x2="357.0" y2="211.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="366.0,211.0 357.0,214.6 357.0,207.4" fill="#94a3b8"/>
+<rect x="372" y="186" width="484" height="50" rx="9" ry="9" fill="#eef0fe" stroke="#4f46e5" stroke-width="2"/>
+<text x="388" y="211.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#312e81" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Redact before logging / sending; minimize data</text>
+<rect x="24" y="246" width="300" height="50" rx="9" ry="9" fill="#fef1ef" stroke="#dc2626" stroke-width="2"/>
+<text x="40" y="271.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#7f1d1d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Unsafe content</text>
+<line x1="330" y1="271.0" x2="357.0" y2="271.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="366.0,271.0 357.0,274.6 357.0,267.4" fill="#94a3b8"/>
+<rect x="372" y="246" width="484" height="50" rx="9" ry="9" fill="#eef0fe" stroke="#4f46e5" stroke-width="2"/>
+<text x="388" y="271.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#312e81" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Input &amp; output moderation classifiers</text>
+<rect x="24" y="306" width="300" height="50" rx="9" ry="9" fill="#fef1ef" stroke="#dc2626" stroke-width="2"/>
+<text x="40" y="331.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#7f1d1d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Harmful actions</text>
+<line x1="330" y1="331.0" x2="357.0" y2="331.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="366.0,331.0 357.0,334.6 357.0,327.4" fill="#94a3b8"/>
+<rect x="372" y="306" width="484" height="50" rx="9" ry="9" fill="#eef0fe" stroke="#4f46e5" stroke-width="2"/>
+<text x="388" y="331.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#312e81" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Output validation + human approval for risky ops</text>
+<text x="440" y="366" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">…and monitor everything, so the threats that slip through get caught and fixed.</text>
+</svg>

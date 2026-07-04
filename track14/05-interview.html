@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Interview check: LLMOps — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="14.5">
+<main class="lesson">
+
+  <span class="eyebrow">Productionization &amp; LLMOps · Interview check</span>
+  <h1>Interview check: LLMOps</h1>
+  <p class="lead">“Can you take this prototype to production?” is the question that separates a hobbyist from a hire. This track is your answer. Here’s how teams probe it, with strong responses — and another area where your engineering background is a real edge.</p>
+
+  <div class="box note">
+    <div class="box-label">How to use this</div>
+    <p>Answer out loud before revealing each model answer. The bar for this track: could you take a colleague’s working notebook and describe every step to get it running reliably, safely, and observably in production? That narrative is what wins these rounds.</p>
+  </div>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t14-service.svg" alt="Track summary: notebook or script becomes a FastAPI service, packaged as a Docker image that runs anywhere, deployed to a public scalable URL.">
+    <figcaption>The spine of the track: wrap it, box it, ship it — then gate and watch it.</figcaption>
+  </figure>
+
+  <h2>The questions teams ask</h2>
+
+  <div class="box practice">
+    <div class="box-label">Q1 · The core question</div>
+    <p><strong>“I have a RAG prototype in a notebook. Walk me through getting it to production.”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> Wrap the logic in a web service (FastAPI) behind a clean endpoint with validated inputs. Move all config and secrets to environment variables — nothing hardcoded. Package it in a Docker container so it runs identically everywhere, and deploy that to a host. Put a golden-set eval in CI so no change ships without passing a quality gate. Add the operational ring: timeouts, rate limits, caching, and streaming for latency. Finally, instrument it — traces, cost/latency, quality signals — and close the loop by turning production failures into new eval cases. I’d roll changes out to a small slice of traffic first.</p>
+        <p><strong>Testing:</strong> Whether you have the whole lifecycle — service, packaging, secrets, CI eval gate, monitoring — not just “deploy the script.”</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q2 · Packaging</div>
+    <p><strong>“Why containerize it? Why not just copy the files to a server?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> A container bundles the code with its exact environment — Python version, pinned libraries, system deps — so it runs identically on my laptop, CI, and prod, eliminating “works on my machine.” Copying files leaves the target to supply a matching environment, which is where subtle breakages come from. The container is also the unit every deploy platform and autoscaler expects.</p>
+        <p><strong>Testing:</strong> That you understand reproducibility, not just that Docker is fashionable.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q3 · Secrets (they’re watching for this)</div>
+    <p><strong>“Where do API keys and database credentials live?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> In environment variables or a secret manager, injected at runtime — never hardcoded in source and never committed to version control. Code reads config from the environment; <code>.env</code> files are gitignored. A key in a repo (especially public) is compromised the moment it’s pushed and must be rotated. Same image, different env vars per environment.</p>
+        <p><strong>Testing:</strong> Basic security hygiene. Saying “hardcode it for now” is an instant red flag; “environment variables, never in git” is the expected answer.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q4 · The differentiator</div>
+    <p><strong>“How do you stop a prompt change from silently degrading quality?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> An eval gate in CI. Prompts live in version control, so a change is a reviewable diff. CI runs deterministic tests plus my golden-set evaluation and fails the build if the score drops below a threshold — so a change that fixes one case but breaks others is blocked before it ships. Every production failure gets added to the golden set, so we can never regress on it again. This is also how I’d safely evaluate a new model: run it against the golden set.</p>
+        <p><strong>Testing:</strong> Whether you know LLM regressions are silent (no error) and that the answer is scored evals gating deploys — a senior signal most candidates miss.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q5 · Monitoring</div>
+    <p><strong>“It’s live. What do you monitor, and what’s the difference between offline and online evals?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> Traces of every request (prompt, context, output, tokens, timing), cost and latency per call, quality signals (user feedback, online-eval scores on sampled traffic), and error/retry/refusal rates. Offline evals run on a fixed golden set in CI and answer “did this change regress known cases?” — they gate deploys. Online evals run on live traffic and answer “how are we doing right now on real inputs?” — they catch drift and novel failures the golden set never had. They feed each other: online failures become offline test cases.</p>
+        <p><strong>Testing:</strong> That you distinguish regression-gating (offline) from reality-checking (online), and know traces are how you debug specific bad answers.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q6 · Judgment</div>
+    <p><strong>“Your LLM feature is slow and expensive in production. Walk me through fixing it without guessing.”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> Measure first — use traces to find where the tokens and time actually go (long prompts? many agent steps? a slow model?). Then apply the targeted lever from Track&nbsp;8: cache repeated calls, route easy requests to a smaller model, trim the prompt/context, shorten outputs, and stream for perceived latency. Re-measure to confirm, and make sure the eval score didn’t drop as a result — a cheaper setup that’s worse isn’t a win. Optimization is measured, not guessed.</p>
+        <p><strong>Testing:</strong> That you connect monitoring (find the bottleneck) to serving levers (Track 8) and re-verify quality — engineering discipline, not vibes.</p>
+      </div>
+    </details>
+  </div>
+
+  <h2>Rapid-fire self-check</h2>
+
+  <div class="quiz">
+    <p class="quiz-q">What’s the mechanism that lets an “eval gate” actually block a bad change in CI?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) The eval script exits with a non-zero (failure) code when the score is below the threshold, which fails the CI job and blocks the deploy.</span>
+        <div class="why">Correct. CI treats a non-zero exit as failure. Your eval runs the golden set and exits 1 if the score is too low — turning a quality drop into a red build, exactly like a failing test.</div></li>
+      <li data-correct="false"><span class="opt">B) CI reads the model’s mind to detect bad prompts.</span>
+        <div class="why">There’s nothing magic — the gate is a concrete script that scores a golden set and signals pass/fail via its exit code. Quality has to be measured, then enforced.</div></li>
+      <li data-correct="false"><span class="opt">C) It emails users to ask if the change is good.</span>
+        <div class="why">The whole point is to catch regressions <em>before</em> users see them. The gate is automated and runs at build time, not a user survey.</div></li>
+      <li data-correct="false"><span class="opt">D) It only works if outputs are byte-for-byte identical every run.</span>
+        <div class="why">Evals handle non-determinism by scoring quality (exact match where appropriate, or an LLM judge) and gating on an aggregate threshold — they don’t require identical outputs.</div></li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Where should a chatbot’s conversation history be stored in a scaled, containerized deployment?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) In an external store (database/cache) keyed by session — not in the process’s memory.</span>
+        <div class="why">Correct. A scaled service runs multiple interchangeable container copies, and the next request may hit a different one. State kept in a local variable would be lost or inconsistent, so conversation memory must live outside the process (stateless service, external state).</div></li>
+      <li data-correct="false"><span class="opt">B) In a global variable inside the service, for speed.</span>
+        <div class="why">That breaks as soon as there’s more than one container (or the container restarts): different copies wouldn’t share the variable. Local in-memory state is the classic scaling bug.</div></li>
+      <li data-correct="false"><span class="opt">C) In the Docker image itself.</span>
+        <div class="why">The image is a read-only build artifact, identical for every copy — it can’t hold per-user, changing conversation state. Runtime state belongs in an external store.</div></li>
+      <li data-correct="false"><span class="opt">D) It shouldn’t be stored at all.</span>
+        <div class="why">Multi-turn chat needs history to work; you just store it <em>outside</em> the process (keyed by session) so any container copy can serve the next turn.</div></li>
+    </ul>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Can you explain each of these? (the real test)</div>
+    <ul>
+      <li>Notebook → <strong>FastAPI service</strong> → <strong>Docker</strong> → deployed URL.</li>
+      <li>Why containers give reproducibility; <strong>config &amp; secrets from the environment</strong>, never in git.</li>
+      <li>The <strong>eval gate</strong> in CI (non-zero exit blocks deploy) and why LLM regressions are silent.</li>
+      <li>Monitoring: <strong>traces, cost/latency, quality signals</strong>; <strong>offline vs online evals</strong>.</li>
+      <li>The <strong>feedback loop</strong>: production failures become golden-set cases.</li>
+      <li>Stateless services &amp; external state for chat memory at scale.</li>
+    </ul>
+  </div>
+
+  <p>You can now speak fluently about shipping and running LLM software — the exact gap most candidates have. Next, we broaden what your systems can perceive: <strong>Track&nbsp;15, Multimodal AI.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Evaluating retrieval quality — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="3.8">
+<main class="lesson">
+
+  <span class="eyebrow">Track 3 · Lesson 3.8</span>
+  <h1>Evaluating retrieval quality</h1>
+  <p class="lead">This is the lesson that turns RAG from guesswork into engineering. Without measurement you’re tuning chunk sizes and rerankers by vibes. With it, every change is a number that went up or down — and you finally know whether you’re improving.</p>
+
+  <h2>Why you must measure, and what to measure</h2>
+  <p>RAG can fail in two distinct places, and confusing them wastes weeks. Either <strong>retrieval</strong> failed (the right chunk never reached the prompt) or <strong>generation</strong> failed (the right chunk was there but the model ignored it or hallucinated). The fixes are completely different — better chunking/embeddings/reranking vs better grounding/prompting — so the first job of evaluation is to tell these apart.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t3-eval.svg" alt="Evaluating RAG, two failure points. A pipeline Query → Retrieve → Generate → Answer. Under Retrieve, Failure A: retrieval miss (relevant chunk wasn't fetched), metrics Recall@k and MRR. Under Generate, Failure B: generation slip (ignored context or hallucinated), metrics faithfulness and correctness. Always ask separately: did we fetch the right text, and did the model use it?">
+    <figcaption>Split the question in two. Measure retrieval (did we fetch the right text?) and generation (did the model use it faithfully?) <em>separately</em> — they have separate metrics and separate fixes.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p>A <span class="term">golden set</span> is a small labeled dataset of queries paired with the chunk(s) that should be retrieved (and ideally a correct answer). On it you compute <span class="term">retrieval metrics</span>: <span class="term">recall@k</span> (did the relevant chunk appear in the top k?), <span class="term">precision@k</span> (what fraction of the top k were relevant?), and <span class="term">MRR</span> (mean reciprocal rank — how high up the first relevant chunk was, rewarding good ordering). For the answer you add <span class="term">end-to-end metrics</span>: faithfulness (supported by context?) and answer correctness/relevance.</p>
+  </div>
+
+  <h2>Play with the metrics</h2>
+  <p>Toggle which retrieved results are actually relevant and watch the metrics move. Build the intuition for what each one rewards.</p>
+
+  <div class="demo" id="ev-demo">
+    <div class="demo-head"><span class="tag">Live demo</span><h4>Retrieval-metrics calculator</h4></div>
+    <p class="demo-hint">Click a result to toggle relevant/not. Set how many relevant chunks exist in total, and the cutoff <em>k</em>.</p>
+    <div class="row" style="margin-bottom:8px">
+      <div><label>Relevant chunks that exist (for recall): <b><span id="ev-tot">3</span></b></label>
+        <input type="range" id="ev-total" min="1" max="6" step="1" value="3"></div>
+      <div><label>k (cutoff): <b><span id="ev-kv">5</span></b></label>
+        <input type="range" id="ev-k" min="1" max="8" step="1" value="5"></div>
+    </div>
+    <div id="ev-list"></div>
+    <div class="out" id="ev-out" style="margin-top:12px"></div>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — measure retrieval on a golden set (free)</div>
+    <p>A dozen labeled queries is enough to start. Compute recall@k and MRR, then change one knob and see if the number moves.</p>
+<pre><code><span class="c"># golden[query] = set of chunk ids that *should* be retrieved</span>
+golden <span class="o">=</span> {
+    <span class="s">"how long is the warranty?"</span>: {<span class="s">"warranty#0"</span>},
+    <span class="s">"can I return it?"</span>:          {<span class="s">"returns#0"</span>},
+    <span class="s">"how do I cancel billing?"</span>:  {<span class="s">"billing#2"</span>},
+}
+
+<span class="k">def</span> <span class="f">evaluate</span>(retrieve, golden, k<span class="o">=</span><span class="n">5</span>):
+    recall_hits, rr_sum <span class="o">=</span> <span class="n">0</span>, <span class="n">0.0</span>
+    <span class="k">for</span> q, relevant <span class="k">in</span> golden.<span class="f">items</span>():
+        ranked <span class="o">=</span> <span class="f">retrieve</span>(q, k)              <span class="c"># list of chunk ids, best first</span>
+        <span class="k">if</span> relevant <span class="o">&amp;</span> <span class="f">set</span>(ranked):           <span class="c"># did we get a relevant one in top k?</span>
+            recall_hits <span class="o">+=</span> <span class="n">1</span>
+        <span class="k">for</span> rank, cid <span class="k">in</span> <span class="f">enumerate</span>(ranked, start<span class="o">=</span><span class="n">1</span>):   <span class="c"># reciprocal rank of first hit</span>
+            <span class="k">if</span> cid <span class="k">in</span> relevant:
+                rr_sum <span class="o">+=</span> <span class="n">1.0</span> <span class="o">/</span> rank
+                <span class="k">break</span>
+    n <span class="o">=</span> <span class="f">len</span>(golden)
+    <span class="k">return</span> {<span class="s">"hit_rate@k"</span>: recall_hits <span class="o">/</span> n, <span class="s">"MRR"</span>: rr_sum <span class="o">/</span> n}
+
+<span class="f">print</span>(<span class="f">evaluate</span>(my_retriever, golden, k<span class="o">=</span><span class="n">5</span>))   <span class="c"># {'hit_rate@k': 1.0, 'MRR': 0.83}</span>
+<span class="c"># Now change chunk size OR add reranking, re-run, and compare the numbers.</span></code></pre>
+    <p>This tiny harness is the engine of all RAG improvement: change one variable, re-measure, keep it only if the metric improved. It’s also the seed of Track 6 (Evals), which generalizes this to whole LLM systems.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>RAG fails at <strong>retrieval</strong> or <strong>generation</strong> — measure them <strong>separately</strong>, they have different fixes.</li>
+      <li>A small <strong>golden set</strong> (queries → relevant chunks) unlocks real numbers; you don’t need thousands.</li>
+      <li><strong>Recall@k</strong> = did we fetch it; <strong>precision@k</strong> = how clean the top-k is; <strong>MRR</strong> = how high the first hit ranked.</li>
+      <li>Add <strong>faithfulness</strong> and <strong>answer correctness</strong> for end-to-end quality.</li>
+      <li>The loop: <strong>change one knob → re-measure → keep or revert</strong>. That’s how RAG actually improves.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your golden-set evaluation shows recall@10 = 0.95 but faithfulness = 0.55. Where is the problem, and what do you fix?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Retrieval is fine (the right chunks are usually fetched); the generation step is unfaithful — fix grounding/prompting, not retrieval.</span>
+        <div class="why">Correct. High recall means the evidence is reaching the prompt, so the bottleneck is generation: the model is producing claims not supported by the context. The fix is stronger grounding (only-from-context, abstain, verify citations) — adding a better embedding model would do nothing here.</div></li>
+      <li data-correct="false"><span class="opt">B) Retrieval is broken; switch embedding models.</span>
+        <div class="why">Recall@10 = 0.95 says retrieval is working well. Changing the embedder targets a problem you don’t have and ignores the actual low number (faithfulness), which is a generation issue.</div></li>
+      <li data-correct="false"><span class="opt">C) Both are fine; 0.55 faithfulness is normal.</span>
+        <div class="why">0.55 faithfulness means nearly half the answer’s claims aren’t supported by the context — that’s a serious grounding failure, not an acceptable baseline. Separating the metrics is exactly what reveals it.</div></li>
+      <li data-correct="false"><span class="opt">D) Increase k to 50.</span>
+        <div class="why">More retrieved chunks won’t make the model use them faithfully — and can worsen “lost in the middle.” The diagnostic clearly points at generation; the fix lives there.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Recall@5 is 0.98 but MRR is 0.30. What does that combination tell you, and what would you add?<br>
+    <strong>2.</strong> How would you build a golden set quickly for a new internal-docs RAG, without a labeling team?<br>
+    <strong>3.</strong> You improve chunk overlap and recall@5 goes from 0.80 → 0.91, but answer correctness is unchanged. What might be happening?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> High recall but low MRR means the relevant chunk is almost always retrieved but ranked <em>low</em> in the top 5 — so if you only feed the model the top 1–2, it often misses it. The fix is a <strong>reranker</strong> (Lesson 3.5) to push the relevant chunk to the top, raising MRR. Recall and MRR together tell you “found it” vs “found it <em>and</em> ranked it well.”</p>
+        <p><strong>2.</strong> Bootstrap it: take real user questions (or have an LLM generate plausible questions <em>from</em> each document), and label the obviously-correct chunk for each — even 20–50 pairs is enough to start measuring. You can also use an LLM to draft candidate (query, relevant-chunk) pairs and then spend a little human time verifying them. A small, honest golden set beats a large unmeasured guess.</p>
+        <p><strong>3.</strong> Likely the generation step is now the bottleneck: you’re retrieving the right chunk more often (recall up), but the model isn’t turning that into a better answer — pointing at grounding/prompting or answer-extraction issues, not retrieval. This is exactly why you measure retrieval and end-to-end correctness separately: improving one stage only helps if it was the limiting one. Time to look at faithfulness and the prompt.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: the evaluation flywheel</div>
+    <p>The teams that ship great RAG aren’t smarter about embeddings — they have a faster <em>measurement loop</em>. The flywheel: collect real queries (and failures) from production, fold the tricky ones into your golden set, then for every proposed change — new chunker, different embedding model, added reranker, hybrid search, prompt tweak — run the same evaluation and accept only changes that move the metric. Because you measure retrieval and generation separately, you always know <em>which</em> knob to turn. This converts an intimidating space of options into a disciplined, almost boring, optimization.</p>
+    <p>Two practical notes. For the generation side, exact-match scoring is too brittle for free-text answers, so faithfulness and correctness are increasingly judged by an <span class="term">LLM-as-judge</span> — a model scoring whether the answer is supported and correct given the context. That technique (and its pitfalls) is the heart of Track 6, and frameworks like Ragas package these RAG metrics for you. And beware of <em>evaluating on your training examples</em>: keep a held-out set the system was never tuned on, or you’ll fool yourself with numbers that don’t generalize. Measurement is only useful if it’s honest.</p>
+  </div>
+
+  <p>You’ve built RAG end to end and learned to measure it. Time to pressure-test the whole track the way an interviewer would. On to the <strong>Track 3 interview check</strong>.</p>
+
+</main>
+
+<script>
+(function () {
+  var N = 8;
+  var relevant = { 2: true, 5: true };  // 1-indexed positions that are relevant by default
+  var total = document.getElementById("ev-total"), kk = document.getElementById("ev-k");
+  var list = document.getElementById("ev-list"), out = document.getElementById("ev-out");
+  function buildList() {
+    var html = "";
+    for (var i = 1; i <= N; i++) {
+      var on = relevant[i];
+      html += '<div class="ev-item" data-i="' + i + '" style="display:inline-flex;align-items:center;gap:8px;margin:4px 6px 4px 0;cursor:pointer;' +
+        'border:1.5px solid ' + (on ? "#2faa55" : "#e8e3da") + ';background:' + (on ? "#eefaf0" : "#fff") + ';border-radius:9px;padding:7px 11px;font-size:13px">' +
+        '<b>#' + i + '</b> <span style="color:' + (on ? "#15803d" : "#94a3b8") + '">' + (on ? "relevant" : "not relevant") + '</span></div>';
+    }
+    list.innerHTML = html;
+    list.querySelectorAll(".ev-item").forEach(function (el) {
+      el.addEventListener("click", function () {
+        var i = +el.getAttribute("data-i");
+        relevant[i] = !relevant[i];
+        buildList(); compute();
+      });
+    });
+  }
+  function compute() {
+    var k = +kk.value, tot = +total.value;
+    document.getElementById("ev-kv").textContent = k;
+    document.getElementById("ev-tot").textContent = tot;
+    var hitsInK = 0, firstRel = 0;
+    for (var i = 1; i <= N; i++) {
+      if (relevant[i]) {
+        if (i <= k) hitsInK++;
+        if (!firstRel) firstRel = i;
+      }
+    }
+    var recall = Math.min(hitsInK / tot, 1);
+    var precision = hitsInK / k;
+    var mrr = firstRel ? 1 / firstRel : 0;
+    function bar(label, v, note) {
+      return '<div style="margin:6px 0"><b>' + label + '</b> = ' + v.toFixed(2) +
+        ' <span style="color:#94a3b8;font-size:12.5px">' + note + '</span>' +
+        '<div style="height:7px;background:#eef2f7;border-radius:4px;margin-top:3px"><div style="height:7px;width:' + (v * 100) + '%;background:#4f46e5;border-radius:4px"></div></div></div>';
+    }
+    out.innerHTML =
+      bar("recall@" + k, recall, "(relevant found in top-k ÷ total relevant)") +
+      bar("precision@" + k, precision, "(relevant in top-k ÷ k)") +
+      bar("MRR", mrr, "(1 ÷ rank of first relevant = " + (firstRel || "none") + ")");
+  }
+  total.addEventListener("input", compute);
+  kk.addEventListener("input", compute);
+  buildList(); compute();
+})();
+</script>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

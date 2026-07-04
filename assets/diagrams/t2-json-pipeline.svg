@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 280" width="900" height="280" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="900" height="280" fill="#ffffff"/>
+<text x="450" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Reliable JSON: generate → validate → (retry)</text>
+<rect x="20" y="94.5" width="168" height="70" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="20" y="97" width="168" height="70" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="20" y="92" width="168" height="70" rx="13" ry="13" fill="url(#g_concept)" stroke="#2563eb" stroke-width="1.8"/>
+<text x="104.0" y="118.75" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="15" fill="#1e3a8a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Prompt</text>
+<text x="104.0" y="132.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">+ JSON schema</text>
+<rect x="220" y="94.5" width="120" height="70" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="220" y="97" width="120" height="70" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="220" y="92" width="120" height="70" rx="13" ry="13" fill="url(#g_accent)" stroke="#4f46e5" stroke-width="1.8"/>
+<text x="280.0" y="127.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#312e81" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Model</text>
+<rect x="372" y="94.5" width="150" height="70" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="372" y="97" width="150" height="70" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="372" y="92" width="150" height="70" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="447.0" y="127.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14.5" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">JSON text</text>
+<rect x="556" y="94.5" width="160" height="70" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="556" y="97" width="160" height="70" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="556" y="92" width="160" height="70" rx="13" ry="13" fill="url(#g_key)" stroke="#d97706" stroke-width="1.8"/>
+<text x="636.0" y="127.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#7c2d12" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Validate / parse</text>
+<rect x="752" y="94.5" width="128" height="70" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="752" y="97" width="128" height="70" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="752" y="92" width="128" height="70" rx="13" ry="13" fill="url(#g_example)" stroke="#16a34a" stroke-width="1.8"/>
+<text x="816.0" y="118.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="15" fill="#14532d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Use it</text>
+<text x="816.0" y="131.5" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">✓</text>
+<line x1="188" y1="127" x2="206.0" y2="127.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="218.0,127.0 206.0,131.8 206.0,122.2" fill="#475569"/>
+<line x1="340" y1="127" x2="358.0" y2="127.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="370.0,127.0 358.0,131.8 358.0,122.2" fill="#475569"/>
+<line x1="522" y1="127" x2="542.0" y2="127.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="554.0,127.0 542.0,131.8 542.0,122.2" fill="#475569"/>
+<line x1="716" y1="127" x2="738.0" y2="127.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="750.0,127.0 738.0,131.8 738.0,122.2" fill="#475569"/>
+<text x="538" y="86" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#15803d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">valid</text>
+<line x1="636" y1="162" x2="636" y2="232" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round"/>
+<line x1="636" y1="232" x2="280" y2="232" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round"/>
+<line x1="280" y1="232" x2="280.0" y2="176.0" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="280.0,164.0 284.8,176.0 275.2,176.0" fill="#dc2626"/>
+<text x="458" y="250" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#dc2626" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">invalid → ask again, including the parse error and the schema</text>
+</svg>

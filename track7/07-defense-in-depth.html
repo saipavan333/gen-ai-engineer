@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Defense in depth — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="7.7">
+<main class="lesson">
+
+  <span class="eyebrow">Track 7 · Lesson 7.7</span>
+  <h1>Defense in depth</h1>
+  <p class="lead">Every guard in this track is imperfect on its own — moderation misses things, prompts get injected, models get jailbroken. The whole strategy is to layer them so that no single failure becomes a breach. This lesson assembles the pieces into a coherent defense.</p>
+
+  <h2>Why one layer is never enough</h2>
+  <p>You’ve seen that each defense is probabilistic or partial: prompt hardening reduces but can’t eliminate injection; moderation has false negatives; the model’s refusals can be jailbroken. If you rely on any single one, a single bypass is a full compromise. <span class="term">Defense in depth</span> is the security principle of stacking independent layers so an attacker must defeat <em>all</em> of them, and so a failure of one is caught or contained by another. Combined with <span class="term">least privilege</span> — giving the system only the access it needs — it shrinks both the chance and the impact of a breach.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t7-defense.svg" alt="Defense in depth: layers around the model. Input moderation → Delimited prompt → LLM + least-privilege tools → Output validation → Monitor & log. No single guard is enough; stack them so one failure doesn't become a breach.">
+    <figcaption>The layered pipeline. Each stage is an independent guard; a request must pass all of them, and a failure in one is backstopped by the others.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p><span class="term">Defense in depth</span> uses multiple independent safeguards so that the failure of any one doesn’t cause a breach. For LLM apps the layers are: <span class="term">input moderation</span> (block unsafe requests), <span class="term">prompt hardening</span> (fence untrusted text as data), <span class="term">least-privilege tools</span> (limit what the model can do), <span class="term">human-in-the-loop</span> (approval for risky actions), <span class="term">output validation</span> (sanitize before use), and <span class="term">monitoring</span> (detect and respond to what slips through). <span class="term">Least privilege</span> ensures even a fully-hijacked model can do little harm.</p>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — compose the layers (free)</div>
+    <p>A guarded request pipeline that stacks the defenses from this whole track:</p>
+<pre><code><span class="k">def</span> <span class="f">handle</span>(user_msg, user):
+    log(<span class="s">"request"</span>, redact(user_msg), user.id)              <span class="c"># monitor + PII redaction (7.4)</span>
+
+    <span class="k">if</span> <span class="f">is_unsafe</span>(user_msg):                                <span class="c"># 1) input moderation (7.5)</span>
+        <span class="k">return</span> refuse()
+
+    prompt <span class="o">=</span> [{<span class="s">"role"</span>:<span class="s">"system"</span>,<span class="s">"content"</span>: SYSTEM_RULES},      <span class="c"># 2) prompt hardening (7.2)</span>
+              {<span class="s">"role"</span>:<span class="s">"user"</span>,<span class="s">"content"</span>: <span class="s">f"&lt;data&gt;{user_msg}&lt;/data&gt;"</span>}]
+
+    out <span class="o">=</span> <span class="f">agent</span>(prompt, tools<span class="o">=</span><span class="f">tools_for</span>(user),               <span class="c"># 3) least-privilege tools (4.8)</span>
+                require_approval<span class="o">=</span>{<span class="s">"refund"</span>,<span class="s">"delete"</span>})            <span class="c"># 4) human-in-the-loop (4.8)</span>
+
+    out <span class="o">=</span> <span class="f">validate_output</span>(out)                            <span class="c"># 5) output validation (7.6)</span>
+    <span class="k">if</span> <span class="f">is_unsafe</span>(out):                                     <span class="c"># 6) output moderation (7.5)</span>
+        <span class="k">return</span> refuse()
+
+    log(<span class="s">"response"</span>, redact(out), user.id)               <span class="c"># monitor</span>
+    <span class="k">return</span> out</code></pre>
+    <p>No layer here is trusted to be perfect. If moderation misses, the prompt is hardened; if the prompt is injected, the tools are least-privilege; if a risky action is requested, a human approves; if the output is unsafe or malformed, validation and output-moderation catch it; and everything is logged so you learn from whatever slips through.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>Every single guard is imperfect — <strong>layer independent defenses</strong> so one failure isn’t a breach.</li>
+      <li>The stack: <strong>input moderation → prompt hardening → least-privilege tools → human approval → output validation → monitoring</strong>.</li>
+      <li><strong>Least privilege</strong> is the most powerful layer: a hijacked model that can’t <em>do</em> much can’t cause much harm.</li>
+      <li>Assume each layer leaks; design so the <strong>blast radius is contained</strong>.</li>
+      <li><strong>Match the depth to the risk</strong> — an internal tool needs less than a public, action-taking agent.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Across this track, which single layer most reduces the <em>impact</em> of a successful prompt injection or jailbreak?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Least privilege — limiting the tools/data the model can access, so even a fully-hijacked model can do little harm.</span>
+        <div class="why">Correct. Injection/jailbreaks can’t be fully prevented, so the highest-leverage move is containment: if the model has no dangerous tools and minimal data access, a successful attack yields little. Least privilege caps the blast radius regardless of how the model was manipulated.</div></li>
+      <li data-correct="false"><span class="opt">B) A longer system prompt.</span>
+        <div class="why">Prompt wording reduces the <em>chance</em> of some attacks but doesn’t limit the <em>impact</em> when one succeeds — and it’s itself bypassable. Containment comes from constraining capabilities, not from more instructions.</div></li>
+      <li data-correct="false"><span class="opt">C) A bigger model.</span>
+        <div class="why">A bigger model is still injectable/jailbreakable and, if it has powerful tools, can still cause harm when manipulated. Capability doesn’t contain impact; least privilege does.</div></li>
+      <li data-correct="false"><span class="opt">D) Higher temperature for variety.</span>
+        <div class="why">Temperature is unrelated to security and could make behavior less predictable. It does nothing to limit the damage of a successful attack.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Trace what happens to an injection attempt as it passes through the layered pipeline above — where might each layer stop or contain it?<br>
+    <strong>2.</strong> Why is “independent” the key word in “independent layers”?<br>
+    <strong>3.</strong> Design the appropriate defense depth for (a) an internal employee Q&amp;A bot vs (b) a public agent that can issue refunds. How do they differ?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> Input moderation might catch an obviously abusive attempt; prompt hardening (fencing the text as data) may make the model ignore the injected instruction; if it doesn’t, least-privilege tools mean the model can’t do anything dangerous; a risky action it does attempt hits human approval; the output is validated (no unsafe markup/actions) and moderated; and the whole thing is logged so you detect the attempt and add it to your tests. The attack must beat <em>every</em> layer to cause harm — and even then, least privilege limits what “harm” can be.</p>
+        <p><strong>2.</strong> Because layers that fail the same way give false confidence — if your input filter and output filter are the same model with the same blind spot, an attack that beats one beats both. Independence (different mechanisms: a classifier, code-level limits, a separate moderation model, human review) means an attacker must defeat genuinely different defenses, and a weakness in one doesn’t imply a weakness in another. That’s what makes stacking actually multiply security rather than just look thorough.</p>
+        <p><strong>3.</strong> (a) The internal bot is low-risk (trusted users, read-only, no money/actions), so light defenses suffice: basic moderation, sensible prompt, PII care in logs, monitoring. (b) The public refund agent is high-risk (untrusted users, irreversible money-moving action), so it needs the full stack: input/output moderation, hardened prompts, strict least-privilege tools, <em>hard code-level refund limits + human approval</em>, output validation, and tight monitoring/rate-limiting. Match the investment to the assets and exposure — over-securing an internal tool wastes effort, under-securing a public action-taker is dangerous.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: the security mindset for LLM products</div>
+    <p>The throughline of this entire track is a mindset shift: <strong>you cannot make the model safe, so you make the system safe around it.</strong> The model is a brilliant, gullible component that processes untrusted text and (often) takes actions; treat it like any untrusted, internet-facing component and apply decades of security wisdom — least privilege, defense in depth, validate everything crossing a boundary, assume breach, monitor and respond. None of the individual techniques are exotic; the skill is composing them appropriately and never trusting any single one (including the model’s good behavior).</p>
+    <p>Two closing principles. First, <strong>security is proportional</strong>: a careful threat model (Lesson 7.1) tells you which assets and exposures actually matter, so you can invest depth where it counts and avoid security theater where it doesn’t. Second, <strong>safety is continuous, not a checkbox</strong>: attacks evolve, so you red-team, fold successful attacks into your eval suite (Track 6), monitor production, and update defenses — the same flywheel that drives quality also drives safety. Master this and you can put an LLM in front of real users, and even give it real capabilities, with justified confidence. That confidence — earned through layered, measured, evolving defenses — is what it means to ship a <em>trustworthy</em> AI product, which is the whole point of being an applied GenAI engineer rather than a demo-builder.</p>
+  </div>
+
+  <p>You can now defend an LLM product against the adversarial world. Time to pressure-test it. On to the <strong>Track 7 interview check</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

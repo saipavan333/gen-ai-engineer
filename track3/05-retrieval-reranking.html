@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Retrieval &amp; reranking — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="3.5">
+<main class="lesson">
+
+  <span class="eyebrow">Track 3 · Lesson 3.5</span>
+  <h1>Retrieval &amp; reranking</h1>
+  <p class="lead">Vector search is fast but a little blunt — it ranks by similarity, which isn’t the same as relevance. Reranking adds a second, smarter pass that reads each candidate against the query and reorders for quality. This two-stage pattern is one of the biggest, cheapest wins in RAG.</p>
+
+  <h2>Why “similar” isn’t “best”</h2>
+  <p>Your embedding model encodes the query and each chunk <em>independently</em>, then compares the vectors. That’s what makes it fast — you can pre-embed everything — but it also means the model never looks at the query and a chunk <em>together</em>, so it can miss fine-grained relevance. A chunk can be broadly on-topic (high similarity) yet not actually answer the question. The fix is a <span class="term">reranker</span>: a model that takes the query and one candidate chunk <em>as a pair</em> and scores how well that chunk answers that query.</p>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p>A <span class="term">bi-encoder</span> embeds query and document separately, so similarity is a fast vector comparison (this is your retriever). A <span class="term">cross-encoder</span> feeds the query and a document <em>together</em> through a model to produce a single relevance score — far more accurate, but far slower (you must run it per candidate). The standard design is <span class="term">two-stage retrieval</span>: use the fast bi-encoder to fetch many candidates (high <span class="term">recall</span>), then the slow cross-encoder to rerank them down to the best few (high <span class="term">precision</span>).</p>
+  </div>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t3-rerank.svg" alt="Two-stage retrieval: a Query goes to Vector search (bi-encoder, fast) which returns top 50 candidates, then to Rerank (cross-encoder, slow, scores each pair) which returns the Top 5, best in order. Stage 1 casts a wide cheap net; stage 2 carefully reorders the shortlist.">
+    <figcaption>Stage 1 casts a wide, cheap net (get the right chunk <em>somewhere</em> in the top 50). Stage 2 reads each candidate carefully and reorders, so the truly best chunks rise to the top few you actually use.</figcaption>
+  </figure>
+
+  <h2>See the funnel and the reorder</h2>
+  <p>Type a question. Stage 1 returns a shortlist by a fast text score; “Rerank” re-scores those candidates more carefully and reorders them. Watch ranks shift — that reordering is the whole value.</p>
+
+  <div class="demo" id="rr-demo">
+    <div class="demo-head"><span class="tag">Live demo</span><h4>Retrieve → rerank</h4></div>
+    <p class="demo-hint">Both stages use simple text scores so this runs in your browser; real systems use embeddings (stage 1) and a trained cross-encoder (stage 2). Same funnel, same reorder.</p>
+    <label>Question</label>
+    <input type="text" id="rr-q" value="how do I stop my monthly charges?">
+    <div class="out" id="rr-out" style="margin-top:14px"></div>
+    <button class="run" id="rr-go">Rerank the shortlist</button>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — rerank with a free cross-encoder</div>
+    <p>Retrieve broadly with embeddings, then rerank with a free cross-encoder for precision.</p>
+<pre><code><span class="o">!</span>pip install sentence-transformers
+<span class="k">from</span> sentence_transformers <span class="k">import</span> SentenceTransformer, CrossEncoder
+<span class="k">import</span> numpy <span class="k">as</span> np
+
+bi <span class="o">=</span> <span class="f">SentenceTransformer</span>(<span class="s">"all-MiniLM-L6-v2"</span>)              <span class="c"># stage 1: retriever</span>
+ce <span class="o">=</span> <span class="f">CrossEncoder</span>(<span class="s">"cross-encoder/ms-marco-MiniLM-L-6-v2"</span>)   <span class="c"># stage 2: reranker (free)</span>
+
+chunks <span class="o">=</span> [...]                       <span class="c"># your corpus</span>
+index <span class="o">=</span> bi.<span class="f">encode</span>(chunks, normalize_embeddings<span class="o">=</span><span class="kc">True</span>)
+
+<span class="k">def</span> <span class="f">search</span>(query, fetch<span class="o">=</span><span class="n">50</span>, keep<span class="o">=</span><span class="n">5</span>):
+    <span class="c"># stage 1: fast, wide net</span>
+    q <span class="o">=</span> bi.<span class="f">encode</span>([query], normalize_embeddings<span class="o">=</span><span class="kc">True</span>)[<span class="n">0</span>]
+    cand_idx <span class="o">=</span> np.<span class="f">argsort</span>(index <span class="o">@</span> q)[::<span class="o">-</span><span class="n">1</span>][:fetch]
+    cands <span class="o">=</span> [chunks[i] <span class="k">for</span> i <span class="k">in</span> cand_idx]
+    <span class="c"># stage 2: careful rerank of the shortlist only</span>
+    scores <span class="o">=</span> ce.<span class="f">predict</span>([(query, c) <span class="k">for</span> c <span class="k">in</span> cands])    <span class="c"># reads query+chunk together</span>
+    reranked <span class="o">=</span> [c <span class="k">for</span> _, c <span class="k">in</span> <span class="f">sorted</span>(<span class="f">zip</span>(scores, cands), reverse<span class="o">=</span><span class="kc">True</span>)]
+    <span class="k">return</span> reranked[:keep]</code></pre>
+    <p>You only run the expensive cross-encoder on the 50 candidates, not the whole corpus — that’s what makes two-stage affordable. Reranking often improves answer quality more than swapping to a bigger LLM, for a fraction of the cost.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li><strong>Bi-encoders are fast but blunt</strong> (independent embeddings); <strong>cross-encoders are accurate but slow</strong> (read the pair together).</li>
+      <li><strong>Two-stage retrieval</strong>: bi-encoder fetches many (recall), cross-encoder reranks to a few (precision).</li>
+      <li>You only rerank the <strong>shortlist</strong> (e.g., 50 → 5), which keeps the expensive step affordable.</li>
+      <li>Reranking is often a <strong>bigger quality win than a bigger LLM</strong>, and cheaper.</li>
+      <li>Tune two numbers: how many to <strong>fetch</strong> (stage-1 recall) and how many to <strong>keep</strong> (stage-2 precision into the prompt).</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your RAG retrieves the right chunk into the top 20, but it’s ranked #14 and your prompt only includes the top 3 — so the model never sees it. Cheapest effective fix?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Add a cross-encoder reranker over the top 20, then take the top 3 after reranking.</span>
+        <div class="why">Correct. The right chunk is already retrieved (good recall) — it’s just ordered poorly by the bi-encoder. A reranker reads each candidate against the query and promotes the truly relevant one into the top 3, fixing the exact failure cheaply.</div></li>
+      <li data-correct="false"><span class="opt">B) Switch to a much larger generation model.</span>
+        <div class="why">A bigger LLM can’t use a chunk it never receives. The failure is in <em>ranking/selection</em>, not generation — spending more on the model won’t put the right chunk in the prompt.</div></li>
+      <li data-correct="false"><span class="opt">C) Put all 20 chunks in the prompt.</span>
+        <div class="why">It might work but is wasteful and risks “lost in the middle” and higher cost/latency. Reranking achieves the goal — the right chunk in the top few — far more efficiently than dumping everything in.</div></li>
+      <li data-correct="false"><span class="opt">D) Increase temperature.</span>
+        <div class="why">Temperature affects generation randomness, not which chunks are selected for the prompt. It has no bearing on a ranking problem.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Why can’t you just run the cross-encoder over your entire corpus and skip the bi-encoder?<br>
+    <strong>2.</strong> Your reranker is great but adds 300 ms per query and you have a tight latency budget. Name two levers to manage the cost.<br>
+    <strong>3.</strong> Retrieval recall@20 is 0.99 but answer quality is mediocre. Is reranking likely to help? What about if recall@20 were 0.6?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> Because the cross-encoder must run the model on every (query, document) pair — for a million chunks that’s a million forward passes per query, hopelessly slow. The bi-encoder pre-computes document vectors once and reduces a query to a few fast comparisons, narrowing to a shortlist the cross-encoder can afford to score. The two stages exist precisely to make precision affordable.</p>
+        <p><strong>2.</strong> (a) <strong>Rerank fewer candidates</strong> — score the top 20 instead of 100; less work, slightly lower ceiling. (b) <strong>Use a smaller/faster reranker</strong> model, trading a little accuracy for speed. (Bonus: cache rerank results for repeated queries.) Tune against your latency budget and a quality target.</p>
+        <p><strong>3.</strong> At recall@20 = 0.99, the right chunk is almost always in the candidate set — it’s just ordered poorly, so reranking (which reorders) is exactly the cure. At recall@20 = 0.6, the right chunk is <em>often not retrieved at all</em>, so reranking can’t help — you can’t reorder what isn’t there. Then the fix is upstream: better chunking, a better embedding model, hybrid search, or fetching more candidates. Reranking improves <em>ordering</em>, never <em>recall</em>.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: diversity, and where the gains really come from</div>
+    <p>Two refinements make reranking even better. First, <strong>diversity</strong>: top results are often near-duplicates (three chunks saying the same thing), wasting prompt space. <span class="term">Maximal Marginal Relevance</span> (MMR) re-ranks to balance relevance with novelty, so your top-k covers more distinct information — valuable when a question needs facts from several places. Second, <strong>fetch wide, keep narrow</strong>: the most common tuning is increasing how many candidates stage 1 returns (raising the chance the right chunk is <em>somewhere</em> in the shortlist) while keeping the number you actually put in the prompt small (so the model isn’t diluted). Recall is stage 1’s job; precision is stage 2’s.</p>
+    <p>The strategic insight: in most RAG systems, <em>retrieval</em> is the bottleneck, not generation. Teams reflexively reach for a bigger, pricier LLM when their real problem is that the right evidence isn’t making it into the prompt. Adding a reranker, fetching more candidates, and (next lesson) blending in keyword search usually buys more answer quality per dollar than any model upgrade. Fix what reaches the model before you upgrade the model.</p>
+  </div>
+
+  <p>Semantic search has a blind spot: exact terms, codes, and rare words that embeddings smear together. Keyword search nails those. Combine them and you get the best of both. Next: <strong>hybrid search</strong>.</p>
+
+</main>
+
+<script>
+(function () {
+  var CORPUS = [
+    "To cancel your subscription, open Settings, choose Billing, then End plan.",
+    "Refunds go to your original payment method within 5 to 7 business days.",
+    "The X200 blender has a 3-year limited warranty covering motor defects.",
+    "Returns are free within 30 days; print the prepaid label on the Orders page.",
+    "Our plans are Free, Pro, and Team, billed monthly to your card.",
+    "If the blender overheats it shuts off; let it cool for about 10 minutes.",
+    "Pausing your subscription keeps your data but stops the monthly charges.",
+    "To update your billing card, go to Settings, Billing, Payment method."
+  ];
+  var STOP = new Set("the a an of to and or is are be can you your my for in on it how do i with".split(" "));
+  function toks(s) { return s.toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter(function (w) { return w && !STOP.has(w); }); }
+  function tf(words) { var m = {}; words.forEach(function (w) { m[w] = (m[w] || 0) + 1; }); return m; }
+  function cos(a, b) {
+    var dot = 0, na = 0, nb = 0;
+    for (var k in a) { na += a[k] * a[k]; if (b[k]) dot += a[k] * b[k]; }
+    for (var k2 in b) nb += b[k2] * b[k2];
+    return na && nb ? dot / Math.sqrt(na * nb) : 0;
+  }
+  var docTf = CORPUS.map(function (d) { return tf(toks(d)); });
+  var qel = document.getElementById("rr-q"), out = document.getElementById("rr-out");
+  var stage1 = [];
+  function render(reranked) {
+    var rows = reranked || stage1;
+    var html = '<div style="font-weight:700;margin-bottom:6px;color:' + (reranked ? "#15803d" : "#4f46e5") + '">' +
+      (reranked ? "Stage 2 — reranked top 5 (reordered for relevance)" : "Stage 1 — vector search shortlist (by similarity)") + '</div>';
+    rows.forEach(function (r, i) {
+      var delta = "";
+      if (reranked) {
+        var was = stage1.findIndex(function (s) { return s.idx === r.idx; });
+        var d = was - i;
+        delta = d > 0 ? '<span style="color:#15803d;font-weight:700">↑' + d + '</span>' :
+                d < 0 ? '<span style="color:#b91c1c;font-weight:700">↓' + (-d) + '</span>' :
+                '<span style="color:#94a3b8">—</span>';
+      }
+      html += '<div style="display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-top:1px solid #f0ece4">' +
+        '<span style="font-weight:800;color:#64748b;min-width:20px">' + (i + 1) + '</span>' +
+        '<span style="flex:1;font-size:13.5px">' + CORPUS[r.idx] + '</span>' +
+        '<span style="min-width:34px;text-align:right">' + delta + '</span></div>';
+    });
+    out.innerHTML = html;
+  }
+  function run() {
+    var q = tf(toks(qel.value));
+    stage1 = docTf.map(function (d, i) { return { idx: i, s: cos(q, d) }; })
+      .sort(function (a, b) { return b.s - a.s; }).slice(0, 5);
+    render(null);
+  }
+  document.getElementById("rr-go").addEventListener("click", function () {
+    var qwords = toks(qel.value);
+    var reranked = stage1.map(function (r) {
+      var d = docTf[r.idx];
+      var covered = qwords.filter(function (w) { return d[w]; }).length / (qwords.length || 1);
+      return { idx: r.idx, s: 0.45 * r.s + 0.55 * covered };  // "cross-encoder-like" re-score
+    }).sort(function (a, b) { return b.s - a.s; });
+    render(reranked);
+  });
+  qel.addEventListener("input", run);
+  run();
+})();
+</script>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Take-home patterns — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="9.5">
+<main class="lesson">
+
+  <span class="eyebrow">Track 9 · Lesson 9.5</span>
+  <h1>Take-home patterns</h1>
+  <p class="lead">Many GenAI roles use a take-home: “build a small RAG app,” “make an eval harness,” “create a tool-using agent.” Most candidates make it <em>work</em> and stop there. The ones who get offers add the things that signal a real engineer — and those are exactly what this course taught you.</p>
+
+  <h2>The common assignments (and what they’re probing)</h2>
+  <div class="tbl-wrap">
+    <table class="t">
+      <tr><th>Assignment</th><th>What they’re really checking</th></tr>
+      <tr><td><strong>“Build a Q&amp;A bot over these docs”</strong></td><td>RAG fundamentals: chunking, retrieval, grounding — and whether you <em>evaluate</em> it</td></tr>
+      <tr><td><strong>“Improve / evaluate this prompt or system”</strong></td><td>That you measure with a golden set instead of eyeballing</td></tr>
+      <tr><td><strong>“Make an agent that does X with tools”</strong></td><td>Tool calling, the loop, and whether you add <em>guards</em></td></tr>
+      <tr><td><strong>“Classify/extract from this dataset”</strong></td><td>Prompting, structured output, validation, and error handling</td></tr>
+    </table>
+  </div>
+
+  <h2>What graders actually score</h2>
+  <p>“It runs” is the floor, not the ceiling. Here’s the rubric most reviewers use, explicitly or not:</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t9-takehome-rubric.svg" alt="What graders actually score in a take-home: Works end-to-end (runs from a clean clone; clear setup steps); Evaluation included (a golden set + metrics — the #1 differentiator); Handles failures / edge cases (abstains, validates, doesn't crash); Right architecture, justified (RAG vs prompt vs agent — and why); Cost / latency awareness (token counts, caching, model choice noted); Clear README & reasoning (decisions and trade-offs explained). 'It works' is the floor; evaluation + judgment is what makes you stand out.">
+    <figcaption>The differentiators are above the floor: <b>evaluation</b>, <b>edge-case handling</b>, <b>justified architecture</b>, <b>cost awareness</b>, and a <b>clear README</b>. Most submissions skip these — which is your opening.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">The winning checklist</div>
+    <ul>
+      <li><strong>Make it run from a clean clone.</strong> A clear README with exact setup/run steps; no “works on my machine.”</li>
+      <li><strong>Include an evaluation.</strong> Even 20 examples with a metric. This is the #1 differentiator — almost nobody does it, and it proves you think like an engineer.</li>
+      <li><strong>Handle failures.</strong> Abstain when unsure, validate outputs, don’t crash on weird input. Show you anticipated the messy cases.</li>
+      <li><strong>Justify the architecture.</strong> Briefly explain why RAG vs prompt vs agent, why this chunk size, why this model — decisions, not defaults.</li>
+      <li><strong>Note cost/latency.</strong> Token counts, where you’d cache, model choice. Even a paragraph shows production awareness.</li>
+      <li><strong>Use the free stack.</strong> Everything in this course runs free (Ollama, sentence-transformers, Chroma) — you can ship a complete, runnable take-home at $0.</li>
+    </ul>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — structuring a RAG take-home</div>
+    <p>A submission that stands out, built entirely from this course’s free tools:</p>
+<pre><code>my-rag-takehome/
+  README.md          <span class="c"># setup, run, design decisions, trade-offs, "what I'd do next"</span>
+  ingest.py          <span class="c"># chunk (recursive + overlap + metadata), embed, store in Chroma</span>
+  rag.py             <span class="c"># retrieve → (rerank) → grounded prompt → Ollama; cites sources</span>
+  eval.py            <span class="c"># golden set (~25 Q+expected) → recall@k + faithfulness (LLM-judge)</span>
+  golden.jsonl       <span class="c"># the eval set — the piece that wins</span>
+  tests/             <span class="c"># a couple of regression tests (temp 0, structural asserts)</span>
+
+<span class="c"># README highlights, in order:</span>
+<span class="c">#  1) How to run (clone → pip install → python ingest.py → python rag.py)</span>
+<span class="c">#  2) Architecture + WHY (RAG because docs are private/changing; chunk size X because…)</span>
+<span class="c">#  3) Evaluation results (recall@5 = 0.92, faithfulness = 0.88) and how to reproduce</span>
+<span class="c">#  4) Failure handling (abstains when not in context; validates output)</span>
+<span class="c">#  5) Cost/latency notes + "what I'd improve with more time"</span></code></pre>
+    <p>The <code>eval.py</code> + <code>golden.jsonl</code> are what separate you. Anyone can wire an LLM to a vector store; showing you can <em>measure</em> the result is the rare, hireable signal.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>“It works” is the <strong>floor</strong>; the differentiators are <strong>evaluation, edge cases, justified architecture, cost awareness, and a clear README</strong>.</li>
+      <li><strong>Include an eval (golden set + metric)</strong> — the #1 thing most submissions lack.</li>
+      <li><strong>Explain your decisions and trade-offs</strong> in the README — reviewers grade reasoning, not just output.</li>
+      <li><strong>Handle the messy cases</strong> (abstain, validate, don’t crash) to show production maturity.</li>
+      <li>You can build a complete, runnable take-home for <strong>$0</strong> with this course’s free stack.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">You have a working RAG take-home. With limited remaining time, what single addition most improves your chances?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) A small evaluation: a golden set of ~20–30 examples with a metric (recall@k and/or faithfulness) and reproducible results.</span>
+        <div class="why">Correct. Evaluation is the rarest and most impressive thing in take-home submissions — it proves you measure quality like an engineer, not by vibes. Most candidates skip it, so adding even a small, honest eval is the highest-leverage differentiator.</div></li>
+      <li data-correct="false"><span class="opt">B) A fancier UI.</span>
+        <div class="why">Polish is nice but rarely the deciding factor for an engineering role — reviewers care about correctness, evaluation, and judgment, not visual flair. A pretty UI over an unmeasured system doesn’t signal engineering depth.</div></li>
+      <li data-correct="false"><span class="opt">C) Swapping in the biggest possible model.</span>
+        <div class="why">Throwing a bigger model at it shows no engineering judgment and may not even improve results — and it ignores cost. Demonstrating measurement beats demonstrating spend.</div></li>
+      <li data-correct="false"><span class="opt">D) Adding more documents to the index.</span>
+        <div class="why">More data doesn’t show you can evaluate or reason about the system. The differentiator is proving quality with an eval, not increasing corpus size.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Your take-home “works” but you’re out of time for a full eval. What’s a minimum-viable eval you can add in 30 minutes?<br>
+    <strong>2.</strong> What three things belong in the README that most candidates omit?<br>
+    <strong>3.</strong> The prompt says “build a RAG bot.” Why might mentioning what you <em>didn’t</em> do impress the reviewer?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> Hand-write ~15–20 real questions with an expected keyword/answer, then a tiny script that runs your bot and reports how many pass (and, if time, an LLM-judge faithfulness score). It’s not rigorous, but it shows you measure rather than guess — which is the entire point. A small honest eval beats a perfect one you didn’t finish.</p>
+        <p><strong>2.</strong> (a) <strong>Why</strong> you chose this architecture and key parameters (chunk size, model, RAG vs prompt) — your reasoning. (b) <strong>Evaluation results</strong> and how to reproduce them. (c) <strong>Limitations &amp; “what I’d do with more time”</strong> — showing you know what’s missing and how you’d extend it. Most READMEs are just setup steps; these three show engineering judgment.</p>
+        <p><strong>3.</strong> Because it demonstrates <em>judgment and scope awareness</em>: “I used RAG, not fine-tuning, because the docs change; I didn’t build an agent because the task is single-step; I’d add reranking and caching next.” Naming the roads not taken (and why) shows you understand the trade-off space, not just the one path you implemented — which is exactly the senior signal reviewers look for.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: a take-home is a portfolio piece</div>
+    <p>Reframe the take-home: it’s not a hoop, it’s the start of your portfolio. The same project that wins one company’s take-home becomes your GitHub showcase, your answer in the next system-design round, and the source of your behavioral stories — the “one strong project” strategy in action. So invest in making it genuinely good and legible: clean structure, an honest README, real (if small) evaluation, and a clear narrative of decisions. A reviewer who can read your reasoning in five minutes and see that you measured, handled failures, and understood the trade-offs will rank you far above a more complex submission they can’t follow or that’s unmeasured.</p>
+    <p>A few practical do’s and don’ts. <strong>Do</strong> scope down and finish — a small, complete, evaluated, well-documented project beats an ambitious, broken one. <strong>Do</strong> use the free stack so it runs for any reviewer at $0 (Ollama + sentence-transformers + Chroma). <strong>Don’t</strong> over-engineer (a five-agent system where a prompt would do signals poor judgment, exactly the opposite of what they want). <strong>Don’t</strong> hide your assumptions — state them. And <strong>do</strong> include the unglamorous things that prove maturity: error handling, an eval, cost notes, and a “limitations” section. The meta-lesson of this whole course shows up here in miniature: anyone can make an LLM produce output; the engineer is the one who can <em>measure and trust</em> it — and your take-home is where you prove it.</p>
+  </div>
+
+  <p>The technical rounds test what you know; the behavioral round tests who you are and how you judge. Next: <strong>behavioral &amp; judgment</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

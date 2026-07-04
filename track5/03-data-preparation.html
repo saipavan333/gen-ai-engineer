@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Data preparation — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="5.3">
+<main class="lesson">
+
+  <span class="eyebrow">Track 5 · Lesson 5.3</span>
+  <h1>Data preparation</h1>
+  <p class="lead">If fine-tuning fails, it’s almost always the data — not the algorithm. The dataset <em>is</em> the product of a fine-tune: the model becomes a mirror of the examples you show it. This lesson is how to build that mirror well.</p>
+
+  <h2>Why data is the whole game</h2>
+  <p>Training nudges the model toward your examples (Lesson 5.2), so whatever patterns live in your data get baked in — including the bad ones. Inconsistent formats teach inconsistency; a biased mix teaches bias; sloppy answers teach sloppiness. The hard, valuable work of fine-tuning is assembling a <em>clean, consistent, representative</em> set of examples in the exact shape you want the model to produce. Get this right and a simple LoRA run succeeds; get it wrong and no hyperparameter will save you.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t5-data-prep.svg" alt="Fine-tuning data pipeline: Raw data (messy logs, docs) → Clean (dedupe, filter, fix) → Format as pairs ({instruction, response}) → Split (train / held-out validation). Quality and consistency beat quantity; a few hundred clean pairs often outperform thousands of messy ones. Always keep a held-out set you never train on.">
+    <figcaption>From messy raw data to clean, consistently-formatted pairs, with a held-out validation split. Every stage is about <em>quality and consistency</em>.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p>A fine-tuning <span class="term">training example</span> is an input paired with the desired output — for instruction tuning, an <span class="term">instruction → response</span> pair, often expressed in a <span class="term">chat format</span> (a list of role/content messages). You split your examples into a <span class="term">training set</span> the model learns from and a <span class="term">validation set</span> held out to measure honestly. The cardinal rule: the data’s format must <strong>match how you’ll prompt the model at inference</strong>.</p>
+  </div>
+
+  <h2>The quality checklist</h2>
+  <ul>
+    <li><strong>Consistent format.</strong> Every example in the same shape — the model copies the pattern, including inconsistencies.</li>
+    <li><strong>High-quality outputs.</strong> The responses are exactly what you want produced. The model imitates them faithfully, warts and all.</li>
+    <li><strong>Representative &amp; diverse.</strong> Cover the real range of inputs, including edge cases, not 500 near-duplicates.</li>
+    <li><strong>Deduplicated &amp; clean.</strong> Remove duplicates, junk, and contradictions; they confuse training and inflate apparent performance.</li>
+    <li><strong>No train/validation leakage.</strong> The same (or near-identical) example must not appear in both, or your evaluation lies to you.</li>
+    <li><strong>Quality over quantity.</strong> A few hundred excellent, consistent pairs routinely beat thousands of mediocre ones.</li>
+  </ul>
+
+  <div class="box example">
+    <div class="box-label">Worked example — format &amp; split a dataset (free)</div>
+    <p>The common modern format is a list of chat messages per example, saved as JSONL (one JSON object per line). This is just data wrangling — free, no GPU.</p>
+<pre><code><span class="k">import</span> json, random
+
+<span class="c"># raw pairs you collected/curated</span>
+raw <span class="o">=</span> [
+    {<span class="s">"q"</span>: <span class="s">"How do I reset my password?"</span>, <span class="s">"a"</span>: <span class="s">"Go to Settings &gt; Security &gt; Reset password."</span>},
+    {<span class="s">"q"</span>: <span class="s">"What's your refund window?"</span>,    <span class="s">"a"</span>: <span class="s">"Returns are free within 30 days of delivery."</span>},
+    <span class="c"># ... a few hundred clean, consistent examples ...</span>
+]
+
+SYSTEM <span class="o">=</span> <span class="s">"You are Acme's support assistant. Be concise and accurate."</span>
+<span class="k">def</span> <span class="f">to_example</span>(row):                              <span class="c"># SAME shape you'll use at inference</span>
+    <span class="k">return</span> {<span class="s">"messages"</span>: [
+        {<span class="s">"role"</span>: <span class="s">"system"</span>,    <span class="s">"content"</span>: SYSTEM},
+        {<span class="s">"role"</span>: <span class="s">"user"</span>,      <span class="s">"content"</span>: row[<span class="s">"q"</span>]},
+        {<span class="s">"role"</span>: <span class="s">"assistant"</span>, <span class="s">"content"</span>: row[<span class="s">"a"</span>]},
+    ]}
+
+data <span class="o">=</span> [<span class="f">to_example</span>(r) <span class="k">for</span> r <span class="k">in</span> raw]
+random.<span class="f">shuffle</span>(data)
+split <span class="o">=</span> <span class="f">int</span>(<span class="n">0.9</span> <span class="o">*</span> <span class="f">len</span>(data))
+train, val <span class="o">=</span> data[:split], data[split:]      <span class="c"># 90/10, never overlap</span>
+
+<span class="k">with</span> open(<span class="s">"train.jsonl"</span>, <span class="s">"w"</span>) <span class="k">as</span> f:
+    <span class="k">for</span> ex <span class="k">in</span> train: f.<span class="f">write</span>(json.<span class="f">dumps</span>(ex) <span class="o">+</span> <span class="s">"\n"</span>)
+<span class="f">print</span>(<span class="f">len</span>(train), <span class="s">"train /"</span>, <span class="f">len</span>(val), <span class="s">"val examples"</span>)</code></pre>
+    <p>Notice the system + user + assistant structure matches exactly how you’ll call the model later. If you train on one format and prompt with another, the model gets confused — <strong>train how you’ll serve</strong>.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li><strong>Data is the product</strong> of a fine-tune — the model mirrors your examples, good and bad.</li>
+      <li>Use a <strong>consistent format</strong> (instruction→response / chat messages) that <strong>matches inference</strong>.</li>
+      <li><strong>Quality &amp; consistency beat quantity</strong>; hundreds of clean pairs often beat thousands of messy ones.</li>
+      <li><strong>Dedupe, diversify, and prevent train/validation leakage.</strong></li>
+      <li>Always keep a <strong>held-out validation set</strong> — it’s your only honest measure (Lesson 5.6).</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your fine-tuned model scores 98% on your validation set but performs poorly in production. You later find many validation examples were near-duplicates of training examples. What happened?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Train/validation leakage — the model effectively saw the validation examples in training, so the 98% was measuring memorization, not generalization.</span>
+        <div class="why">Correct. When validation examples overlap (even near-duplicates) with training, the model has essentially memorized the answers, so validation accuracy is inflated and meaningless. Real, unseen production inputs reveal the truth. Dedupe across the split so validation stays genuinely held out.</div></li>
+      <li data-correct="false"><span class="opt">B) The model is too small.</span>
+        <div class="why">Model size wouldn’t produce a high validation score that collapses in production — that gap is the signature of leakage giving a falsely optimistic measurement, not a capacity problem.</div></li>
+      <li data-correct="false"><span class="opt">C) You needed more epochs.</span>
+        <div class="why">More epochs would worsen memorization. The issue isn’t undertraining; it’s that your validation set wasn’t actually independent, so it can’t tell you anything reliable.</div></li>
+      <li data-correct="false"><span class="opt">D) The learning rate was wrong.</span>
+        <div class="why">Learning rate affects how training proceeds, not whether your validation set is contaminated. The 98%-then-fails pattern points squarely at leakage between train and validation.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> You have 5,000 support tickets but only ~300 have high-quality agent replies. Do you train on all 5,000 or the 300? Why?<br>
+    <strong>2.</strong> Why must the training format match your inference prompt format exactly?<br>
+    <strong>3.</strong> You’re short on data. Name one legitimate way to get more examples and one risk it carries.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> Train on the <strong>300 high-quality</strong> ones. The model imitates whatever you show it, so 4,700 mediocre replies would teach mediocrity and drown out the good pattern. Quality and consistency dominate; a few hundred excellent examples is a strong fine-tuning set. (You could also use the good ones to help generate/curate more — carefully.)</p>
+        <p><strong>2.</strong> Because the model learns to produce the desired output <em>given a specific input shape</em>. If you train with a system message and a particular structure but prompt differently at inference, the model is now in an unfamiliar situation and behaves worse — you’ve broken the pattern it learned. “Train how you serve” keeps training and inference aligned.</p>
+        <p><strong>3.</strong> One way: <strong>synthetic data</strong> — use a strong model to generate additional instruction/response examples for your task. The risk: it can introduce the larger model’s errors, biases, or a sameness that doesn’t reflect real inputs — so synthetic examples must be filtered and validated, not trusted blindly. (Other options: data augmentation, or mining more real examples.)</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: data is the moat</div>
+    <p>In a world where everyone can call the same base models, your <em>data</em> is what’s defensible. A thoughtfully curated set of examples for your specific task — your tone, your formats, your edge cases — is something competitors can’t copy from a model card. That’s why mature teams invest more in data pipelines than in clever training tricks: collecting real examples, cleaning and labeling them, generating and <em>filtering</em> synthetic ones, and continuously folding production failures back into the training set. The fine-tuning algorithm is a commodity; the dataset is the asset.</p>
+    <p>Two traps to internalize. First, <strong>silent format drift</strong>: a stray difference between training and serving (a missing system message, different delimiters, a different chat template) quietly degrades a model that looked great in evaluation — always serve in the exact shape you trained. Second, <strong>evaluation contamination</strong>: leakage between train and validation (or reusing your validation set so often that you implicitly tune to it) makes your numbers lie. The discipline is boring but decisive: clean data, consistent formatting, honest held-out splits. Do that and fine-tuning becomes reliable engineering; skip it and it becomes expensive guesswork.</p>
+  </div>
+
+  <p>With clean data ready, you need a way to actually train that’s cheap enough to run for free. That’s the breakthrough that made fine-tuning accessible. Next: <strong>LoRA &amp; QLoRA</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

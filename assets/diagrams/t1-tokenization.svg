@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 440" width="720" height="440" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="720" height="440" fill="#ffffff"/>
+<rect x="190" y="24.5" width="340" height="52" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="190" y="27" width="340" height="52" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="190" y="22" width="340" height="52" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="360.0" y="48.0" font-family="ui-monospace, SFMono-Regular, Menlo, DejaVu Sans Mono, monospace" font-size="15" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">"Tokenizing isn’t obvious."</text>
+<line x1="360" y1="76" x2="360.0" y2="97.0" stroke="#94a3b8" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="360.0,108.0 355.6,97.0 364.4,97.0" fill="#94a3b8"/>
+<text x="470" y="92" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#475569" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">1 · split into tokens</text>
+<rect x="140.5" y="116" width="69.5" height="42" rx="9" ry="9" fill="#eff5ff" stroke="#2563eb" stroke-width="2"/>
+<text x="175.25" y="137" font-family="DejaVu Sans Mono, monospace" font-size="14" fill="#1e3a8a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Token</text>
+<rect x="220.0" y="116" width="69.5" height="42" rx="9" ry="9" fill="#eff5ff" stroke="#2563eb" stroke-width="2"/>
+<text x="254.75" y="137" font-family="DejaVu Sans Mono, monospace" font-size="14" fill="#1e3a8a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">izing</text>
+<rect x="299.5" y="116" width="60.0" height="42" rx="9" ry="9" fill="#eff5ff" stroke="#2563eb" stroke-width="2"/>
+<text x="329.5" y="137" font-family="DejaVu Sans Mono, monospace" font-size="14" fill="#1e3a8a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">␣isn</text>
+<rect x="369.5" y="116" width="46" height="42" rx="9" ry="9" fill="#eff5ff" stroke="#2563eb" stroke-width="2"/>
+<text x="392.5" y="137" font-family="DejaVu Sans Mono, monospace" font-size="14" fill="#1e3a8a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">'t</text>
+<rect x="425.5" y="116" width="98.0" height="42" rx="9" ry="9" fill="#eff5ff" stroke="#2563eb" stroke-width="2"/>
+<text x="474.5" y="137" font-family="DejaVu Sans Mono, monospace" font-size="14" fill="#1e3a8a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">␣obvious</text>
+<rect x="533.5" y="116" width="46" height="42" rx="9" ry="9" fill="#eff5ff" stroke="#2563eb" stroke-width="2"/>
+<text x="556.5" y="137" font-family="DejaVu Sans Mono, monospace" font-size="14" fill="#1e3a8a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">.</text>
+<line x1="360" y1="162" x2="360.0" y2="187.0" stroke="#94a3b8" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="360.0,198.0 355.6,187.0 364.4,187.0" fill="#94a3b8"/>
+<text x="470" y="182" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#475569" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">2 · map each token to its id</text>
+<rect x="140.5" y="206" width="69.5" height="40" rx="9" ry="9" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+<text x="175.25" y="226" font-family="DejaVu Sans Mono, monospace" font-size="13.5" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">7826</text>
+<rect x="220.0" y="206" width="69.5" height="40" rx="9" ry="9" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+<text x="254.75" y="226" font-family="DejaVu Sans Mono, monospace" font-size="13.5" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">4954</text>
+<rect x="299.5" y="206" width="60.0" height="40" rx="9" ry="9" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+<text x="329.5" y="226" font-family="DejaVu Sans Mono, monospace" font-size="13.5" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">5847</text>
+<rect x="369.5" y="206" width="46" height="40" rx="9" ry="9" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+<text x="392.5" y="226" font-family="DejaVu Sans Mono, monospace" font-size="13.5" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">956</text>
+<rect x="425.5" y="206" width="98.0" height="40" rx="9" ry="9" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+<text x="474.5" y="226" font-family="DejaVu Sans Mono, monospace" font-size="13.5" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">8195</text>
+<rect x="533.5" y="206" width="46" height="40" rx="9" ry="9" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+<text x="556.5" y="226" font-family="DejaVu Sans Mono, monospace" font-size="13.5" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">13</text>
+<line x1="360" y1="252" x2="360.0" y2="285.0" stroke="#94a3b8" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="360.0,296.0 355.6,285.0 364.4,285.0" fill="#94a3b8"/>
+<text x="470" y="276" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#475569" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">3 · feed the ids to the model</text>
+<rect x="225" y="310.5" width="270" height="60" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="225" y="313" width="270" height="60" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="225" y="308" width="270" height="60" rx="13" ry="13" fill="url(#g_accent)" stroke="#4f46e5" stroke-width="1.8"/>
+<text x="360.0" y="329.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#312e81" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Language model</text>
+<text x="360.0" y="343.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">sees only these numbers</text>
+<text x="360" y="404" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Same idea in reverse to read output: numbers → tokens → text.</text>
+</svg>

@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Interview check: Safety — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="7.8">
+<main class="lesson">
+
+  <span class="eyebrow">Track 7 · Interview check</span>
+  <h1>Interview check: Guardrails &amp; Safety</h1>
+  <p class="lead">Safety questions reveal whether you’d actually let your system near real users. Interviewers want a security mindset: you assume the model can be manipulated and you build trustworthy guards around it. Here’s the set.</p>
+
+  <div class="box note">
+    <div class="box-label">The drill</div>
+    <p>Answer aloud first. The throughline: <strong>treat all input — and output — as untrusted</strong>; you can’t make the model safe, so make the <strong>system</strong> safe with <strong>defense in depth + least privilege</strong>; and <strong>match the depth to the risk</strong>.</p>
+  </div>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t7-recap.svg" alt="Threat → defense map. Prompt injection → fence input as data + least-privilege tools. Jailbreaks → strong system prompt + moderation + retest each turn. PII leakage → redact before logging/sending; minimize data. Unsafe content → input & output moderation classifiers. Harmful actions → output validation + human approval for risky ops. And monitor everything, so the threats that slip through get caught and fixed.">
+    <figcaption>Each threat maps to a defense (and everything is monitored). Narrate this map and you can run a safety interview.</figcaption>
+  </figure>
+
+  <h2>The questions teams ask</h2>
+
+  <div class="box practice"><div class="box-label">Q1 · Threat model</div>
+    <p><strong>“What’s different about securing an LLM app?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>LLM apps blur the code/data line — the model treats all text as possible instructions, and much of that text is untrusted (user input, retrieved docs, tool results). Add the ability to take actions and a malicious string can become a real action. So I draw a trust boundary and treat everything entering <em>and</em> leaving as untrusted, then map each threat (injection, jailbreaks, PII, unsafe content, unsafe actions) to a defense. The core shift: you can’t make the model safe, so you make the system safe around it.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q2 · Prompt injection</div>
+    <p><strong>“What is prompt injection and how do you defend against it?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>Untrusted text carrying instructions that override yours — direct (user message) or indirect (hidden in retrieved docs/web pages an agent reads). The model can’t separate rules from data, so it’s not fully solvable. Prompt-level help: fence untrusted text as data and instruct the model to ignore instructions within it. But the real defense is structural: least-privilege tools, human approval for risky actions, no secrets in the prompt, and output validation — so a hijacked model can’t do harm. Defend the prompt and defang the consequences.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q3 · Jailbreaks</div>
+    <p><strong>“Jailbreak vs injection, and how do you reduce jailbreaks?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>A jailbreak targets the model’s safety training (produce disallowed content); injection targets your app’s instructions. Reduce jailbreaks with a safety-trained model + clear system prompt, independent input/output moderation (normalizing/decoding text to defeat obfuscation), re-checking safety every turn (not just turn 1, to catch gradual escalation), plus monitoring and rate-limiting. It’s an arms race, so I red-team, fold successful attacks into a safety eval set, and assume some get through — which is why output moderation is a necessary backstop.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q4 · Privacy</div>
+    <p><strong>“How do you handle PII in an LLM app?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>Redact PII at three boundaries — before logging/tracing, before sending to third-party model APIs, and on outputs — using regex for structured PII and a model-based detector (e.g., free Presidio) for names/addresses. Practice data minimization and retention limits, restrict access, and check provider data-handling terms (or self-host an open model for the most sensitive data). It’s a legal duty (GDPR/CCPA), and fine-tuning on personal data is risky because you can’t easily unlearn it — so I design privacy and observability together.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q5 · Output handling</div>
+    <p><strong>“Why is the model’s output a security risk, and what do you do?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>Because output is shaped by attacker-influenceable inputs and can be malformed or malicious — feeding it into HTML, SQL, a shell, or an action causes XSS, injection, or unintended operations (insecure output handling, a top LLM risk). I treat output as untrusted: validate the schema, allowlist permitted values/actions, enforce hard limits in code (not the prompt), sanitize/escape anything rendered, and scan for leaked secrets/PII — then and only then use it. The model proposes; my code disposes.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q6 · Architecture</div>
+    <p><strong>“What does defense in depth look like for an LLM product?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>Independent layers so one failure isn’t a breach: input moderation → hardened/fenced prompt → least-privilege tools → human approval for risky actions → output validation → output moderation → monitoring. Least privilege is the highest-leverage layer because it caps the impact of any successful injection/jailbreak. The layers must fail <em>independently</em>, and I match depth to risk — an internal read-only bot needs far less than a public agent that moves money.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice"><div class="box-label">Q7 · Design</div>
+    <p><strong>“Design a safe public agent that can issue refunds.”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>Threat-model first (asset = money/PII; untrusted = user + any retrieved content). Then layer: input moderation; fence user text as data; least-privilege tools (only refund/reply/escalate); a <em>hard code-level refund cap</em> and <em>human approval</em> above a threshold (never trust the prompt for the limit); validate the model’s output (allowlist the action, bound the amount, sanitize text); output moderation; redact PII in logs; and monitor/rate-limit for abuse. Even a fully-hijacked model can then only request a small, human-checked refund — blast radius contained.</p>
+    </div></details>
+  </div>
+
+  <h2>Rapid-fire self-check</h2>
+
+  <div class="quiz">
+    <p class="quiz-q">The most important reason a refund limit must live in code, not the system prompt, is…</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Prompts can be overridden by injection or ignored; a code-level limit runs outside the model’s influence and can’t be talked around.</span>
+        <div class="why">Correct. Security controls belong in the trusted, deterministic layer. A prompt is a manipulable suggestion; code enforces the limit no matter what the model is convinced to output.</div></li>
+      <li data-correct="false"><span class="opt">B) Code is faster than reading a prompt.</span>
+        <div class="why">Performance isn’t the point — enforceability is. A prompt limit could be bypassed regardless of speed.</div></li>
+      <li data-correct="false"><span class="opt">C) The model can’t read numbers.</span>
+        <div class="why">It reads numbers fine. The issue is it can be manipulated into ignoring the limit, so the limit must be enforced in code.</div></li>
+      <li data-correct="false"><span class="opt">D) Prompts cost tokens.</span>
+        <div class="why">Token cost is irrelevant to security. The reason is that prompt instructions aren’t an enforced boundary against injection.</div></li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">You can only add ONE defense to an action-taking public agent. Which gives the most protection per unit effort?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Least privilege — restrict its tools/data so even a hijacked model can do little harm.</span>
+        <div class="why">Correct. Since injection/jailbreaks can’t be fully prevented, the highest-leverage single move is containment: limit capabilities so a successful attack yields little. It caps the blast radius regardless of how the model is manipulated.</div></li>
+      <li data-correct="false"><span class="opt">B) A longer, sterner system prompt.</span>
+        <div class="why">It reduces some attempts but is bypassable and doesn’t limit impact when an attack succeeds. Containment beats more instructions.</div></li>
+      <li data-correct="false"><span class="opt">C) A bigger model.</span>
+        <div class="why">Still injectable/jailbreakable, and if it has powerful tools it can still cause harm. Capability doesn’t contain impact.</div></li>
+      <li data-correct="false"><span class="opt">D) Higher temperature.</span>
+        <div class="why">Unrelated to security and makes behavior less predictable. It provides no protection.</div></li>
+    </ul>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Can you explain each of these?</div>
+    <ul>
+      <li>The LLM threat model and trust boundary (input and output untrusted).</li>
+      <li>Prompt injection (direct/indirect) and why it’s not fully solvable.</li>
+      <li>Jailbreak vs injection; per-turn moderation; the arms race.</li>
+      <li>PII redaction at the three boundaries; minimization; the third-party concern.</li>
+      <li>Content moderation on both sides; using a separate safety model.</li>
+      <li>Output validation / insecure output handling (XSS, SQL, actions).</li>
+      <li>Defense in depth + least privilege, and matching depth to risk.</li>
+    </ul>
+  </div>
+
+  <p>You can now ship LLM products you can <em>trust</em>. The last engineering concern is making them fast and cheap enough to run at scale. Next: Track 8, Serving, Latency &amp; Cost.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

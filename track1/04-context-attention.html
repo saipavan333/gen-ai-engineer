@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Context windows &amp; attention — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="1.4">
+<main class="lesson">
+
+  <span class="eyebrow">Track 1 · Lesson 1.4</span>
+  <h1>Context windows &amp; attention</h1>
+  <p class="lead">Two ideas that decide what your model can actually do in practice: how much it can hold in mind at once (the context window), and how it figures out which of those words matter (attention). Get these and you’ll design prompts and systems that work <em>with</em> the model instead of against it.</p>
+
+  <h2>Why there’s a limit at all</h2>
+  <p>An LLM has no long-term memory of your conversation and no ability to “open” a file. The only thing it can use is the text you put in front of it right now. That text — everything the model can see in a single step — has a maximum size, measured in tokens. This is the <span class="term">context window</span>. Understanding it explains why long documents need special handling (Track 3), why long chats start “forgetting” the beginning, and why some requests cost far more than others.</p>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p>The <span class="term">context window</span> is the maximum number of tokens a model can process at once — and crucially, it’s shared by <strong>everything</strong>: your instructions, any examples, the conversation history, any documents you paste in, <em>and</em> the model’s own response. If a model has a 8,000-token window and your input uses 7,900, there’s only room for ~100 tokens of answer.</p>
+  </div>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t1-context-window.svg" alt="The context window shown as a frame over the most recent tokens in a stream. Earlier tokens to the left are dimmed and labeled 'no longer visible'. The window is labeled 'context window (today: ~8K to 200K+ tokens)'. Caption: your prompt, the whole conversation, and the model's own reply all share this one budget.">
+    <figcaption>The window slides over the token stream. Anything that doesn’t fit is invisible to the model — it cannot use what it cannot see.</figcaption>
+  </figure>
+
+  <div class="box note">
+    <div class="box-label">A myth worth killing now</div>
+    <p>Chat assistants feel like they “remember” your conversation. They don’t, internally. Each turn, the app re-sends the <em>entire</em> conversation so far as input. The “memory” is just resent text — and it counts against the window and your bill every single turn. When a long chat gets vague, you’ve often quietly hit the window limit and early messages are being dropped.</p>
+  </div>
+
+  <h2>The catch with “just use a huge window”</h2>
+  <p>Windows have grown enormously (some models reach hundreds of thousands of tokens). That’s great, but bigger isn’t free:</p>
+  <ul>
+    <li><strong>Cost.</strong> You pay per token. Stuffing 100K tokens of documents into every request is expensive — often needlessly, when only a paragraph was relevant.</li>
+    <li><strong>Latency.</strong> More tokens to process means slower responses (we’ll quantify this in Track 8).</li>
+    <li><strong>“Lost in the middle.”</strong> Models reliably use information at the <em>start</em> and <em>end</em> of a long context, but can overlook things buried in the middle. More context can paradoxically mean worse answers.</li>
+  </ul>
+  <p>This is the core motivation for <strong>RAG</strong> (Track 3): instead of dumping everything in, retrieve only the few relevant chunks and spend your token budget wisely.</p>
+
+  <h2>How the model uses the context: attention</h2>
+  <p>Within the window, how does the model know that in “The animal didn’t cross the street because <em>it</em> was tired,” the word “it” refers to the animal and not the street? Through <span class="term">attention</span> — the central mechanism of the <span class="term">transformer</span> (the neural-network architecture behind modern LLMs). For each token, attention lets the model look back at the other tokens and decide, with a learned weight, how much each one matters for understanding this token right now.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t1-attention.svg" alt="The sentence 'The animal didn't cross the street because it was tired' shown as tokens. From the highlighted word 'it', a thick arrow with weight 0.7 points to 'animal' and a thin arrow with weight 0.2 points to 'street'. Caption: 'it' attends most to 'animal', which is how the model knows what 'it' refers to.">
+    <figcaption>Attention in one picture: “it” places most of its weight on “animal.” Every token does this, looking across the whole window, which is how meaning and references get resolved.</figcaption>
+  </figure>
+
+  <p>Two practical consequences fall out of this. First, <strong>position matters</strong>: the model is sensitive to <em>where</em> things appear, which is why instructions often work best at the very start or very end of a long prompt. Second, attention is what makes the context window so powerful <em>and</em> so costly — every token can attend to every other token, and that all-pairs comparison is the expensive part (see the deep dive).</p>
+
+  <div class="demo" id="ctx-demo">
+    <div class="demo-head"><span class="tag">Live demo</span><h4>Context budget calculator</h4></div>
+    <p class="demo-hint">Everything shares one budget. Set the pieces of your request and watch whether the answer still fits. Try a big “retrieved documents” value against a small window — this is exactly the squeeze RAG is designed to relieve.</p>
+    <label for="ctx-window">Context window</label>
+    <select id="ctx-window">
+      <option value="8000">8,000 tokens (smaller / cheaper model)</option>
+      <option value="32000">32,000 tokens</option>
+      <option value="128000" selected>128,000 tokens (large)</option>
+    </select>
+    <div class="row" style="margin-top:6px">
+      <div><label>System prompt &amp; instructions: <b><span id="v-sys">600</span></b></label>
+        <input type="range" id="r-sys" min="0" max="3000" step="50" value="600"></div>
+      <div><label>Conversation history: <b><span id="v-hist">3000</span></b></label>
+        <input type="range" id="r-hist" min="0" max="40000" step="500" value="3000"></div>
+    </div>
+    <div class="row">
+      <div><label>Retrieved documents: <b><span id="v-ret">8000</span></b></label>
+        <input type="range" id="r-ret" min="0" max="200000" step="1000" value="8000"></div>
+      <div><label>Reserved for the answer: <b><span id="v-ans">1500</span></b></label>
+        <input type="range" id="r-ans" min="0" max="8000" step="100" value="1500"></div>
+    </div>
+    <div class="out" id="ctx-out" style="margin-top:16px"></div>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — will it fit? (free, Colab)</div>
+    <p>Before sending a big prompt, you can check its size locally and decide whether to trim or retrieve. No API needed:</p>
+<pre><code><span class="o">!</span>pip install tiktoken
+<span class="k">import</span> tiktoken
+enc <span class="o">=</span> tiktoken.<span class="f">get_encoding</span>(<span class="s">"cl100k_base"</span>)
+
+system <span class="o">=</span> <span class="s">"You are a helpful support assistant. Answer only from the context."</span>
+context <span class="o">=</span> open_your_document_text   <span class="c"># imagine a long string here</span>
+question <span class="o">=</span> <span class="s">"How do I export my data?"</span>
+
+prompt <span class="o">=</span> system <span class="o">+</span> context <span class="o">+</span> question
+n <span class="o">=</span> <span class="f">len</span>(enc.<span class="f">encode</span>(prompt))
+WINDOW, RESERVE_FOR_ANSWER <span class="o">=</span> <span class="n">8000</span>, <span class="n">1000</span>
+
+<span class="k">if</span> n <span class="o">+</span> RESERVE_FOR_ANSWER <span class="o">&gt;</span> WINDOW:
+    <span class="f">print</span>(<span class="s">f"Too big: </span>{n}<span class="s"> tokens. Trim or retrieve instead of pasting everything."</span>)
+<span class="k">else</span>:
+    <span class="f">print</span>(<span class="s">f"Fits: </span>{n}<span class="s"> tokens, leaving </span>{WINDOW - n}<span class="s"> for the answer."</span>)</code></pre>
+    <p>This little guard is the seed of real production logic: measure, then decide whether to send, trim, or retrieve.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>The <strong>context window</strong> is the max tokens a model handles at once — shared by instructions, history, documents, <em>and</em> the answer.</li>
+      <li>Chat “memory” is just the <strong>whole conversation re-sent each turn</strong>; it costs tokens and can overflow.</li>
+      <li>Bigger windows aren’t free: more <strong>cost, more latency</strong>, and the <strong>“lost in the middle”</strong> effect — which is why RAG retrieves instead of dumping.</li>
+      <li><strong>Attention</strong> lets each token weigh how much every other token matters — this is how references and meaning get resolved.</li>
+      <li><strong>Position matters</strong>: put key instructions where the model reliably looks (start/end), and budget tokens deliberately.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">A user has chatted with your assistant for an hour. They say “summarize what we discussed,” but the summary ignores the first 20 minutes. What’s the most likely cause?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) The conversation grew past the context window, so the earliest messages were truncated and aren’t in the model’s input anymore.</span>
+        <div class="why">Correct. Each turn re-sends the whole history, but only what fits in the window is actually seen. Once the chat exceeds the window, the oldest tokens drop off — so the model genuinely can’t summarize what it can no longer see. The fix is summarizing or retrieving earlier turns, not “reminding” it.</div></li>
+      <li data-correct="false"><span class="opt">B) The model’s knowledge cutoff doesn’t cover the start of the chat.</span>
+        <div class="why">Knowledge cutoff is about training data, not your live conversation. The early messages were generated today, long after training — the issue is the window, not the cutoff.</div></li>
+      <li data-correct="false"><span class="opt">C) Attention can only look at the previous 5 tokens.</span>
+        <div class="why">Attention can look across the entire context window, not just a tiny recent slice. The limit here is the window’s total size, not attention’s reach within it.</div></li>
+      <li data-correct="false"><span class="opt">D) The model deleted the early messages from its memory to save space.</span>
+        <div class="why">The model has no persistent memory to delete from. It only ever sees the text re-sent this turn; the early messages were dropped by the window limit before they ever reached it.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Your model has a 16,000-token window. Your system prompt is 800 tokens, you want to reserve 2,000 for the answer, and each retrieved document chunk is ~500 tokens. How many chunks can you safely include?<br>
+    <strong>2.</strong> Explain why pasting a 200-page manual into one prompt can give <em>worse</em> answers than retrieving the 3 relevant paragraphs.<br>
+    <strong>3.</strong> You notice your assistant follows instructions early in a long prompt but ignores ones buried in the middle. Give two fixes.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> Budget left for documents = 16,000 − 800 (system) − 2,000 (answer) = 13,200 tokens. At ~500 tokens/chunk that’s 13,200 ÷ 500 ≈ <strong>26 chunks</strong>. In practice leave a safety margin (token estimates aren’t exact), so plan for ~22–24. The habit — subtract the fixed costs first, then divide — is exactly how you size a RAG prompt.</p>
+        <p><strong>2.</strong> Two reasons from this lesson. First, <em>lost in the middle</em>: the relevant passage is now buried among hundreds of pages, where models attend less reliably. Second, <em>signal-to-noise</em>: the model must find the needle while attending over a huge haystack, and irrelevant text can pull its attention. Retrieving the 3 relevant paragraphs puts the signal front and center — usually more accurate <em>and</em> far cheaper.</p>
+        <p><strong>3.</strong> (a) Move the critical instructions to the <strong>start or end</strong> of the prompt, where models attend most reliably. (b) <strong>Shorten the prompt</strong> (retrieve less, summarize history) so there’s less to get lost in. A third option: repeat the key instruction at the end as a final reminder.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: self-attention, and why long context is expensive</div>
+    <p>Here’s a bit more of the machinery, kept intuitive. In <span class="term">self-attention</span>, each token produces three vectors: a <strong>query</strong> (“what am I looking for?”), a <strong>key</strong> (“what do I offer?”), and a <strong>value</strong> (“what I’ll contribute if attended to”). To update a token, the model compares its query against every other token’s key to get attention weights (how relevant each is), then mixes their values according to those weights. That’s how “it” ends up mostly absorbing the “animal” token’s information. Models do this many times in parallel (“multi-head” attention) and stack it in many layers, which is where their depth of understanding comes from.</p>
+    <p>The cost consequence is important for Track 8. Because every token compares against every other token, the work grows with the <em>square</em> of the sequence length — doubling the context roughly <strong>quadruples</strong> the attention computation. That’s the deep reason long context is slow and pricey, and why a whole research area exists to make attention cheaper. For now, the engineering takeaway is simple: tokens are a budget, and attention makes long budgets expensive — so spend them on what’s relevant.</p>
+  </div>
+
+  <p>You now understand what the model can see and how it reads it. The last piece of the engine is the part you’ll tune most often: once the model produces its probability distribution, <em>how do we choose the next token?</em> That’s <strong>sampling and decoding</strong>.</p>
+
+</main>
+
+<script>
+(function () {
+  var win = document.getElementById("ctx-window");
+  var ids = ["sys", "hist", "ret", "ans"];
+  var labels = { sys: "System prompt", hist: "History", ret: "Retrieved docs", ans: "Answer (reserved)" };
+  var colors = { sys: "#2563eb", hist: "#16a34a", ret: "#d97706", ans: "#7c3aed" };
+  var out = document.getElementById("ctx-out");
+  function val(id) { return parseInt(document.getElementById("r-" + id).value, 10); }
+  function render() {
+    ids.forEach(function (id) { document.getElementById("v-" + id).textContent = val(id).toLocaleString(); });
+    var W = parseInt(win.value, 10);
+    var vals = { sys: val("sys"), hist: val("hist"), ret: val("ret"), ans: val("ans") };
+    var total = vals.sys + vals.hist + vals.ret + vals.ans;
+    var bar = '<div style="display:flex;height:34px;border-radius:8px;overflow:hidden;border:1px solid #e8e3da;background:#f7f4ee">';
+    ids.forEach(function (id) {
+      var pct = vals[id] / W * 100;
+      if (pct > 0) bar += '<div title="' + labels[id] + '" style="width:' + pct + '%;background:' +
+        colors[id] + '"></div>';
+    });
+    bar += '</div>';
+    var legend = '<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:13px">';
+    ids.forEach(function (id) {
+      legend += '<span style="display:inline-flex;align-items:center;gap:6px">' +
+        '<span style="width:11px;height:11px;border-radius:3px;background:' + colors[id] + '"></span>' +
+        labels[id] + ' ' + vals[id].toLocaleString() + '</span>';
+    });
+    legend += '</div>';
+    var msg;
+    if (total > W) {
+      msg = '<div style="margin-top:12px;padding:11px 14px;border-radius:9px;background:#fef1ef;color:#b91c1c;font-weight:650">' +
+        '⚠ Over budget by ' + (total - W).toLocaleString() + ' tokens. The request won’t fit — trim history or retrieve fewer documents (this is the RAG squeeze).</div>';
+    } else {
+      msg = '<div style="margin-top:12px;padding:11px 14px;border-radius:9px;background:#eefaf0;color:#15803d;font-weight:650">' +
+        '✓ Fits. ' + (W - total).toLocaleString() + ' tokens to spare out of ' + W.toLocaleString() + '.</div>';
+    }
+    out.innerHTML = bar + legend + msg;
+  }
+  win.addEventListener("change", render);
+  ids.forEach(function (id) { document.getElementById("r-" + id).addEventListener("input", render); });
+  render();
+})();
+</script>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

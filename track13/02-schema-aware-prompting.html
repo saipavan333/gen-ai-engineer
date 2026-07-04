@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Schema-aware prompting — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="13.2">
+<main class="lesson">
+
+  <span class="eyebrow">Structured Data &amp; Text-to-SQL · Lesson 13.2</span>
+  <h1>Schema-aware prompting</h1>
+  <p class="lead">A text-to-SQL model is only as good as its picture of your database. This lesson is about feeding it the right context — the schema, descriptions, and a few examples — and, when you have hundreds of tables, giving it just the slice it needs.</p>
+
+  <h2>Why the schema is the prompt</h2>
+  <p>A model cannot query columns it doesn’t know exist. Ask “total spend in Canada” with no schema and it will <em>guess</em> table and column names — sometimes right, often not. Give it the exact schema and the same question becomes almost mechanical. So the core of every text-to-SQL prompt is a clear description of the tables involved: their columns, types, and how they relate. The better and cleaner that description, the more the problem shifts from “creative writing” to “fill in the blanks,” which is where models are reliable.</p>
+  <p>The minimum viable schema context is the <code>CREATE TABLE</code> statements. Better still, add a one-line description per table and per non-obvious column, and — this helps a lot — a couple of <strong>sample rows</strong>, so the model sees that <code>country</code> holds <code>'Canada'</code> not <code>'CA'</code>, and that <code>status</code> is <code>'paid'</code> not <code>1</code>.</p>
+
+  <div class="code-label"><span class="dot"></span><span class="fname">build_schema_prompt.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">schema_context</span>():
+    <span class="k">return</span> <span class="s">"""</span>
+<span class="s">Table customers(id, name, country, signup DATE)</span>
+<span class="s">  -- one row per customer. country is a full name, e.g. 'Canada'.</span>
+<span class="s">Table orders(id, customer_id, amount REAL, status TEXT, created_at DATE)</span>
+<span class="s">  -- one row per order. status is 'paid' or 'refunded'. amount is in USD.</span>
+<span class="s">  -- orders.customer_id joins to customers.id</span>
+<span class="s">Sample: customers -> (1, 'Ada Lovelace', 'Canada', '2024-02-11')</span>
+<span class="s">Sample: orders    -> (55, 1, 120.00, 'paid', '2025-06-03')</span>
+<span class="s">"""</span>
+
+<span class="k">def</span> <span class="f">build_prompt</span>(question):
+    <span class="k">return</span> <span class="s">f"""You write SQLite SQL. Use ONLY the tables and columns below.</span>
+<span class="s">Return a single SELECT query and nothing else.</span>
+
+{schema_context()}
+
+<span class="s">Question: </span>{question}
+<span class="s">SQL:"""</span></code></pre>
+  <p>Notice three instructions doing quiet, important work: “use ONLY the tables and columns below” (fights hallucinated columns), “a single SELECT” (a first safety rail — more in the next lesson), and naming the dialect “SQLite” (so it doesn’t reach for Postgres-only functions).</p>
+
+  <h2>Show, don’t just tell: few-shot examples</h2>
+  <p>The most reliable upgrade is adding a few <span class="term">example pairs</span> — a question and its correct SQL — right in the prompt. This is few-shot prompting (Track&nbsp;2) applied to SQL, and it teaches the model your conventions: how you compute “revenue,” that you always filter <code>status = 'paid'</code>, how you handle dates. Two or three well-chosen examples often do more for accuracy than any amount of instruction.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">examples.txt</span></div>
+<pre><code>Q: How many paid orders were there in 2025?
+A: SELECT COUNT(*) FROM orders
+   WHERE status = 'paid'
+     AND created_at &gt;= '2025-01-01' AND created_at &lt; '2026-01-01';
+
+Q: Total revenue by country.
+A: SELECT c.country, SUM(o.amount) AS revenue
+   FROM orders o JOIN customers c ON c.id = o.customer_id
+   WHERE o.status = 'paid'
+   GROUP BY c.country;</code></pre>
+
+  <h2>When there are 400 tables: select, don’t dump</h2>
+  <p>Real warehouses have hundreds of tables — far more than fit in a prompt, and dumping them all would drown the model in irrelevant options (and cost a fortune in tokens). The fix is <strong>schema retrieval</strong>, and it’s exactly RAG (Track&nbsp;3) pointed at your metadata: embed each table’s name + description, and for a given question retrieve only the handful of tables most likely relevant, then build the prompt from just those. A question about refunds pulls in <code>orders</code> and <code>refunds</code>, not <code>marketing_emails</code>. You’re using retrieval to keep the context small, focused, and cheap — the same discipline as document RAG, applied to schema.</p>
+  <div class="box note">
+    <div class="box-label">This is RAG you already understand</div>
+    <p>Schema selection is just retrieval with tables as the “documents.” Everything you learned in Track&nbsp;3 — embeddings, top-k, keeping context tight — transfers directly. Reusing that muscle is why RAG comes before this track.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>The <strong>schema is the prompt</strong>: give exact tables, columns, types, relationships — plus short descriptions and a few sample rows.</li>
+      <li>Add instructions that constrain: “use ONLY these columns,” “single SELECT,” and name the <strong>SQL dialect</strong>.</li>
+      <li><strong>Few-shot Q→SQL examples</strong> teach your conventions (how “revenue” is defined) better than prose.</li>
+      <li>With many tables, <strong>retrieve the relevant few</strong> (schema RAG) instead of dumping everything — it’s Track&nbsp;3 applied to metadata.</li>
+      <li>Sample rows prevent value mistakes (<code>'Canada'</code> vs <code>'CA'</code>, <code>'paid'</code> vs <code>1</code>).</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p>Your database has a <code>products(id, name, category, price)</code> table and an <code>order_items(order_id, product_id, qty)</code> table. Write the schema-context lines you’d add to the prompt (with a description and one sample row each), and one few-shot example pair for “top 3 products by units sold.”</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
+      <div class="sol-body">
+<pre><code>Table products(id, name, category, price REAL)
+  -- one row per product. price in USD.
+Table order_items(order_id, product_id, qty INTEGER)
+  -- one row per product line in an order. product_id joins products.id
+
+Sample: products    -> (7, 'USB-C Cable', 'Accessories', 9.99)
+Sample: order_items -> (55, 7, 3)
+
+Q: Top 3 products by units sold.
+A: SELECT p.name, SUM(i.qty) AS units
+   FROM order_items i JOIN products p ON p.id = i.product_id
+   GROUP BY p.id
+   ORDER BY units DESC
+   LIMIT 3;</code></pre>
+        <p><strong>Why these choices:</strong> the descriptions state the <em>grain</em> (“one row per product line”) and the join key, which is what the model needs to avoid a wrong join. The sample rows pin down formats. The example demonstrates the exact pattern the question needs — a join, a <code>SUM(qty)</code> aggregate, group-by-then-order-and-limit — so a similar question (“top 5 categories by revenue”) now has a template to imitate. That’s few-shot teaching your house style, which is far more reliable than hoping the model infers it.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your warehouse has 300 tables. Why not just put all their schemas in the prompt so the model “has everything it needs”?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) It won’t fit the context window, costs far more tokens, and irrelevant tables actively distract the model — retrieve the relevant few instead.</span>
+        <div class="why">Correct. 300 schemas blow past the context window and the budget, and even if they fit, drowning the model in mostly-irrelevant tables lowers accuracy (it may join the wrong ones). Embedding table descriptions and retrieving only the handful relevant to the question keeps context small, cheap, and focused — schema RAG.</div></li>
+      <li data-correct="false"><span class="opt">B) You can’t describe more than 10 tables to a model.</span>
+        <div class="why">There’s no hard limit like 10; the constraint is the context window and quality, not an arbitrary table count. The issue is that <em>all 300</em> is both too big and too noisy — not that a bigger-than-tiny schema is impossible.</div></li>
+      <li data-correct="false"><span class="opt">C) Models can only write SQL for one table at a time.</span>
+        <div class="why">Models happily write multi-table joins. Providing several relevant tables is expected; the point is to provide the <em>relevant</em> ones, not all 300.</div></li>
+      <li data-correct="false"><span class="opt">D) Dumping all schemas is fine and always the best approach.</span>
+        <div class="why">It isn’t — it’s the classic mistake. It’s expensive, often impossible to fit, and hurts accuracy through distraction. Selective retrieval is the scalable pattern.</div></li>
+    </ul>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: the schema you show is a design choice, not a given</div>
+    <p>It’s tempting to treat the schema as fixed input, but the best text-to-SQL engineers <em>curate</em> what the model sees. Raw production tables are often hostile to a language model: cryptic names (<code>dim_cust_x</code>), columns whose meaning depends on tribal knowledge, statuses encoded as integers, and metrics that require three joins and a filter to compute correctly. Pointing a model at that is asking for confident mistakes. Instead, teams build a friendly surface just for the model — well-named views, a data dictionary of column meanings, and canonical definitions of business metrics — so that “revenue” is a real column on a view, not a fragile expression the model must reinvent every time.</p>
+    <p>This reframes the whole problem in your favor. The accuracy of a text-to-SQL system is determined less by the model and more by the quality of the semantic layer you put in front of it — the naming, the documentation, the example queries, the curated views. That is data modeling and metadata engineering, done for a new kind of consumer. When you present text-to-SQL work this way in an interview — “I’d invest in a clean semantic layer and a library of example queries, because that’s what moves accuracy” — you sound like someone who has actually shipped it, because that insight only comes from taking correctness seriously.</p>
+  </div>
+
+  <p>Now the model can write good SQL. Before we ever run it, we have to make sure it can’t hurt us. Next: <strong>generating safe, correct SQL.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

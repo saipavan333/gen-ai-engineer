@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 360" width="900" height="360" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="900" height="360" fill="#ffffff"/>
+<text x="450" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Prompt vs RAG vs fine-tune: how to choose</text>
+<rect x="60" y="66.5" width="420" height="56" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="60" y="69" width="420" height="56" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="60" y="64" width="420" height="56" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="270.0" y="92.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Needs fresh / private knowledge?</text>
+<rect x="560" y="72.5" width="300" height="44" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="560" y="75" width="300" height="44" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="560" y="70" width="300" height="44" rx="13" ry="13" fill="url(#g_concept)" stroke="#2563eb" stroke-width="1.8"/>
+<text x="710.0" y="92.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#1e3a8a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">→ RAG  (Track 3)</text>
+<line x1="480" y1="92" x2="549.0" y2="92.0" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<polygon points="558.0,92.0 549.0,95.6 549.0,88.4" fill="#15803d"/>
+<text x="505" y="80" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#15803d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">yes</text>
+<rect x="60" y="154.5" width="420" height="56" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="60" y="157" width="420" height="56" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="60" y="152" width="420" height="56" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="270.0" y="180.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">A better prompt / few-shot solves it?</text>
+<rect x="560" y="160.5" width="300" height="44" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="560" y="163" width="300" height="44" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="560" y="158" width="300" height="44" rx="13" ry="13" fill="url(#g_key)" stroke="#d97706" stroke-width="1.8"/>
+<text x="710.0" y="180.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#7c2d12" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">→ Prompt engineering  (Track 2)</text>
+<line x1="480" y1="180" x2="549.0" y2="180.0" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<polygon points="558.0,180.0 549.0,183.6 549.0,176.4" fill="#15803d"/>
+<text x="505" y="168" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#15803d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">yes</text>
+<rect x="60" y="242.5" width="420" height="70" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="60" y="245" width="420" height="70" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="60" y="240" width="420" height="70" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="270.0" y="266.5" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Need durable behavior / style / format,</text>
+<text x="270.0" y="283.5" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">or a smaller, cheaper specialized model?</text>
+<rect x="560" y="254.5" width="300" height="44" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="560" y="257" width="300" height="44" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="560" y="252" width="300" height="44" rx="13" ry="13" fill="url(#g_accent)" stroke="#4f46e5" stroke-width="1.8"/>
+<text x="710.0" y="274.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#312e81" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">→ Fine-tune  (this track)</text>
+<line x1="480" y1="275" x2="549.0" y2="275.0" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<polygon points="558.0,275.0 549.0,278.6 549.0,271.4" fill="#15803d"/>
+<text x="505" y="263" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#15803d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">yes</text>
+<line x1="270.0" y1="120" x2="270.0" y2="141.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="270.0,150.0 266.4,141.0 273.6,141.0" fill="#94a3b8"/>
+<text x="296.0" y="138" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#94a3b8" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">no</text>
+<line x1="270.0" y1="208" x2="270.0" y2="229.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="270.0,238.0 266.4,229.0 273.6,229.0" fill="#94a3b8"/>
+<text x="296.0" y="226" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#94a3b8" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">no</text>
+<text x="450" y="344" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.3" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">RAG for knowledge, prompting for instructions, fine-tuning for behavior. Try them in that order.</text>
+</svg>

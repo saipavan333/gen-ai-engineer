@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tool / function calling — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="4.2">
+<main class="lesson">
+
+  <span class="eyebrow">Track 4 · Lesson 4.2</span>
+  <h1>Tool / function calling</h1>
+  <p class="lead">This is the mechanism that makes agents possible: the model emits a structured request to call one of your functions, your code runs it, and the result goes back. Master this round-trip and you can connect an LLM to anything — calculators, APIs, databases, the whole outside world.</p>
+
+  <h2>The key idea: the model requests, your code executes</h2>
+  <p>An LLM can’t actually run code or call an API — it only produces text. <span class="term">Tool calling</span> (a.k.a. function calling) is a disciplined way to bridge that gap: you describe the functions available, and when the model wants one, it outputs a <em>structured request</em> (which function, what arguments). Your code executes the real function and hands the result back to the model, which continues. The model decides <em>what</em> to do; your code decides <em>how</em> it actually happens — and that separation is what keeps it safe.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t4-tool-calling.svg" alt="Tool calling: the user asks 'weather in Paris?'. The LLM decides and emits a tool call as JSON {name: get_weather, args: {city: Paris}}. Your code runs get_weather('Paris'). The result '18°C' goes back to the model, which produces the final answer 'It's 18°C and clear in Paris.' The model never runs code; it emits a structured request, your app executes it.">
+    <figcaption>The round-trip: model emits a structured tool call → your code runs the function → result returns to the model → final answer. This is just Track 2.4’s structured output, applied to actions.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p>A <span class="term">tool</span> is a function the model may invoke. You expose it with a <span class="term">tool schema</span>: a name, a plain-English description, and a typed parameter spec (JSON schema). When the model chooses a tool, it returns a <span class="term">tool call</span> — the chosen name plus arguments. Your code runs the function and returns a <span class="term">tool result</span>, which you append to the conversation so the model can use it. Modern model APIs (and runtimes like Ollama) support this natively, constraining the output so the tool call is always valid.</p>
+  </div>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t4-tool-schema.svg" alt="The model picks from a tool registry: a list of tools get_weather(city), web_search(query), send_email(to, body) is shown to the LLM, which chooses one and fills its arguments, e.g. get_weather(city='Paris'). Each tool has a name, description, and typed parameters, and the model reads them and decides.">
+    <figcaption>You give the model a registry of tools (name + description + typed parameters). It reads them and picks one, filling in the arguments — so your tool descriptions are part of the prompt.</figcaption>
+  </figure>
+
+  <h2>Step through the round-trip</h2>
+  <div class="demo" id="tc-demo">
+    <div class="demo-head"><span class="tag">Live demo</span><h4>Tool-call stepper</h4></div>
+    <p class="demo-hint">Pick a request and step through what actually happens under the hood.</p>
+    <label for="tc-q">Request</label>
+    <select id="tc-q">
+      <option value="weather">“What’s the weather in Paris?”</option>
+      <option value="math">“What’s 18% of 2,450?”</option>
+      <option value="none">“Write me a haiku about autumn.”</option>
+    </select>
+    <div class="out" id="tc-out" style="margin-top:14px;min-height:120px"></div>
+    <button class="run" id="tc-step">Next step ▸</button>
+    <button class="run" id="tc-reset" style="background:#eef0fe;color:#3a32c4">Reset</button>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — native tool calling (free, Ollama)</div>
+    <p>Define a tool with a schema, let the model call it, run it, and feed the result back — all free and local.</p>
+<pre><code><span class="k">import</span> ollama
+
+<span class="k">def</span> <span class="f">get_weather</span>(city):
+    <span class="k">return</span> <span class="s">f"</span>{city}<span class="s">: 18°C, clear"</span>          <span class="c"># pretend this calls a real API</span>
+
+tools <span class="o">=</span> [{
+    <span class="s">"type"</span>: <span class="s">"function"</span>,
+    <span class="s">"function"</span>: {
+        <span class="s">"name"</span>: <span class="s">"get_weather"</span>,
+        <span class="s">"description"</span>: <span class="s">"Get the current weather for a city."</span>,
+        <span class="s">"parameters"</span>: {<span class="s">"type"</span>: <span class="s">"object"</span>,
+            <span class="s">"properties"</span>: {<span class="s">"city"</span>: {<span class="s">"type"</span>: <span class="s">"string"</span>}}, <span class="s">"required"</span>: [<span class="s">"city"</span>]},
+    }}]
+
+msgs <span class="o">=</span> [{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: <span class="s">"What's the weather in Paris?"</span>}]
+resp <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"llama3.2"</span>, messages<span class="o">=</span>msgs, tools<span class="o">=</span>tools)
+
+<span class="k">for</span> call <span class="k">in</span> resp[<span class="s">"message"</span>].<span class="f">get</span>(<span class="s">"tool_calls"</span>, []):       <span class="c"># the model asked to call a tool</span>
+    args <span class="o">=</span> call[<span class="s">"function"</span>][<span class="s">"arguments"</span>]
+    result <span class="o">=</span> <span class="f">get_weather</span>(<span class="o">**</span>args)                          <span class="c"># YOUR code runs it</span>
+    msgs.<span class="f">append</span>(resp[<span class="s">"message"</span>])
+    msgs.<span class="f">append</span>({<span class="s">"role"</span>: <span class="s">"tool"</span>, <span class="s">"content"</span>: result})       <span class="c"># feed result back</span>
+
+final <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"llama3.2"</span>, messages<span class="o">=</span>msgs)
+<span class="f">print</span>(final[<span class="s">"message"</span>][<span class="s">"content"</span>])   <span class="c"># -> "It's 18°C and clear in Paris."</span></code></pre>
+    <p>The <code>tool</code>-role message is how the result re-enters the conversation. From here, wrapping this in a <em>loop</em> (so the model can call tools repeatedly) gives you a full agent — exactly Lesson 4.3.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>Tool calling = the model emits a <strong>structured request</strong>; <strong>your code executes</strong> and returns the result.</li>
+      <li>A <strong>tool schema</strong> (name + description + typed parameters) is what the model reads to choose and fill a call.</li>
+      <li>Tool <strong>descriptions are prompt surface</strong> — clear names and descriptions dramatically improve tool selection.</li>
+      <li>Return the result as a <strong>tool-role message</strong> so the model can use it.</li>
+      <li>Prefer <strong>few, focused, well-described tools</strong>; native tool-calling APIs keep the call valid by construction.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your agent keeps calling the wrong tool — it uses <code>search_web</code> when it should use <code>search_internal_docs</code>. What’s the highest-leverage fix?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Improve the tools’ names and descriptions so each clearly states when to use it (and when not to).</span>
+        <div class="why">Correct. The model selects tools by reading their names and descriptions — that text <em>is</em> the prompt for tool choice. Sharpening “search_internal_docs: use for questions about our product/policies; not for public web info” fixes selection directly, cheaply, and is the first thing to try.</div></li>
+      <li data-correct="false"><span class="opt">B) Increase the temperature so it explores more tools.</span>
+        <div class="why">More randomness makes tool choice <em>less</em> reliable, not more. You want deterministic, correct selection — that comes from clearer descriptions, not more exploration.</div></li>
+      <li data-correct="false"><span class="opt">C) Give it more tools.</span>
+        <div class="why">Adding tools increases confusion and the chance of mis-selection. If it can’t distinguish two tools, more options make it worse — clarify the existing ones first.</div></li>
+      <li data-correct="false"><span class="opt">D) Switch to a non-tool prompt and parse free text.</span>
+        <div class="why">Abandoning structured tool calling for brittle text parsing throws away reliability. The issue is tool <em>descriptions</em>, not the mechanism; fix the descriptions.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Write a tool schema for <code>create_calendar_event(title, date, attendees)</code>. Which fields are required, and what types?<br>
+    <strong>2.</strong> Why is returning the tool result as a <code>tool</code>-role message better than just pasting it into a new user message?<br>
+    <strong>3.</strong> Your tool occasionally receives bad arguments (e.g., a date like “next Tuesday” instead of ISO). Where do you handle this, and how?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> <code>{title: string (required), date: string ISO (required), attendees: array of strings (optional, default [])}</code>. Mark <code>title</code> and <code>date</code> required so the model must supply them; make <code>attendees</code> optional with an empty-list default so a solo event is valid. Typed parameters let the runtime constrain the model’s output to a valid shape.</p>
+        <p><strong>2.</strong> The <code>tool</code> role tells the model (and the API) explicitly “this is the output of the tool you called,” keeping the conversation structure clean and letting native tool-calling track the call/result pairing. Pasting it as a user message blurs who said what, can confuse multi-tool sequences, and loses the link between the call and its result.</p>
+        <p><strong>3.</strong> Handle it in <em>your</em> code, at the tool boundary: validate/normalize the arguments before executing (e.g., parse “next Tuesday” into an ISO date, or reject and return an error). If invalid, return a clear error string as the tool result so the model can correct and retry. Never trust model-supplied arguments blindly — validate them just like any untrusted input, which also previews the guardrails of Lesson 4.8.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: parallel calls, errors, and tools as an attack surface</div>
+    <p>Three things separate a toy tool integration from a robust one. <strong>Parallel tool calls</strong>: capable models can request several tools at once (“get weather in Paris <em>and</em> London”), so handle a <em>list</em> of tool calls, run them (possibly concurrently), and return all results. <strong>Error handling</strong>: tools fail — APIs time out, args are bad, results are empty. Return errors back to the model as tool results (“get_weather failed: city not found”) so it can adapt, rather than crashing the loop; this turns failures into recoverable steps. <strong>Idempotency and retries</strong>: for actions with side effects (sending email, charging a card), design so a retry doesn’t double-fire.</p>
+    <p>And treat tools as a serious security boundary. The model decides which tool to call and with what arguments, and that decision can be influenced by untrusted input (a malicious document, a crafted user message — prompt injection, Track 7). So: never expose a dangerous tool (delete data, send money, run shell commands) without validation and, for high-stakes actions, human approval (Lesson 4.8). Whitelist tools per context, validate every argument, and assume the model’s tool calls can be adversarially steered. The convenience of “the model can just call your functions” is also its risk — give it only capabilities you’d be comfortable a stranger triggering.</p>
+  </div>
+
+  <p>One tool call is useful; the real power comes from <em>repeating</em> — letting the model call tools, see results, and decide again until the goal is met. That’s the agent loop. Next: <strong>the agent loop (ReAct)</strong>.</p>
+
+</main>
+
+<script>
+(function () {
+  var FLOWS = {
+    weather: [
+      { who: "model", label: "① Model emits a tool call (JSON)", body: '{"name": "get_weather", "arguments": {"city": "Paris"}}', c: "#4f46e5" },
+      { who: "code", label: "② Your code runs the function", body: 'get_weather("Paris")  →  "18°C, clear"', c: "#7c3aed" },
+      { who: "model", label: "③ Result fed back; model answers", body: '"It’s 18°C and clear in Paris right now."', c: "#15803d" }
+    ],
+    math: [
+      { who: "model", label: "① Model emits a tool call (JSON)", body: '{"name": "calculator", "arguments": {"expr": "0.18 * 2450"}}', c: "#4f46e5" },
+      { who: "code", label: "② Your code runs the function", body: 'calculator("0.18 * 2450")  →  "441"', c: "#7c3aed" },
+      { who: "model", label: "③ Result fed back; model answers", body: '"18% of 2,450 is 441."', c: "#15803d" }
+    ],
+    none: [
+      { who: "model", label: "① Model decides NO tool is needed", body: 'no tool_calls — it can answer directly', c: "#64748b" },
+      { who: "model", label: "② Model answers from its own ability", body: '"Crisp amber leaves / drifting on a cooling wind / autumn exhales gold"', c: "#15803d" }
+    ]
+  };
+  var sel = document.getElementById("tc-q"), out = document.getElementById("tc-out");
+  var step = 0;
+  function render() {
+    var flow = FLOWS[sel.value];
+    var html = "";
+    for (var i = 0; i <= step && i < flow.length; i++) {
+      var s = flow[i];
+      html += '<div style="border-left:3px solid ' + s.c + ';padding:8px 12px;margin:8px 0;background:#fafbff;border-radius:6px">' +
+        '<div style="font-weight:700;color:' + s.c + ';font-size:13.5px">' + s.label + '</div>' +
+        '<div style="font-family:monospace;font-size:12.5px;color:#334155;margin-top:4px">' + s.body + '</div></div>';
+    }
+    if (step >= flow.length - 1) html += '<div style="font-size:12.5px;color:#94a3b8;margin-top:4px">— end of round-trip —</div>';
+    out.innerHTML = html;
+  }
+  document.getElementById("tc-step").addEventListener("click", function () {
+    var flow = FLOWS[sel.value];
+    if (step < flow.length - 1) step++;
+    render();
+  });
+  document.getElementById("tc-reset").addEventListener("click", function () { step = 0; render(); });
+  sel.addEventListener("change", function () { step = 0; render(); });
+  render();
+})();
+</script>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

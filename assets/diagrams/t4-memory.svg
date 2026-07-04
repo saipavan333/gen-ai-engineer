@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 320" width="880" height="320" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="880" height="320" fill="#ffffff"/>
+<text x="440" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Two kinds of memory</text>
+<rect x="180" y="62.5" width="320" height="50" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="180" y="65" width="320" height="50" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="180" y="60" width="320" height="50" rx="13" ry="13" fill="url(#g_concept)" stroke="#2563eb" stroke-width="1.8"/>
+<text x="340.0" y="77.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1e3a8a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Short-term memory</text>
+<text x="340.0" y="90.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">the recent turns, held in the context window</text>
+<rect x="230" y="170.5" width="200" height="84" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="230" y="173" width="200" height="84" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="230" y="168" width="200" height="84" rx="13" ry="13" fill="url(#g_accent)" stroke="#4f46e5" stroke-width="1.8"/>
+<text x="330.0" y="210.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="17" fill="#312e81" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Agent</text>
+<line x1="340" y1="110" x2="324.03603676397785" y2="154.69909706086196" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="320.0,166.0 319.5,153.1 328.6,156.3" fill="#475569"/>
+<line x1="360" y1="166" x2="369.3968345061761" y2="123.71424472220744" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="372.0,112.0 374.1,124.8 364.7,122.7" fill="#475569"/>
+<rect x="600" y="152.5" width="220" height="100" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="600" y="155" width="220" height="100" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="600" y="150" width="220" height="100" rx="13" ry="13" fill="url(#g_key)" stroke="#d97706" stroke-width="1.8"/>
+<text x="710.0" y="185.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#7c2d12" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Long-term memory</text>
+<text x="710.0" y="198.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">vector store of past</text>
+<text x="710.0" y="212.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">facts &amp; summaries</text>
+<line x1="432" y1="188" x2="589.0162860688616" y2="178.54118758621314" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/>
+<polygon points="598.0,178.0 589.2,182.1 588.8,174.9" fill="#16a34a"/>
+<text x="515" y="168" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#16a34a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">write: summarize &amp; store</text>
+<line x1="598" y1="224" x2="440.9837139311383" y2="233.45881241378686" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+<polygon points="432.0,234.0 440.8,229.9 441.2,237.1" fill="#2563eb"/>
+<text x="515" y="248" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#2563eb" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">read: retrieve when relevant</text>
+<rect x="30" y="180.5" width="120" height="64" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="30" y="183" width="120" height="64" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="30" y="178" width="120" height="64" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="90.0" y="210.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">User</text>
+<line x1="150" y1="200" x2="216.0" y2="200.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="228.0,200.0 216.0,204.8 216.0,195.2" fill="#475569"/>
+<line x1="228" y1="222" x2="163.98341395199012" y2="225.36929400252683" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="152.0,226.0 163.7,220.6 164.2,230.2" fill="#475569"/>
+<text x="440" y="304" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Context = working memory (fast, limited). Vector store = long-term recall (retrieve like RAG).</text>
+</svg>

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 290" width="860" height="290" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="860" height="290" fill="#ffffff"/>
+<text x="430" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Chunk size is a trade-off</text>
+<rect x="24" y="64" width="260" height="150" rx="12" ry="12" fill="#fef1ef" stroke="#dc2626" stroke-width="2"/>
+<text x="154" y="96" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="15" fill="#7f1d1d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Too small</text>
+<text x="154" y="128" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#475569" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">precise match, but</text>
+<text x="154" y="150" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#475569" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">loses surrounding</text>
+<text x="154" y="172" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#475569" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">context → fragments</text>
+<rect x="300" y="64" width="260" height="150" rx="12" ry="12" fill="#eefaf0" stroke="#16a34a" stroke-width="2"/>
+<text x="430" y="96" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="15" fill="#14532d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Just right</text>
+<text x="430" y="128" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#475569" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">a coherent idea per</text>
+<text x="430" y="150" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#475569" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">chunk → best retrieval</text>
+<text x="430" y="172" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#475569" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">(often 200–500 tokens)</text>
+<rect x="576" y="64" width="260" height="150" rx="12" ry="12" fill="#fef1ef" stroke="#dc2626" stroke-width="2"/>
+<text x="706" y="96" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="15" fill="#7f1d1d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Too big</text>
+<text x="706" y="128" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#475569" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">lots of context, but</text>
+<text x="706" y="150" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#475569" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">dilutes the match &amp;</text>
+<text x="706" y="172" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#475569" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">wastes tokens</text>
+<text x="430" y="252" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.3" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Match the chunk to one coherent idea — then tune with evaluation (Lesson 3.8).</text>
+</svg>

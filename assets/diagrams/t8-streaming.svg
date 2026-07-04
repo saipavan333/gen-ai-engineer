@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 290" width="900" height="290" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="900" height="290" fill="#ffffff"/>
+<text x="450" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Streaming cuts perceived latency</text>
+<text x="70" y="74" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#b91c1c" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Without streaming</text>
+<rect x="70" y="86" width="540" height="30" rx="6" ry="6" fill="#fef1ef" stroke="#dc2626" stroke-width="1.5"/>
+<text x="340" y="101" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#7f1d1d" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">…blank screen, user waits for the whole answer…</text>
+<rect x="620" y="86" width="210" height="30" rx="6" ry="6" fill="#eefaf0" stroke="#16a34a" stroke-width="1.5"/>
+<text x="725" y="101" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#14532d" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">full answer appears</text>
+<text x="70" y="156" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#15803d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">With streaming</text>
+<rect x="70" y="168" width="90" height="30" rx="6" ry="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+<text x="115" y="183" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">TTFT</text>
+<rect x="168" y="168" width="66" height="30" rx="5" ry="5" fill="#eefaf0" stroke="#16a34a" stroke-width="1.2"/>
+<text x="201" y="183" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="9.5" fill="#14532d" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">word</text>
+<rect x="241" y="168" width="66" height="30" rx="5" ry="5" fill="#eefaf0" stroke="#16a34a" stroke-width="1.2"/>
+<text x="274" y="183" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="9.5" fill="#14532d" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">word</text>
+<rect x="314" y="168" width="66" height="30" rx="5" ry="5" fill="#eefaf0" stroke="#16a34a" stroke-width="1.2"/>
+<text x="347" y="183" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="9.5" fill="#14532d" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">word</text>
+<rect x="387" y="168" width="66" height="30" rx="5" ry="5" fill="#eefaf0" stroke="#16a34a" stroke-width="1.2"/>
+<text x="420" y="183" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="9.5" fill="#14532d" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">word</text>
+<rect x="460" y="168" width="66" height="30" rx="5" ry="5" fill="#eefaf0" stroke="#16a34a" stroke-width="1.2"/>
+<text x="493" y="183" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="9.5" fill="#14532d" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">word</text>
+<rect x="533" y="168" width="66" height="30" rx="5" ry="5" fill="#eefaf0" stroke="#16a34a" stroke-width="1.2"/>
+<text x="566" y="183" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="9.5" fill="#14532d" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">word</text>
+<rect x="606" y="168" width="66" height="30" rx="5" ry="5" fill="#eefaf0" stroke="#16a34a" stroke-width="1.2"/>
+<text x="639" y="183" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="9.5" fill="#14532d" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">word</text>
+<rect x="679" y="168" width="66" height="30" rx="5" ry="5" fill="#eefaf0" stroke="#16a34a" stroke-width="1.2"/>
+<text x="712" y="183" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="9.5" fill="#14532d" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">word</text>
+<rect x="752" y="168" width="66" height="30" rx="5" ry="5" fill="#eefaf0" stroke="#16a34a" stroke-width="1.2"/>
+<text x="785" y="183" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="9.5" fill="#14532d" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">word</text>
+<text x="450" y="240" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Same total time — but the first words arrive fast, so it FEELS responsive.</text>
+<text x="450" y="264" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Essential UX for chat: stream tokens as they're generated.</text>
+</svg>

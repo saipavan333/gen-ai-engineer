@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Embeddings: meaning as vectors — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="1.3">
+<main class="lesson">
+
+  <span class="eyebrow">Track 1 · Lesson 1.3</span>
+  <h1>Embeddings: meaning as vectors</h1>
+  <p class="lead">This is the idea that makes search, RAG, recommendations, and clustering possible. Once you can turn meaning into numbers, you can do math on meaning — and a huge amount of applied AI is exactly that.</p>
+
+  <h2>Why embeddings have to exist</h2>
+  <p>Remember token ids from the last lesson: <code>cat</code> might be id <code>9061</code> and <code>dog</code> id <code>5044</code>. Those numbers are just <em>labels</em> — they say nothing about meaning. <code>9061</code> isn’t “closer” to <code>5044</code> than to <code>200</code>. So if you wanted to build a search that knows “a small dog” is related to “a puppy,” raw ids are useless: they only match when the exact same word appears.</p>
+  <p>We need a different kind of number — one where <strong>similar meanings get similar values</strong>. Then “find related text” becomes “find nearby numbers,” which a computer can do instantly over millions of items. That representation is called an embedding, and it’s the quiet workhorse under semantic search, RAG (Track 3), deduplication, recommendations, and clustering.</p>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p>An <span class="term">embedding</span> is a list of numbers (a <span class="term">vector</span>) that represents a piece of text’s meaning. Each position in the list is a <span class="term">dimension</span>; real text embeddings have hundreds to thousands of them (e.g. 384, 768, 1536). An <span class="term">embedding model</span> is a neural network trained so that texts with similar meaning get vectors that point in similar directions. You can picture each vector as a <strong>point in a high-dimensional “meaning space.”</strong></p>
+  </div>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t1-embedding-pipeline.svg" alt="Embedding pipeline: the text 'a fluffy kitten' goes into an embedding model (a neural net), which outputs one vector, a list like [0.12, -0.44, 0.91, ...], often 384 to 3072 numbers. An embedding turns text into a point in meaning space.">
+    <figcaption>One text in, one vector out. That vector is the text’s coordinates in meaning space.</figcaption>
+  </figure>
+
+  <p>Here’s the payoff, drawn in 2-D (real space has many more dimensions, but the intuition is identical): things that mean similar stuff cluster together.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t1-vector-space.svg" alt="A 2-D meaning space showing three clusters of points: animals (cat, kitten, dog, puppy) together; vehicles (car, truck, van) together; royalty (king, queen, prince) together. Similar meanings land near each other.">
+    <figcaption>Animals near animals, vehicles near vehicles. The embedding model learned this arrangement from data; we just read distances off the map.</figcaption>
+  </figure>
+
+  <h2>Measuring “similar”: cosine similarity</h2>
+  <p>If meaning is direction in space, then two texts are similar when their vectors <em>point the same way</em>. The standard way to measure that is <span class="term">cosine similarity</span>: the cosine of the angle between two vectors. It ranges from <strong>+1</strong> (same direction — very similar), through <strong>0</strong> (perpendicular — unrelated), to <strong>−1</strong> (opposite). It looks only at <em>direction</em>, not length, which is exactly what we want.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t1-cosine.svg" alt="Cosine similarity is the angle between vectors. Arrows for 'cat' and 'kitten' point almost the same way (small angle, cosine near 1). The arrow for 'car' points far away (wide angle, low cosine). Same direction is 1, perpendicular is 0, opposite is -1.">
+    <figcaption>Small angle between vectors → cosine near 1 → similar meaning. Wide angle → low cosine → unrelated.</figcaption>
+  </figure>
+
+  <p>The formula is just the dot product divided by the lengths — you don’t need to memorize it, but seeing it once helps:</p>
+<pre><code><span class="c"># cosine(A, B) = (A · B) / (|A| × |B|)</span>
+<span class="c"># A · B   = a1*b1 + a2*b2 + ... (the "dot product")</span>
+<span class="c"># |A|     = sqrt(a1^2 + a2^2 + ...) (the vector's length)</span></code></pre>
+
+  <div class="demo" id="cos-demo">
+    <div class="demo-head"><span class="tag">Live demo</span><h4>Cosine similarity explorer</h4></div>
+    <p class="demo-hint">Pick two words (each has a toy 2-D vector). See the angle between them and the cosine score. Try a similar pair, then a very different one.</p>
+    <div class="row">
+      <div>
+        <label for="cos-a">Word A</label>
+        <select id="cos-a"></select>
+      </div>
+      <div>
+        <label for="cos-b">Word B</label>
+        <select id="cos-b"></select>
+      </div>
+    </div>
+    <div class="out" style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;margin-top:16px">
+      <svg id="cos-svg" width="220" height="200" style="border:1px solid #eee7db;border-radius:10px;background:#fff"></svg>
+      <div style="flex:1;min-width:200px" id="cos-readout"></div>
+    </div>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — real embeddings, free, in Colab</div>
+    <p>Toy 2-D vectors are for intuition. Here’s the real thing with a small, free, open-source embedding model (no API key, runs on Colab’s free tier):</p>
+<pre><code><span class="o">!</span>pip install sentence-transformers
+<span class="k">from</span> sentence_transformers <span class="k">import</span> SentenceTransformer, util
+
+model <span class="o">=</span> <span class="f">SentenceTransformer</span>(<span class="s">"all-MiniLM-L6-v2"</span>)   <span class="c"># tiny, free, 384-dim vectors</span>
+
+sentences <span class="o">=</span> [
+    <span class="s">"How do I reset my password?"</span>,      <span class="c"># 0</span>
+    <span class="s">"I forgot my login credentials."</span>,     <span class="c"># 1  (same idea, different words)</span>
+    <span class="s">"What time does the store close?"</span>,    <span class="c"># 2  (unrelated topic)</span>
+]
+emb <span class="o">=</span> model.<span class="f">encode</span>(sentences)
+
+<span class="f">print</span>(<span class="s">"0 vs 1 (paraphrase):"</span>, <span class="f">float</span>(util.<span class="f">cos_sim</span>(emb[<span class="n">0</span>], emb[<span class="n">1</span>])))   <span class="c"># ~0.6–0.7, high</span>
+<span class="f">print</span>(<span class="s">"0 vs 2 (unrelated):"</span>,  <span class="f">float</span>(util.<span class="f">cos_sim</span>(emb[<span class="n">0</span>], emb[<span class="n">2</span>])))   <span class="c"># ~0.1, low</span></code></pre>
+    <p>Notice sentence 0 and 1 share almost no words, yet score high — because the model captures <em>meaning</em>, not word overlap. That single property is why embedding search beats old keyword search for questions phrased in the user’s own words.</p>
+  </div>
+
+  <div class="box note">
+    <div class="box-label">This is the heart of RAG</div>
+    <p>Track 3 is built on what you just learned: embed all your documents once and store the vectors; at question time, embed the question and find the document vectors with the highest cosine similarity. “Find relevant text” becomes “find nearby vectors.” Everything else in RAG is refinements on this core.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>Token <strong>ids are arbitrary labels</strong>; <strong>embeddings are meaningful vectors</strong> where similar meaning → similar direction.</li>
+      <li>An <strong>embedding model</strong> turns text into one vector (hundreds–thousands of <strong>dimensions</strong>) — a point in “meaning space.”</li>
+      <li><strong>Cosine similarity</strong> measures the angle between vectors: <strong>+1</strong> similar, <strong>0</strong> unrelated, <strong>−1</strong> opposite.</li>
+      <li>Embeddings capture <strong>meaning, not word overlap</strong> — paraphrases with no shared words still score high.</li>
+      <li>This is the engine of <strong>semantic search and RAG</strong>: store doc vectors, embed the query, retrieve nearest by cosine.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">You embed three texts. Which pair will have the <em>highest</em> cosine similarity?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) “My flight got cancelled” &nbsp;and&nbsp; “The airline scrapped my trip.”</span>
+        <div class="why">Correct. They share almost no words, but they mean nearly the same thing — and embeddings encode meaning, so their vectors point in very similar directions. This is the whole superpower: semantic match without lexical overlap.</div></li>
+      <li data-correct="false"><span class="opt">B) “bank of the river” &nbsp;and&nbsp; “I need a bank loan.”</span>
+        <div class="why">Tempting because both contain “bank,” but the meanings differ (riverside vs. financial institution). A good embedding model uses context, so these land in <em>different</em> regions despite the shared word — lower similarity than the paraphrase in A.</div></li>
+      <li data-correct="false"><span class="opt">C) “The cat slept” &nbsp;and&nbsp; “Quarterly revenue rose 4%.”</span>
+        <div class="why">These are about completely different things, so their vectors point in very different directions — near-zero cosine. This is the <em>low</em> end, not the high end.</div></li>
+      <li data-correct="false"><span class="opt">D) “yes” &nbsp;and&nbsp; “no.”</span>
+        <div class="why">Plausible-looking because both are short answers, but they’re semantic opposites in context. They won’t score as high as a true paraphrase — and can even score low. Shared category ≠ shared meaning.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Compute the cosine similarity of A = [1, 0] and B = [1, 1] by hand. (Hint: dot = 1; |A| = 1; |B| = √2.) What angle does that correspond to?<br>
+    <strong>2.</strong> In Colab, embed five FAQ questions and one user query, then print the most similar FAQ. You just built a mini semantic search.<br>
+    <strong>3.</strong> Explain to a teammate why embedding search finds “How do I cancel?” when the user types “I want to stop my subscription,” but keyword search might not.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> cosine = dot / (|A|·|B|) = 1 / (1 · √2) = 1/√2 ≈ <strong>0.707</strong>, which is the cosine of <strong>45°</strong>. So [1,0] and [1,1] are “moderately similar” — they share a direction component but aren’t identical. Doing one of these by hand cements that cosine really is just the angle.</p>
+        <p><strong>2.</strong> The pattern:</p>
+<pre><code><span class="k">from</span> sentence_transformers <span class="k">import</span> SentenceTransformer, util
+m <span class="o">=</span> <span class="f">SentenceTransformer</span>(<span class="s">"all-MiniLM-L6-v2"</span>)
+faqs <span class="o">=</span> [<span class="s">"How do I reset my password?"</span>, <span class="s">"How do I cancel my plan?"</span>,
+        <span class="s">"Where are my invoices?"</span>, <span class="s">"How do I add a teammate?"</span>, <span class="s">"Is there a mobile app?"</span>]
+query <span class="o">=</span> <span class="s">"I want to stop my subscription"</span>
+fe <span class="o">=</span> m.<span class="f">encode</span>(faqs); qe <span class="o">=</span> m.<span class="f">encode</span>(query)
+scores <span class="o">=</span> util.<span class="f">cos_sim</span>(qe, fe)[<span class="n">0</span>]
+best <span class="o">=</span> <span class="f">int</span>(scores.<span class="f">argmax</span>())
+<span class="f">print</span>(faqs[best])   <span class="c"># -> "How do I cancel my plan?"</span></code></pre>
+        <p>The query and the right FAQ share no words, yet it wins — because you ranked by meaning. That’s a working semantic search in eight lines.</p>
+        <p><strong>3.</strong> “Cancel” and “stop my subscription” barely overlap as <em>strings</em>, so keyword search (which matches words) can miss it. But they’re close in <em>meaning</em>, so their embeddings point the same way and cosine similarity ranks the cancel FAQ at the top. Embeddings match intent; keywords match spelling.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: why so many dimensions, and which “distance” to use</div>
+    <p><strong>Why hundreds of dimensions?</strong> Meaning is many-faceted: topic, sentiment, formality, tense, entities, and far more. Each dimension can capture a slice of that. With only two dimensions (our pictures), unrelated concepts get forced near each other for lack of room; with hundreds, the model has space to separate “financial bank” from “river bank” from “bank shot in pool.” You can’t visualize 768-D, but every concept from the 2-D pictures — clusters, direction, cosine — carries over unchanged.</p>
+    <p><strong>Cosine vs dot product vs Euclidean.</strong> Three common ways to compare vectors. <em>Cosine</em> looks at angle only (ignores length) and is the default for text similarity. The <em>dot product</em> factors in length too, and is identical to cosine when vectors are <em>normalized</em> to length 1 — which is why many systems normalize embeddings up front and then use the faster dot product. <em>Euclidean distance</em> measures straight-line distance between points; it ranks similarly to cosine for normalized vectors. For Track 3, the practical rule is: normalize your embeddings, then cosine and dot product agree, and your vector database can use whichever is fastest. The concept you must carry forward is unchanged — closeness in this space means closeness in meaning.</p>
+  </div>
+
+  <p>You’ve now got tokens (the units), embeddings (their meaning), and next-token prediction (the engine). The remaining question about the engine is one of <em>capacity</em>: how much can a model hold in mind at once, and how does it decide which earlier words matter? That’s <strong>context windows and attention</strong>.</p>
+
+</main>
+
+<script>
+(function () {
+  var WORDS = {
+    "cat":    [0.30, 0.95], "kitten": [0.38, 0.92], "dog": [0.45, 0.89],
+    "car":    [0.95, 0.31], "truck":  [0.92, 0.39],
+    "king":   [-0.80, 0.60], "queen": [-0.75, 0.66],
+    "pizza":  [0.60, -0.80]
+  };
+  var names = Object.keys(WORDS);
+  var selA = document.getElementById("cos-a");
+  var selB = document.getElementById("cos-b");
+  names.forEach(function (n) {
+    selA.insertAdjacentHTML("beforeend", '<option>' + n + '</option>');
+    selB.insertAdjacentHTML("beforeend", '<option>' + n + '</option>');
+  });
+  selA.value = "cat"; selB.value = "kitten";
+  var svg = document.getElementById("cos-svg");
+  var read = document.getElementById("cos-readout");
+
+  function arrow(x1, y1, x2, y2, color) {
+    var ang = Math.atan2(y2 - y1, x2 - x1), h = 9;
+    var bx = x2 - h * Math.cos(ang), by = y2 - h * Math.sin(ang);
+    var p = ang + Math.PI / 2, hw = h * 0.5;
+    var t = (x2).toFixed(1) + "," + (y2).toFixed(1) + " " +
+      (bx + hw * Math.cos(p)).toFixed(1) + "," + (by + hw * Math.sin(p)).toFixed(1) + " " +
+      (bx - hw * Math.cos(p)).toFixed(1) + "," + (by - hw * Math.sin(p)).toFixed(1);
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + bx.toFixed(1) + '" y2="' + by.toFixed(1) +
+      '" stroke="' + color + '" stroke-width="2.4" stroke-linecap="round"/>' +
+      '<polygon points="' + t + '" fill="' + color + '"/>';
+  }
+  function render() {
+    var a = WORDS[selA.value], b = WORDS[selB.value];
+    var dot = a[0] * b[0] + a[1] * b[1];
+    var na = Math.hypot(a[0], a[1]), nb = Math.hypot(b[0], b[1]);
+    var cos = dot / (na * nb);
+    var ox = 30, oy = 168, s = 125;
+    var ax = ox + a[0] * s, ay = oy - a[1] * s;
+    var bx = ox + b[0] * s, by = oy - b[1] * s;
+    var parts = '<line x1="6" y1="168" x2="214" y2="168" stroke="#eef2f7" stroke-width="1.5"/>' +
+      '<line x1="30" y1="14" x2="30" y2="190" stroke="#eef2f7" stroke-width="1.5"/>' +
+      arrow(ox, oy, ax, ay, "#4f46e5") + arrow(ox, oy, bx, by, "#16a34a") +
+      '<circle cx="' + ox + '" cy="' + oy + '" r="3" fill="#475569"/>';
+    svg.innerHTML = parts;
+    var verdict = cos > 0.85 ? "very similar" : cos > 0.5 ? "related" :
+      cos > 0.15 ? "loosely related" : cos > -0.15 ? "unrelated (≈ perpendicular)" : "opposite";
+    var col = cos > 0.5 ? "#16a34a" : cos > 0.15 ? "#b45309" : "#b91c1c";
+    var pct = Math.round((cos + 1) / 2 * 100);
+    read.innerHTML =
+      '<div style="font-family:monospace;font-size:13px;color:#475569">' +
+      selA.value + ' = [' + a[0] + ', ' + a[1] + ']<br>' +
+      selB.value + ' = [' + b[0] + ', ' + b[1] + ']</div>' +
+      '<div style="margin:10px 0 4px;font-size:14px">dot = ' + dot.toFixed(2) +
+      ' &nbsp; |A|=' + na.toFixed(2) + ' &nbsp; |B|=' + nb.toFixed(2) + '</div>' +
+      '<div style="font-size:20px;font-weight:800;color:' + col + '">cosine = ' + cos.toFixed(2) + '</div>' +
+      '<div style="font-weight:650;color:' + col + '">' + verdict + '</div>' +
+      '<div style="height:8px;background:#eef2f7;border-radius:5px;margin-top:8px;overflow:hidden">' +
+      '<div style="height:8px;width:' + pct + '%;background:' + col + '"></div></div>' +
+      '<div style="font-size:11.5px;color:#94a3b8;margin-top:2px">−1 &nbsp;&nbsp; 0 &nbsp;&nbsp; +1</div>';
+  }
+  selA.addEventListener("change", render);
+  selB.addEventListener("change", render);
+  render();
+})();
+</script>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

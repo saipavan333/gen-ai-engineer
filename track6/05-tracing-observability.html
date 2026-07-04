@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tracing &amp; observability — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="6.5">
+<main class="lesson">
+
+  <span class="eyebrow">Track 6 · Lesson 6.5</span>
+  <h1>Tracing &amp; observability</h1>
+  <p class="lead">When a RAG pipeline or agent gives a bad answer in production, “the model messed up” isn’t a diagnosis. Tracing gives you an X-ray of every request — what was retrieved, what prompt was sent, what each step cost — so you can actually find and fix the problem.</p>
+
+  <h2>Why LLM systems are hard to debug without tracing</h2>
+  <p>An LLM feature is rarely one call. It’s a chain: retrieve, build a prompt, call the model, maybe call a tool, post-process. It’s also non-deterministic and depends on inputs you don’t see (the retrieved chunks, the exact assembled prompt). So when something goes wrong, the final answer alone tells you almost nothing. <span class="term">Observability</span> — and specifically <span class="term">tracing</span> — fixes this by recording each step of each request, so you can replay exactly what happened and see <em>where</em> it broke.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t6-tracing.svg" alt="Tracing: an X-ray of one request. A timeline of spans: retrieve (120 ms), LLM call (820 ms), tool call (200 ms), from request to response (~1.15 s). Each step is a 'span' with timing and data; traces show where latency, errors, and bad answers come from.">
+    <figcaption>A trace breaks one request into timed <b>spans</b>. You can see what each step did, how long it took, and what it cost — turning “it’s broken” into “the retrieval step returned the wrong chunk.”</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p><span class="term">Observability</span> is the ability to understand what your system is doing from the data it emits. A <span class="term">trace</span> is the full record of one request; a <span class="term">span</span> is one step within it (a retrieval, an LLM call, a tool call) with its inputs, outputs, timing, and cost. <span class="term">Monitoring</span> aggregates these into dashboards and <span class="term">alerts</span> (latency spiking, error rate up, cost climbing) so you learn about problems before users complain.</p>
+  </div>
+
+  <h2>What to capture per request</h2>
+  <ul>
+    <li><strong>Inputs &amp; outputs of each step</strong> — the query, the retrieved chunks, the exact prompt sent, the model’s raw response. This is what lets you reproduce a failure.</li>
+    <li><strong>Timing</strong> per span — to find latency bottlenecks (Track 8).</li>
+    <li><strong>Tokens &amp; cost</strong> per call — to catch runaway spend.</li>
+    <li><strong>Errors &amp; retries</strong> — what failed and how it was handled.</li>
+    <li><strong>Metadata</strong> — request id, user/session, model and prompt version — to slice and compare.</li>
+  </ul>
+
+  <div class="box example">
+    <div class="box-label">Worked example — trace a RAG call (free)</div>
+    <p>You can start with plain logging before adopting a tool. Capture each span with timing and data.</p>
+<pre><code><span class="k">import</span> time, json
+
+<span class="k">def</span> <span class="f">traced_rag</span>(query, request_id):
+    trace <span class="o">=</span> {<span class="s">"id"</span>: request_id, <span class="s">"query"</span>: query, <span class="s">"spans"</span>: []}
+
+    <span class="k">def</span> <span class="f">span</span>(name, fn):
+        t0 <span class="o">=</span> time.<span class="f">time</span>()
+        result <span class="o">=</span> <span class="f">fn</span>()
+        trace[<span class="s">"spans"</span>].<span class="f">append</span>({<span class="s">"name"</span>: name, <span class="s">"ms"</span>: <span class="f">round</span>((time.<span class="f">time</span>() <span class="o">-</span> t0) <span class="o">*</span> <span class="n">1000</span>),
+                                <span class="s">"output_preview"</span>: <span class="f">str</span>(result)[:<span class="n">120</span>]})
+        <span class="k">return</span> result
+
+    chunks <span class="o">=</span> <span class="f">span</span>(<span class="s">"retrieve"</span>, <span class="k">lambda</span>: <span class="f">retrieve</span>(query))         <span class="c"># what did we fetch?</span>
+    prompt <span class="o">=</span> <span class="f">span</span>(<span class="s">"build_prompt"</span>, <span class="k">lambda</span>: <span class="f">build_prompt</span>(query, chunks))
+    answer <span class="o">=</span> <span class="f">span</span>(<span class="s">"llm"</span>, <span class="k">lambda</span>: <span class="f">call_model</span>(prompt))         <span class="c"># exact prompt + answer</span>
+
+    log(json.<span class="f">dumps</span>(trace))   <span class="c"># now every request is replayable &amp; measurable</span>
+    <span class="k">return</span> answer
+
+<span class="c"># Free, open-source tracing tools (Langfuse, Phoenix) do this with nicer UIs + dashboards.</span></code></pre>
+    <p>With this, a bad answer is debuggable: open the trace, see that <code>retrieve</code> returned the wrong chunk (a retrieval bug, Track 3) versus a good chunk the model ignored (a grounding bug). Free tools like Langfuse or Arize Phoenix add dashboards, but the idea is exactly this.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>LLM features are <strong>multi-step and non-deterministic</strong> — the final answer alone can’t be debugged.</li>
+      <li>A <strong>trace</strong> records one request as timed <strong>spans</strong> (retrieve, prompt, LLM, tool) with inputs/outputs/cost.</li>
+      <li>Capture the <strong>exact prompt and retrieved context</strong> — that’s what makes failures reproducible.</li>
+      <li><strong>Monitor &amp; alert</strong> on latency, cost, and error rates to catch problems before users do.</li>
+      <li>Start with <strong>plain logging</strong>; free tools (Langfuse, Phoenix) add dashboards later.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">A user reports your RAG bot gave a wrong answer. You have full tracing. What’s the fastest path to a diagnosis?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Open that request’s trace and check the retrieve span: did it fetch the relevant chunk? That isolates a retrieval failure from a generation failure.</span>
+        <div class="why">Correct. The trace shows exactly what was retrieved and what prompt the model saw. If the right chunk wasn’t retrieved, it’s a retrieval problem (chunking/embeddings/search); if it was retrieved but the answer ignored it, it’s a generation/grounding problem. The trace turns guesswork into a precise, single-request diagnosis.</div></li>
+      <li data-correct="false"><span class="opt">B) Re-run the query a few times and see if it’s better now.</span>
+        <div class="why">Re-running may give different (non-deterministic) results and won’t reproduce the exact failed request or reveal its cause. The trace of the actual failing request is the evidence; re-running is guessing.</div></li>
+      <li data-correct="false"><span class="opt">C) Switch to a bigger model and hope it helps.</span>
+        <div class="why">That’s a blind change with no diagnosis — and it can’t fix a retrieval miss (a bigger model still never sees the missing chunk). Diagnose with the trace first, then fix the actual failing stage.</div></li>
+      <li data-correct="false"><span class="opt">D) Add more documents to the knowledge base.</span>
+        <div class="why">Maybe relevant, maybe not — you don’t know until you see whether retrieval found the right chunk. The trace tells you whether the problem is even in retrieval before you change the corpus.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> List the spans you’d capture for a tool-using agent request, and one piece of data to log for each.<br>
+    <strong>2.</strong> Why is logging the <em>exact assembled prompt</em> (not just the user query) essential for debugging?<br>
+    <strong>3.</strong> Logging full inputs/outputs can capture sensitive user data. What’s the tension, and how do you handle it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> For an agent: <em>plan/think</em> (the model’s reasoning), each <em>tool call</em> (name + arguments), each <em>tool result</em> (output, truncated), and the <em>final answer</em>; plus per-step timing and tokens. Logging the tool arguments and results is what lets you see why a step failed or looped (Track 4’s “read the trace”).</p>
+        <p><strong>2.</strong> Because the model only ever acts on the assembled prompt, not your mental model of it. Bugs hide in assembly — a missing system message, the wrong retrieved chunks, a template error, truncation. If you only log the user query, you can’t see what the model actually received, so you can’t explain its output. The exact prompt is the ground truth of what happened.</p>
+        <p><strong>3.</strong> The tension: detailed logs are gold for debugging but may contain PII (names, emails, account data) — a privacy and compliance risk (Track 7). Handle it by redacting/masking sensitive fields before logging, restricting access to logs, setting retention limits, and sampling rather than storing everything forever. You want enough to debug without turning your logs into a liability. Observability and privacy must be designed together.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: observability is the engine of the eval flywheel</div>
+    <p>Tracing isn’t just for firefighting — it’s the data source that powers everything else in this track. Your production traces <em>are</em> your richest supply of golden-set candidates: real queries, with the exact context and the actual (sometimes wrong) answers. Mining traces for failures, then promoting those into your golden set (Lesson 6.2), is how your offline evals stay representative. Traces also let you run <span class="term">online evals at scale</span> — sample production traces and run an LLM-as-judge over them to track quality trends without waiting for user feedback. And they’re how you debug agents, tune latency (Track 8), and audit safety incidents (Track 7).</p>
+    <p>So the mature setup is a loop: instrument everything → monitor dashboards and alerts → when quality dips or a user complains, open the trace and diagnose the exact span → fix it and add the case to the golden set → the offline eval now guards against it. Free, open-source tools (Langfuse, Arize Phoenix, and OpenTelemetry-based stacks) give you this with searchable traces, latency/cost dashboards, and judge integrations — but you can begin today with structured logging, which is better than the most beautiful dashboard you never built. The principle: <em>you cannot improve, debug, or trust a system you cannot see.</em> Observability is what makes an LLM product operable rather than mysterious.</p>
+  </div>
+
+  <p>With observability in place, you can make your evals automatic — a gate that runs on every change, like tests for code. Next: <strong>regression-testing prompts</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

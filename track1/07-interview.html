@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Interview check: How LLMs Work — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="1.7">
+<main class="lesson">
+
+  <span class="eyebrow">Track 1 · Interview check</span>
+  <h1>Interview check: How LLMs Work</h1>
+  <p class="lead">Fundamentals are the most-tested area in applied-GenAI interviews, because they reveal whether you actually understand the tools or just use them. Here are the questions teams really ask, with strong answers and what each one is secretly probing.</p>
+
+  <div class="box note">
+    <div class="box-label">How to use this</div>
+    <p>For each question, <strong>answer out loud first</strong> — really say it — before opening the model answer. The gap between your answer and the model one is your study list. If you can give the strong answer in your own words, you’ve got the lesson. That’s the bar for the whole track.</p>
+  </div>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t1-recap.svg" alt="The whole engine in one flow: Your text goes to Tokenize (1.2), then Embeddings plus attention inside the model (1.3 to 1.4), then Next-token odds (1.1), then Sample (1.5), producing a token that is appended and the loop repeats — autoregression.">
+    <figcaption>The whole track on one line. If you can narrate this picture end to end, you can answer most fundamentals questions.</figcaption>
+  </figure>
+
+  <h2>The questions teams ask</h2>
+
+  <div class="box practice">
+    <div class="box-label">Q1 · Warm-up</div>
+    <p><strong>“In one or two sentences, what does an LLM actually do?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> It predicts the next token given the tokens so far — outputting a probability distribution over its whole vocabulary — and generates text by repeatedly sampling a token and feeding it back in (autoregression). All its apparent knowledge is patterns learned by doing this over huge amounts of text.</p>
+        <p><strong>Testing:</strong> Whether you have the correct core mental model, or think of it as a search engine / database. Leading with “next-token prediction” signals you understand the machine, not just the marketing.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q2 · Tokens</div>
+    <p><strong>“What’s a token, and why should I care about token counts?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> A token is a chunk of text — often a word-piece — from the model’s fixed vocabulary; text is split by a sub-word tokenizer (commonly byte-pair encoding). I care because tokens are the unit of <em>cost</em> (billing is per token), <em>context limits</em> (windows are measured in tokens), and <em>latency</em>. Rule of thumb: ~4 characters per token in English; code and many non-English languages cost more.</p>
+        <p><strong>Testing:</strong> Practical fluency. Mentioning cost/context/latency shows you’ve actually shipped and budgeted, not just read a blog post.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q3 · The classic “gotcha”</div>
+    <p><strong>“Why do LLMs struggle to count the letters in a word or do exact arithmetic?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> Because they see tokens, not individual characters or digits. A word like “strawberry” may be one or two sub-word tokens, so the letters aren’t directly available to count; similarly, multi-digit numbers get chopped into tokens, so step-by-step arithmetic isn’t native. The fix is to give it a tool (a calculator or code) or prompt it to work character-by-character.</p>
+        <p><strong>Testing:</strong> Whether you can reason from first principles (tokenization) to a surprising behavior — and whether you know the engineering fix (tools), which previews Track 4.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q4 · Embeddings</div>
+    <p><strong>“What’s an embedding, how do you compare two, and where would you use them?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> An embedding is a vector (hundreds–thousands of numbers) representing a text’s meaning, produced by an embedding model so that similar meanings get similar directions. You compare two with cosine similarity — the cosine of the angle between them, from +1 (similar) to −1 (opposite). Uses: semantic search, RAG retrieval, deduplication, clustering, recommendations. The superpower is matching meaning even when the words differ.</p>
+        <p><strong>Testing:</strong> Core RAG readiness. They want “meaning as vectors + cosine + retrieval,” and bonus points for noting semantic vs. lexical matching.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q5 · Context window</div>
+    <p><strong>“A user’s long chat starts forgetting earlier messages. What’s happening, and how do you fix it?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> The conversation exceeded the context window. Each turn the whole history is re-sent, but only what fits in the window is actually seen; older tokens get truncated. Fixes: summarize earlier turns into a compact running summary, retrieve only relevant past messages (RAG over the history), or use a model with a larger window — while remembering bigger windows cost more, are slower, and can suffer “lost in the middle.”</p>
+        <p><strong>Testing:</strong> That you know chat “memory” is just re-sent text bounded by the window, and that you have real mitigation strategies, not just “use a bigger model.”</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q6 · Decoding</div>
+    <p><strong>“Explain temperature and top-p. What settings would you use for data extraction vs. brainstorming?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> Temperature reshapes the probability distribution before sampling — low sharpens toward the top token (deterministic), high flattens it (varied). Top-p (nucleus) samples only from the smallest set of tokens whose probabilities sum to p, adapting to the model’s confidence. For extraction/classification/JSON I’d use temperature 0 (greedy) for consistency; for brainstorming I’d use ~0.8–1.0 with top-p ~0.9 for diversity.</p>
+        <p><strong>Testing:</strong> Hands-on control. Knowing temperature 0 = determinism for structured tasks is a strong, practical signal.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q7 · The big one</div>
+    <p><strong>“Why do LLMs hallucinate, and how do you reduce it in a product?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> Hallucination is inherent to the mechanism: the model generates the most <em>plausible</em> next tokens, not the most <em>true</em> ones, and it has no built-in way to know when it doesn’t know — so it produces confident, fluent guesses. Confidence is uncorrelated with correctness. To reduce it: ground the model in retrieved real data and instruct it to answer only from that (RAG), give it tools for facts/math, lower temperature for factual tasks, require and verify citations, validate outputs, and design the UX to show sources. You manage hallucination with architecture, not by asking the model to “be accurate.”</p>
+        <p><strong>Testing:</strong> The single most important judgment call in the field. They want the mechanism <em>and</em> a layered mitigation strategy.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q8 · Knowledge cutoff &amp; system design</div>
+    <p><strong>“How would you make a model answer questions about our internal docs, which it’s never seen?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> The model can’t know anything past its training cutoff or any private data, so I wouldn’t rely on its memory — I’d supply the information. Concretely: embed the internal docs and store the vectors; at query time, embed the question, retrieve the most similar chunks, and put them in the prompt with an instruction to answer only from them and cite sources. That’s retrieval-augmented generation. Fine-tuning is a different tool (for style/format/skills), not the first choice for fresh factual knowledge.</p>
+        <p><strong>Testing:</strong> Whether you connect a limitation (cutoff/private data) to the right architecture (RAG) — and don’t reach for fine-tuning by reflex. This is a very common opening to a system-design round.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q9 · Base vs instruct</div>
+    <p><strong>“What’s the difference between a base model and a chat/instruct model?”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> A base model is the raw next-token predictor from pre-training; give it a question and it may just continue the text (e.g., add more questions). An instruct/chat model is a base model further trained on instruction–response examples and shaped with human preferences, so it reliably follows directions and behaves like an assistant. Same engine, additional training to make it helpful. (Details in Track 5.)</p>
+        <p><strong>Testing:</strong> That you understand assistants aren’t a different species — they’re base models with extra alignment training.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q10 · Judgment</div>
+    <p><strong>“Give an example of a task you would <em>not</em> hand to an LLM, and why.”</strong></p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
+      <div class="sol-body">
+        <p><strong>Answer:</strong> Anything where a confident wrong answer is costly and the truth isn’t in the prompt — e.g., “compute this customer’s exact refund from our billing rules” or “is this specific drug interaction safe?” The model may produce a fluent, wrong answer with no signal of uncertainty. I’d either ground it in authoritative data and verify, route the exact computation to deterministic code/tools, or keep a human in the loop. The skill is matching the tool to the risk.</p>
+        <p><strong>Testing:</strong> Maturity. Strong candidates know when <em>not</em> to use an LLM, or how to constrain it — that judgment is what separates a builder from a hype-follower.</p>
+      </div>
+    </details>
+  </div>
+
+  <h2>Rapid-fire self-check</h2>
+
+  <div class="quiz">
+    <p class="quiz-q">Which statement is the most accurate one-line description of an LLM?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) A database that retrieves stored answers to questions.</span>
+        <div class="why">No retrieval of stored answers happens at inference. The model computes a next-token distribution from its weights and the input — it doesn’t look anything up.</div></li>
+      <li data-correct="true"><span class="opt">B) A next-token predictor that generates text by repeatedly sampling from a probability distribution.</span>
+        <div class="why">Correct — this is the core. Tokens in, a probability for every possible next token out, sample one, append, repeat. Everything else is built on this.</div></li>
+      <li data-correct="false"><span class="opt">C) A reasoning engine that always computes the logically correct output.</span>
+        <div class="why">It optimizes for plausible text, not provable correctness — which is exactly why it can be confidently wrong. “Always correct” is the opposite of the truth.</div></li>
+      <li data-correct="false"><span class="opt">D) A program that understands language the way humans do.</span>
+        <div class="why">Overclaiming. It captures statistical structure of language extremely well, but framing it as human-equivalent understanding leads to wrong predictions about its failures.</div></li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">An interviewer asks why you’d pick RAG over fine-tuning to answer questions about a company’s constantly-updated docs. Best reason?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) RAG supplies fresh facts at query time, so updates are as simple as re-indexing — no retraining, and answers can cite sources.</span>
+        <div class="why">Correct. For changing factual knowledge, retrieval is the right tool: update the index and the model immediately “knows” the new info, with citations for verification. Fine-tuning bakes in behavior/style and would need re-running on every update.</div></li>
+      <li data-correct="false"><span class="opt">B) Fine-tuning is impossible on private data.</span>
+        <div class="why">It’s not impossible — you can fine-tune on private data. The point isn’t feasibility; it’s that fine-tuning is the wrong fit for <em>frequently changing facts</em>.</div></li>
+      <li data-correct="false"><span class="opt">C) RAG makes the model bigger and therefore smarter.</span>
+        <div class="why">RAG doesn’t change the model’s size or weights at all. It changes the <em>input</em> by adding retrieved context. The benefit is grounding, not raw capability.</div></li>
+      <li data-correct="false"><span class="opt">D) Fine-tuning always causes hallucination.</span>
+        <div class="why">Overstated. Fine-tuning is a legitimate tool (Track 5) for style, format, and skills; it just isn’t the right lever for fresh, changing facts. “Always” is wrong.</div></li>
+    </ul>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Can you explain each of these? (the real test)</div>
+    <ul>
+      <li>Next-token prediction &amp; autoregression — in one breath.</li>
+      <li>Tokens: what they are, the ~4-chars rule, and why letter-counting fails.</li>
+      <li>Embeddings + cosine similarity, and why they power search/RAG.</li>
+      <li>Context window: the shared budget, truncation, “lost in the middle.”</li>
+      <li>Temperature &amp; top-p, and the settings for extraction vs. brainstorming.</li>
+      <li>Hallucination: the mechanism, confidence ≠ correctness, and the layered fixes.</li>
+      <li>Knowledge cutoff → supply private/fresh data via RAG, not memory.</li>
+    </ul>
+  </div>
+
+  <p>If you can explain that list to a friend, you’ve genuinely completed Track 1 — not “read” it, <em>completed</em> it. You now understand the engine better than most people who use it daily. Next, we learn to <strong>drive</strong> it: Track 2, Prompt Engineering.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

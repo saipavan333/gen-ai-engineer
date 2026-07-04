@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 392" width="880" height="392" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="880" height="392" fill="#ffffff"/>
+<text x="440" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Agent failure modes  →  guards</text>
+<rect x="24" y="64" width="380" height="50" rx="9" ry="9" fill="#fef1ef" stroke="#dc2626" stroke-width="2"/>
+<text x="40" y="89.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.6" fill="#7f1d1d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">✗  Infinite loop / no progress</text>
+<line x1="410" y1="89.0" x2="442.0" y2="89.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="452.0,89.0 442.0,93.0 442.0,85.0" fill="#94a3b8"/>
+<rect x="458" y="64" width="398" height="50" rx="9" ry="9" fill="#eefaf0" stroke="#16a34a" stroke-width="2"/>
+<text x="474" y="89.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.6" fill="#14532d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">✓  Cap max steps; detect repeated actions</text>
+<rect x="24" y="124" width="380" height="50" rx="9" ry="9" fill="#fef1ef" stroke="#dc2626" stroke-width="2"/>
+<text x="40" y="149.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.6" fill="#7f1d1d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">✗  Wrong tool or bad arguments</text>
+<line x1="410" y1="149.0" x2="442.0" y2="149.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="452.0,149.0 442.0,153.0 442.0,145.0" fill="#94a3b8"/>
+<rect x="458" y="124" width="398" height="50" rx="9" ry="9" fill="#eefaf0" stroke="#16a34a" stroke-width="2"/>
+<text x="474" y="149.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.6" fill="#14532d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">✓  Validate args against the tool schema</text>
+<rect x="24" y="184" width="380" height="50" rx="9" ry="9" fill="#fef1ef" stroke="#dc2626" stroke-width="2"/>
+<text x="40" y="209.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.6" fill="#7f1d1d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">✗  Trusts a wrong tool result</text>
+<line x1="410" y1="209.0" x2="442.0" y2="209.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="452.0,209.0 442.0,213.0 442.0,205.0" fill="#94a3b8"/>
+<rect x="458" y="184" width="398" height="50" rx="9" ry="9" fill="#eefaf0" stroke="#16a34a" stroke-width="2"/>
+<text x="474" y="209.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.6" fill="#14532d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">✓  Verify/ground results; sanity-check</text>
+<rect x="24" y="244" width="380" height="50" rx="9" ry="9" fill="#fef1ef" stroke="#dc2626" stroke-width="2"/>
+<text x="40" y="269.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.6" fill="#7f1d1d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">✗  Runaway cost or time</text>
+<line x1="410" y1="269.0" x2="442.0" y2="269.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="452.0,269.0 442.0,273.0 442.0,265.0" fill="#94a3b8"/>
+<rect x="458" y="244" width="398" height="50" rx="9" ry="9" fill="#eefaf0" stroke="#16a34a" stroke-width="2"/>
+<text x="474" y="269.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.6" fill="#14532d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">✓  Budget caps &amp; timeouts</text>
+<rect x="24" y="304" width="380" height="50" rx="9" ry="9" fill="#fef1ef" stroke="#dc2626" stroke-width="2"/>
+<text x="40" y="329.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.6" fill="#7f1d1d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">✗  Dangerous, irreversible action</text>
+<line x1="410" y1="329.0" x2="442.0" y2="329.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="452.0,329.0 442.0,333.0 442.0,325.0" fill="#94a3b8"/>
+<rect x="458" y="304" width="398" height="50" rx="9" ry="9" fill="#eefaf0" stroke="#16a34a" stroke-width="2"/>
+<text x="474" y="329.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.6" fill="#14532d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">✓  Human-in-the-loop approval</text>
+<text x="440" y="378" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.3" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Autonomy without guards is how agents burn money and break things. Guard every loop.</text>
+</svg>

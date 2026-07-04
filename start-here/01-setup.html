@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Your free, no-cost toolkit — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="0.2">
+<main class="lesson">
+
+  <span class="eyebrow">Start Here · Lesson 0.2</span>
+  <h1>Your free, no-cost toolkit</h1>
+  <p class="lead">In the next five minutes you’ll be running real Python in your browser — no installs, no credit card, no setup headaches. Let’s get your free workshop ready.</p>
+
+  <h2>Why we need a place to run code</h2>
+  <p>Reading about AI is like reading about swimming. Useful, but you learn in the water. From here on, most lessons include real code you should <em>run</em> and tinker with. So we need a place to run it that is (a) free forever, (b) needs nothing installed, and (c) won’t fight you. There are three good options, and you can mix them:</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/start-toolkit.svg" alt="Three free ways to run course code: This page (interactive demos in your browser, nothing to install); Google Colab (free notebooks online, even a free GPU, just needs a Google account); Your computer (Python plus Ollama, offline and private, optional for later). All cost zero dollars.">
+    <figcaption>Three ways to run everything in this course — all free. We’ll lean on <b>Google Colab</b> because it’s the gentlest start for someone newer to coding.</figcaption>
+  </figure>
+
+  <h2>Google Colab, explained from zero</h2>
+  <p>First, two words you’ll see constantly:</p>
+  <p>A <span class="term">notebook</span> is a document where you can write and run code in small chunks, and see each chunk’s result right underneath it. Each chunk is called a <span class="term">cell</span>. You write a bit of code in a cell, run it, look at the output, then write the next cell. It’s a conversation with the computer, one small step at a time — perfect for learning.</p>
+  <p><span class="term">Google Colab</span> (short for “Colaboratory”) is a free service that runs notebooks <em>in your web browser</em>. The clever part: the code doesn’t run on your computer at all. It runs on one of Google’s computers, and you just see the results. Nothing to install, nothing to break.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/start-colab-flow.svg" alt="How a Colab cell runs: you write code in a cell, press Run, Google's computer runs it for you, and the output appears right below the cell.">
+    <figcaption>The whole loop. You write, you press run, Google’s machine does the work, the answer appears below.</figcaption>
+  </figure>
+
+  <h2>Run your first cell (do this now)</h2>
+  <p>Follow along — it really does take about a minute:</p>
+  <ol>
+    <li>Go to <strong>colab.research.google.com</strong> in this browser and sign in with a free Google account.</li>
+    <li>Click <strong>New notebook</strong> (you may find it under <em>File → New notebook</em>). You’ll see an empty cell — a grey box waiting for code.</li>
+    <li>Click in the cell and type the line below.</li>
+    <li>Press <strong>Shift + Enter</strong> (or click the little ▶ play button to the left of the cell) to run it.</li>
+  </ol>
+
+  <div class="code-label"><span class="dot"></span><span class="fname">Colab cell 1</span></div>
+<pre><code><span class="f">print</span>(<span class="s">"Hello — my first cell is running on Google's computer!"</span>)</code></pre>
+  <p>Underneath the cell you’ll see the line printed back to you. That’s it — you just ran code in the cloud, for free. Press <kbd>Shift</kbd>+<kbd>Enter</kbd> again on a new cell to keep going.</p>
+
+  <div class="box note">
+    <div class="box-label">What is <code>print</code>?</div>
+    <p><code>print(...)</code> is Python’s way of saying “show this to me.” Whatever you put in the parentheses gets displayed below the cell. We’ll meet it properly in the next lesson — for now, just know it’s how the computer talks back.</p>
+  </div>
+
+  <h2>A first taste of real AI code</h2>
+  <p>Let’s do something that actually points at where we’re headed. Every AI model breaks your text into pieces called <em>tokens</em> (that’s the whole next track). There’s a free, tiny library called <code>tiktoken</code> that does exactly that splitting. Watch:</p>
+
+  <div class="code-label"><span class="dot"></span><span class="fname">Colab cell 2 — a preview of Track 1</span></div>
+<pre><code><span class="c"># The "!" tells Colab to install a package. This is free and takes a few seconds.</span>
+<span class="o">!</span>pip install tiktoken
+
+<span class="k">import</span> tiktoken
+
+<span class="c"># Load the tokenizer used by several well-known models</span>
+enc <span class="o">=</span> tiktoken.<span class="f">get_encoding</span>(<span class="s">"cl100k_base"</span>)
+
+text <span class="o">=</span> <span class="s">"Applied GenAI is learnable."</span>
+ids <span class="o">=</span> enc.<span class="f">encode</span>(text)
+
+<span class="f">print</span>(<span class="s">"token ids:"</span>, ids)
+<span class="f">print</span>(<span class="s">"the pieces:"</span>, [enc.<span class="f">decode</span>([i]) <span class="k">for</span> i <span class="k">in</span> ids])</code></pre>
+
+  <p>Run it and you’ll see your sentence turned into a list of numbers, and then the actual little pieces those numbers stand for (you’ll notice the model often splits on word-parts, and that spaces get attached to words). Don’t worry about understanding it yet — that’s exactly what Lesson&nbsp;1.2 is for. The point is: <strong>real AI tooling is free and one cell away.</strong></p>
+
+  <div class="box example">
+    <div class="box-label">What you just proved to yourself</div>
+    <p>You installed a real library and ran real model tooling, in your browser, for $0. Everything else in this course is just more of this — bigger ideas, same free workflow.</p>
+  </div>
+
+  <h2>Two things worth knowing about Colab</h2>
+  <p><strong>It saves your work.</strong> Colab automatically saves notebooks to your Google Drive, so you can close the tab and come back later. You can also download a notebook as a file (<em>File → Download</em>).</p>
+  <p><strong>There’s a free GPU for later.</strong> A <span class="term">GPU</span> (graphics processing unit) is a chip that makes AI models run much faster. When we get to lessons that need one, you’ll turn it on under <em>Runtime → Change runtime type → GPU</em>. On the free tier this gives you a real GPU at no cost, though Google limits how long you can use it per session and doesn’t guarantee one is always free at busy times. For everything in Tracks&nbsp;1–2, you won’t even need it.</p>
+
+  <div class="box deep">
+    <div class="box-label">Optional: running on your own computer</div>
+    <p>You never <em>have</em> to do this, but some people like running things locally — fully offline and private. Two free, open-source tools cover it:</p>
+    <p><strong>Python</strong> itself (from <code>python.org</code>) lets you run the same <code>.py</code> code on your machine. <strong>Ollama</strong> (from <code>ollama.com</code>) downloads and runs open AI models locally with one command — for example, after installing it you can run <code>ollama run llama3.2</code> in a terminal to chat with a small model entirely on your own hardware, no internet needed. We’ll point out where this is a nice option. For now, Colab is the path of least resistance.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>A <strong>notebook</strong> runs code in small <strong>cells</strong>; you run one, see its output, then write the next.</li>
+      <li><strong>Google Colab</strong> runs notebooks in your browser on Google’s computers — free, nothing to install, just a Google account.</li>
+      <li>Run a cell with <strong>Shift + Enter</strong>; install free packages with <code>!pip install &lt;name&gt;</code>.</li>
+      <li>Colab auto-saves to Google Drive, and offers a <strong>free GPU</strong> (Runtime menu) for the heavier lessons later.</li>
+      <li>Running locally with <strong>Python + Ollama</strong> is a fine, free, offline alternative — entirely optional.</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> In a new Colab notebook, make a cell that prints your name and the result of <code>17 * 23</code>. <br>
+    <strong>2.</strong> In a second cell, install the free <code>wikipedia</code> package and print the first sentence of the article on “Tokenization”.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>Cell 1.</strong> You can compute right inside <code>print</code>:</p>
+<pre><code><span class="f">print</span>(<span class="s">"Pavan"</span>)
+<span class="f">print</span>(<span class="s">"17 times 23 is"</span>, <span class="n">17</span> <span class="o">*</span> <span class="n">23</span>)   <span class="c"># Python does the math; we just display it</span></code></pre>
+        <p><strong>Cell 2.</strong> Install first, then use it:</p>
+<pre><code><span class="o">!</span>pip install wikipedia
+<span class="k">import</span> wikipedia
+summary <span class="o">=</span> wikipedia.<span class="f">summary</span>(<span class="s">"Tokenization"</span>, sentences<span class="o">=</span><span class="n">1</span>)
+<span class="f">print</span>(summary)</code></pre>
+        <p><strong>Why this matters:</strong> the pattern <em>“install a free package, then import and use it”</em> is 80% of how applied AI engineers pull in capabilities — embeddings, vector search, model runtimes. You just did it twice. If a package errors with “not found,” you almost always just forgot the <code>!pip install</code> line.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">In Colab, you run a cell with <code>!pip install tiktoken</code> and it succeeds. Then in the very next cell you write <code>import tiktoken</code> and it works. Where did that package actually get installed?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Permanently onto your own laptop’s hard drive.</span>
+        <div class="why">No — your laptop isn’t running the code at all. Colab runs everything on a temporary computer in Google’s cloud; nothing was installed on your machine.</div></li>
+      <li data-correct="true"><span class="opt">B) Onto the temporary cloud machine Colab gave you for this session.</span>
+        <div class="why">Correct. Colab hands you a fresh temporary machine (a “runtime”). Installs live there. If that runtime resets or you open the notebook fresh tomorrow, you’ll need to run the install cell again — which is totally normal.</div></li>
+      <li data-correct="false"><span class="opt">C) Into your Google Drive, so it’s saved forever.</span>
+        <div class="why">Drive saves your <em>notebook file</em>, not the installed software. The runtime’s installed packages are temporary and separate from your saved notebook.</div></li>
+      <li data-correct="false"><span class="opt">D) Nowhere — <code>!pip install</code> is just a comment.</span>
+        <div class="why">It’s a real command. The leading <code>!</code> tells Colab to run a shell command (here, the package installer <code>pip</code>), and it genuinely installs the library.</div></li>
+    </ul>
+  </div>
+
+  <p>Your workshop is ready. Before we open the box on how LLMs actually work, let’s spend one lesson on the small amount of Python you’ll need — just enough to read and run every example with confidence.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The modern frontier — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="16.2">
+<main class="lesson">
+
+  <span class="eyebrow">Frontier &amp; Responsible AI · Lesson 16.2</span>
+  <h1>The modern frontier</h1>
+  <p class="lead">The field moves fast enough that specifics go stale in months. This lesson isn’t a news roundup — it’s a durable map of the shifts that matter to a builder, and a way to stay current without drowning in hype.</p>
+
+  <h2>The shifts worth tracking</h2>
+  <p>A working engineer doesn’t need to chase every release, but should understand the directions the field is moving, because they change design decisions.</p>
+  <p><strong>Long context windows.</strong> Context windows have grown from a few thousand tokens to hundreds of thousands or millions. This is genuinely useful — you can feed whole documents or codebases — but it doesn’t make RAG obsolete, a claim you’ll hear and should push back on. Stuffing a million tokens is slow, expensive, and suffers “lost in the middle” (Track&nbsp;12); retrieval is still how you keep context small, cheap, relevant, and current. The shift changes the <em>balance</em> (you can retrieve fewer, larger chunks), not the principle.</p>
+  <p><strong>More capable agents.</strong> Tool use and multi-step reliability keep improving, making the agent patterns from Tracks&nbsp;4 and&nbsp;12 more practical — but the failure modes (compounding errors, loops, cost) and the mitigations (bounds, validation, evals) remain.</p>
+  <p><strong>Small, efficient, and open models.</strong> Alongside the giant frontier models, small models keep getting more capable — many now run on a laptop or phone. Combined with strong <span class="term">open-weight</span> models (whose parameters you can download and run yourself), this makes cheap, private, local AI increasingly viable — exactly the free/local stack this course uses.</p>
+  <p><strong>Multimodal by default and reasoning as a dial.</strong> Text-only is becoming the exception; models increasingly see and hear (Track&nbsp;15), and inference-time reasoning (Lesson&nbsp;16.1) is now a lever you choose. The frontier is less “one bigger model” and more “a toolbox of capabilities you compose.”</p>
+
+  <h2>Open vs closed: a real design choice</h2>
+  <p>One decision this surfaces is <span class="term">open-weight</span> vs <span class="term">closed</span> (API-only) models. Closed models (accessed over an API) often have the highest peak capability and require no infrastructure, but you send data to a third party, pay per token, and can’t control versioning. Open-weight models you run yourself give you control, privacy (data never leaves your environment), predictable cost at scale, and no vendor lock-in — at the price of running the infrastructure and, often, somewhat lower peak capability. The right answer is use-case-dependent: a privacy-sensitive internal tool may demand open/local; a low-volume feature needing top capability may favor a closed API. Being able to reason about that trade-off is a senior signal.</p>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>Track <strong>directions, not headlines</strong>: long context, stronger agents, small/open models, multimodal-by-default, reasoning-as-a-dial.</li>
+      <li><strong>Long context ≠ the end of RAG</strong> — retrieval still keeps context small, cheap, relevant, and fresh; it shifts the balance, not the principle.</li>
+      <li><strong>Small &amp; open-weight models</strong> make cheap, private, local AI increasingly viable (this course’s stack).</li>
+      <li><strong>Open vs closed</strong> is a real trade-off: control/privacy/cost vs peak capability and zero infra.</li>
+      <li>The frontier is a <strong>toolbox of capabilities to compose</strong>, not a single ever-bigger model.</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p>A colleague says: “Context windows are huge now — let’s delete our RAG pipeline and just paste all the company docs into every prompt.” Give a measured response: when might large context help, and why keep retrieval?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>Where large context helps:</strong> it genuinely simplifies cases where the relevant material is modest and bounded — reasoning over a single long document, a whole small codebase, or a long conversation — where retrieval would add complexity for little gain. So the balance shifts: you can often retrieve fewer, larger chunks and lean on the model to find the needle.</p>
+        <p><strong>Why keep retrieval:</strong> pasting <em>all</em> company docs into every prompt is slow (latency scales with tokens), expensive (you pay for every token, every call — potentially enormous at volume), and less accurate (irrelevant content distracts, and facts buried mid-context get missed — “lost in the middle”). It also can’t handle data that changes: retrieval re-indexes; a giant static prompt goes stale. And most corpora simply don’t fit even huge windows. So the measured take: use large context to <em>simplify</em> where the content is small and self-contained, but keep retrieval as the scalable way to give the model only the relevant, current slice — cheaper, faster, fresher, and more accurate. It’s not either/or; it’s matching the tool to the size and freshness of the data. That nuanced answer — neither “RAG is dead” hype nor “never use long context” dogma — is exactly what marks an engineer who reasons from principles.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">You keep hearing “huge context windows make RAG obsolete.” What’s the accurate view?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Long context shifts the balance but doesn’t replace retrieval — RAG still keeps context small, cheap, relevant, and up-to-date, and most corpora don’t fit anyway.</span>
+        <div class="why">Correct. Bigger windows help with bounded, self-contained content, but stuffing everything is slow, expensive, distraction-prone (“lost in the middle”), and can’t handle changing or oversized data. Retrieval remains the scalable way to supply just the relevant, current slice.</div></li>
+      <li data-correct="false"><span class="opt">B) Correct — you should always paste all data in and never retrieve.</span>
+        <div class="why">That ignores cost, latency, distraction, freshness, and the fact that real corpora exceed even large windows. “Always paste everything” is the hype view the question is testing against.</div></li>
+      <li data-correct="false"><span class="opt">C) Long context is useless; always retrieve one tiny chunk.</span>
+        <div class="why">Also too absolute. Large windows genuinely simplify some cases (one long document, a small codebase). The point is balance, not dogma in either direction.</div></li>
+      <li data-correct="false"><span class="opt">D) Context window size has no effect on cost or latency.</span>
+        <div class="why">It very much does — more tokens means more money and more time per call. That cost is a core reason retrieval stays valuable at scale.</div></li>
+    </ul>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: how to stay current without burning out</div>
+    <p>The anxiety of a fast field is real: it can feel like you must read every paper and try every model or fall behind. You don’t, and the engineers who last don’t either. The trick is a two-layer mental model. The <strong>bottom layer is fundamentals</strong> — tokens, embeddings, attention, sampling, RAG, agents, evaluation, safety, cost — and these barely change; a new model still predicts next tokens, still hallucinates, still needs grounding and evals. Everything in this course is that layer, deliberately, because it’s durable. The <strong>top layer is specifics</strong> — which model is best, current prices, exact context sizes, new APIs — and this churns constantly. You keep the bottom layer deep and treat the top layer as lookups: when you need a specific, you check it, because you know it will have changed.</p>
+    <p>Concretely, this means when a shiny new model or technique appears, you don’t panic — you ask principled questions you already know how to answer: what capability does this add (more training, more test-time compute, a new modality, better tools)? what does it cost in money and latency? how would I <em>evaluate</em> whether it’s actually better on my use case (run it against my golden set)? does it change my architecture or just swap a component? That evaluation-first reflex — “I’ll measure it on my data” rather than “I’ll adopt it because it’s new” — is what keeps you current <em>and</em> grounded. It’s also, not coincidentally, what makes you trustworthy to a team: the person who can calmly assess the frontier against real requirements is far more valuable than the one who chases every headline. Stay curious about the top layer, but invest in the bottom one — it’s where your durable value lives.</p>
+  </div>
+
+  <p>Capability is only half of building well. The other half is building <em>responsibly</em>. Next: <strong>bias &amp; fairness.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

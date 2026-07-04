@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 270" width="900" height="270" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="900" height="270" fill="#ffffff"/>
+<text x="450" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Fine-tuning data: format matters most</text>
+<rect x="24" y="98.5" width="150" height="64" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="24" y="101" width="150" height="64" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="24" y="96" width="150" height="64" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="99.0" y="120.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Raw data</text>
+<text x="99.0" y="133.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">messy logs, docs</text>
+<rect x="214" y="98.5" width="150" height="64" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="214" y="101" width="150" height="64" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="214" y="96" width="150" height="64" rx="13" ry="13" fill="url(#g_concept)" stroke="#2563eb" stroke-width="1.8"/>
+<text x="289.0" y="120.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1e3a8a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Clean</text>
+<text x="289.0" y="133.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">dedupe, filter, fix</text>
+<rect x="404" y="98.5" width="190" height="64" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="404" y="101" width="190" height="64" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="404" y="96" width="190" height="64" rx="13" ry="13" fill="url(#g_key)" stroke="#d97706" stroke-width="1.8"/>
+<text x="499.0" y="120.75" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#7c2d12" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Format as pairs</text>
+<text x="499.0" y="133.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="9.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">{"instruction","response"}</text>
+<rect x="640" y="98.5" width="230" height="64" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="640" y="101" width="230" height="64" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="640" y="96" width="230" height="64" rx="13" ry="13" fill="url(#g_example)" stroke="#16a34a" stroke-width="1.8"/>
+<text x="755.0" y="120.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#14532d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Split</text>
+<text x="755.0" y="133.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">train  /  held-out validation</text>
+<line x1="174" y1="128" x2="200.0" y2="128.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="212.0,128.0 200.0,132.8 200.0,123.2" fill="#475569"/>
+<line x1="364" y1="128" x2="390.0" y2="128.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="402.0,128.0 390.0,132.8 390.0,123.2" fill="#475569"/>
+<line x1="594" y1="128" x2="626.0" y2="128.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="638.0,128.0 626.0,132.8 626.0,123.2" fill="#475569"/>
+<text x="450" y="210" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Quality and consistency of examples beat quantity. A few hundred clean pairs often outperform thousands of messy ones.</text>
+<text x="450" y="234" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Always keep a held-out set you never train on — it's how you'll know it worked (Lesson 5.6).</text>
+</svg>

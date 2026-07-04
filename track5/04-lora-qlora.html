@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LoRA &amp; QLoRA — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="5.4">
+<main class="lesson">
+
+  <span class="eyebrow">Track 5 · Lesson 5.4</span>
+  <h1>LoRA &amp; QLoRA</h1>
+  <p class="lead">Full fine-tuning of a large model needs a small data center. LoRA and QLoRA are the breakthroughs that let you fine-tune on a single free GPU by training a tiny add-on instead of the whole model. This is how fine-tuning is actually done today — and you can run it for free.</p>
+
+  <h2>Why not just fine-tune the whole model?</h2>
+  <p>Full fine-tuning updates <em>every</em> weight, which means holding the entire model plus optimizer state in memory — tens to hundreds of gigabytes for a real model. That’s expensive and out of reach on a free GPU. The insight behind <span class="term">LoRA</span> (Low-Rank Adaptation): you don’t need to move all those weights to teach a new behavior. Freeze the giant pretrained model and train a <em>tiny</em> set of new “adapter” weights alongside it. You end up training ~0.1–1% of the parameters and getting most of the benefit.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t5-lora.svg" alt="LoRA: freeze the giant model, train a tiny adapter. Pretrained weights W (billions of params) are FROZEN and not trained. A small LoRA adapter (low-rank A × B, trainable, tiny) is added. The output is W·x + (B·A)·x. You train about 0.1 to 1 percent of parameters; the big model is untouched so adapters are tiny swappable files. QLoRA quantizes the frozen base to 4-bit so you can fine-tune a big model on a single consumer GPU, free in Colab.">
+    <figcaption>Freeze the big weights <code>W</code>; train only the small low-rank adapter <code>B·A</code>. The model’s output becomes <code>W·x + (B·A)·x</code> — original behavior plus your learned adjustment.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p><span class="term">PEFT</span> (parameter-efficient fine-tuning) trains a small number of new parameters instead of all of them. <span class="term">LoRA</span> is the most popular PEFT method: it freezes the base model and inserts small low-rank matrices (the adapter) whose <span class="term">rank</span> <code>r</code> controls capacity. <span class="term">QLoRA</span> goes further: it <span class="term">quantizes</span> the frozen base model to 4-bit (shrinking its memory ~4×) and trains a LoRA adapter on top — so a model that wouldn’t otherwise fit now trains on one consumer/free GPU. The trained <span class="term">adapter</span> is a tiny file (megabytes) you load on top of the base.</p>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — QLoRA on a free Colab GPU</div>
+    <p>A real fine-tune you can run for free (turn on the free GPU: Runtime → Change runtime type → GPU). Uses Hugging Face’s free libraries. Exact argument names shift across versions — treat this as the shape.</p>
+<pre><code><span class="o">!</span>pip install transformers peft trl bitsandbytes datasets
+<span class="k">import</span> torch
+<span class="k">from</span> transformers <span class="k">import</span> AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+<span class="k">from</span> peft <span class="k">import</span> LoraConfig
+<span class="k">from</span> trl <span class="k">import</span> SFTTrainer, SFTConfig
+
+model_id <span class="o">=</span> <span class="s">"Qwen/Qwen2.5-0.5B"</span>                 <span class="c"># small + free; scale up later</span>
+
+bnb <span class="o">=</span> <span class="f">BitsAndBytesConfig</span>(load_in_4bit<span class="o">=</span><span class="kc">True</span>,      <span class="c"># QLoRA: 4-bit frozen base</span>
+        bnb_4bit_quant_type<span class="o">=</span><span class="s">"nf4"</span>, bnb_4bit_compute_dtype<span class="o">=</span>torch.bfloat16)
+model <span class="o">=</span> AutoModelForCausalLM.<span class="f">from_pretrained</span>(model_id, quantization_config<span class="o">=</span>bnb, device_map<span class="o">=</span><span class="s">"auto"</span>)
+tok <span class="o">=</span> AutoTokenizer.<span class="f">from_pretrained</span>(model_id)
+
+lora <span class="o">=</span> <span class="f">LoraConfig</span>(r<span class="o">=</span><span class="n">16</span>, lora_alpha<span class="o">=</span><span class="n">32</span>,            <span class="c"># the tiny trainable adapter</span>
+        target_modules<span class="o">=</span><span class="s">"all-linear"</span>, lora_dropout<span class="o">=</span><span class="n">0.05</span>, task_type<span class="o">=</span><span class="s">"CAUSAL_LM"</span>)
+
+trainer <span class="o">=</span> <span class="f">SFTTrainer</span>(model<span class="o">=</span>model, train_dataset<span class="o">=</span>train_ds, peft_config<span class="o">=</span>lora,
+        args<span class="o">=</span><span class="f">SFTConfig</span>(output_dir<span class="o">=</span><span class="s">"out"</span>, num_train_epochs<span class="o">=</span><span class="n">2</span>,
+              per_device_train_batch_size<span class="o">=</span><span class="n">2</span>, learning_rate<span class="o">=</span><span class="n">2e-4</span>))
+trainer.<span class="f">train</span>()
+trainer.<span class="f">save_model</span>(<span class="s">"my-adapter"</span>)               <span class="c"># a few MB — the whole "fine-tune"</span></code></pre>
+    <p>The output isn’t a new multi-gigabyte model — it’s a tiny adapter you load on top of the base at inference. That’s why teams can serve many fine-tunes cheaply: one base model, many small adapters swapped in as needed.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li><strong>Full fine-tuning</strong> updates every weight — expensive; <strong>LoRA</strong> freezes the base and trains a tiny adapter.</li>
+      <li>You train <strong>~0.1–1% of parameters</strong>; the adapter is a small (MB) file you load on top of the base.</li>
+      <li><strong>QLoRA</strong> = 4-bit quantized base + LoRA → fine-tune a big model on <strong>one free/consumer GPU</strong>.</li>
+      <li>The base model is <strong>untouched</strong>, so you can serve many adapters from one base and swap them.</li>
+      <li><strong>Rank <code>r</code></strong> sets adapter capacity; start small (8–16), raise if underfitting.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your company wants 12 specialized variants of one base model (one per department), served cost-effectively. Why is LoRA a great fit?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Each variant is a tiny adapter on the shared frozen base, so you store/serve one base + 12 small adapters and swap them per request.</span>
+        <div class="why">Correct. Because LoRA leaves the base untouched, all 12 fine-tunes are megabyte-sized adapters over the same base model. You host one base and hot-swap adapters, instead of 12 full multi-gigabyte models — a huge storage and serving saving.</div></li>
+      <li data-correct="false"><span class="opt">B) LoRA makes the model more accurate than full fine-tuning in all cases.</span>
+        <div class="why">LoRA is comparable to full fine-tuning for many tasks but isn’t universally more accurate — its win here is <em>efficiency</em> (tiny adapters, shared base), not guaranteed superior accuracy.</div></li>
+      <li data-correct="false"><span class="opt">C) LoRA removes the need for training data.</span>
+        <div class="why">LoRA still needs good training data per variant — it changes <em>how</em> you train (efficiently), not <em>whether</em> you need data. Data remains the deciding factor.</div></li>
+      <li data-correct="false"><span class="opt">D) LoRA lets the model learn new facts without data.</span>
+        <div class="why">No method learns facts without data, and fresh facts belong in RAG anyway. LoRA’s benefit is parameter-efficient behavior training plus tiny, swappable adapters.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> In one sentence each, explain what LoRA and QLoRA each contribute.<br>
+    <strong>2.</strong> Your QLoRA run on the free GPU runs out of memory. Name two levers to fit it.<br>
+    <strong>3.</strong> Why can a tiny adapter (a fraction of a percent of the weights) meaningfully change behavior?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> <strong>LoRA</strong> freezes the base and trains a small low-rank adapter, so you update ~1% of parameters instead of all of them. <strong>QLoRA</strong> additionally loads the frozen base in 4-bit (quantized), cutting its memory ~4× so a big model fits on a single small GPU. LoRA saves <em>training</em> params; QLoRA saves <em>base-model memory</em>.</p>
+        <p><strong>2.</strong> Levers: use a <strong>smaller model</strong> or ensure 4-bit (QLoRA) is on; reduce <strong>batch size</strong> (and use gradient accumulation to keep effective batch size); shorten <strong>max sequence length</strong>; lower the LoRA <strong>rank</strong>; or enable gradient checkpointing. Each trades a little speed/quality for memory.</p>
+        <p><strong>3.</strong> Because the base model already contains the capability — fine-tuning only needs to <em>steer</em> it toward your task, not build it. Research found that the weight <em>changes</em> needed to adapt a model are “low-rank,” i.e., they live in a small subspace, so a few small matrices can capture them. You’re nudging a capable model, not retraining one, so a tiny adapter is enough.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: ranks, layers, and serving adapters</div>
+    <p>A few practical levers. <strong>Rank <code>r</code></strong> sets the adapter’s capacity: low (4–8) for simple style/format shifts, higher (16–64) for harder tasks; too high wastes parameters and risks overfitting, too low underfits — tune it against validation. <strong><code>lora_alpha</code></strong> scales the adapter’s influence (a common heuristic is alpha ≈ 2×r). <strong>Target modules</strong> decides which layers get adapters; “all-linear” is a strong default, but adapting only attention projections is lighter. As always, you let evaluation (Lesson 5.6) decide, not folklore.</p>
+    <p>At serving time you have two options. You can <strong>merge</strong> the adapter into the base to get a single standalone model (simplest to deploy, but you lose the swap-ability). Or you can <strong>keep adapters separate</strong> and load them on top of a shared base — which is what makes the “one base, many fine-tunes” pattern so powerful: serving infrastructure can hold one base in memory and dynamically apply different adapters per request, even batching requests for different adapters together. This is how a platform offers dozens of customer-specific fine-tunes affordably. The takeaway: LoRA didn’t just make fine-tuning <em>cheaper to train</em> — it made fine-tunes <em>cheap to store and serve at scale</em>, which is arguably why fine-tuning became practical for everyone, including you on a free GPU.</p>
+  </div>
+
+  <p>LoRA is the <em>how</em>; the most common <em>what</em> is teaching a model to follow instructions in your style. Next: <strong>instruction tuning</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

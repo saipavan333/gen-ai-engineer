@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The agent loop (ReAct) — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="4.3">
+<main class="lesson">
+
+  <span class="eyebrow">Track 4 · Lesson 4.3</span>
+  <h1>The agent loop (ReAct)</h1>
+  <p class="lead">One tool call answers one question. Real tasks need several steps where each depends on the last. The agent loop — reason, act, observe, repeat — is the engine that turns a tool-using model into something that can actually solve problems.</p>
+
+  <h2>Why a loop, and why interleave reasoning with acting</h2>
+  <p>Consider “What’s the population of France times two?” The model can’t answer in one shot: it needs to look up the population (it doesn’t reliably know current figures), <em>then</em> do the multiplication (it’s bad at exact math). The steps are sequential and the second depends on the first’s result. That’s the loop: the model takes one action, sees the result, and only then decides the next action. The popular framing is <span class="term">ReAct</span> — <strong>Rea</strong>soning + <strong>Act</strong>ing — where the model alternates between a <em>thought</em> (what should I do next and why) and an <em>action</em> (a tool call), reading each <em>observation</em> before continuing.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t4-react-loop.svg" alt="The agent loop, Reason plus Act (ReAct): Thought ('I should search') leads to Action (call a tool), which yields an Observation (tool result), which loops back to Thought, repeating until done; when confident, it exits to a Final answer. Each cycle adds a thought, an action, and its observation to the context — reasoning over actions.">
+    <figcaption>Thought → Action → Observation, repeating until the model is confident, then a final answer. Each loop appends to the context, so the model reasons over a growing trace of what it has done.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p>The <span class="term">agent loop</span> repeatedly asks the model what to do next. Each iteration is a <span class="term">step</span>: the model either emits a tool call (an <em>action</em>), whose result (the <em>observation</em>) is appended to the conversation, or it emits a final answer, which ends the loop. <span class="term">ReAct</span> is the pattern of interleaving explicit reasoning (“thoughts”) with these actions. A <span class="term">stopping condition</span> ends the loop — either the model finishes, or a guard (like a maximum step count) trips.</p>
+  </div>
+
+  <h2>Watch an agent think</h2>
+  <p>Step through a real multi-step trace. Notice how each observation feeds the next thought — the model isn’t guessing, it’s building on what it learned.</p>
+
+  <div class="demo" id="ra-demo">
+    <div class="demo-head"><span class="tag">Live demo</span><h4>ReAct trace</h4></div>
+    <p class="demo-hint">Goal: <b>“What is the population of France, doubled?”</b> — the agent has <code>web_search</code> and <code>calculator</code>.</p>
+    <div class="out" id="ra-out" style="min-height:150px"></div>
+    <button class="run" id="ra-step">Next step ▸</button>
+    <button class="run" id="ra-reset" style="background:#eef0fe;color:#3a32c4">Reset</button>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — a real agent loop (free, Ollama)</div>
+    <p>The whole loop in ~15 lines, with a <code>max_steps</code> guard so it can never run away (Lesson 4.8 lives here).</p>
+<pre><code><span class="k">import</span> ollama
+
+TOOLS <span class="o">=</span> {<span class="s">"calculator"</span>: calculator, <span class="s">"web_search"</span>: web_search}   <span class="c"># your real functions</span>
+
+<span class="k">def</span> <span class="f">run_agent</span>(goal, tool_schemas, max_steps<span class="o">=</span><span class="n">6</span>):
+    messages <span class="o">=</span> [
+        {<span class="s">"role"</span>: <span class="s">"system"</span>, <span class="s">"content"</span>: <span class="s">"Use tools to solve the task. Think, then act. Answer when sure."</span>},
+        {<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: goal},
+    ]
+    <span class="k">for</span> step <span class="k">in</span> <span class="f">range</span>(max_steps):                       <span class="c"># the GUARD: bounded loop</span>
+        msg <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"llama3.2"</span>, messages<span class="o">=</span>messages, tools<span class="o">=</span>tool_schemas)[<span class="s">"message"</span>]
+        messages.<span class="f">append</span>(msg)
+        calls <span class="o">=</span> msg.<span class="f">get</span>(<span class="s">"tool_calls"</span>)
+        <span class="k">if</span> <span class="k">not</span> calls:                                    <span class="c"># no tool → it's the final answer</span>
+            <span class="k">return</span> msg[<span class="s">"content"</span>]
+        <span class="k">for</span> call <span class="k">in</span> calls:                                <span class="c"># run each requested tool</span>
+            name <span class="o">=</span> call[<span class="s">"function"</span>][<span class="s">"name"</span>]
+            result <span class="o">=</span> TOOLS[name](<span class="o">**</span>call[<span class="s">"function"</span>][<span class="s">"arguments"</span>])
+            messages.<span class="f">append</span>({<span class="s">"role"</span>: <span class="s">"tool"</span>, <span class="s">"content"</span>: <span class="f">str</span>(result)})   <span class="c"># observation back in</span>
+    <span class="k">return</span> <span class="s">"Stopped: hit max steps."</span>                     <span class="c"># never loop forever</span>
+
+<span class="f">print</span>(<span class="f">run_agent</span>(<span class="s">"What is the population of France, doubled?"</span>, tool_schemas))</code></pre>
+    <p>That’s a complete agent. The loop is short on purpose — the intelligence is in the model’s choices and your tools, not in clever loop code. Everything else in this track makes this loop smarter (planning, memory) and safer (guards).</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>The <strong>agent loop</strong> repeats: the model picks an action, observes the result, and decides again — until it answers.</li>
+      <li><strong>ReAct</strong> interleaves <em>reasoning</em> (thoughts) with <em>acting</em> (tool calls), so each step builds on the last.</li>
+      <li>Each step <strong>appends to the context</strong> — the model reasons over a growing trace of its own actions.</li>
+      <li>The loop ends when the model emits a <strong>final answer</strong> or a <strong>guard</strong> (like max-steps) trips.</li>
+      <li>The loop is simple; the power is in <strong>good tools, clear prompts, and bounds</strong>.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Why does an agent loop almost always include a maximum step count?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) To guarantee the loop terminates — without it, a confused model can call tools forever, burning time and money.</span>
+        <div class="why">Correct. The model decides when to stop, and a stuck model (repeating actions, never satisfied) would loop indefinitely. A max-steps cap is a hard guarantee of termination and a budget guard — non-negotiable in production.</div></li>
+      <li data-correct="false"><span class="opt">B) Because models can only handle a fixed number of tool calls.</span>
+        <div class="why">There’s no inherent per-model limit on tool-call count. The cap is something <em>you</em> impose to bound cost and time, not a model constraint.</div></li>
+      <li data-correct="false"><span class="opt">C) To make the agent faster on simple tasks.</span>
+        <div class="why">A high cap doesn’t slow simple tasks — they finish early when the model answers. The cap exists to prevent the <em>worst</em> case (runaway loops), not to speed the common case.</div></li>
+      <li data-correct="false"><span class="opt">D) Because each step must use a different tool.</span>
+        <div class="why">Steps can reuse the same tool freely. The max-steps guard is about bounding total iterations, unrelated to which tools are used.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Trace the steps an agent with <code>web_search</code> and <code>calculator</code> would take for “How many days until the next leap year, times 3?”<br>
+    <strong>2.</strong> Why does ReAct (reason <em>then</em> act, repeatedly) tend to beat asking the model to output a full plan and execute it blindly?<br>
+    <strong>3.</strong> Your agent sometimes ends with “Stopped: hit max steps.” List two distinct causes and how you’d investigate.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> Thought: I need the next leap year and today’s date → Action: <code>web_search</code> or compute next leap year → Observation: e.g., 2028 → Thought: days until 2028-02-29 → Action: <code>calculator</code> (date difference) → Observation: N days → Thought: multiply by 3 → Action: <code>calculator</code>(N×3) → Observation: 3N → Final answer. Each observation determines the next action — that dependency is why a loop is needed.</p>
+        <p><strong>2.</strong> Because the real world surprises the plan. A blind upfront plan can’t adapt when a search returns something unexpected or a tool errors. ReAct lets the model <em>see each result before choosing the next step</em>, so it can correct course, retry, or change approach. Plans are still useful (Lesson 4.4) — but they work best when re-checked against observations, not executed sight-unseen.</p>
+        <p><strong>3.</strong> Cause (a): the task genuinely needs more steps than the cap — raise the limit or decompose it. Cause (b): the agent is <em>stuck in a loop</em> — repeating the same failing action (a broken tool, bad arguments, or an observation it can’t use). Investigate by logging the full trace (every thought/action/observation): if you see repetition, fix the tool or its result formatting; if you see steady progress that just ran long, the cap was too low.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: the trace is everything</div>
+    <p>The single most useful habit for building agents is to <strong>log and read the full trace</strong> — every thought, every tool call with its arguments, every observation. Almost all agent debugging is reading traces: you’ll see the model pick the wrong tool (fix the description), pass a malformed argument (validate/normalize), misread an observation (format tool results more clearly — labeled, trimmed, structured), or loop because a tool keeps failing silently (surface the error as an observation). The model’s behavior is a direct function of what it sees in the context, and the trace <em>is</em> what it sees.</p>
+    <p>This also reframes “observations.” How you format a tool’s result matters as much as the result itself: a wall of raw JSON or a 10,000-token API dump will confuse the model and blow the context budget, while a concise, labeled summary (“search results: 1) … 2) …”) keeps it on track. Trim, label, and structure observations before feeding them back. And because the trace grows every step, long-running agents eventually strain the context window — which is exactly the problem memory (Lesson 4.5) solves. For now, internalize the loop and the trace: master those two and you understand 80% of agent engineering.</p>
+  </div>
+
+  <p>Looping reactively works, but for complex goals it helps to think <em>before</em> acting — to lay out a plan and then execute it. Next: <strong>planning &amp; decomposition</strong>.</p>
+
+</main>
+
+<script>
+(function () {
+  var TRACE = [
+    { t: "Thought", c: "#2563eb", body: "I need France’s current population, then I’ll double it." },
+    { t: "Action", c: "#b45309", body: 'web_search("current population of France")' },
+    { t: "Observation", c: "#475569", body: "France population ≈ 68.2 million (2025)." },
+    { t: "Thought", c: "#2563eb", body: "Now multiply 68,200,000 by 2 — use the calculator for exactness." },
+    { t: "Action", c: "#b45309", body: 'calculator("68200000 * 2")' },
+    { t: "Observation", c: "#475569", body: "136400000" },
+    { t: "Thought", c: "#2563eb", body: "I have the result and I’m confident. Answer." },
+    { t: "Final answer", c: "#15803d", body: "About 136.4 million (France’s population of ~68.2M, doubled)." }
+  ];
+  var out = document.getElementById("ra-out");
+  var step = 0;
+  function render() {
+    var html = "";
+    for (var i = 0; i <= step && i < TRACE.length; i++) {
+      var s = TRACE[i];
+      html += '<div style="display:flex;gap:10px;margin:6px 0">' +
+        '<span style="min-width:92px;font-weight:700;color:' + s.c + ';font-size:13px">' + s.t + '</span>' +
+        '<span style="flex:1;font-family:monospace;font-size:12.5px;color:#334155">' + s.body + '</span></div>';
+    }
+    out.innerHTML = html;
+  }
+  document.getElementById("ra-step").addEventListener("click", function () {
+    if (step < TRACE.length - 1) step++; render();
+  });
+  document.getElementById("ra-reset").addEventListener("click", function () { step = 0; render(); });
+  render();
+})();
+</script>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

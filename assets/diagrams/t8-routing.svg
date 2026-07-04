@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 300" width="880" height="300" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="880" height="300" fill="#ffffff"/>
+<text x="440" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Model routing: right-size the model per query</text>
+<rect x="30" y="122.5" width="130" height="60" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="30" y="125" width="130" height="60" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="30" y="120" width="130" height="60" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="95.0" y="150.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Query</text>
+<rect x="220" y="118.5" width="150" height="68" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="220" y="121" width="150" height="68" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="220" y="116" width="150" height="68" rx="13" ry="13" fill="url(#g_accent)" stroke="#4f46e5" stroke-width="1.8"/>
+<text x="295.0" y="142.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#312e81" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Router</text>
+<text x="295.0" y="155.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">how hard is it?</text>
+<rect x="470" y="72.5" width="250" height="56" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="470" y="75" width="250" height="56" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="470" y="70" width="250" height="56" rx="13" ry="13" fill="url(#g_example)" stroke="#16a34a" stroke-width="1.8"/>
+<text x="595.0" y="90.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#14532d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Small model  ($)</text>
+<text x="595.0" y="103.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">fast, cheap — easy queries</text>
+<rect x="470" y="170.5" width="250" height="56" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="470" y="173" width="250" height="56" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="470" y="168" width="250" height="56" rx="13" ry="13" fill="url(#g_key)" stroke="#d97706" stroke-width="1.8"/>
+<text x="595.0" y="188.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#7c2d12" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Big model  ($$$)</text>
+<text x="595.0" y="201.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">capable — hard queries</text>
+<line x1="160" y1="150" x2="206.0" y2="150.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="218.0,150.0 206.0,154.8 206.0,145.2" fill="#475569"/>
+<line x1="370" y1="138" x2="459.60874821944867" y2="103.25375069041785" stroke="#15803d" stroke-width="2" stroke-linecap="round"/>
+<polygon points="468.0,100.0 460.9,106.6 458.3,99.9" fill="#15803d"/>
+<text x="420" y="108" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10" fill="#15803d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">easy</text>
+<line x1="370" y1="162" x2="459.4971904927413" y2="193.05004568115515" stroke="#b45309" stroke-width="2" stroke-linecap="round"/>
+<polygon points="468.0,196.0 458.3,196.5 460.7,189.6" fill="#b45309"/>
+<text x="420" y="205" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10" fill="#b45309" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">hard</text>
+<text x="440" y="270" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Most queries are easy — routing them to a cheap model can cut costs dramatically.</text>
+</svg>

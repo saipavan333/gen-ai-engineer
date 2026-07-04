@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The self-correcting SQL agent — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="13.4">
+<main class="lesson">
+
+  <span class="eyebrow">Structured Data &amp; Text-to-SQL · Lesson 13.4</span>
+  <h1>The self-correcting SQL agent</h1>
+  <p class="lead">First tries fail: a wrong column name, a bad join, a dialect quirk. The trick that makes text-to-SQL feel reliable is letting the system read its own error and fix itself — the agent loop from Track&nbsp;4, pointed at a database.</p>
+
+  <h2>Why a single shot isn’t enough</h2>
+  <p>Even with a good schema prompt, the model’s first query will sometimes fail: it references <code>customer.country</code> when the table is <code>customers</code>, or uses a function your dialect doesn’t have. A one-shot system just surfaces that error to the user, who has no idea what to do with <code>no such column: customer.country</code>. But notice: the database just told us <em>exactly</em> what’s wrong. If we hand that error message back to the model and ask it to try again, it fixes the mistake the overwhelming majority of the time. That single feedback loop is the difference between a brittle demo and something people trust.</p>
+  <p>This is precisely the <span class="term">agent loop</span> (ReAct) from Track&nbsp;4: act (run the SQL), observe (the result or the error), and decide (answer, or revise and retry). The tool here is your safe read-only query runner; the observation is either rows or an error string.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t13-textsql-flow.svg" alt="The text-to-SQL loop with self-correction: question plus schema to the LLM, which writes SQL that runs read-only on the database; on an error, the database's error message is sent back to the model so it revises the query and retries, before producing the worded answer.">
+    <figcaption>The self-correction loop: a failed run feeds its error back so the model revises — bounded by a small retry limit.</figcaption>
+  </figure>
+
+  <h2>The loop, with guards</h2>
+  <p>As with any agent (Track&nbsp;4, and Track&nbsp;12’s reliability patterns), the loop must be <strong>bounded</strong>: cap the retries so a query it can’t fix doesn’t spin forever or run up cost. Two or three attempts catches almost all recoverable errors; past that, fail gracefully and tell the user (or hand off to a human).</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">sql_agent.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">answer_question</span>(question, db_path, max_tries<span class="o">=</span><span class="n">3</span>):
+    messages <span class="o">=</span> <span class="f">build_prompt</span>(question)        <span class="c"># schema + question (Lesson 13.2)</span>
+    <span class="k">for</span> attempt <span class="k">in</span> <span class="f">range</span>(max_tries):
+        sql <span class="o">=</span> <span class="f">llm</span>(messages)                  <span class="c"># model writes a SELECT</span>
+        <span class="k">try</span>:
+            rows <span class="o">=</span> <span class="f">run_readonly</span>(sql, db_path)   <span class="c"># safe runner (Lesson 13.3)</span>
+        <span class="k">except</span> <span class="f">Exception</span> <span class="k">as</span> err:
+            <span class="c"># hand the DB's own error back and let it fix the query</span>
+            messages <span class="o">+=</span> <span class="s">f"\nThat query failed with: </span>{err}<span class="s">\nFix it and return only SQL."</span>
+            <span class="k">continue</span>
+        <span class="k">return</span> {<span class="s">"sql"</span>: sql, <span class="s">"rows"</span>: rows}   <span class="c"># success — return SQL too, for transparency</span>
+    <span class="k">return</span> {<span class="s">"error"</span>: <span class="s">"Could not build a working query. Try rephrasing."</span>}</code></pre>
+  <p>Three things make this good: the loop is <strong>bounded</strong> (<code>max_tries</code>), it feeds the <strong>actual error</strong> back (not a generic “try again”), and on success it returns the <strong>SQL alongside the rows</strong> so the answer is auditable. Everything dangerous is still contained by <code>run_readonly</code> from the last lesson — the agent can retry freely because it <em>can’t</em> do harm.</p>
+
+  <h2>Beyond errors: verify the result, and ask when unsure</h2>
+  <p>Self-correction fixes queries that <em>error</em>. But recall the scarier failure: SQL that runs and returns the wrong number. Two habits help. First, <strong>sanity-check the result shape</strong> — if a “how many customers” question returns 40,000 rows instead of one number, something’s off; that mismatch can itself be fed back for a fix. Second, when a question is genuinely <strong>ambiguous</strong> (“best customers”?), the most reliable “agent” move is often not to guess but to <em>ask a clarifying question</em> — “by revenue or by number of orders?” A system that occasionally asks is far more trustworthy than one that confidently guesses wrong.</p>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>First-try SQL often fails; feeding the <strong>database’s error message back</strong> lets the model fix it — usually within one retry.</li>
+      <li>This is the <strong>ReAct agent loop</strong> (Track&nbsp;4): act (run) → observe (rows/error) → revise.</li>
+      <li><strong>Bound the retries</strong> (2–3) and fail gracefully — the safe read-only runner means retrying can’t cause harm.</li>
+      <li>Return the <strong>SQL with the answer</strong> for transparency and auditing.</li>
+      <li>Handle <strong>wrong-but-runs</strong> by checking result shape, and handle <strong>ambiguity</strong> by asking a clarifying question rather than guessing.</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p>In the loop above, why do we pass the <em>exact</em> error string back to the model instead of a generic “that didn’t work, try again”? And why cap <code>max_tries</code> at a small number instead of looping until success?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>Exact error vs generic retry:</strong> the specific message localizes the fix. <code>no such column: customer.country</code> tells the model precisely what to change (the table is <code>customers</code>); <code>near "GROUP": syntax error</code> points at the clause to repair. A generic “try again” gives the model nothing new, so it’s likely to reproduce the same mistake — you’d be paying for another identical failure. Feeding back concrete observations is the core of what makes the agent loop work.</p>
+        <p><strong>Why bound the retries:</strong> some questions can’t be answered from the schema (the data simply isn’t there), and without a cap the loop would retry forever, burning time and money on an impossible task — the runaway-agent failure from Track&nbsp;12. A small cap catches the recoverable cases (the vast majority) and then fails gracefully with a helpful message, which is both cheaper and a better user experience than an infinite spinner. Bounded loops are non-negotiable in production.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">A text-to-SQL system’s accuracy jumps sharply when one change is made. Which change, and why?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) On a failed query, feed the database’s error message back and let the model revise (a bounded retry loop).</span>
+        <div class="why">Correct. Many first-attempt failures are small, fixable mistakes (a wrong column, a dialect function), and the database names the problem exactly. Returning that error for a revision fixes most of them on the next try — a large, cheap accuracy gain. It’s the ReAct loop: act, observe the error, revise.</div></li>
+      <li data-correct="false"><span class="opt">B) Raise the model’s temperature so it’s more creative with queries.</span>
+        <div class="why">Higher temperature makes SQL <em>less</em> reliable, not more — you want deterministic, correct queries (temperature 0 is typical). Creativity is the opposite of what SQL generation needs.</div></li>
+      <li data-correct="false"><span class="opt">C) Remove the schema from the prompt so the model isn’t constrained.</span>
+        <div class="why">Removing the schema removes the model’s knowledge of your tables and columns — accuracy would collapse, not improve. The schema is the most important context there is.</div></li>
+      <li data-correct="false"><span class="opt">D) Run every query twice and compare.</span>
+        <div class="why">Running the same deterministic query twice yields the same result; it catches nothing and doubles cost. The valuable feedback isn’t repetition — it’s the <em>error message</em> from a failure driving a revision.</div></li>
+    </ul>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: this is the general pattern for “LLM + any tool”</div>
+    <p>The self-correcting SQL agent is a specific case of a pattern worth internalizing, because it recurs everywhere in applied GenAI: give a model a tool whose failures are <em>legible</em>, let it call the tool, and feed the tool’s response — success or a precise error — back into the loop. SQL is a beautiful example because databases return unusually good error messages, but the same shape works for calling an API (feed back the 400 and the validation message), running code (feed back the stack trace), or invoking any function with a schema (feed back “missing required field X”). The model becomes reliable not because it’s always right the first time, but because the environment tells it exactly how it was wrong and it can try again.</p>
+    <p>That reframes what you’re building across this whole course. An agent’s intelligence is only half the story; the other half is the quality of the feedback its tools give it. When you design a tool for an LLM, you’re also designing its error messages — and a tool that fails with a clear, specific, actionable message turns a model that “sometimes gets it right” into a system that “gets it right after a bounded, self-correcting loop.” That design instinct — engineering the feedback, not just the action — is what separates people who can make agents production-grade from people who can only demo them.</p>
+  </div>
+
+  <p>You can now build a safe, self-correcting text-to-SQL system. The last question is the one interviewers always ask: how do you know it’s any good? Next: the <strong>interview check</strong>, where evaluation ties it together.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

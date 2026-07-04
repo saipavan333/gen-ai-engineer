@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Advanced RAG — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="12.1">
+<main class="lesson">
+
+  <span class="eyebrow">Going Deeper · Lesson 12.1</span>
+  <h1>Advanced RAG</h1>
+  <p class="lead">Track&nbsp;3 got you a working, grounded RAG system. This lesson covers what you reach for when “embed and take the top&nbsp;k” isn’t good enough — query transformation, reranking, context curation, and the rigorous evaluation that tells you which change actually helped.</p>
+
+  <h2>Why basic RAG plateaus</h2>
+  <p>A first RAG build usually works on easy questions and then stalls on real ones. The reasons are predictable: the user’s question is phrased differently from the documents (so embedding similarity misses), the right chunk is retrieved but buried among weak ones (so the model overlooks it), or several relevant chunks are needed and the top&nbsp;k grabs only one. Advanced RAG is a set of targeted fixes for these specific failures — and crucially, a way to <em>measure</em> whether each fix worked. Every technique below is a knob; the eval is how you know which knob to turn.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t12-advanced-rag.svg" alt="An advanced RAG pipeline with five stages — query transform (rewrite, HyDE, split), hybrid retrieve (dense plus BM25 sparse), rerank (cross-encoder top-k), compress context (select, dedupe, order), and grounded LLM (answer plus citations) — with an offline RAGAS-style evaluation measuring faithfulness, context precision, context recall, and answer relevance across every stage.">
+    <figcaption>Each stage is a measurable, tunable knob. “Improving RAG” means changing one and watching the eval move.</figcaption>
+  </figure>
+
+  <h2>1 · Fix the query before you search</h2>
+  <p>Retrieval quality is capped by the query you embed. <span class="term">Query transformation</span> improves the question before it ever hits the index:</p>
+  <p><strong>Rewriting</strong> turns a messy or conversational question into a clean search query (“why’s it broken since the update?” → “errors after version 2.0 upgrade”). <strong>Multi-query</strong> generates several phrasings, retrieves for each, and merges the results — catching documents that only match one wording. <strong>Decomposition</strong> splits a multi-part question (“compare the refund and warranty policies”) into sub-questions retrieved separately. <strong>HyDE</strong> (Hypothetical Document Embeddings) asks the model to draft a fake ideal answer, then embeds <em>that</em> to search — because a hypothetical answer often sits closer in embedding space to the real documents than the short question does.</p>
+  <p>Here’s multi-query with simple rank fusion, on the free local stack:</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">multi_query.py</span></div>
+<pre><code><span class="c"># Ask the LLM for 3 rephrasings, retrieve each, then fuse with Reciprocal Rank Fusion.</span>
+variants <span class="o">=</span> generate_rephrasings(question, n<span class="o">=</span><span class="n">3</span>)   <span class="c"># an Ollama call returning a list[str]</span>
+
+scores <span class="o">=</span> {}
+<span class="k">for</span> q <span class="k">in</span> [question] <span class="o">+</span> variants:
+    <span class="k">for</span> rank, chunk_id <span class="k">in</span> <span class="f">enumerate</span>(retrieve(q, k<span class="o">=</span><span class="n">10</span>)):
+        scores[chunk_id] <span class="o">=</span> scores.<span class="f">get</span>(chunk_id, <span class="n">0</span>) <span class="o">+</span> <span class="n">1</span> <span class="o">/</span> (<span class="n">60</span> <span class="o">+</span> rank)   <span class="c"># RRF</span>
+
+top <span class="o">=</span> <span class="f">sorted</span>(scores, key<span class="o">=</span>scores.<span class="f">get</span>, reverse<span class="o">=</span><span class="k">True</span>)[:<span class="n">5</span>]</code></pre>
+  <p>Reciprocal Rank Fusion rewards chunks that rank highly across <em>several</em> queries, which is exactly the signal you want. The cost is extra LLM and retrieval calls — a real latency/quality trade-off you should measure, not assume.</p>
+
+  <h2>2 · Retrieve broadly, then rerank precisely</h2>
+  <p>Your vector search uses a <span class="term">bi-encoder</span>: it embeds the query and each document <em>separately</em>, which is fast (you precompute document vectors) but approximate. A <span class="term">cross-encoder reranker</span> reads the query and a candidate document <em>together</em> and scores their relevance directly — far more accurate, but far too slow to run over a whole corpus. The standard pattern resolves the tension: retrieve a generous top&nbsp;k (say 25) cheaply with the bi-encoder, then rerank just those 25 with the cross-encoder and keep the best 5. You get cross-encoder accuracy at bi-encoder scale.</p>
+  <div class="box note">
+    <div class="box-label">Free and local</div>
+    <p>Rerankers don’t require a paid API. A small open cross-encoder (e.g. <code>cross-encoder/ms-marco-MiniLM</code> via <code>sentence-transformers</code>) runs on CPU and meaningfully lifts precision. Add it, then check the eval — sometimes a reranker helps more than a fancier embedding model, for less effort.</p>
+  </div>
+
+  <h2>3 · Curate the context window</h2>
+  <p>More retrieved text is not better. Two effects bite: models exhibit <span class="term">“lost in the middle”</span> — they attend best to the start and end of the context and can miss facts buried in the middle — and irrelevant chunks actively distract, lowering faithfulness. So <strong>order</strong> matters (put the strongest chunks first and last), <strong>deduplicate</strong> near-identical passages, and consider <strong>compression</strong>: trim each chunk to the sentences that actually bear on the question (an extractive step, or a cheap LLM pass) before handing it to the generator. Less, but better, context usually beats stuffing the window — and it’s cheaper.</p>
+
+  <h2>4 · Measure it like an engineer</h2>
+  <p>You can’t improve what you don’t measure, and RAG has two failure surfaces that need separate metrics. <strong>Retrieval</strong> quality: <em>context recall</em> (did we fetch the chunks that contain the answer?) and <em>context precision</em> (how much of what we fetched was relevant?). <strong>Generation</strong> quality: <em>faithfulness</em> (is every claim supported by the retrieved context, i.e. no hallucination?) and <em>answer relevance</em> (did it actually address the question?). This four-metric view (popularized by RAGAS) is powerful because it <strong>localizes the problem</strong>: low recall means fix retrieval; high recall but low faithfulness means fix generation/grounding. Build this on the golden-set + LLM-judge foundation from Track&nbsp;6 — it works with free local models.</p>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>Advanced RAG = targeted fixes for specific failures, each <strong>measured</strong>, not guessed.</li>
+      <li><strong>Query transformation</strong> (rewrite, multi-query, decomposition, HyDE) improves the question before retrieval.</li>
+      <li><strong>Retrieve broadly (bi-encoder) then rerank (cross-encoder)</strong> for accuracy at scale — free/local rerankers work well.</li>
+      <li><strong>Curate context</strong>: order strongest first/last (“lost in the middle”), dedupe, and compress — less but better.</li>
+      <li>Measure four things — <strong>context recall, context precision, faithfulness, answer relevance</strong> — to localize the fix.</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p>Your RAG system scores <strong>high context recall (0.9)</strong> but <strong>low faithfulness (0.6)</strong> — it fetches the right documents, yet the answers contain unsupported claims. Diagnose where the problem is and list three changes you’d try first.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>Diagnosis:</strong> retrieval is fine — high recall means the answer-bearing chunks are present. The failure is in <em>generation/grounding</em>: the model has the right context but isn’t staying anchored to it. Throwing a better embedding model or more retrieval at this would waste effort, because the metric tells you the problem is downstream.</p>
+        <p><strong>Three first fixes:</strong> (1) tighten the <em>grounding prompt</em> — instruct “answer using ONLY the context; if it’s not there, say you don’t know,” which directly attacks unsupported claims. (2) Require <em>citations</em> per claim and (optionally) verify each sentence maps to a chunk — citation pressure reduces fabrication. (3) <em>Curate the context</em> — remove distracting/duplicate chunks and reorder so the strongest are first/last, reducing “lost in the middle” drift. A fourth, if needed: lower temperature for the generation step. Then re-run faithfulness to confirm it moved.</p>
+        <p><strong>Why this is the senior move:</strong> you used the metrics to <em>localize</em> the fault before touching anything, then applied the cheapest targeted fixes and re-measured. That diagnose-then-treat loop — not a pile of simultaneous changes — is exactly what interviewers and teammates want to see.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Why is the standard pattern “retrieve top-25 with the embedding model, then rerank to top-5 with a cross-encoder,” rather than cross-encoding the whole corpus?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Cross-encoders are more accurate but too slow to score every document, so you use the fast bi-encoder to shortlist and the cross-encoder only on the shortlist.</span>
+        <div class="why">Correct. A cross-encoder reads query and document together for higher accuracy, but that means a fresh model pass per pair — infeasible over millions of docs. The bi-encoder uses precomputed vectors to cheaply shortlist candidates; the cross-encoder then re-scores just those. You capture most of the accuracy at a tiny fraction of the cost.</div></li>
+      <li data-correct="false"><span class="opt">B) Cross-encoders are less accurate, so you only trust them on a few documents.</span>
+        <div class="why">Backwards — cross-encoders are <em>more</em> accurate per pair. The reason you limit them is speed/cost, not a lack of trust.</div></li>
+      <li data-correct="false"><span class="opt">C) Bi-encoders can’t produce a ranking, so the cross-encoder is required to sort.</span>
+        <div class="why">Bi-encoders absolutely produce a ranking (by vector similarity) — that’s how the top-25 shortlist is formed in the first place. The cross-encoder refines that ranking, it doesn’t create the only one.</div></li>
+      <li data-correct="false"><span class="opt">D) It’s purely about cost; the two approaches are equally accurate.</span>
+        <div class="why">They’re not equally accurate — the cross-encoder’s joint reading of query and document is the whole point. It’s an accuracy-for-speed trade, managed by applying the slow-but-accurate step only to a shortlist.</div></li>
+    </ul>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: scaling retrieval to millions of documents</div>
+    <p>At small scale you can compare a query against every vector (exact search). At millions of documents that’s too slow, so production systems use an <span class="term">approximate nearest neighbor</span> (ANN) index — most commonly HNSW, a navigable graph that finds very-close vectors in roughly logarithmic time. The trade is a tunable sliver of recall for an enormous speedup; parameters like HNSW’s <code>ef_search</code> let you dial the accuracy/latency balance, and — being a measurable knob — you set it by watching recall, not by guessing. This is where your data-engineering instincts pay off directly: it’s an index-tuning problem like any other.</p>
+    <p>Three more production realities round it out. <strong>Metadata filtering</strong> (by tenant, date, permissions) must combine with vector search, which shapes your index and store choice — and pre- vs post-filtering has real recall implications. <strong>Freshness</strong> means incremental indexing and re-embedding as documents change, plus handling deletes and duplicates, exactly the pipeline hygiene you already do for warehouses. And <strong>cost</strong> compounds: embedding millions of chunks, storing vectors, and re-embedding on model upgrades are budget items you plan for. None of this is exotic — it’s data engineering applied to vectors, which is precisely why your background is an advantage here.</p>
+  </div>
+
+  <p>RAG can be tuned and measured to a high bar. Next, the same rigor applied to systems that take actions: <strong>advanced agents.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

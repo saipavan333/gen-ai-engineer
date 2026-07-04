@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Behavioral &amp; judgment — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="9.6">
+<main class="lesson">
+
+  <span class="eyebrow">Track 9 · Lesson 9.6</span>
+  <h1>Behavioral &amp; judgment</h1>
+  <p class="lead">The technical rounds test what you know; the behavioral round tests how you think and work — and for AI roles, it tests <em>judgment</em> about a powerful, fallible technology. This is where strong engineers seal the offer, and where overconfident ones lose it.</p>
+
+  <h2>Two things this round measures</h2>
+  <p>First, the usual: how you collaborate, handle conflict, learn, and recover from failure — answered with concrete stories. Second, something AI-specific: your <span class="term">judgment</span> about when and how to use this technology responsibly. Interviewers want to see that you’re neither a hype-follower who LLM-ifies everything nor a skeptic who dismisses it — but someone who matches the tool to the problem, respects its limits, and cares about the people affected. That judgment is, increasingly, the differentiator.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t9-star.svg" alt="Behavioral answers: the STAR method. S — Situation (the context), T — Task (your goal/challenge), A — Action (what YOU did), R — Result (the outcome, quantify!). Prepare 4-5 stories; one strong end-to-end project can supply most of them.">
+    <figcaption>Structure every behavioral answer as STAR. Prepare 4–5 stories in advance — your end-to-end project (Track 10) can supply most of them.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">The STAR method</div>
+    <p>Answer behavioral questions with <span class="term">STAR</span>: the <strong>Situation</strong> (brief context), the <strong>Task</strong> (your specific goal or challenge), the <strong>Action</strong> (what <em>you</em> did — emphasize your contribution and reasoning), and the <strong>Result</strong> (the outcome, quantified where possible, plus what you learned). It keeps answers concrete and complete instead of vague. Prepare 4–5 stories covering: a project you’re proud of, a failure/mistake, a conflict, a time you learned something fast, and a hard technical decision.</p>
+  </div>
+
+  <h2>The AI-judgment questions</h2>
+
+  <div class="box practice"><div class="box-label">Q · the classic</div><p><strong>“Tell me about a time an LLM didn’t work as expected. What did you do?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> How to answer</summary><div class="sol-body"><p>Use STAR with a real failure: e.g., “Our support bot confidently gave a wrong policy (Situation/Task). I traced it, found retrieval missed the right chunk because of bad chunking (Action: diagnosed retrieval vs generation, fixed chunking + added an eval case), and recall@5 and user thumbs-up improved (Result).” The signal: you debug systematically and add a guard so it can’t recur — you don’t just shrug at “the model is unreliable.”</p></div></details></div>
+
+  <div class="box practice"><div class="box-label">Q · judgment</div><p><strong>“When would you advise <em>against</em> using an LLM?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> How to answer</summary><div class="sol-body"><p>When a confident wrong answer is costly and the task is deterministic or safety-critical — exact financial/medical/legal computations, or anything where simpler, reliable code wins. Show you reach for the right tool: “I’d use deterministic code for the calculation and maybe an LLM only for the explanation, with verification.” Recommending <em>against</em> an LLM when appropriate is a major maturity signal — it shows you serve the problem, not the hype.</p></div></details></div>
+
+  <div class="box practice"><div class="box-label">Q · ethics/safety</div><p><strong>“How do you think about the risks and ethics of what you build?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> How to answer</summary><div class="sol-body"><p>Speak concretely, not in platitudes: hallucination harming users (so I ground, cite, and keep humans in the loop for high-stakes), privacy (redact PII, minimize data), bias (test for it in evals), and misuse (guardrails, monitoring). Tie it to practices from this course. Show you treat safety as an engineering responsibility you design for, and that you’d raise concerns rather than ship something harmful to hit a deadline.</p></div></details></div>
+
+  <div class="box practice"><div class="box-label">Q · staying current</div><p><strong>“How do you keep up in such a fast-moving field?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> How to answer</summary><div class="sol-body"><p>Have a real, specific routine: a few sources you follow, hands-on experimentation (you built things — point to them), and a focus on durable fundamentals over chasing every release. The meta-point you can make: because you understand the fundamentals (tokens, RAG, evals, serving), you can evaluate new tools quickly by re-running your evals — so you adopt what measurably helps rather than what’s trendy. That framing shows learning agility grounded in principles.</p></div></details></div>
+
+  <div class="box practice"><div class="box-label">Q · honesty</div><p><strong>“What don’t you know yet / what’s a weakness?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> How to answer</summary><div class="sol-body"><p>Be genuinely honest about a real gap and how you’re addressing it (“I’ve done more RAG than large-scale fine-tuning; I’ve studied LoRA/QLoRA and built a small one, and I’d want mentorship on production training infra”). Confident honesty beats fake perfection — and it mirrors the core lesson of the field: knowing the limits (yours and the model’s) is a strength, not a liability.</p></div></details></div>
+
+  <div class="quiz">
+    <p class="quiz-q">An interviewer asks you to design a feature, and the honest best answer is “this doesn’t need an LLM — simple rules are more reliable here.” What should you do?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Say so, and explain why — recommending the simpler, more reliable solution demonstrates exactly the judgment they’re testing for.</span>
+        <div class="why">Correct. The ability to recognize when <em>not</em> to use an LLM — and to advocate for the right tool even when it’s the less flashy one — is a hallmark of senior judgment. Interviewers value an engineer who serves the problem over one who reflexively applies AI. Honest, well-reasoned restraint is a strong positive signal.</div></li>
+      <li data-correct="false"><span class="opt">B) Shoehorn an LLM in anyway, since that’s what they want to see.</span>
+        <div class="why">Forcing an LLM where it doesn’t belong shows poor judgment and risks a worse, less reliable system. Interviewers are testing whether you can resist exactly this temptation.</div></li>
+      <li data-correct="false"><span class="opt">C) Refuse to answer because it’s not an AI problem.</span>
+        <div class="why">Engaging with the problem and recommending the right approach is the point — declining looks evasive. You demonstrate judgment by explaining the trade-off, not by opting out.</div></li>
+      <li data-correct="false"><span class="opt">D) Propose the most complex agentic solution to look impressive.</span>
+        <div class="why">Complexity for its own sake is the opposite of good judgment and signals you’d over-engineer in the job. Simpler-and-reliable, well-justified, wins.</div></li>
+    </ul>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>Answer behavioral questions with <strong>STAR</strong>; prepare <strong>4–5 concrete stories</strong> in advance.</li>
+      <li>AI roles test <strong>judgment</strong>: match the tool to the problem, respect limits, care about users.</li>
+      <li>For “a time the LLM failed,” show <strong>systematic debugging + a guard so it can’t recur</strong>.</li>
+      <li>Recommending <strong>against</strong> an LLM when appropriate is a strong maturity signal.</li>
+      <li>Discuss <strong>safety/ethics concretely</strong>, and be <strong>honestly self-aware</strong> about gaps.</li>
+    </ul>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: judgment is the durable skill</div>
+    <p>Specific tools and models will change; the judgment to use them well won’t. That’s why this round matters and why it maps onto the whole course. Every track quietly taught judgment: <em>when</em> to use RAG vs fine-tuning vs prompting, <em>when</em> an agent is justified vs over-engineering, <em>how</em> to know something works (evals), <em>what</em> can go wrong (safety), and <em>how</em> to make it affordable (serving). A behavioral round is your chance to show you’ve internalized that — that you think in trade-offs, measure before believing, design for failure, and keep the human impact in view. Those habits outlast any model release, which is exactly why interviewers probe for them.</p>
+    <p>One closing posture for the whole interview: <strong>calibrated confidence</strong>. The field rewards people who can do impressive things <em>and</em> are honest about limits — of the models and of themselves. Overclaiming (“LLMs can do anything,” “I know everything”) reads as naive; excessive hedging reads as unsure. Aim for grounded confidence: “Here’s what I’d build, here’s how I’d know it works, here’s what could go wrong and how I’d handle it, and here’s what I’d want to learn.” That’s the voice of someone who ships real, reliable LLM products — which, if you’ve worked through this course, is exactly who you now are. Build the capstones next, and you’ll have the project to prove it.</p>
+  </div>
+
+  <p>You’re interview-ready across fundamentals, RAG, agents, system design, take-homes, and behavioral. The last step is to <em>prove</em> it with something that runs. Next: Track 10, <strong>Capstones</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

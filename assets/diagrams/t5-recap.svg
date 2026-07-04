@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 250" width="920" height="250" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="920" height="250" fill="#ffffff"/>
+<text x="460" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">The fine-tuning pipeline</text>
+<rect x="20" y="98.5" width="170" height="70" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="20" y="101" width="170" height="70" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="20" y="96" width="170" height="70" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="105.0" y="123.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Formatted data</text>
+<text x="105.0" y="136.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">instruction→response</text>
+<rect x="210" y="98.5" width="170" height="70" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="210" y="101" width="170" height="70" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="210" y="96" width="170" height="70" rx="13" ry="13" fill="url(#g_accent)" stroke="#4f46e5" stroke-width="1.8"/>
+<text x="295.0" y="123.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#312e81" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">LoRA train</text>
+<text x="295.0" y="136.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">frozen base + adapter</text>
+<rect x="400" y="98.5" width="170" height="70" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="400" y="101" width="170" height="70" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="400" y="96" width="170" height="70" rx="13" ry="13" fill="url(#g_key)" stroke="#d97706" stroke-width="1.8"/>
+<text x="485.0" y="123.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#7c2d12" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Evaluate vs base</text>
+<text x="485.0" y="136.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">on a held-out set</text>
+<rect x="600" y="98.5" width="170" height="70" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="600" y="101" width="170" height="70" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="600" y="96" width="170" height="70" rx="13" ry="13" fill="url(#g_example)" stroke="#16a34a" stroke-width="1.8"/>
+<text x="685.0" y="123.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#14532d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Deploy adapter</text>
+<text x="685.0" y="136.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">tiny, swappable</text>
+<line x1="190" y1="131" x2="196.0" y2="131.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="208.0,131.0 196.0,135.8 196.0,126.2" fill="#475569"/>
+<line x1="380" y1="131" x2="386.0" y2="131.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="398.0,131.0 386.0,135.8 386.0,126.2" fill="#475569"/>
+<line x1="580" y1="131" x2="586.0" y2="131.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="598.0,131.0 586.0,135.8 586.0,126.2" fill="#475569"/>
+<text x="460" y="210" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Most fine-tuning today is LoRA/QLoRA: cheap to train, tiny to ship, easy to evaluate against the base.</text>
+</svg>

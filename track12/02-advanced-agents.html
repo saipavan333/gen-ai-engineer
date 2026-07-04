@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Advanced agents — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="12.2">
+<main class="lesson">
+
+  <span class="eyebrow">Going Deeper · Lesson 12.2</span>
+  <h1>Advanced agents</h1>
+  <p class="lead">Track&nbsp;4 built an agent that calls tools and loops. This lesson is about making one <em>reliable</em> — the patterns that turn an impressive demo into something you’d trust to run unattended, and how to evaluate whether it actually works.</p>
+
+  <h2>Why agents are hard to trust</h2>
+  <p>An agent multiplies the unreliability of a single model call. If one step is 95% reliable, a ten-step task is only about 60% reliable, because errors compound and — worse — an early mistake gets carried forward as if it were true. Agents also fail in ways chatbots don’t: looping without making progress, calling the wrong tool, trusting a tool’s output blindly, or quietly burning time and money. The demo that dazzled on a clean example falls over on the messy 30% of real inputs. Advanced agent work is mostly <strong>engineering for that 30%</strong>: anticipating failure and designing so it’s caught, bounded, and recoverable.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t12-agent-patterns.svg" alt="A table of agent reliability techniques and what each buys: reflection or self-critique catches its own mistakes before finishing; plan then execute means fewer wasted tool calls and readable traces; validating tool results means not trusting a tool blindly; bounded loops plus budgets prevent infinite loops and runaway cost; an eval harness for tasks measures success rate rather than vibes.">
+    <figcaption>The techniques that separate a reliable agent from a demo. Each targets a specific failure mode.</figcaption>
+  </figure>
+
+  <h2>The reliability toolkit</h2>
+  <p><strong>Reflection / self-critique.</strong> Before finalizing, have the agent check its own work against the goal (“does this answer the question? is each step justified?”). A cheap second look catches a surprising share of errors — especially format mistakes and skipped requirements.</p>
+  <p><strong>Plan, then execute.</strong> ReAct interleaves thinking and acting, which is flexible but can wander. For complex tasks, having the agent produce a plan first, then execute the steps, yields fewer wasted tool calls and far more readable traces — and lets you validate the plan before any action runs.</p>
+  <p><strong>Validate tool results.</strong> Never trust a tool blindly. Check the result’s shape and sanity before feeding it back (did the search return anything? is the number in a plausible range? did the API error?). Models will confidently build on garbage if you let them.</p>
+  <p><strong>Bound the loop and the budget.</strong> Hard caps are non-negotiable in production: a maximum number of steps, a wall-clock timeout, and a token/cost budget per task. When a cap is hit, fail gracefully (return partial progress or escalate to a human) rather than spinning.</p>
+  <p>Here’s the skeleton, with the guards made explicit:</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">bounded_agent.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">run_agent</span>(goal, max_steps<span class="o">=</span><span class="n">8</span>, token_budget<span class="o">=</span><span class="n">20000</span>):
+    used <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> step <span class="k">in</span> <span class="f">range</span>(max_steps):                 <span class="c"># bound the loop</span>
+        action <span class="o">=</span> decide_next_action(goal, history)
+        <span class="k">if</span> action.kind <span class="o">==</span> <span class="s">"final"</span>:
+            <span class="k">if</span> reflect_ok(goal, action.answer):     <span class="c"># self-critique gate</span>
+                <span class="k">return</span> action.answer
+            history.<span class="f">append</span>(<span class="s">"critique failed, revise"</span>)
+            <span class="k">continue</span>
+        result <span class="o">=</span> call_tool(action)
+        <span class="k">if</span> <span class="k">not</span> valid(result):                     <span class="c"># validate tool output</span>
+            history.<span class="f">append</span>(<span class="s">f"tool error: </span>{result}<span class="s">, try another approach"</span>)
+        used <span class="o">+=</span> result.tokens
+        <span class="k">if</span> used <span class="o">&gt;</span> token_budget:                   <span class="c"># bound the cost</span>
+            <span class="k">return</span> escalate_to_human(goal, history)
+        history.<span class="f">append</span>(result)
+    <span class="k">return</span> escalate_to_human(goal, history)        <span class="c"># graceful fail, not a spin</span></code></pre>
+
+  <h2>Evaluate the journey, not just the destination</h2>
+  <p>The biggest mistake in agent evaluation is grading only the final answer. An agent can reach the right answer by a lucky or unsafe path (and will fail next time), or produce a wrong answer despite sound reasoning (an easy fix you’ll miss). So you evaluate the <span class="term">trajectory</span> — the full sequence of thoughts, tool calls, and results — on a golden set of tasks. Track <strong>task success rate</strong> as the headline metric, but also per-step measures: did it pick the right tool, were arguments well-formed, did it recover from errors, how many steps and tokens did it take. Tracing every step (Track&nbsp;6) is what makes this possible — without traces, an agent is an unobservable black box and you’re debugging by vibes.</p>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>Agents <strong>compound</strong> per-step error; advanced work is engineering for the messy 30% that breaks demos.</li>
+      <li><strong>Reflection</strong> catches errors before finishing; <strong>plan-then-execute</strong> reduces wandering and aids validation.</li>
+      <li><strong>Validate tool results</strong> — models build confidently on garbage. <strong>Bound steps, time, and cost</strong>, and fail gracefully.</li>
+      <li>Evaluate the <strong>trajectory</strong> (tool choice, arg quality, recovery), not just the final answer; headline metric = <strong>task success rate</strong>.</li>
+      <li><strong>Tracing</strong> every step makes agents observable — you can’t debug or improve what you can’t see.</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p>Your agent works on most tasks but on about 20% it runs for many steps, repeats the same tool call, and sometimes never finishes — occasionally producing a large bill. Diagnose the failure and list the changes you’d make.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>Diagnosis:</strong> the agent is looping without progress — repeating a tool call means it isn’t incorporating the result (or the result is unhelpful and it has no other plan), and with no hard cap the loop only ends by luck or budget exhaustion, hence the occasional huge bill. This is a classic missing-guards failure, and it concentrates on the 20% of inputs where the first approach doesn’t work.</p>
+        <p><strong>Fixes:</strong> (1) add a <em>step cap</em> and a <em>token/time budget</em> with graceful escalation — this stops the bills immediately. (2) <em>Detect repetition</em>: if the same action/args repeat, force a different approach or stop. (3) <em>Validate tool results</em> and feed failures back explicitly (“that returned nothing — try X”), so the agent adapts instead of retrying identically. (4) Add a <em>reflection</em> step to notice “I’m not making progress.” (5) For complex tasks, switch to <em>plan-then-execute</em> so there’s a path to follow rather than improvisation. Then measure: run your trajectory eval and confirm step-count and success-rate on the hard 20% improve.</p>
+        <p><strong>Why this is right:</strong> you treated reliability as engineering — bound the blast radius first (caps/budgets), then attack the root cause (no adaptation on failure), then re-measure on the segment that was breaking. Guards aren’t a band-aid here; in production they’re mandatory.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Why evaluate an agent’s full trajectory instead of just checking whether the final answer is correct?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) A right answer can come from a lucky or unsafe path (unreliable next time), and trajectory eval localizes where things actually go wrong.</span>
+        <div class="why">Correct. Final-answer-only grading hides <em>how</em> the answer was reached — an agent that stumbled into the right result via a wrong path will fail on the next input, and one with sound reasoning but a small final slip looks like a total failure. Scoring the trajectory (tool choice, arg quality, recovery, steps) reveals reliability and tells you which step to fix.</div></li>
+      <li data-correct="false"><span class="opt">B) Final answers are impossible to grade automatically.</span>
+        <div class="why">They’re gradable (golden answers, LLM-judge). The issue isn’t that you <em>can’t</em> grade the final answer — it’s that the final answer alone doesn’t tell you whether the behavior is reliable or how to improve it.</div></li>
+      <li data-correct="false"><span class="opt">C) Trajectory evaluation removes the need for a golden set of tasks.</span>
+        <div class="why">It still needs a golden set — you evaluate trajectories <em>over</em> representative tasks. Trajectory eval adds depth to each case; it doesn’t replace the dataset.</div></li>
+      <li data-correct="false"><span class="opt">D) Because the final answer doesn’t matter, only the steps do.</span>
+        <div class="why">Overcorrection — the final answer absolutely matters (task success rate is the headline metric). Trajectory eval <em>complements</em> it by explaining and predicting that success, not by dismissing it.</div></li>
+    </ul>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: when multi-agent helps — and when it just adds failure points</div>
+    <p>Multi-agent systems are fashionable, and sometimes genuinely useful: when a task has clearly separable roles (a researcher, a coder, a critic), distinct tool/permission scopes, or benefits from an explicit critique step, splitting responsibilities can raise quality and keep each agent’s context focused. The common shape is a supervisor that decomposes a goal and routes sub-tasks to specialists, or a sequential pipeline where each stage hands off to the next. Done well, this mirrors a small team and can outperform one agent juggling everything.</p>
+    <p>But every additional agent is another thing that can misunderstand, hallucinate, or stall, and the handoffs between them are new failure surfaces where context gets lost and errors propagate. Coordination has real cost in latency, tokens, and debuggability — a five-agent system is five times the places to look when something breaks. The honest default is to reach for multi-agent only when a single well-equipped agent with good tools, reflection, and guards has demonstrably hit a ceiling. Many “multi-agent” problems are really one agent that needed better tools or a clearer prompt. As with everything in this track, let the eval decide: if adding an agent doesn’t move task success rate on your golden set, it’s just added complexity and cost.</p>
+  </div>
+
+  <p>You can build agents that are bounded, observable, and measured. The thread running through both RAG and agents is evaluation — so let’s deepen that next: <strong>advanced evals.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

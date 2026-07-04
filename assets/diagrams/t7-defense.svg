@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 250" width="920" height="250" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="920" height="250" fill="#ffffff"/>
+<text x="460" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Defense in depth: layers around the model</text>
+<rect x="20" y="96" width="150" height="70" rx="11" ry="11" fill="#fff6ea" stroke="#d97706" stroke-width="2"/>
+<text x="95.0" y="124" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#7c2d12" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Input</text>
+<text x="95.0" y="144" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#7c2d12" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">moderation</text>
+<rect x="200" y="96" width="150" height="70" rx="11" ry="11" fill="#eff5ff" stroke="#2563eb" stroke-width="2"/>
+<text x="275.0" y="124" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1e3a8a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Delimited</text>
+<text x="275.0" y="144" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#1e3a8a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">prompt</text>
+<rect x="380" y="96" width="200" height="70" rx="11" ry="11" fill="#eef0fe" stroke="#4f46e5" stroke-width="2"/>
+<text x="480.0" y="124" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#312e81" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">LLM +</text>
+<text x="480.0" y="144" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#312e81" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">least-privilege tools</text>
+<rect x="600" y="96" width="150" height="70" rx="11" ry="11" fill="#fff6ea" stroke="#d97706" stroke-width="2"/>
+<text x="675.0" y="124" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#7c2d12" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Output</text>
+<text x="675.0" y="144" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#7c2d12" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">validation</text>
+<rect x="790" y="96" width="150" height="70" rx="11" ry="11" fill="#f4f0ff" stroke="#7c3aed" stroke-width="2"/>
+<text x="865.0" y="124" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#4c1d95" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Monitor</text>
+<text x="865.0" y="144" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#4c1d95" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">&amp; log</text>
+<line x1="170" y1="131" x2="186.0" y2="131.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="198.0,131.0 186.0,135.8 186.0,126.2" fill="#475569"/>
+<line x1="350" y1="131" x2="366.0" y2="131.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="378.0,131.0 366.0,135.8 366.0,126.2" fill="#475569"/>
+<line x1="580" y1="131" x2="586.0" y2="131.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="598.0,131.0 586.0,135.8 586.0,126.2" fill="#475569"/>
+<line x1="750" y1="131" x2="776.0" y2="131.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="788.0,131.0 776.0,135.8 776.0,126.2" fill="#475569"/>
+<text x="460" y="206" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">No single guard is enough. Stack them so one failure doesn't become a breach.</text>
+</svg>

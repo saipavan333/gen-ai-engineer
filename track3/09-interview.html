@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Interview check: RAG — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="3.9">
+<main class="lesson">
+
+  <span class="eyebrow">Track 3 · Interview check</span>
+  <h1>Interview check: RAG &amp; Vector Databases</h1>
+  <p class="lead">RAG is the most common system-design topic in applied-GenAI interviews, because it touches data, retrieval, prompting, and evaluation all at once. Here are the questions teams ask, the answers that signal seniority, and the debugging instincts they’re really probing for.</p>
+
+  <div class="box note">
+    <div class="box-label">The drill</div>
+    <p>Answer each out loud before opening the model answer. The throughline interviewers listen for: you treat RAG as a <strong>retrieval + grounding + evaluation</strong> system, you can <strong>separate retrieval failures from generation failures</strong>, and you make decisions by <strong>measurement</strong>.</p>
+  </div>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t3-recap.svg" alt="Production RAG end to end. A Knowledge base box (documents chunked, embedded, vector index, built offline once). A serve row: Query → Embed + retrieve (reads from the knowledge base) → Rerank → Grounded prompt → LLM → Cited answer. Index once; per query embed, retrieve, rerank, ground, and generate with citations.">
+    <figcaption>The whole track in one architecture. If you can narrate this — and say what metric guards each stage — you can run a RAG system-design round.</figcaption>
+  </figure>
+
+  <h2>The questions teams ask</h2>
+
+  <div class="box practice">
+    <div class="box-label">Q1 · Framing</div>
+    <p><strong>“What is RAG, and when would you choose it over a long context window or fine-tuning?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>RAG retrieves relevant text from a knowledge base and puts it in the prompt so the model answers grounded in it. Choose it when knowledge is large, changing, private, or must be cited. Long context suits a few small docs that fit the window; fine-tuning suits durable behavior/format, not fast-changing facts. The mantra: RAG for knowledge, fine-tuning for behavior. RAG also updates by re-indexing — no retraining.</p>
+      <p><strong>Testing:</strong> a crisp decision rule among the three, not “RAG is always best.”</p>
+    </div></details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q2 · End to end</div>
+    <p><strong>“Walk me through a production RAG pipeline.”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>Offline: ingest documents, chunk them (with overlap + metadata), embed each chunk, store vectors in a vector DB. Online, per query: embed the query (same model), retrieve top candidates (often hybrid dense + keyword), rerank the shortlist with a cross-encoder, assemble a grounded prompt with numbered sources, generate with “answer only from context + cite,” and return the answer with citations. Guard each stage with metrics: recall@k/MRR for retrieval, faithfulness/correctness for generation.</p>
+      <p><strong>Testing:</strong> that you know the full pipeline <em>and</em> which metric protects each stage.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q3 · Chunking</div>
+    <p><strong>“How do you decide chunk size and overlap?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>Aim for one coherent idea per chunk (often ~200–500 tokens), with overlap so ideas spanning boundaries survive. Prefer recursive/structural splitting (respect paragraphs, headings, code) over blind fixed cuts, and attach metadata (source, id, section) for citations and filtering. Then <em>tune by evaluation</em>: chunk size is a recall@k knob, not a guess. Ensure chunks fit the embedding model’s max length.</p>
+      <p><strong>Testing:</strong> trade-off awareness + “tune with metrics,” not a magic number.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q4 · Embeddings</div>
+    <p><strong>“What’s the most common embedding bug, and how do you pick a model?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>The classic bug: embedding documents and queries with different models (or changing models without re-indexing) — the vectors become incomparable and retrieval silently breaks. Use the same model both sides, normalize so dot = cosine, and re-embed everything on a model change. Pick a model on quality vs speed/size, max sequence length (chunks must fit), domain, and language — and validate with recall@k on your own data, not just a leaderboard.</p>
+      <p><strong>Testing:</strong> the same-model rule (a real production footgun) + empirical model choice.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q5 · Vector DB &amp; security</div>
+    <p><strong>“How does ANN work, and how do you stop one user retrieving another’s documents?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>ANN indexes (HNSW graph, IVF clusters) find near-nearest neighbors while checking a fraction of vectors — trading a little recall for big speed, tuned via <code>ef</code>/<code>nprobe</code>. For isolation, attach ownership metadata (tenant/user id) and filter every query by it — or use per-tenant indexes for hard isolation. Vector similarity has no notion of permissions, so a missing filter is a data-leak, not just a quality issue.</p>
+      <p><strong>Testing:</strong> recall/latency trade-off + treating multi-tenancy as a security control.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q6 · Reranking</div>
+    <p><strong>“Why add a reranker, and when does it not help?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>A bi-encoder embeds query and doc separately (fast, blunt); a cross-encoder reads them together (accurate, slow). Two-stage retrieval fetches many candidates cheaply, then reranks the shortlist for precision — often a bigger quality win than a larger LLM. It only helps if recall is already good: reranking reorders the candidate set but can’t surface a chunk that retrieval never fetched. If recall@k is low, fix retrieval first.</p>
+      <p><strong>Testing:</strong> the bi/cross distinction + the recall-vs-ordering insight.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q7 · Hybrid search</div>
+    <p><strong>“When is semantic search not enough?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>When queries contain exact strings — error codes, SKUs, names, rare jargon — embeddings blur them and miss. Keyword search (BM25) nails exact terms but misses synonyms. Hybrid runs both and fuses (RRF combines by rank, avoiding incomparable scores), covering identifier queries and natural-language queries together. Especially valuable for technical/enterprise search where users mix both.</p>
+      <p><strong>Testing:</strong> knowing dense and sparse fail in opposite cases, and why RRF.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q8 · Grounding</div>
+    <p><strong>“How do you make answers trustworthy and citable?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>Number the retrieved chunks, instruct the model to answer only from them, cite <code>[n]</code> per claim, and say “not in the documents” when absent. Then verify citations programmatically — that the cited chunk exists and actually supports the claim (overlap or LLM-as-judge faithfulness). Surface sources to users for high-stakes use. The goal isn’t a trustworthy model; it’s a system where every claim is <em>checkable</em>.</p>
+      <p><strong>Testing:</strong> the recipe + verification + the “checkable, not trusted” mindset.</p>
+    </div></details>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Q9 · The debugging question</div>
+    <p><strong>“A RAG bot gives a wrong answer. How do you debug it?”</strong></p>
+    <details class="sol"><summary><span class="chev">▸</span> Strong answer</summary><div class="sol-body">
+      <p>Split the failure. First check retrieval for that query: was the relevant chunk in the top-k (recall)? If not, it’s a retrieval problem — look at chunking, embedding model, hybrid search, or fetch more candidates and rerank. If the right chunk <em>was</em> retrieved, it’s a generation problem — check grounding/faithfulness: is the prompt forcing only-from-context, did the model ignore or misread the chunk, is it citing correctly? Reproduce with the exact retrieved context. Never guess — the recall@k number for that query tells you which half to fix.</p>
+      <p><strong>Testing:</strong> the single most important RAG skill — isolating retrieval vs generation with a measurement.</p>
+    </div></details>
+  </div>
+
+  <h2>Rapid-fire self-check</h2>
+
+  <div class="quiz">
+    <p class="quiz-q">Recall@10 is high, faithfulness is low. The fix is mostly in…</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Generation — grounding and prompting (the right chunks are already retrieved).</span>
+        <div class="why">Correct. High recall means evidence reaches the prompt; low faithfulness means the model isn’t using it faithfully. Fix grounding (only-from-context, abstain, verify citations), not retrieval.</div></li>
+      <li data-correct="false"><span class="opt">B) Retrieval — switch embedding models.</span>
+        <div class="why">Retrieval is healthy (high recall). Changing the embedder targets a non-problem and ignores the low faithfulness number.</div></li>
+      <li data-correct="false"><span class="opt">C) The vector index — rebuild it.</span>
+        <div class="why">Nothing indicates an index issue; recall is high. The signal points squarely at generation faithfulness.</div></li>
+      <li data-correct="false"><span class="opt">D) Chunking — make chunks smaller.</span>
+        <div class="why">Chunking affects retrieval, which is already working. Smaller chunks won’t make the model use the supplied context faithfully.</div></li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Which combination is the strongest, most cost-aware retrieval pipeline?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Hybrid (dense + keyword) retrieve a wide shortlist → cross-encoder rerank → top few into a grounded prompt.</span>
+        <div class="why">Correct. Hybrid maximizes recall across semantic and exact-match queries, the reranker fixes ordering cheaply (only on the shortlist), and grounding makes the answer faithful and citable. This is the standard production-grade design.</div></li>
+      <li data-correct="false"><span class="opt">B) Run a cross-encoder over the entire corpus for every query.</span>
+        <div class="why">Far too slow — that’s a forward pass per document per query. The point of two-stage retrieval is to rerank only a shortlist, not the whole corpus.</div></li>
+      <li data-correct="false"><span class="opt">C) Dense retrieval only, then a much bigger LLM.</span>
+        <div class="why">A bigger LLM can’t use chunks that retrieval missed (dense alone misses exact terms), and it’s expensive. Improving retrieval beats upgrading the model for most RAG quality problems.</div></li>
+      <li data-correct="false"><span class="opt">D) Keyword search only, with all results pasted into the prompt.</span>
+        <div class="why">Keyword-only misses synonyms/paraphrases, and dumping everything invites “lost in the middle” and high cost. You want hybrid retrieval, reranking, and a focused grounded prompt.</div></li>
+    </ul>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Can you explain each of these?</div>
+    <ul>
+      <li>The full RAG pipeline (index once; embed → retrieve → rerank → ground → generate).</li>
+      <li>Chunking trade-offs and why overlap + metadata matter.</li>
+      <li>Same-model embedding rule; choosing a model empirically.</li>
+      <li>ANN recall/latency trade-off and metadata filtering as security.</li>
+      <li>Bi- vs cross-encoder, and reranking reorders but can’t fix recall.</li>
+      <li>Dense vs sparse vs hybrid, and RRF.</li>
+      <li>Grounding recipe, abstention, citation verification, faithfulness.</li>
+      <li>Evaluating retrieval vs generation separately, and the measurement loop.</li>
+    </ul>
+  </div>
+
+  <p>You can now design, build, and <em>evaluate</em> a real RAG system — the most in-demand applied-GenAI skill there is. Next, we let the model not just <em>read</em> but <em>act</em>: Track 4, Agents &amp; Tool Use.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

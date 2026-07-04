@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 432" width="780" height="432" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="780" height="432" fill="#ffffff"/>
+<text x="390" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">The anatomy of a prompt</text>
+<rect x="30" y="64" width="720" height="58" rx="11" ry="11" fill="#eff5ff" stroke="#2563eb" stroke-width="2"/>
+<text x="50" y="93.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1e3a8a" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">ROLE</text>
+<text x="180" y="93.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#334155" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">“You are a meticulous customer-support assistant.”</text>
+<rect x="30" y="130" width="720" height="58" rx="11" ry="11" fill="#fff6ea" stroke="#d97706" stroke-width="2"/>
+<text x="50" y="159.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#7c2d12" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">TASK</text>
+<text x="180" y="159.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#334155" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">“Classify the support ticket’s urgency.”</text>
+<rect x="30" y="196" width="720" height="58" rx="11" ry="11" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+<text x="50" y="225.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1e293b" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">CONTEXT</text>
+<text x="180" y="225.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#334155" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">“Ticket: my card was charged twice and I’m furious.”</text>
+<rect x="30" y="262" width="720" height="58" rx="11" ry="11" fill="#eefaf0" stroke="#16a34a" stroke-width="2"/>
+<text x="50" y="291.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#14532d" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">EXAMPLES</text>
+<text x="180" y="291.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#334155" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">“ ‘The site is down for everyone’  →  high ”</text>
+<rect x="30" y="328" width="720" height="58" rx="11" ry="11" fill="#f4f0ff" stroke="#7c3aed" stroke-width="2"/>
+<text x="50" y="357.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#4c1d95" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">FORMAT</text>
+<text x="180" y="357.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#334155" text-anchor="start" font-weight="normal" dominant-baseline="middle" xml:space="preserve">“Answer with exactly one word: high, medium, or low.”</text>
+<text x="390" y="420" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.3" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Not every prompt needs every part — but naming the parts lets you debug what’s missing.</text>
+</svg>

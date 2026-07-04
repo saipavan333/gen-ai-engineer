@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Anatomy of a prompt — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="2.1">
+<main class="lesson">
+
+  <span class="eyebrow">Track 2 · Lesson 2.1</span>
+  <h1>The anatomy of a prompt</h1>
+  <p class="lead">Prompting is the cheapest, fastest way to change what a model does — no training, no infrastructure, just words. Before you reach for RAG or fine-tuning, a well-built prompt solves a surprising fraction of problems. This lesson gives you the parts and the principles.</p>
+
+  <h2>Why prompt engineering is the first tool you reach for</h2>
+  <p>You now know the engine predicts plausible next tokens conditioned on its input. The input <em>is</em> your control surface. <span class="term">Prompt engineering</span> is the practice of designing that input so the model reliably produces what you want. It’s effectively <strong>programming in plain language</strong>: vague instructions give vague, inconsistent results; precise ones give precise, repeatable results. And it’s free and instant to iterate on, which is exactly why it’s the first thing to try.</p>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p>A <span class="term">prompt</span> is everything you feed the model for one request. In chat models it’s usually structured as a list of <span class="term">messages</span>, each with a <span class="term">role</span>: the <span class="term">system message</span> sets overall behavior and persona, <span class="term">user messages</span> are the human’s turns, and <span class="term">assistant messages</span> are the model’s replies. The model reads them all and produces the next assistant message.</p>
+  </div>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t2-chat-flow.svg" alt="A chat request flows from a 'messages' list (a system message 'you are a support agent' and a user message 'my card was charged twice') into the LLM, which decodes and returns one assistant message ('I'm sorry about that — let's fix the double charge'). The system message sets behavior.">
+    <figcaption>You send a list of role-tagged messages; the model returns one assistant message. The <b>system</b> message is your standing instruction; the <b>user</b> message is the immediate request.</figcaption>
+  </figure>
+
+  <h2>The parts of a well-built prompt</h2>
+  <p>A strong prompt is usually assembled from a few recognizable parts. You won’t always use all of them, but knowing them turns prompt-writing from guesswork into engineering — when output is wrong, you can ask “which part is missing or weak?”</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t2-anatomy.svg" alt="The anatomy of a prompt as five stacked labeled parts: ROLE ('You are a meticulous customer-support assistant'), TASK ('Classify the support ticket's urgency'), CONTEXT ('Ticket: my card was charged twice and I'm furious'), EXAMPLES ('The site is down for everyone → high'), and FORMAT ('Answer with exactly one word: high, medium, or low'). Not every prompt needs every part, but naming the parts lets you debug what's missing.">
+    <figcaption>The five recurring parts. <b>Role</b> sets stance, <b>Task</b> says what to do, <b>Context</b> supplies the material, <b>Examples</b> show the pattern (Lesson 2.2), and <b>Format</b> pins the output shape (Lesson 2.4).</figcaption>
+  </figure>
+
+  <div class="box key">
+    <div class="box-label">The principles behind the parts</div>
+    <ul>
+      <li><strong>Be specific.</strong> Specificity narrows the model’s probability distribution toward what you want. “Summarize in 3 bullet points for a busy executive” beats “summarize.”</li>
+      <li><strong>Give a role.</strong> “You are a senior security reviewer” shifts vocabulary, depth, and priorities.</li>
+      <li><strong>Show the output format.</strong> State it exactly — “Reply with only valid JSON matching this shape” — and the model conforms far more reliably.</li>
+      <li><strong>Provide the context.</strong> Don’t rely on memory; paste the ticket, the doc, the data. (When it’s too big, that’s RAG — Track 3.)</li>
+      <li><strong>Give it an out.</strong> “If the answer isn’t in the context, say ‘I don’t know.’” This single line prevents a lot of hallucination.</li>
+    </ul>
+  </div>
+
+  <h2>Build a prompt, part by part</h2>
+  <p>Edit any field below and watch the final prompt assemble. This is exactly the mental model to keep: a prompt is parts you compose deliberately, not a magic incantation.</p>
+
+  <div class="demo" id="pb-demo">
+    <div class="demo-head"><span class="tag">Live demo</span><h4>Prompt builder</h4></div>
+    <p class="demo-hint">Tweak the parts; the assembled prompt updates live. Try deleting the Format line and notice how much vaguer the instruction becomes.</p>
+    <label>Role</label><input type="text" id="pb-role" value="You are a meticulous customer-support assistant.">
+    <label>Task</label><input type="text" id="pb-task" value="Classify the support ticket's urgency.">
+    <label>Context</label><textarea id="pb-ctx" rows="2">Ticket: "My card was charged twice and no one has replied in 3 days."</textarea>
+    <label>Output format</label><input type="text" id="pb-fmt" value="Answer with exactly one word: high, medium, or low.">
+    <div class="out">
+      <div class="code-label"><span class="dot"></span><span class="fname">assembled prompt</span></div>
+      <pre style="margin-top:0" id="pb-out"></pre>
+    </div>
+  </div>
+
+  <h2>A reusable helper (free, local)</h2>
+  <p>For the rest of Track 2 you’ll want to actually run prompts. We’ll use <strong>Ollama</strong> — the free, local, open-source runtime from your setup lesson — so there’s no API key and no cost. Install Ollama from <code>ollama.com</code>, then in a terminal run <code>ollama pull llama3.2</code> once. Here’s the tiny helper we’ll reuse:</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">helper.py</span></div>
+<pre><code><span class="o">!</span>pip install ollama
+<span class="k">import</span> ollama
+
+<span class="k">def</span> <span class="f">ask</span>(user, system<span class="o">=</span><span class="kc">None</span>, temperature<span class="o">=</span><span class="n">0</span>):
+    <span class="s">"""Send a prompt to a free local model and return its text reply."""</span>
+    messages <span class="o">=</span> []
+    <span class="k">if</span> system:
+        messages.<span class="f">append</span>({<span class="s">"role"</span>: <span class="s">"system"</span>, <span class="s">"content"</span>: system})
+    messages.<span class="f">append</span>({<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: user})
+    resp <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"llama3.2"</span>, messages<span class="o">=</span>messages,
+                       options<span class="o">=</span>{<span class="s">"temperature"</span>: temperature})
+    <span class="k">return</span> resp[<span class="s">"message"</span>][<span class="s">"content"</span>]</code></pre>
+  <p class="demo-hint" style="margin-top:-2px">No local machine handy? You can also run these prompts in free Colab with a small instruction model (e.g. <code>google/flan-t5-base</code> via <code>transformers</code>). The prompt text — the part that matters — is identical across models.</p>
+
+  <div class="box example">
+    <div class="box-label">Worked example — weak prompt vs. engineered prompt</div>
+    <p>Same task, same model, two prompts. Watch the reliability jump.</p>
+<pre><code><span class="c"># WEAK: vague task, no role, no format → inconsistent, chatty answers</span>
+<span class="f">print</span>(<span class="f">ask</span>(<span class="s">"is this ticket urgent? My card was charged twice and no one replied in 3 days."</span>))
+<span class="c"># e.g. "It does sound quite urgent! You may want to... (3 paragraphs)"</span>
+
+<span class="c"># ENGINEERED: role + task + context + explicit format + an out</span>
+system <span class="o">=</span> <span class="s">"You are a meticulous customer-support triage assistant."</span>
+user <span class="o">=</span> <span class="s">"""Classify the support ticket's urgency.
+
+Ticket: "My card was charged twice and no one has replied in 3 days."
+
+Answer with exactly one word: high, medium, or low. If unclear, answer medium."""</span>
+<span class="f">print</span>(<span class="f">ask</span>(user, system<span class="o">=</span>system))   <span class="c"># -> "high"</span></code></pre>
+    <p>The weak prompt makes the model guess what you want and how to format it — so you get a different shape every run. The engineered prompt removes the guesswork: a role to set stance, the context inline, an exact output format, and a fallback. That’s the whole game in miniature — and it’s why <code>temperature=0</code> plus a tight format is the backbone of reliable features.</p>
+  </div>
+
+  <div class="box note">
+    <div class="box-label">System vs. user — when to use which</div>
+    <p>Put <strong>durable behavior</strong> in the <strong>system</strong> message: persona, rules, output format, tone, “always answer only from context.” Put the <strong>specific request and data</strong> in the <strong>user</strong> message. A good rule: if it should apply to every turn, it’s system; if it’s about this one request, it’s user. Keeping them separated makes prompts far easier to maintain and reuse.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>Prompt engineering is <strong>programming in plain language</strong> — your input is the model’s entire control surface.</li>
+      <li>Chat prompts are <strong>messages with roles</strong>: <strong>system</strong> (behavior), <strong>user</strong> (request), <strong>assistant</strong> (reply).</li>
+      <li>Strong prompts compose recognizable parts: <strong>role, task, context, examples, format</strong> (+ constraints and an out).</li>
+      <li><strong>Specificity narrows the distribution</strong>: say the role, the format, and the fallback explicitly.</li>
+      <li>Durable rules → <strong>system</strong> message; this-request details → <strong>user</strong> message.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your summarizer sometimes returns 1 sentence, sometimes 6 paragraphs, sometimes a bulleted list — for the same kind of input. What’s the highest-leverage fix?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Specify the exact output format and length in the prompt (e.g., “exactly 3 bullet points, ≤15 words each”).</span>
+        <div class="why">Correct. The inconsistency is unspecified format. Pinning the shape and length removes the model’s freedom to guess, making outputs uniform. Format specification is the cheapest reliability win in prompting.</div></li>
+      <li data-correct="false"><span class="opt">B) Increase temperature so it’s more creative.</span>
+        <div class="why">The opposite of what you want — higher temperature adds <em>more</em> variation. You want consistency, which means tighter constraints and lower temperature, not more randomness.</div></li>
+      <li data-correct="false"><span class="opt">C) Switch to a larger model.</span>
+        <div class="why">A bigger model won’t guess your unstated format any more consistently. The problem is a missing spec, not a capability gap — fix the prompt before changing models.</div></li>
+      <li data-correct="false"><span class="opt">D) Put the document in the system message instead of the user message.</span>
+        <div class="why">Where the document lives doesn’t determine output length or shape. The system message is for durable behavior; the missing piece here is an explicit format instruction wherever you put it.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Take this weak prompt and rebuild it using the five parts: <em>“tell me about this customer review.”</em> (Assume you want sentiment + a one-line reason, for a dashboard.)<br>
+    <strong>2.</strong> Decide for each: system or user message? (a) “Always respond in formal British English.” (b) “Summarize the email below.” (c) “Never reveal internal pricing.” (d) “Here is today’s ticket: …”<br>
+    <strong>3.</strong> Explain why “be specific” works, in terms of the next-token distribution from Track 1.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> One good rebuild:</p>
+<pre><code>system <span class="o">=</span> <span class="s">"You are a precise product-review analyst."</span>            <span class="c"># ROLE</span>
+user <span class="o">=</span> <span class="s">"""Classify the sentiment of the review and give a one-line reason.   # TASK</span>
+<span class="s">Review: "Arrived late and the box was crushed, but the blender works great."   # CONTEXT</span>
+<span class="s">Respond as: sentiment (positive/negative/mixed) — reason (≤12 words)."""</span>      <span class="c"># FORMAT</span></code></pre>
+        <p>Now the output is predictable enough to drop straight into a dashboard. (Adding a labeled example would make it bulletproof — that’s Lesson 2.2.)</p>
+        <p><strong>2.</strong> (a) <strong>system</strong> — durable style rule. (b) <strong>user</strong> — this specific request. (c) <strong>system</strong> — a standing guardrail. (d) <strong>user</strong> — the data for this turn. The test: “every turn” → system; “this turn” → user.</p>
+        <p><strong>3.</strong> The model outputs a probability distribution over next tokens conditioned on your prompt. Vague input is consistent with many continuations, so probability is spread across wildly different outputs (short, long, listy, prose). Specific input is consistent with far fewer continuations, concentrating probability on the shape you asked for. “Be specific” literally sharpens the distribution toward your intent — same mechanism as Track 1, used deliberately.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: a prompt is a spec, and prompts are iterated, not written</div>
+    <p>Treat a production prompt like a small specification document, not a sentence. The best ones read like clear instructions to a competent new hire: who you are, exactly what to do, the material to use, what “done” looks like, and what to do in edge cases. When something goes wrong, you don’t randomly reword — you diagnose which part of the spec failed. Wrong format? Tighten the format line. Hallucinated facts? Add context and an “only from context” rule. Inconsistent tone? Strengthen the role.</p>
+    <p>And crucially, prompts are <em>iterated</em>. Nobody writes the perfect prompt first try. The professional loop is: draft → run on several real, varied inputs → notice failure patterns → adjust the relevant part → repeat. This is why Track 6 (evals) matters so much: once you can <em>measure</em> a prompt’s quality across a set of examples, prompt engineering stops being vibes and becomes real engineering. For now, build the habit of testing every prompt on at least 3–5 different inputs before trusting it.</p>
+  </div>
+
+  <p>You can assemble a solid prompt now. The single most powerful upgrade to most prompts is showing the model examples of exactly what you want — that’s <strong>few-shot prompting</strong>, next.</p>
+
+</main>
+
+<script>
+(function () {
+  var ids = ["role", "task", "ctx", "fmt"];
+  var out = document.getElementById("pb-out");
+  function val(id) { return document.getElementById("pb-" + id).value.trim(); }
+  function render() {
+    var role = val("role"), task = val("task"), ctx = val("ctx"), fmt = val("fmt");
+    var lines = [];
+    if (role) lines.push("[system]\n" + role + "\n");
+    lines.push("[user]");
+    if (task) lines.push(task);
+    if (ctx) lines.push("\n" + ctx);
+    if (fmt) lines.push("\n" + fmt);
+    out.textContent = lines.join("\n");
+  }
+  ids.forEach(function (id) {
+    var el = document.getElementById("pb-" + id);
+    el.addEventListener("input", render);
+  });
+  render();
+})();
+</script>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

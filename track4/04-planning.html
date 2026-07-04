@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Planning &amp; decomposition — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="4.4">
+<main class="lesson">
+
+  <span class="eyebrow">Track 4 · Lesson 4.4</span>
+  <h1>Planning &amp; decomposition</h1>
+  <p class="lead">Reactive loops can wander on big goals — taking a step, then another, hoping to stumble toward done. Planning fixes that: break the goal into explicit sub-tasks first, then execute them. It makes long tasks more reliable, debuggable, and sometimes parallelizable.</p>
+
+  <h2>Why plan instead of just react</h2>
+  <p>The ReAct loop is great for tasks where each step reveals the next. But for a goal like “produce a competitive analysis of three products,” a purely reactive agent can lose the thread — forgetting a competitor, repeating work, or rambling. <span class="term">Planning</span> adds a step where the model first <em>decomposes</em> the goal into an ordered list of sub-tasks, then works through them. You get structure you can inspect (“is this plan sensible before we spend money executing it?”), a natural place to track progress, and the option to run independent sub-tasks in parallel.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t4-planning.svg" alt="Planning: break a goal into steps, then execute. A Goal ('summarize Q3') goes to a Plan (decompose) step producing an ordered list: 1 find the Q3 report, 2 extract key figures, 3 draft the summary. Then Execute in order, reaching Done. Plan-then-execute makes long tasks reliable and debuggable — each step is checkable.">
+    <figcaption>Decompose first, execute second. An explicit plan is inspectable before you act, gives you progress to track, and turns one vague goal into a few concrete, checkable steps.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p><span class="term">Decomposition</span> is breaking a goal into smaller sub-tasks. <span class="term">Planning</span> is producing an ordered set of those sub-tasks before (or alongside) execution. <span class="term">Plan-then-execute</span> makes the plan once up front and runs it; <span class="term">plan-and-reflect</span> (or replanning) re-checks progress after steps and revises the plan when reality diverges. The right choice depends on how predictable the task is.</p>
+  </div>
+
+  <h2>Three planning patterns</h2>
+  <div class="tbl-wrap">
+    <table class="t">
+      <tr><th>Pattern</th><th>How it works</th><th>Best when</th></tr>
+      <tr><td><strong>Plan-then-execute</strong></td><td>Make the full plan, then run each step</td><td>The steps are predictable up front</td></tr>
+      <tr><td><strong>Least-to-most</strong></td><td>List sub-problems, solve simplest first, build up</td><td>Hard problems that decompose into easier ones</td></tr>
+      <tr><td><strong>Plan-and-reflect</strong></td><td>Plan, execute a step, re-evaluate, replan as needed</td><td>Open-ended tasks where results surprise the plan</td></tr>
+    </table>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — a planner that decomposes, then executes (free, Ollama)</div>
+    <p>Ask the model for a plan as structured data, inspect it, then run each step. Separating planning from execution is what makes the agent debuggable.</p>
+<pre><code><span class="k">import</span> json, ollama
+
+<span class="k">def</span> <span class="f">make_plan</span>(goal):
+    prompt <span class="o">=</span> <span class="s">f'Break this goal into 2-5 ordered steps. Return JSON: {{"steps": ["...", "..."]}}.\nGoal: </span>{goal}<span class="s">'</span>
+    out <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"llama3.2"</span>,
+            messages<span class="o">=</span>[{<span class="s">"role"</span>:<span class="s">"user"</span>,<span class="s">"content"</span>:prompt}], format<span class="o">=</span><span class="s">"json"</span>)[<span class="s">"message"</span>][<span class="s">"content"</span>]
+    <span class="k">return</span> json.<span class="f">loads</span>(out)[<span class="s">"steps"</span>]
+
+<span class="k">def</span> <span class="f">run_planned_agent</span>(goal):
+    plan <span class="o">=</span> <span class="f">make_plan</span>(goal)
+    <span class="f">print</span>(<span class="s">"PLAN:"</span>, plan)              <span class="c"># inspect before executing — cheap insurance</span>
+    results <span class="o">=</span> []
+    <span class="k">for</span> i, step <span class="k">in</span> <span class="f">enumerate</span>(plan, <span class="n">1</span>):
+        <span class="c"># execute each step with the agent loop from 4.3 (tools available)</span>
+        r <span class="o">=</span> <span class="f">run_agent</span>(<span class="s">f"Step </span>{i}<span class="s"> of the plan for '</span>{goal}<span class="s">': </span>{step}<span class="s">"</span>, tool_schemas)
+        results.<span class="f">append</span>(r)
+    <span class="c"># final synthesis</span>
+    <span class="k">return</span> <span class="f">ask</span>(<span class="s">f"Goal: </span>{goal}<span class="s">. Step results: </span>{results}<span class="s">. Write the final deliverable."</span>)
+
+<span class="f">print</span>(<span class="f">run_planned_agent</span>(<span class="s">"Compare the warranties of the X200 and X300 blenders"</span>))</code></pre>
+    <p>Because the plan is explicit data, you can log it, validate it, even let a human approve it before any tools run. That inspectability is the whole point of planning.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li><strong>Planning</strong> decomposes a goal into ordered sub-tasks <em>before</em> executing — structure you can inspect.</li>
+      <li><strong>Plan-then-execute</strong> suits predictable tasks; <strong>plan-and-reflect</strong> suits open-ended ones where results surprise the plan.</li>
+      <li>An explicit plan gives you <strong>progress tracking, debuggability, human approval, and possible parallelism</strong>.</li>
+      <li>Don’t over-plan: simple tasks just need the reactive loop — planning adds value as goals get longer and more open.</li>
+      <li>The best agents <strong>combine</strong> planning (structure) with reactive execution (adaptivity).</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">An agent is asked to “book the cheapest flight, then add it to my calendar.” Halfway through, the booking API returns “sold out.” A rigid plan-then-execute agent fails. What design would handle this better?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Plan-and-reflect: after each step, check the result and replan if reality diverged (e.g., pick the next-cheapest flight).</span>
+        <div class="why">Correct. The failure is exactly the case where a fixed upfront plan breaks — an observation (“sold out”) invalidates a planned step. Reflecting after each step and replanning lets the agent adapt (choose another flight) instead of blindly failing. Open-ended, surprise-prone tasks need adaptivity.</div></li>
+      <li data-correct="false"><span class="opt">B) A longer max-step limit.</span>
+        <div class="why">More steps won’t help a rigid plan that has no mechanism to revise itself after a failure — it would just keep failing the same way. The fix is replanning, not more iterations.</div></li>
+      <li data-correct="false"><span class="opt">C) A bigger model.</span>
+        <div class="why">Capability isn’t the issue; the architecture is. Even a strong model executing a fixed plan can’t recover if the design never re-checks results. Add reflection/replanning to the loop.</div></li>
+      <li data-correct="false"><span class="opt">D) Remove planning entirely and react only.</span>
+        <div class="why">Pure reaction can work here, but you lose the structure planning gives for multi-step goals. The best answer keeps a plan <em>and</em> adds reflection — adaptivity on top of structure, not instead of it.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Decompose “write a launch blog post about our new feature” into 3–5 sub-tasks. Which could run in parallel?<br>
+    <strong>2.</strong> Give a task where plan-then-execute is ideal and one where plan-and-reflect is necessary.<br>
+    <strong>3.</strong> Why is letting a human approve the <em>plan</em> often safer and cheaper than approving each action?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> e.g., (1) gather the feature’s key points, (2) draft an outline, (3) write the post, (4) write a title + meta description, (5) suggest social snippets. Steps 4 and 5 depend on 3, but once the post exists they’re independent of each other and could run in parallel. Spotting independent sub-tasks is how you parallelize and speed up agents.</p>
+        <p><strong>2.</strong> <em>Plan-then-execute:</em> “generate a monthly report from these three known data sources” — the steps are fixed and predictable. <em>Plan-and-reflect:</em> “investigate why this server’s latency spiked last night” — each finding changes what you look at next, so the plan must evolve with the evidence.</p>
+        <p><strong>3.</strong> Approving the plan is one cheap, high-level review of intent <em>before</em> any tools run or money is spent — you catch a bad approach early. Approving every action is slow, interrupts the agent constantly, and still happens after some work is done. Plan-level approval gives oversight at the right altitude; you reserve per-action approval for the few genuinely dangerous steps (Lesson 4.8).</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: plans as task graphs, and the brittleness trap</div>
+    <p>For richer agents, a plan isn’t a flat list but a <strong>task graph</strong> (a DAG): sub-tasks with dependencies, so the system can run independent branches in parallel and only block where one task truly needs another’s output. This is how serious agent frameworks schedule work — “research competitor A, B, and C” fan out concurrently, then a “synthesize” node waits for all three. Thinking in dependencies, not just sequence, is what unlocks both speed and clarity.</p>
+    <p>The trap to avoid is <strong>plan brittleness</strong>: a beautifully detailed plan made before the agent has seen any real data is a confident guess, and confident guesses about an uncertain world go stale fast. The mature pattern is “plan loosely, reflect often” — sketch enough structure to stay organized, but treat the plan as revisable and re-check it against observations as you go. Over-planning upfront is the agent equivalent of writing a 50-page spec before talking to a user. Structure where it helps, adaptivity where reality intervenes — that balance is the craft of agent planning.</p>
+  </div>
+
+  <p>Plans and loops both rely on the agent remembering what it has done and learned. But the context window is small and forgetful. Next: <strong>memory</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

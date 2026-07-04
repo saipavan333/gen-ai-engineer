@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 340" width="900" height="340" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="900" height="340" fill="#ffffff"/>
+<text x="450" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Tool calling: the model asks, your code runs</text>
+<rect x="30" y="98.5" width="150" height="60" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="30" y="101" width="150" height="60" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="30" y="96" width="150" height="60" rx="13" ry="13" fill="url(#g_note)" stroke="#64748b" stroke-width="1.8"/>
+<text x="105.0" y="118.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#1e293b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">User</text>
+<text x="105.0" y="130.75" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">“weather in Paris?”</text>
+<rect x="225" y="98.5" width="130" height="60" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="225" y="101" width="130" height="60" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="225" y="96" width="130" height="60" rx="13" ry="13" fill="url(#g_accent)" stroke="#4f46e5" stroke-width="1.8"/>
+<text x="290.0" y="118.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="15" fill="#312e81" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">LLM</text>
+<text x="290.0" y="131.5" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">decides</text>
+<rect x="400" y="90" width="200" height="72" rx="10" ry="10" fill="#fff6ea" stroke="#d97706" stroke-width="2"/>
+<text x="500" y="110" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#7c2d12" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">tool call (JSON)</text>
+<text x="500" y="132" font-family="DejaVu Sans Mono, monospace" font-size="11" fill="#334155" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">{"name":"get_weather",</text>
+<text x="500" y="148" font-family="DejaVu Sans Mono, monospace" font-size="11" fill="#334155" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve"> "args":{"city":"Paris"}}</text>
+<rect x="645" y="98.5" width="225" height="60" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="645" y="101" width="225" height="60" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="645" y="96" width="225" height="60" rx="13" ry="13" fill="url(#g_practice)" stroke="#7c3aed" stroke-width="1.8"/>
+<text x="757.5" y="118.25" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#4c1d95" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Your code runs it</text>
+<text x="757.5" y="130.75" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">get_weather('Paris')</text>
+<line x1="180" y1="126" x2="211.0" y2="126.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="223.0,126.0 211.0,130.8 211.0,121.2" fill="#475569"/>
+<line x1="355" y1="126" x2="386.0" y2="126.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="398.0,126.0 386.0,130.8 386.0,121.2" fill="#475569"/>
+<line x1="600" y1="126" x2="631.0" y2="126.0" stroke="#475569" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="643.0,126.0 631.0,130.8 631.0,121.2" fill="#475569"/>
+<line x1="757" y1="156" x2="757" y2="210" stroke="#16a34a" stroke-width="2.2" stroke-linecap="round"/>
+<line x1="757" y1="210" x2="290" y2="210" stroke="#16a34a" stroke-width="2.2" stroke-linecap="round"/>
+<line x1="290" y1="210" x2="290.0" y2="170.0" stroke="#16a34a" stroke-width="2.2" stroke-linecap="round"/>
+<polygon points="290.0,158.0 294.8,170.0 285.2,170.0" fill="#16a34a"/>
+<text x="523" y="202" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11.5" fill="#16a34a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">result “18°C” goes back to the model</text>
+<rect x="300" y="252.5" width="300" height="56" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="300" y="255" width="300" height="56" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="300" y="250" width="300" height="56" rx="13" ry="13" fill="url(#g_example)" stroke="#16a34a" stroke-width="1.8"/>
+<text x="450.0" y="270.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13.5" fill="#14532d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Final answer</text>
+<text x="450.0" y="282.75" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">“It’s 18°C and clear in Paris.”</text>
+<line x1="290" y1="240" x2="351.05820594609236" y2="246.97808067955341" stroke="#475569" stroke-width="2" stroke-linecap="round"/>
+<polygon points="360.0,248.0 350.6,250.6 351.5,243.4" fill="#475569"/>
+<text x="450" y="326" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">The model never runs code — it emits a structured request; your app executes and returns the result.</text>
+</svg>

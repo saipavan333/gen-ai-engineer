@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Python you'll actually use — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="0.3">
+<main class="lesson">
+
+  <span class="eyebrow">Start Here · Lesson 0.3</span>
+  <h1>The Python you'll actually use</h1>
+  <p class="lead">You don’t need to “learn Python” to start. You need about eight small ideas, and you’ll meet every one of them here, with runnable examples. Come back to this page any time something looks unfamiliar.</p>
+
+  <h2>Why a little Python — and only a little</h2>
+  <p>Python is the language almost all AI tooling speaks. The good news: applied AI work uses a surprisingly small slice of it. If you understand the eight things on this page, you’ll be able to read and run every example in this course. We’ll learn the rest just-in-time, when a lesson needs it. Open a Colab notebook and run each snippet as you go — predicting the output before you run is the fastest way to learn.</p>
+
+  <h2>1 · Values and variables</h2>
+  <p>A <span class="term">value</span> is a piece of data — a number like <code>42</code>, or text like <code>"hello"</code>. A <span class="term">variable</span> is a name you stick on a value so you can use it later. The <code>=</code> sign means “store the value on the right under the name on the left.”</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">variables.py</span></div>
+<pre><code>model_name <span class="o">=</span> <span class="s">"gpt-4o-mini"</span>   <span class="c"># text (a "string")</span>
+temperature <span class="o">=</span> <span class="n">0.7</span>          <span class="c"># a number</span>
+max_tokens <span class="o">=</span> <span class="n">200</span>           <span class="c"># a whole number</span>
+
+<span class="f">print</span>(model_name, temperature, max_tokens)</code></pre>
+  <p>Names are yours to choose; pick ones that say what they hold. <code>temperature</code> beats <code>t</code>.</p>
+
+  <h2>2 · Strings and f-strings (the most important one)</h2>
+  <p>A <span class="term">string</span> is text, written in quotes. Strings matter enormously here, because <strong>a prompt to an AI model is just a string</strong>. Often you want to drop a variable’s value into the middle of some text. An <span class="term">f-string</span> (the <code>f</code> before the quote) lets you do exactly that: anything inside <code>{curly braces}</code> gets replaced by its value.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">fstrings.py</span></div>
+<pre><code>topic <span class="o">=</span> <span class="s">"the water cycle"</span>
+grade <span class="o">=</span> <span class="n">5</span>
+
+prompt <span class="o">=</span> <span class="s">f"Explain </span>{topic}<span class="s"> to a grade-</span>{grade}<span class="s"> student in 3 sentences."</span>
+<span class="f">print</span>(prompt)
+<span class="c"># -> Explain the water cycle to a grade-5 student in 3 sentences.</span></code></pre>
+  <p>This is how you’ll build prompts from data for the rest of your career. Get comfortable with f-strings and you’re halfway to prompt engineering.</p>
+
+  <h2>3 · Lists</h2>
+  <p>A <span class="term">list</span> is an ordered collection of values, in square brackets. You’ll use lists for things like a set of documents, a batch of questions, or the tokens in a sentence.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">lists.py</span></div>
+<pre><code>questions <span class="o">=</span> [<span class="s">"What is RAG?"</span>, <span class="s">"What is a token?"</span>, <span class="s">"What is an agent?"</span>]
+
+<span class="f">print</span>(questions[<span class="n">0</span>])     <span class="c"># first item -> "What is RAG?"  (counting starts at 0!)</span>
+<span class="f">print</span>(<span class="f">len</span>(questions))   <span class="c"># how many items -> 3</span>
+questions.<span class="f">append</span>(<span class="s">"What is fine-tuning?"</span>)   <span class="c"># add one to the end</span></code></pre>
+  <div class="box note">
+    <div class="box-label">The zero thing</div>
+    <p>Lists count from <strong>0</strong>, not 1. So the first item is <code>questions[0]</code> and the third is <code>questions[2]</code>. This trips up everyone at first; soon it’s second nature.</p>
+  </div>
+
+  <h2>4 · Dictionaries</h2>
+  <p>A <span class="term">dictionary</span> (or “dict”) stores <strong>key → value</strong> pairs, in curly braces. You look things up by their key instead of by position. This is everywhere in AI code — for example, a chat message is usually a dict with a <code>role</code> and <code>content</code>:</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">dicts.py</span></div>
+<pre><code>message <span class="o">=</span> {<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: <span class="s">"Summarize this email."</span>}
+
+<span class="f">print</span>(message[<span class="s">"role"</span>])      <span class="c"># look up by key -> "user"</span>
+<span class="f">print</span>(message[<span class="s">"content"</span>])   <span class="c"># -> "Summarize this email."</span></code></pre>
+  <p>A whole conversation is then just a <em>list of these dicts</em> — a list of messages. You’ll see that exact shape constantly.</p>
+
+  <h2>5 · Functions</h2>
+  <p>A <span class="term">function</span> is a reusable little machine: you give it some inputs (called <span class="term">arguments</span>), it does a job, and it hands back a result (the <span class="term">return value</span>).</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/start-function.svg" alt="A function is a little machine: you give it arguments (the inputs), the function does one job with them, and you get back a return value (the answer).">
+    <figcaption>Inputs go in, the function does its job, a value comes back out.</figcaption>
+  </figure>
+
+  <p>You define one with <code>def</code>, and it’s indented underneath. Here’s a function that builds a prompt — exactly the kind of helper you’ll write all the time:</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">functions.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">build_prompt</span>(topic, grade):
+    <span class="k">return</span> <span class="s">f"Explain </span>{topic}<span class="s"> to a grade-</span>{grade}<span class="s"> student in 3 sentences."</span>
+
+<span class="c"># "call" the function by writing its name and giving it arguments</span>
+p <span class="o">=</span> <span class="f">build_prompt</span>(<span class="s">"photosynthesis"</span>, <span class="n">5</span>)
+<span class="f">print</span>(p)</code></pre>
+  <p>The indentation isn’t decoration — in Python, the indented lines are “the inside of” the function. Same goes for loops and <code>if</code> below.</p>
+
+  <h2>6 · Loops</h2>
+  <p>A <span class="term">for-loop</span> does something once for each item in a list. This is how you’d ask the same question of many documents, or process a batch.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">loops.py</span></div>
+<pre><code>questions <span class="o">=</span> [<span class="s">"What is RAG?"</span>, <span class="s">"What is a token?"</span>]
+
+<span class="k">for</span> q <span class="k">in</span> questions:
+    <span class="f">print</span>(<span class="s">"Asking:"</span>, q)
+<span class="c"># runs the indented line once per question</span></code></pre>
+
+  <h2>7 · Making decisions with <code>if</code></h2>
+  <p>An <span class="term">if-statement</span> runs code only when a condition is true. You’ll use it to handle cases — for instance, falling back when a model’s answer is empty.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">conditionals.py</span></div>
+<pre><code>answer <span class="o">=</span> <span class="s">""</span>   <span class="c"># pretend the model returned nothing</span>
+
+<span class="k">if</span> answer <span class="o">==</span> <span class="s">""</span>:
+    <span class="f">print</span>(<span class="s">"No answer — try again."</span>)
+<span class="k">else</span>:
+    <span class="f">print</span>(<span class="s">"Got:"</span>, answer)</code></pre>
+  <p>Note the double equals <code>==</code> means “is equal to?” (a question), while a single <code>=</code> means “store this” (a command). Mixing them up is a classic early bug.</p>
+
+  <h2>8 · Importing libraries</h2>
+  <p>Most of your power comes from <span class="term">libraries</span> — bundles of code other people wrote. You bring one in with <code>import</code>, then use its tools with a dot. You already saw this with <code>tiktoken</code>.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">imports.py</span></div>
+<pre><code><span class="k">import</span> json   <span class="c"># a built-in library for working with structured data</span>
+
+data <span class="o">=</span> {<span class="s">"model"</span>: <span class="s">"local"</span>, <span class="s">"tokens"</span>: <span class="n">12</span>}
+<span class="f">print</span>(json.<span class="f">dumps</span>(data, indent<span class="o">=</span><span class="n">2</span>))   <span class="c"># pretty-print the dict as JSON text</span></code></pre>
+
+  <h2>Putting it together</h2>
+  <p>Here’s a tiny program that uses almost everything above — variables, an f-string, a list, a function, and a loop — to build prompts for several topics. This is genuinely the shape of real code you’ll write soon:</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">together.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">build_prompt</span>(topic):
+    <span class="k">return</span> <span class="s">f"Write a one-line definition of </span>{topic}<span class="s">."</span>
+
+topics <span class="o">=</span> [<span class="s">"a token"</span>, <span class="s">"an embedding"</span>, <span class="s">"a prompt"</span>]
+
+<span class="k">for</span> topic <span class="k">in</span> topics:
+    prompt <span class="o">=</span> <span class="f">build_prompt</span>(topic)
+    <span class="f">print</span>(prompt)</code></pre>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li><strong>Variables</strong> name values with <code>=</code>. <strong>Strings</strong> are text; <strong>f-strings</strong> drop variables into text — and prompts are just strings.</li>
+      <li><strong>Lists</strong> <code>[...]</code> are ordered collections (counting from 0). <strong>Dicts</strong> <code>{key: value}</code> look up by key — a chat message is a dict.</li>
+      <li><strong>Functions</strong> (<code>def</code>) take arguments and <code>return</code> a value. <strong>Loops</strong> (<code>for</code>) repeat per item. <strong>if/else</strong> makes decisions.</li>
+      <li><strong>Indentation</strong> defines what’s “inside” a function, loop, or if. <code>==</code> asks “equal?”, <code>=</code> commands “store.”</li>
+      <li><code>import</code> brings in <strong>libraries</strong>; use their tools with a dot, like <code>tiktoken.encode(...)</code>.</li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Write a function <code>greeting(name, language)</code> that returns <code>"Hello, Pavan!"</code> when called as <code>greeting("Pavan", "English")</code> and <code>"Hola, Pavan!"</code> when language is <code>"Spanish"</code>.<br>
+    <strong>2.</strong> Make a list of three names and use a loop to print an English greeting for each.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
+      <div class="sol-body">
+<pre><code><span class="k">def</span> <span class="f">greeting</span>(name, language):
+    <span class="k">if</span> language <span class="o">==</span> <span class="s">"Spanish"</span>:
+        <span class="k">return</span> <span class="s">f"Hola, </span>{name}<span class="s">!"</span>
+    <span class="k">else</span>:
+        <span class="k">return</span> <span class="s">f"Hello, </span>{name}<span class="s">!"</span>
+
+names <span class="o">=</span> [<span class="s">"Pavan"</span>, <span class="s">"Maria"</span>, <span class="s">"Sam"</span>]
+<span class="k">for</span> n <span class="k">in</span> names:
+    <span class="f">print</span>(<span class="f">greeting</span>(n, <span class="s">"English"</span>))</code></pre>
+        <p><strong>Why it’s built this way:</strong> the <code>if/else</code> picks the right template, and the <strong>f-string</strong> inserts the name — that “choose a template, fill in the variables” move is the seed of every prompt-building helper you’ll write. The loop then reuses the one function across many inputs, which is exactly how you’d run a prompt over a batch of documents.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">You write <code>conversation = [{"role": "user", "content": "Hi"}]</code>. What is <code>conversation[0]["role"]</code>?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) The string <code>"user"</code>.</span>
+        <div class="why">Correct. <code>conversation[0]</code> grabs the first (and only) item of the list — the dict — and then <code>["role"]</code> looks up that dict’s <code>role</code> key, which is <code>"user"</code>. This “list of message dicts” is the exact shape real chat APIs use.</div></li>
+      <li data-correct="false"><span class="opt">B) The string <code>"Hi"</code>.</span>
+        <div class="why">That would be <code>conversation[0]["content"]</code>. We asked for the <code>"role"</code> key, not <code>"content"</code>.</div></li>
+      <li data-correct="false"><span class="opt">C) An error, because you can’t put a dict inside a list.</span>
+        <div class="why">You absolutely can — lists hold any values, including dicts. A list of dicts is one of the most common structures in this field.</div></li>
+      <li data-correct="false"><span class="opt">D) The whole dictionary <code>{"role": "user", "content": "Hi"}</code>.</span>
+        <div class="why">That’s just <code>conversation[0]</code> on its own. Adding <code>["role"]</code> reaches one level deeper, into that dict’s <code>role</code> value.</div></li>
+    </ul>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: reading an error without panic</div>
+    <p>You <em>will</em> see red error messages. They’re not scolding you — they’re directions. Python prints a <span class="term">traceback</span>: a report of what went wrong and on which line. Two habits make errors harmless:</p>
+    <p><strong>Read the last line first.</strong> The bottom line names the error type and a short message, e.g. <code>NameError: name 'tiktoken' is not defined</code>. That one almost always means you forgot to <code>import</code> it (or to run the install cell). <code>KeyError: 'role'</code> means you asked a dict for a key it doesn’t have. <code>IndentationError</code> means your spacing is off.</p>
+    <p><strong>Then look at the line number.</strong> The traceback points at the exact line. Go there, re-read it slowly, and 90% of the time the fix is obvious. Copying the last line of an error into a search engine is a completely legitimate, professional move — every engineer does it daily.</p>
+  </div>
+
+  <p>That’s your toolkit and your Python. You’re ready for the real thing. Next, we open the box: <strong>how LLMs actually work.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

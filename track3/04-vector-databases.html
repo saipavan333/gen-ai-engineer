@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vector databases &amp; indexes — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="3.4">
+<main class="lesson">
+
+  <span class="eyebrow">Track 3 · Lesson 3.4</span>
+  <h1>Vector databases &amp; indexes</h1>
+  <p class="lead">Brute-force cosine over a NumPy array is perfect — until you have a million chunks and need answers in 20 milliseconds. Vector databases make retrieval fast, filterable, and durable. Here’s what they actually do, and the one trade-off you must understand.</p>
+
+  <h2>Why a special database</h2>
+  <p>Computing cosine against every stored vector is <em>O(N)</em> — fine for thousands, hopeless for millions (every query would compare against all of them). A <span class="term">vector database</span> solves this with three things a NumPy array can’t give you: a clever <span class="term">index</span> that finds nearest neighbors without checking every vector, <span class="term">metadata filtering</span> (only search documents this user is allowed to see, from this date range), and the boring-but-vital <span class="term">persistence</span>, updates, and deletes you need in production.</p>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p>A <span class="term">vector database</span> stores records of <em>(id, vector, metadata, text)</em> and supports fast nearest-neighbor search over the vectors. Because exact nearest-neighbor is slow at scale, vector DBs use <span class="term">approximate nearest neighbor</span> (ANN) indexes — data structures that find <em>almost</em> the closest vectors while checking only a small fraction of them. The trade you control: a little accuracy (<span class="term">recall</span>) for a lot of speed.</p>
+  </div>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t3-ann.svg" alt="Finding nearest vectors, exact versus approximate. Brute force (exact, slow): the query is compared to all N vectors via lines to every point. ANN index — graph (fast, approximate): the query hops along graph links through a few nodes to reach the neighborhood of the nearest vector, doing far fewer comparisons.">
+    <figcaption>Brute force compares the query to <em>every</em> vector. An ANN index (like HNSW) hops along a graph of links to reach the right neighborhood in a handful of comparisons — far faster, occasionally missing the exact best.</figcaption>
+  </figure>
+
+  <h2>What’s stored, and why metadata matters</h2>
+  <div class="tbl-wrap">
+    <table class="t">
+      <tr><th>Field</th><th>Example</th><th>Used for</th></tr>
+      <tr><td><code>id</code></td><td><code>"manual#chunk_12"</code></td><td>Identity, updates, deletes, citations</td></tr>
+      <tr><td><code>vector</code></td><td><code>[0.02, -0.41, …]</code></td><td>Similarity search</td></tr>
+      <tr><td><code>metadata</code></td><td><code>{source, date, user_id, section}</code></td><td><strong>Filtering</strong> — permissions, recency, scoping</td></tr>
+      <tr><td><code>text</code></td><td>the chunk itself</td><td>Putting into the prompt + citing</td></tr>
+    </table>
+  </div>
+  <p>Metadata filtering is not a nice-to-have. It’s how you enforce that user A never retrieves user B’s documents, how you prefer recent data, and how you scope a search to one product. A vector match that ignores permissions is a security incident waiting to happen.</p>
+
+  <h2>The index family (intuition)</h2>
+  <p>You’ll meet a few index types; you don’t need the math, just the shape:</p>
+  <ul>
+    <li><strong>Flat / brute force</strong> — check everything. Exact, simple, fine up to ~tens of thousands of vectors.</li>
+    <li><strong>HNSW</strong> (the popular default) — builds a multi-layer graph of links between vectors; search “navigates” the graph toward the query. Fast and accurate; tune the <code>ef</code> parameter to trade recall for speed.</li>
+    <li><strong>IVF</strong> — clusters vectors into buckets; search only the few nearest buckets (<code>nprobe</code> of them). Memory-efficient for huge corpora.</li>
+  </ul>
+
+  <div class="box example">
+    <div class="box-label">Worked example — a real vector DB, free &amp; local (Chroma)</div>
+    <p>Chroma is a free, open-source vector DB that runs locally and even embeds text for you. Note the metadata and the filtered query.</p>
+<pre><code><span class="o">!</span>pip install chromadb
+<span class="k">import</span> chromadb
+client <span class="o">=</span> chromadb.<span class="f">Client</span>()
+col <span class="o">=</span> client.<span class="f">create_collection</span>(<span class="s">"docs"</span>)        <span class="c"># uses a free built-in embedder</span>
+
+col.<span class="f">add</span>(
+    ids<span class="o">=</span>[<span class="s">"c0"</span>, <span class="s">"c1"</span>, <span class="s">"c2"</span>],
+    documents<span class="o">=</span>[
+        <span class="s">"Returns are free within 30 days."</span>,
+        <span class="s">"The X200 has a 3-year warranty."</span>,
+        <span class="s">"Cancel your plan under Settings &gt; Billing."</span>,
+    ],
+    metadatas<span class="o">=</span>[
+        {<span class="s">"source"</span>: <span class="s">"returns"</span>, <span class="s">"product"</span>: <span class="s">"X200"</span>},
+        {<span class="s">"source"</span>: <span class="s">"warranty"</span>, <span class="s">"product"</span>: <span class="s">"X200"</span>},
+        {<span class="s">"source"</span>: <span class="s">"billing"</span>, <span class="s">"product"</span>: <span class="s">"account"</span>},
+    ],
+)
+
+res <span class="o">=</span> col.<span class="f">query</span>(
+    query_texts<span class="o">=</span>[<span class="s">"how long is the guarantee?"</span>],
+    n_results<span class="o">=</span><span class="n">2</span>,
+    where<span class="o">=</span>{<span class="s">"product"</span>: <span class="s">"X200"</span>},      <span class="c"># metadata filter — only X200 docs</span>
+)
+<span class="f">print</span>(res[<span class="s">"documents"</span>][<span class="n">0</span>])   <span class="c"># -> ["The X200 has a 3-year warranty.", ...]</span></code></pre>
+    <p>The filter means even if an account-billing chunk were similar, it could never be returned for an X200 query — that’s your permission/scoping boundary, enforced at search time. Swap Chroma for FAISS, Qdrant, Weaviate, or Postgres’s <code>pgvector</code> later; the concepts are identical.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>Vector DBs add <strong>fast ANN search, metadata filtering, and persistence</strong> over raw cosine.</li>
+      <li><strong>ANN trades a little recall for a lot of speed</strong> — the central knob of vector search.</li>
+      <li>Records are <strong>(id, vector, metadata, text)</strong>; <strong>metadata filtering enforces permissions, recency, and scope</strong>.</li>
+      <li><strong>HNSW</strong> (graph) is the common default; <strong>IVF</strong> (clusters) suits huge corpora; <strong>flat</strong> is exact for small data.</li>
+      <li>Free options: <strong>Chroma, FAISS, Qdrant, Weaviate, pgvector</strong> — same ideas, different packaging.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">A multi-tenant SaaS uses one vector index for all customers. A query from Customer A returns a chunk from Customer B’s private docs. What was missing?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) A metadata filter on the search (e.g., <code>where customer_id == A</code>) to scope retrieval to the requesting tenant.</span>
+        <div class="why">Correct. Pure vector similarity has no notion of ownership — B’s chunk can be the nearest match. You must filter by a tenant/permission field on every query (or isolate per-tenant indexes). This is a serious security control, not an optimization.</div></li>
+      <li data-correct="false"><span class="opt">B) A larger embedding model.</span>
+        <div class="why">Model size affects match quality, not access control. A better model could still return B’s private chunk to A — the missing piece is filtering by ownership, not capability.</div></li>
+      <li data-correct="false"><span class="opt">C) A higher <code>n_results</code> value.</span>
+        <div class="why">Returning more results makes the leak worse, not better. The problem is that any of B’s chunks are eligible at all; filtering removes them from consideration.</div></li>
+      <li data-correct="false"><span class="opt">D) Exact (flat) search instead of ANN.</span>
+        <div class="why">Exact vs approximate changes accuracy/speed, not who is allowed to see what. Even perfectly exact search would return B’s chunk without a permission filter.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> You have 5,000 chunks and a hackathon deadline. Do you need a vector DB, or is NumPy fine? Justify.<br>
+    <strong>2.</strong> Your ANN search is fast but occasionally misses an obviously relevant chunk that exact search finds. What knob do you turn, and what’s the cost?<br>
+    <strong>3.</strong> Design the metadata you’d attach to chunks for a customer-support RAG serving multiple products and user tiers.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> NumPy is fine. At 5,000 chunks, brute-force cosine is a single small matrix multiply — sub-millisecond — and you skip all the setup. Reach for a vector DB when you outgrow memory/latency (hundreds of thousands+), need filtering and persistence, or want concurrent updates. Don’t add infrastructure you don’t need.</p>
+        <p><strong>2.</strong> Increase the ANN search effort — e.g., HNSW’s <code>ef</code> (or IVF’s <code>nprobe</code>): the index explores more candidates, raising recall toward exact. The cost is higher latency and compute per query. It’s a dial: tune it against a recall target you measure (Lesson 3.8), not by feel.</p>
+        <p><strong>3.</strong> Per chunk: <code>source</code> (doc id/url for citation), <code>product</code> (to scope), <code>section</code>/<code>title</code> (for display and parent-doc retrieval), <code>tier</code> or <code>visibility</code> (to enforce who can see it), <code>updated_at</code> (to prefer/expire recent info), and <code>chunk_id</code>. With these you can filter by product and tier, cite the source, and keep answers current — the metadata <em>is</em> half the system.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: the recall/latency curve, and filtering gotchas</div>
+    <p>Every ANN index exposes a knob that slides between “fast and approximate” and “slow and exact.” For HNSW it’s <code>ef</code> (how many candidates to explore during search) and <code>M</code> (graph connectivity at build time); for IVF it’s <code>nprobe</code> (how many clusters to scan). Turning them up raises recall and latency together. The professional move is to fix a target — say, “recall@10 ≥ 0.95 at p95 latency &lt; 30 ms” — and tune to hit it on your data, rather than accepting defaults blindly. Defaults are a guess about someone else’s corpus.</p>
+    <p>Filtering has a subtle trap worth knowing. Combining a metadata filter with ANN search isn’t free: if the filter is very selective (say, 0.1% of vectors match), a naive “search then filter” can return mostly filtered-out neighbors, tanking recall, while “filter then search” can be slow. Good vector DBs implement <em>filtered ANN</em> to handle this, but you should test retrieval quality <em>with your real filters applied</em>, not just on the open index. And for strict isolation (regulated data, hard multi-tenancy), consider separate collections/indexes per tenant rather than relying on a filter — defense in depth beats a single <code>where</code> clause. As always: the data and access model around the vectors is where production RAG is won or lost.</p>
+  </div>
+
+  <p>Even a great index returns an <em>approximate</em>, similarity-only ranking. To squeeze out real precision, you add a second pass that reads each candidate carefully. Next: <strong>retrieval &amp; reranking</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

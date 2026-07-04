@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 332" width="820" height="332" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="820" height="332" fill="#ffffff"/>
+<text x="410" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Closing the gap between “plausible” and “true”</text>
+<rect x="40" y="112.5" width="210" height="90" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="40" y="115" width="210" height="90" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="40" y="110" width="210" height="90" rx="13" ry="13" fill="url(#g_warn)" stroke="#dc2626" stroke-width="1.8"/>
+<text x="145.0" y="138.5" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#7f1d1d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">LLM alone</text>
+<text x="145.0" y="152.5" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">fluent,</text>
+<text x="145.0" y="168.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">but maybe wrong</text>
+<rect x="470" y="46.5" width="310" height="52" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="470" y="49" width="310" height="52" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="470" y="44" width="310" height="52" rx="13" ry="13" fill="url(#g_concept)" stroke="#2563eb" stroke-width="1.8"/>
+<text x="625.0" y="62.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#1e3a8a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Ground it with RAG</text>
+<text x="625.0" y="75.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">Track 3</text>
+<line x1="252" y1="155" x2="456.7062750321859" y2="73.69143281431869" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="466.0,70.0 458.2,77.4 455.2,70.0" fill="#94a3b8"/>
+<rect x="470" y="114.5" width="310" height="52" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="470" y="117" width="310" height="52" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="470" y="112" width="310" height="52" rx="13" ry="13" fill="url(#g_example)" stroke="#16a34a" stroke-width="1.8"/>
+<text x="625.0" y="130.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#14532d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Give it tools</text>
+<text x="625.0" y="143.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">Track 4</text>
+<line x1="252" y1="155" x2="456.03140441656683" y2="138.79189777999235" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="466.0,138.0 456.3,142.8 455.7,134.8" fill="#94a3b8"/>
+<rect x="470" y="182.5" width="310" height="52" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="470" y="185" width="310" height="52" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="470" y="180" width="310" height="52" rx="13" ry="13" fill="url(#g_key)" stroke="#d97706" stroke-width="1.8"/>
+<text x="625.0" y="198.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#7c2d12" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Measure with evals</text>
+<text x="625.0" y="211.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">Track 6</text>
+<line x1="252" y1="155" x2="456.2724257936483" y2="203.6817463340003" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="466.0,206.0 455.3,207.6 457.2,199.8" fill="#94a3b8"/>
+<rect x="470" y="250.5" width="310" height="52" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
+<rect x="470" y="253" width="310" height="52" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
+<rect x="470" y="248" width="310" height="52" rx="13" ry="13" fill="url(#g_deep)" stroke="#0d9488" stroke-width="1.8"/>
+<text x="625.0" y="266.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="14" fill="#134e4a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Guard inputs &amp; outputs</text>
+<text x="625.0" y="279.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">Track 7</text>
+<line x1="252" y1="155" x2="457.26035431640486" y2="269.14010356846813" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="466.0,274.0 455.3,272.6 459.2,265.6" fill="#94a3b8"/>
+<text x="410" y="318" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.5" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Every limitation above has an engineering answer — that’s the rest of this course.</text>
+</svg>

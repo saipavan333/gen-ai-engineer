@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 392" width="880" height="392" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_practice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f0ff"/><stop offset="1" stop-color="#e7defb"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<linearGradient id="g_note" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#e5edf6"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f7"/><stop offset="1" stop-color="#dfe6f0"/></linearGradient>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_accent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef0fe"/><stop offset="1" stop-color="#dfe2fd"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="880" height="392" fill="#ffffff"/>
+<text x="440" y="30" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Prompt debugging: symptom → first fix</text>
+<rect x="24" y="64" width="360" height="50" rx="9" ry="9" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+<text x="40" y="89.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#1f2937" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Output shape keeps changing</text>
+<line x1="390" y1="89.0" x2="426.0" y2="89.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="436.0,89.0 426.0,93.0 426.0,85.0" fill="#94a3b8"/>
+<rect x="442" y="64" width="414" height="50" rx="9" ry="9" fill="#eef0fe" stroke="#4f46e5" stroke-width="2"/>
+<text x="458" y="89.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#312e81" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Pin the format + add few-shot examples</text>
+<rect x="24" y="124" width="360" height="50" rx="9" ry="9" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+<text x="40" y="149.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#1f2937" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Confident, made-up facts</text>
+<line x1="390" y1="149.0" x2="426.0" y2="149.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="436.0,149.0 426.0,153.0 426.0,145.0" fill="#94a3b8"/>
+<rect x="442" y="124" width="414" height="50" rx="9" ry="9" fill="#eef0fe" stroke="#4f46e5" stroke-width="2"/>
+<text x="458" y="149.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#312e81" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Ground in context + give an out</text>
+<rect x="24" y="184" width="360" height="50" rx="9" ry="9" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+<text x="40" y="209.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#1f2937" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Fails multi-step logic / math</text>
+<line x1="390" y1="209.0" x2="426.0" y2="209.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="436.0,209.0 426.0,213.0 426.0,205.0" fill="#94a3b8"/>
+<rect x="442" y="184" width="414" height="50" rx="9" ry="9" fill="#eef0fe" stroke="#4f46e5" stroke-width="2"/>
+<text x="458" y="209.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#312e81" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Chain-of-thought (or a tool)</text>
+<rect x="24" y="244" width="360" height="50" rx="9" ry="9" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+<text x="40" y="269.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#1f2937" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Won’t parse as data</text>
+<line x1="390" y1="269.0" x2="426.0" y2="269.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="436.0,269.0 426.0,273.0 426.0,265.0" fill="#94a3b8"/>
+<rect x="442" y="244" width="414" height="50" rx="9" ry="9" fill="#eef0fe" stroke="#4f46e5" stroke-width="2"/>
+<text x="458" y="269.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#312e81" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">JSON mode + validate + retry</text>
+<rect x="24" y="304" width="360" height="50" rx="9" ry="9" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+<text x="40" y="329.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#1f2937" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Ignores a key instruction</text>
+<line x1="390" y1="329.0" x2="426.0" y2="329.0" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+<polygon points="436.0,329.0 426.0,333.0 426.0,325.0" fill="#94a3b8"/>
+<rect x="442" y="304" width="414" height="50" rx="9" ry="9" fill="#eef0fe" stroke="#4f46e5" stroke-width="2"/>
+<text x="458" y="329.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.8" fill="#312e81" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Move it first/last; simplify; decompose</text>
+<text x="440" y="378" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12.3" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Don’t reword at random — match the symptom to the pattern.</text>
+</svg>

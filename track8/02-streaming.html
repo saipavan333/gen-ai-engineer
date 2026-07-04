@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Streaming — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="8.2">
+<main class="lesson">
+
+  <span class="eyebrow">Track 8 · Lesson 8.2</span>
+  <h1>Streaming</h1>
+  <p class="lead">The cheapest, highest-impact latency improvement doesn’t make the model faster at all — it just shows the user the words as they’re generated. Streaming is the difference between a chat that feels instant and one that feels broken, and it’s a few lines of code.</p>
+
+  <h2>Perceived latency is what users feel</h2>
+  <p>Recall that the model generates one token at a time (decode). Without streaming, you wait for the <em>entire</em> answer, then show it all at once — so a 5-second response is 5 seconds of blank screen. With <span class="term">streaming</span>, you display each token the moment it’s produced, so the first words appear almost immediately and the rest flow in. The total time is identical, but the <span class="term">perceived latency</span> — how slow it <em>feels</em> — drops dramatically, because the user sees progress instead of a frozen screen.</p>
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t8-streaming.svg" alt="Streaming cuts perceived latency. Without streaming: a blank screen while the user waits for the whole answer, then the full answer appears. With streaming: a short time-to-first-token, then words appear progressively one after another. Same total time, but the first words arrive fast, so it feels responsive. Essential UX for chat: stream tokens as they're generated.">
+    <figcaption>Same total generation time — but streaming delivers the first words fast, turning a frozen wait into visible, reassuring progress.</figcaption>
+  </figure>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p><span class="term">Streaming</span> sends the model’s output token by token as it’s generated, rather than waiting for the whole response. <span class="term">Time to first token</span> (TTFT) is how long until the first word appears — the number users actually feel. <span class="term">Perceived latency</span> is the felt slowness, which streaming reduces even though total generation time is unchanged. Technically it’s delivered over a streaming transport (server-sent events or websockets).</p>
+  </div>
+
+  <h2>Feel the difference</h2>
+  <div class="demo" id="st-demo">
+    <div class="demo-head"><span class="tag">Live demo</span><h4>Stream vs. wait</h4></div>
+    <p class="demo-hint">Both produce the same answer in the same total time. One feels far better.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="run" id="st-wait" style="background:#fef1ef;color:#b91c1c">Without streaming</button>
+      <button class="run" id="st-stream">With streaming</button>
+    </div>
+    <div class="out" id="st-out" style="margin-top:14px;min-height:90px;font-family:monospace;font-size:14px"></div>
+    <div id="st-timer" style="margin-top:6px;font-size:13px;color:#64748b"></div>
+  </div>
+
+  <div class="box example">
+    <div class="box-label">Worked example — streaming, free (Ollama)</div>
+    <p>Streaming is usually a single flag. Iterate over chunks and print as they arrive.</p>
+<pre><code><span class="k">import</span> ollama
+
+stream <span class="o">=</span> ollama.<span class="f">chat</span>(
+    model<span class="o">=</span><span class="s">"llama3.2"</span>,
+    messages<span class="o">=</span>[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: <span class="s">"Explain streaming in two sentences."</span>}],
+    stream<span class="o">=</span><span class="kc">True</span>,                              <span class="c"># the whole trick</span>
+)
+<span class="k">for</span> chunk <span class="k">in</span> stream:
+    <span class="f">print</span>(chunk[<span class="s">"message"</span>][<span class="s">"content"</span>], end<span class="o">=</span><span class="s">""</span>, flush<span class="o">=</span><span class="kc">True</span>)   <span class="c"># show each token as it arrives</span>
+<span class="c"># In a web app, push each chunk to the browser via Server-Sent Events (SSE) or a websocket.</span></code></pre>
+    <p>Almost every model API and runtime supports a streaming mode like this. For any chat-style UI, it should be your default.</p>
+  </div>
+
+  <div class="box note">
+    <div class="box-label">When NOT to stream</div>
+    <p>Streaming shines for <em>human-read</em> text. It’s pointless (or harmful) when the consumer is <em>code</em>: if you’re parsing a JSON response or a tool call, you need the whole thing before you can use it, so streaming just adds complexity. Stream for chat and long-form answers; collect-then-parse for structured output and machine consumption.</p>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li><strong>Streaming</strong> shows tokens as they’re generated — same total time, far lower <strong>perceived latency</strong>.</li>
+      <li><strong>TTFT</strong> (time to first token) is the number users actually feel; streaming makes it the whole experience.</li>
+      <li>It’s usually a <strong>single flag</strong> (<code>stream=True</code>) plus pushing chunks to the client (SSE/websockets).</li>
+      <li>It <strong>doesn’t reduce cost or total time</strong> — it improves the felt experience.</li>
+      <li><strong>Default to streaming for chat</strong>; don’t stream when you need to parse the whole output (JSON, tool calls).</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your boss says “the model is too slow — make it generate faster” after seeing a 4-second wait in the chat UI. The model speed is fixed (it’s an API). What do you do?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Enable streaming so the first words appear in a fraction of a second — the perceived latency drops dramatically even though total time is unchanged.</span>
+        <div class="why">Correct. You can’t change the API’s generation speed, but you can change <em>when</em> the user sees output. Streaming turns a 4-second blank wait into immediate, flowing text — addressing the actual complaint (it <em>feels</em> slow) without any model change. Perceived latency is what users react to.</div></li>
+      <li data-correct="false"><span class="opt">B) Tell them it’s impossible since the API speed is fixed.</span>
+        <div class="why">It’s very possible to improve the experience — streaming (and shorter outputs, smaller prompts) all help. Declaring defeat misses the cheapest, highest-impact fix.</div></li>
+      <li data-correct="false"><span class="opt">C) Raise the temperature so it writes more confidently/faster.</span>
+        <div class="why">Temperature doesn’t affect speed at all. It changes randomness, not generation time or perceived latency.</div></li>
+      <li data-correct="false"><span class="opt">D) Ask for a longer, more detailed answer to fill the wait.</span>
+        <div class="why">Longer answers take <em>more</em> decode time, increasing the wait. The fix is to surface output sooner (stream) and/or shorten it, not lengthen it.</div></li>
+    </ul>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Explain why streaming reduces perceived latency but not total time or cost.<br>
+    <strong>2.</strong> You’re building an endpoint that returns a JSON object your frontend parses. Should you stream the model’s output to your server logic? Why?<br>
+    <strong>3.</strong> Besides streaming, name two ways to reduce the time before the user sees the first useful token.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> The model still generates the same number of tokens in the same time and you still pay for them — streaming only changes <em>when you display</em> them. Instead of buffering the whole answer and showing it at the end, you reveal each token immediately, so the user perceives a fast start and continuous progress. Felt speed improves; the underlying work and bill don’t.</p>
+        <p><strong>2.</strong> No — your server needs the <em>complete</em> JSON to parse it, so streaming buys nothing and adds complexity (you’d just reassemble the chunks before parsing anyway). Streaming is for human-read text; for machine-consumed structured output, collect the full response, then validate and parse it (Track 2.4). (You might still stream to the <em>browser</em> if a human reads part of it, but not to parsing logic.)</p>
+        <p><strong>3.</strong> (a) <strong>Shorten the prompt</strong> — prefill is faster, so TTFT drops (a long prompt delays the first token). (b) <strong>Use a faster/smaller model</strong> (or route easy queries to one). Both attack TTFT directly; streaming then makes that fast first token the whole felt experience. (Bonus: caching can make some responses instant.)</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: designing for perceived performance</div>
+    <p>Streaming is one instance of a broader UX principle: <em>perceived</em> performance often matters more than raw speed, and you can engineer it. Beyond token streaming, mature LLM apps reduce felt latency with progressive disclosure — show a “thinking…” state, then stream the answer; surface intermediate steps of an agent as they happen (the trace from Track 4) so the user sees work being done; and render partial structure (e.g., start showing a list as items stream). The goal is to never leave the user staring at a frozen screen wondering if it broke. A 6-second response that streams from the first second feels responsive; a 2-second response that shows nothing until the end can feel slow and even appear hung.</p>
+    <p>There’s an engineering caveat to plan for: once you stream, you’ve started showing output before you’ve seen all of it — which complicates anything that needs the whole response. Output moderation (Track 7) and validation typically need the complete text, so a common pattern is to stream to the UI optimistically but be ready to retract/replace if a post-generation safety check fails, or to moderate in a way that can interrupt the stream. For structured output you simply don’t stream to the parser. So the rule of thumb: stream human-facing prose by default for the big UX win, but keep machine-consumed and safety-gated paths on a collect-then-process model. Used this way, streaming is the rare optimization that’s nearly free, dramatically improves the experience, and ships in an afternoon.</p>
+  </div>
+
+  <p>Streaming makes responses feel instant. The next technique can make some responses <em>actually</em> instant — and free. Next: <strong>caching</strong>.</p>
+
+</main>
+
+<script>
+(function () {
+  var ANSWER = "Streaming sends each token to you the moment it is generated, so the first words appear almost instantly instead of after the whole answer is done.".split(" ");
+  var out = document.getElementById("st-out"), timer = document.getElementById("st-timer");
+  var running = false;
+  function reset() { out.textContent = ""; timer.textContent = ""; }
+  document.getElementById("st-wait").addEventListener("click", function () {
+    if (running) return; running = true; reset();
+    out.innerHTML = '<span style="color:#94a3b8">…waiting for the full answer…</span>';
+    var start = Date.now();
+    var tick = setInterval(function () { timer.textContent = "elapsed: " + ((Date.now() - start) / 1000).toFixed(1) + "s — blank screen"; }, 100);
+    setTimeout(function () {
+      clearInterval(tick);
+      out.textContent = ANSWER.join(" ");
+      timer.innerHTML = '<span style="color:#b91c1c;font-weight:650">First text at ~2.8s — the whole wait felt frozen.</span>';
+      running = false;
+    }, 2800);
+  });
+  document.getElementById("st-stream").addEventListener("click", function () {
+    if (running) return; running = true; reset();
+    var start = Date.now(), i = 0;
+    var iv = setInterval(function () {
+      if (i === 0) timer.innerHTML = '<span style="color:#15803d;font-weight:650">First word at ~0.2s — feels instant, then flows.</span>';
+      out.textContent += (i ? " " : "") + ANSWER[i];
+      i++;
+      if (i >= ANSWER.length) { clearInterval(iv); running = false; }
+    }, 2800 / ANSWER.length);
+  });
+})();
+</script>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>
