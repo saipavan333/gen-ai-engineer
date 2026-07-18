@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Failure modes &amp; guards — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="4.8">
 <main class="lesson">
@@ -110,7 +110,8 @@
   <div class="box deep">
     <div class="box-label">Deep dive: least privilege, and evaluating agents</div>
     <p>The most powerful guard is the one you apply before the agent even runs: <strong>least privilege</strong>. Don’t give an agent a capability it doesn’t need for its task. A support-triage agent needs to read tickets and draft replies — it does <em>not</em> need a tool that deletes accounts or one that runs arbitrary code. Every tool you omit is a whole class of failure you’ve eliminated for free. Scope tools per context, per user, per task; prefer read-only over write; prefer reversible over irreversible; and put the few genuinely dangerous capabilities behind explicit human approval. This is the same principle that secures operating systems and cloud IAM, applied to agents.</p>
-    <p>The other half of trustworthy agents is <strong>evaluation</strong> (Track 6 in depth). A chatbot you can spot-check; an autonomous agent taking dozens of actions you cannot eyeball. So you build a set of representative tasks with known-good outcomes and measure: did it reach the goal, how many steps and how much did it cost, did it call the right tools with valid arguments, did it avoid forbidden actions? You run this on every change, because a prompt tweak or a new tool can silently regress behavior across the whole loop. Agents amplify both capability and mistakes, so the engineering posture is humble and instrumented: least privilege, layered guards, full observability, and continuous evaluation. Build agents like you’d build anything that can spend money and change the world — because that’s exactly what they do.</p>
+    <p>The other half of trustworthy agents is <strong>evaluation</strong> (Track 6 in depth). A chatbot you can spot-check; an autonomous agent taking dozens of actions you cannot eyeball. So you build a set of representative tasks with known-good outcomes and measure: did it reach the goal, how many steps and how much did it cost, did it call the right tools with valid arguments, did it avoid forbidden actions?</p>
+    <p>You run this on every change, because a prompt tweak or a new tool can silently regress behavior across the whole loop. Agents amplify both capability and mistakes, so the engineering posture is humble and instrumented: least privilege, layered guards, full observability, and continuous evaluation. Build agents like you’d build anything that can spend money and change the world — because that’s exactly what they do.</p>
   </div>
 
   <p>You can now design, build, guard, and reason about agents end to end. Time to pressure-test it the way an interviewer would. On to the <strong>Track 4 interview check</strong>.</p>
@@ -155,7 +156,7 @@
   run();
 })();
 </script>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

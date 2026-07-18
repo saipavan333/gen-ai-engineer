@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Interview check: Data &amp; SQL agents — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="13.5">
 <main class="lesson">
@@ -67,7 +67,8 @@
     <details class="sol">
       <summary><span class="chev">▸</span> Strong answer &amp; what they’re testing</summary>
       <div class="sol-body">
-        <p><strong>Answer:</strong> I build a golden set of question → correct-SQL pairs across easy and hard cases, then measure <strong>execution accuracy</strong>: run the generated query <em>and</em> the reference query and compare their <em>result sets</em> — not the SQL strings. String matching is wrong because many different queries are equally correct (different join order, aliases, subquery vs CTE); what matters is whether they return the same rows. I track accuracy overall and by difficulty, watch specific failure modes (bad joins, wrong date boundaries, ambiguity), and wire it into CI so a prompt or schema change can’t silently regress. In production I also log queries, add user feedback (“was this right?”), and monitor error/retry rates.</p>
+        <p><strong>Answer:</strong> I build a golden set of question → correct-SQL pairs across easy and hard cases, then measure <strong>execution accuracy</strong>: run the generated query <em>and</em> the reference query and compare their <em>result sets</em> — not the SQL strings. String matching is wrong because many different queries are equally correct (different join order, aliases, subquery vs CTE); what matters is whether they return the same rows.</p>
+        <p>I track accuracy overall and by difficulty, watch specific failure modes (bad joins, wrong date boundaries, ambiguity), and wire it into CI so a prompt or schema change can’t silently regress. In production I also log queries, add user feedback (“was this right?”), and monitor error/retry rates.</p>
         <p><strong>Testing:</strong> This is the senior differentiator. The key insights: compare <em>results</em>, not query text; use a golden set; and evaluate continuously. It’s Track 6 applied to SQL.</p>
       </div>
     </details>
@@ -154,7 +155,7 @@
   <p>You can now design a text-to-SQL system that’s safe, scalable, self-correcting, and — crucially — <em>measured</em>. This is your strongest interview weapon; lean on it. Next, we make everything you’ve built actually run in production: <strong>Track&nbsp;14, Productionization &amp; LLMOps.</strong></p>
 
 </main>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

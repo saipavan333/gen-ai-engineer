@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MCP (Model Context Protocol) — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="4.6">
 <main class="lesson">
@@ -99,14 +99,17 @@ mcp <span class="o">=</span> <span class="f">FastMCP</span>(<span class="s">"wea
 
   <div class="box deep">
     <div class="box-label">Deep dive: why standards like this matter, and the risks they import</div>
-    <p>MCP’s rise is a classic standards story. Tool calling solved “how does a model invoke a function,” but left “how do apps and tools find and talk to each other” as an N×M integration mess — every app times every tool, each pairing custom. A shared protocol collapses that to N+M: build one server, build one client, and they interoperate. The result is an ecosystem — thousands of ready-made servers for everything from databases to design tools — that no single company could have built alone. For you as an engineer, it means assembling capable agents increasingly looks like <em>choosing and connecting servers</em>, not writing connectors, and the skill shifts toward orchestration and trust.</p>
-    <p>But standardized power standardizes risk, too. Connecting your agent to external MCP servers extends its trust boundary to code and data you don’t control: a compromised or malicious server can return content crafted to hijack the agent (prompt injection through tool results), exfiltrate data the agent passes it, or expose dangerous actions. The discipline mirrors any dependency supply chain: prefer trusted, audited servers; run untrusted ones sandboxed with least-privilege access; scope what each server can see and do; require human approval for high-impact actions; and validate server outputs before the model acts on them. MCP makes wiring an agent to the world trivial — which is exactly why the safety thinking from Track 7 becomes non-optional. The plug is universal; your judgment about what to plug in is what keeps it safe.</p>
+    <p>MCP’s rise is a classic standards story. Tool calling solved “how does a model invoke a function,” but left “how do apps and tools find and talk to each other” as an N×M integration mess — every app times every tool, each pairing custom. A shared protocol collapses that to N+M: build one server, build one client, and they interoperate.</p>
+    <p>The result is an ecosystem — thousands of ready-made servers for everything from databases to design tools — that no single company could have built alone. For you as an engineer, it means assembling capable agents increasingly looks like <em>choosing and connecting servers</em>, not writing connectors, and the skill shifts toward orchestration and trust.</p>
+    <p>But standardized power standardizes risk, too. Connecting your agent to external MCP servers extends its trust boundary to code and data you don’t control: a compromised or malicious server can return content crafted to hijack the agent (prompt injection through tool results), exfiltrate data the agent passes it, or expose dangerous actions.</p>
+    <p>The discipline mirrors any dependency supply chain: prefer trusted, audited servers; run untrusted ones sandboxed with least-privilege access; scope what each server can see and do; require human approval for high-impact actions; and validate server outputs before the model acts on them. MCP makes wiring an agent to the world trivial — which is exactly why the safety thinking from Track 7 becomes non-optional.</p>
+    <p>The plug is universal; your judgment about what to plug in is what keeps it safe.</p>
   </div>
 
   <p>One capable agent is powerful. Sometimes the cleaner design is several specialists coordinated together. Next: <strong>multi-agent &amp; orchestration</strong>.</p>
 
 </main>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

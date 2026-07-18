@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Prompt vs RAG vs fine-tune — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="5.1">
 <main class="lesson">
@@ -92,7 +92,8 @@
   <div class="box deep">
     <div class="box-label">Deep dive: the real costs, and distillation</div>
     <p>Fine-tuning carries costs prompting and RAG don’t: you need a curated dataset (the hard part), compute to train, an evaluation to prove it helped, and a pipeline to version and deploy the result — and every base-model upgrade may mean re-tuning. That’s why the discipline is “prompt and RAG first”: they’re reversible, instant to iterate, and require no training. Fine-tuning earns its cost when a behavior is stable, valuable, and high-volume enough that baking it in pays off — and when you can <em>measure</em> the improvement (Lesson 5.6).</p>
-    <p>One powerful pattern worth knowing: <span class="term">distillation</span>. You use a large, expensive model to generate high-quality examples for your task, then fine-tune a small, cheap model on those examples — “teaching” the small model to imitate the big one on your narrow task. Done well, you get most of the big model’s quality at a fraction of the cost and latency, which is exactly the “smaller/cheaper specialized model” cell in the table. It’s how many teams turn an expensive prototype into an affordable production model. But notice it still obeys the rule: you’re fine-tuning for <em>behavior</em> (match the teacher on this task), not stuffing in changing facts. Keep the map in your head and the right tool is almost always obvious.</p>
+    <p>One powerful pattern worth knowing: <span class="term">distillation</span>. You use a large, expensive model to generate high-quality examples for your task, then fine-tune a small, cheap model on those examples — “teaching” the small model to imitate the big one on your narrow task. Done well, you get most of the big model’s quality at a fraction of the cost and latency, which is exactly the “smaller/cheaper specialized model” cell in the table.</p>
+    <p>It’s how many teams turn an expensive prototype into an affordable production model. But notice it still obeys the rule: you’re fine-tuning for <em>behavior</em> (match the teacher on this task), not stuffing in changing facts. Keep the map in your head and the right tool is almost always obvious.</p>
   </div>
 
   <p>To use fine-tuning well, you need a feel for what “training” actually does to a model. Let’s demystify it — gently, with a runnable toy. Next: <strong>how training actually works</strong>.</p>
@@ -136,7 +137,7 @@
   build(); recommend();
 })();
 </script>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Document AI &amp; OCR — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="15.2">
 <main class="lesson">
@@ -81,14 +81,16 @@ data <span class="o">=</span> Invoice(<span class="o">**</span>json.<span class=
 
   <div class="box deep">
     <div class="box-label">Deep dive: how you evaluate an extraction system</div>
-    <p>Document extraction is a place where the evaluation discipline from Track&nbsp;6 becomes very concrete, and interviewers love it because it’s measurable. You build a golden set of documents with hand-verified correct fields, then measure <strong>field-level accuracy</strong> — for each field (vendor, total, date), what fraction of documents did the system get exactly right? Aggregate accuracy hides problems, so you break it down by field (maybe <code>total</code> is 99% but <code>due_date</code> is 80% because of date-format confusion) and by document type or vendor (one layout may be far worse). That breakdown tells you exactly where to invest — a better prompt for dates, an OCR cross-check for totals, a human step for the one bad layout.</p>
-    <p>Two subtleties make you sound experienced. First, define “correct” carefully: is <code>4210.0</code> equal to <code>4210.00</code>? is a date correct in any format or only <code>YYYY-MM-DD</code>? Normalizing before comparison matters, exactly like comparing SQL result sets rather than strings (Track&nbsp;13). Second, distinguish the cost of different errors: a missing field the system <em>flags</em> as low-confidence is cheap (a human fills it in), while a wrong field returned with confidence is expensive (it flows into a payment). So you don’t just maximize accuracy — you tune the system to prefer “I’m not sure, please check” over confident wrong answers on the fields that matter. Designing extraction around <em>calibrated uncertainty and human handoff</em>, not just raw accuracy, is what turns a flashy demo into something a finance team will actually trust with their invoices.</p>
+    <p>Document extraction is a place where the evaluation discipline from Track&nbsp;6 becomes very concrete, and interviewers love it because it’s measurable. You build a golden set of documents with hand-verified correct fields, then measure <strong>field-level accuracy</strong> — for each field (vendor, total, date), what fraction of documents did the system get exactly right?</p>
+    <p>Aggregate accuracy hides problems, so you break it down by field (maybe <code>total</code> is 99% but <code>due_date</code> is 80% because of date-format confusion) and by document type or vendor (one layout may be far worse). That breakdown tells you exactly where to invest — a better prompt for dates, an OCR cross-check for totals, a human step for the one bad layout.</p>
+    <p>Two subtleties make you sound experienced. First, define “correct” carefully: is <code>4210.0</code> equal to <code>4210.00</code>? is a date correct in any format or only <code>YYYY-MM-DD</code>? Normalizing before comparison matters, exactly like comparing SQL result sets rather than strings (Track&nbsp;13). Second, distinguish the cost of different errors: a missing field the system <em>flags</em> as low-confidence is cheap (a human fills it in), while a wrong field returned with confidence is expensive (it flows into a payment).</p>
+    <p>So you don’t just maximize accuracy — you tune the system to prefer “I’m not sure, please check” over confident wrong answers on the fields that matter. Designing extraction around <em>calibrated uncertainty and human handoff</em>, not just raw accuracy, is what turns a flashy demo into something a finance team will actually trust with their invoices.</p>
   </div>
 
   <p>Vision covered — now the other sense. Next: <strong>audio: speech-to-text and text-to-speech.</strong></p>
 
 </main>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

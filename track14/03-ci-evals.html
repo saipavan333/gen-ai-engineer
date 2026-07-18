@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CI for prompts &amp; evals — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="14.3">
 <main class="lesson">
@@ -14,7 +14,8 @@
   <p class="lead">In normal software, tests in CI stop you shipping bugs. In LLM software, a one-word prompt tweak can quietly wreck quality with no error anywhere. The fix is the same idea, upgraded: make every change pass your evals before it can ship.</p>
 
   <h2>Why LLM apps need an eval gate</h2>
-  <p><span class="term">CI</span> (continuous integration) is the automation that runs your tests every time you change code, blocking the change if they fail. It works because bugs in normal code usually announce themselves — a test goes red. But LLM behavior is different: you “fix” one prompt to improve one answer and silently break five others, and <em>nothing errors</em>. The output is still fluent, still plausible — just worse. Traditional tests can’t catch that, because there’s no exception to catch. So you add an <span class="term">eval gate</span>: CI runs your golden-set evaluation (Track&nbsp;6) on every change and <strong>blocks the deploy if the quality score drops below a threshold</strong>. Now a regression is caught by a red build, exactly like a bug — instead of by an angry user a week later.</p>
+  <p><span class="term">CI</span> (continuous integration) is the automation that runs your tests every time you change code, blocking the change if they fail. It works because bugs in normal code usually announce themselves — a test goes red. But LLM behavior is different: you “fix” one prompt to improve one answer and silently break five others, and <em>nothing errors</em>. The output is still fluent, still plausible — just worse.</p>
+  <p>Traditional tests can’t catch that, because there’s no exception to catch. So you add an <span class="term">eval gate</span>: CI runs your golden-set evaluation (Track&nbsp;6) on every change and <strong>blocks the deploy if the quality score drops below a threshold</strong>. Now a regression is caught by a red build, exactly like a bug — instead of by an angry user a week later.</p>
 
   <figure class="diagram">
     <img src="../assets/diagrams/t14-cicd.svg" alt="CI with an eval gate: a change to a prompt, model, or code triggers CI to run unit tests plus a golden-set eval; if the score meets the threshold it deploys, otherwise the build is blocked and reported.">
@@ -86,14 +87,15 @@ jobs:
 
   <div class="box deep">
     <div class="box-label">Deep dive: the regression set is a living asset</div>
-    <p>The most valuable thing that comes out of running an eval gate over time isn’t any single score — it’s the golden set itself, which should grow with every incident. When something goes wrong in production (a class of question the system botches, a prompt injection that slips through, a hallucination a user reports), the fix isn’t just to patch it; it’s to add that exact case to the golden set. Now the eval gate guarantees you can never regress on it again — the system literally cannot ship a change that reintroduces that failure. Over months, this turns your evaluation suite into an encoded memory of every mistake you’ve made and fixed, which is a genuine competitive moat (Track&nbsp;12): a competitor can copy your prompts, but not your hard-won library of failure cases.</p>
+    <p>The most valuable thing that comes out of running an eval gate over time isn’t any single score — it’s the golden set itself, which should grow with every incident. When something goes wrong in production (a class of question the system botches, a prompt injection that slips through, a hallucination a user reports), the fix isn’t just to patch it; it’s to add that exact case to the golden set.</p>
+    <p>Now the eval gate guarantees you can never regress on it again — the system literally cannot ship a change that reintroduces that failure. Over months, this turns your evaluation suite into an encoded memory of every mistake you’ve made and fixed, which is a genuine competitive moat (Track&nbsp;12): a competitor can copy your prompts, but not your hard-won library of failure cases.</p>
     <p>This also changes how you adopt new models. When a better model launches, teams without an eval gate upgrade nervously and hope; teams with one just run the new model against the golden set and <em>see</em> whether it’s actually better on their real cases — often within an hour, safely. The eval gate is what lets you move fast without breaking things: it’s simultaneously your regression shield, your model-selection tool, and your institutional memory. When an interviewer asks how you’d keep an LLM product reliable as it evolves, “evals in CI, and every production failure becomes a permanent test case” is the answer that signals real operational maturity.</p>
   </div>
 
   <p>Even with a great eval gate, production will surprise you — real users do things your golden set didn’t imagine. So you watch. Next: <strong>monitoring in production.</strong></p>
 
 </main>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

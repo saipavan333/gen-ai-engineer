@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Quantization — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="8.5">
 <main class="lesson">
@@ -87,13 +87,14 @@
   <div class="box deep">
     <div class="box-label">Deep dive: where quantization fits in your serving strategy</div>
     <p>Quantization matters most when <strong>you control the serving</strong> — i.e., you self-host an open model rather than calling a hosted API. (With a pay-per-token API, the provider handles the hardware; your levers are routing, caching, and token budgeting, not quant levels.) Self-hosting becomes attractive at scale (no per-token fees, just your hardware), for privacy (data never leaves — Track 7), or for customization (your own fine-tunes). In that world, quantization is a primary dial: it determines what hardware you need and how many requests one GPU can serve, directly shaping your cost per request.</p>
-    <p>The engineering nuance is that quantization quality isn’t uniform — it depends on the method (modern schemes like GPTQ, AWQ, and the GGUF k-quants preserve quality better than naive rounding), the model (bigger models tolerate quantization better; small ones degrade more), and the task (simple tasks barely notice 4-bit; subtle reasoning may). So you don’t pick a quant level by reputation — you serve a couple of candidates and run your eval set (Track 6) to see the real quality-vs-memory trade-off for <em>your</em> workload, then choose the smallest that clears your bar. Combined with the rest of this track, the pattern for self-hosters is: quantize to fit cheap hardware, batch to keep it busy (next lesson), cache and route to avoid work, and budget tokens to keep every call lean. That stack is how teams run capable models affordably — and it’s the same stack that lets <em>you</em> run them for free on a laptop.</p>
+    <p>The engineering nuance is that quantization quality isn’t uniform — it depends on the method (modern schemes like GPTQ, AWQ, and the GGUF k-quants preserve quality better than naive rounding), the model (bigger models tolerate quantization better; small ones degrade more), and the task (simple tasks barely notice 4-bit; subtle reasoning may).</p>
+    <p>So you don’t pick a quant level by reputation — you serve a couple of candidates and run your eval set (Track 6) to see the real quality-vs-memory trade-off for <em>your</em> workload, then choose the smallest that clears your bar. Combined with the rest of this track, the pattern for self-hosters is: quantize to fit cheap hardware, batch to keep it busy (next lesson), cache and route to avoid work, and budget tokens to keep every call lean. That stack is how teams run capable models affordably — and it’s the same stack that lets <em>you</em> run them for free on a laptop.</p>
   </div>
 
   <p>Quantization makes one model instance cheaper. The next technique squeezes maximum work out of that instance by serving many requests at once. Next: <strong>batching &amp; throughput</strong>.</p>
 
 </main>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Jailbreaks — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="7.3">
 <main class="lesson">
@@ -78,13 +78,14 @@
   <div class="box deep">
     <div class="box-label">Deep dive: red-teaming and the arms-race mindset</div>
     <p>Because jailbreaks evolve, you defend them like any adversarial system: continuously test, monitor, and update. <strong>Red-teaming</strong> — having people (and increasingly automated tools) actively try to break your bot — is the core practice; turn the successful attacks into a permanent safety eval suite (Track 6) so you can verify each defense and catch regressions. <strong>Monitoring</strong> production for probing patterns (repeated refusals, escalation, encoded inputs) lets you detect and rate-limit abusers in real time. And accept the asymmetry: defenders must cover every hole, attackers need one — so the goal isn’t a perfect wall but raising the cost, narrowing the gaps, and limiting the damage of a success.</p>
-    <p>Two perspective points keep this proportionate. First, <em>match effort to exposure and stakes</em>: an internal tool used by employees needs far less jailbreak hardening than a public consumer bot or one that can take actions; a model that can only return text under your brand is mostly a reputational risk, while one wired to tools or sensitive data is a security one. Second, remember that jailbreaks and injection share the same root — the model treats persuasive text as authoritative — so the same structural defenses help both: independent moderation, least privilege, output validation, and monitoring. You won’t “solve” jailbreaks any more than the web “solved” spam; you manage them with layered, evolving defenses and a clear-eyed view of what’s actually at risk.</p>
+    <p>Two perspective points keep this proportionate. First, <em>match effort to exposure and stakes</em>: an internal tool used by employees needs far less jailbreak hardening than a public consumer bot or one that can take actions; a model that can only return text under your brand is mostly a reputational risk, while one wired to tools or sensitive data is a security one.</p>
+    <p>Second, remember that jailbreaks and injection share the same root — the model treats persuasive text as authoritative — so the same structural defenses help both: independent moderation, least privilege, output validation, and monitoring. You won’t “solve” jailbreaks any more than the web “solved” spam; you manage them with layered, evolving defenses and a clear-eyed view of what’s actually at risk.</p>
   </div>
 
   <p>Beyond what the model <em>says</em>, you must protect the <em>data</em> flowing through your system. Next: <strong>PII &amp; privacy</strong>.</p>
 
 </main>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

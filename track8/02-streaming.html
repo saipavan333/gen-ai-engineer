@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Streaming — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="8.2">
 <main class="lesson">
@@ -101,8 +101,10 @@ stream <span class="o">=</span> ollama.<span class="f">chat</span>(
 
   <div class="box deep">
     <div class="box-label">Deep dive: designing for perceived performance</div>
-    <p>Streaming is one instance of a broader UX principle: <em>perceived</em> performance often matters more than raw speed, and you can engineer it. Beyond token streaming, mature LLM apps reduce felt latency with progressive disclosure — show a “thinking…” state, then stream the answer; surface intermediate steps of an agent as they happen (the trace from Track 4) so the user sees work being done; and render partial structure (e.g., start showing a list as items stream). The goal is to never leave the user staring at a frozen screen wondering if it broke. A 6-second response that streams from the first second feels responsive; a 2-second response that shows nothing until the end can feel slow and even appear hung.</p>
-    <p>There’s an engineering caveat to plan for: once you stream, you’ve started showing output before you’ve seen all of it — which complicates anything that needs the whole response. Output moderation (Track 7) and validation typically need the complete text, so a common pattern is to stream to the UI optimistically but be ready to retract/replace if a post-generation safety check fails, or to moderate in a way that can interrupt the stream. For structured output you simply don’t stream to the parser. So the rule of thumb: stream human-facing prose by default for the big UX win, but keep machine-consumed and safety-gated paths on a collect-then-process model. Used this way, streaming is the rare optimization that’s nearly free, dramatically improves the experience, and ships in an afternoon.</p>
+    <p>Streaming is one instance of a broader UX principle: <em>perceived</em> performance often matters more than raw speed, and you can engineer it. Beyond token streaming, mature LLM apps reduce felt latency with progressive disclosure — show a “thinking…” state, then stream the answer; surface intermediate steps of an agent as they happen (the trace from Track 4) so the user sees work being done; and render partial structure (e.g., start showing a list as items stream).</p>
+    <p>The goal is to never leave the user staring at a frozen screen wondering if it broke. A 6-second response that streams from the first second feels responsive; a 2-second response that shows nothing until the end can feel slow and even appear hung.</p>
+    <p>There’s an engineering caveat to plan for: once you stream, you’ve started showing output before you’ve seen all of it — which complicates anything that needs the whole response. Output moderation (Track 7) and validation typically need the complete text, so a common pattern is to stream to the UI optimistically but be ready to retract/replace if a post-generation safety check fails, or to moderate in a way that can interrupt the stream.</p>
+    <p>For structured output you simply don’t stream to the parser. So the rule of thumb: stream human-facing prose by default for the big UX win, but keep machine-consumed and safety-gated paths on a collect-then-process model. Used this way, streaming is the rare optimization that’s nearly free, dramatically improves the experience, and ships in an afternoon.</p>
   </div>
 
   <p>Streaming makes responses feel instant. The next technique can make some responses <em>actually</em> instant — and free. Next: <strong>caching</strong>.</p>
@@ -139,7 +141,7 @@ stream <span class="o">=</span> ollama.<span class="f">chat</span>(
   });
 })();
 </script>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

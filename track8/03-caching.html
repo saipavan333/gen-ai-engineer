@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Caching — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="8.3">
 <main class="lesson">
@@ -104,13 +104,14 @@ sem_q, sem_v, sem_a <span class="o">=</span> [], <span class="kc">None</span>, [
   <div class="box deep">
     <div class="box-label">Deep dive: caching as a system, not a dict</div>
     <p>In production, caching graduates from an in-memory dictionary to a deliberate layer with policies. You choose a <strong>store</strong> (an in-process dict for a single server, or Redis/a database for a fleet so all instances share hits), a <strong>key</strong> (the exact prompt, or a normalized form, plus any relevant context like user-scope or model version — so you don’t mix incompatible results), an <strong>invalidation</strong> strategy (time-to-live, or event-based eviction when source data changes), and for semantic caches a carefully-tuned <strong>threshold</strong> validated on real query pairs. Each is a small decision with real correctness consequences, which is why caching is a place senior engineers slow down even though the happy path looks trivial.</p>
-    <p>The strategic point: caching is frequently the <em>largest</em> single cost lever, precisely because real traffic is far more repetitive than people expect — a long tail of unique queries sits on top of a fat head of common ones. Measure your actual query distribution (Track 6 traces) and you’ll often find a handful of questions account for a big share of volume; caching those alone can slash cost. Combine exact caching for identical repeats, prefix caching for your fixed system prompt/tools, and a conservative semantic cache for paraphrases, and you can cut both spend and latency substantially with almost no quality risk — provided you respect the boundaries (no personalized/time-sensitive caching, sane invalidation, tuned thresholds). It’s the rare optimization that makes things both cheaper <em>and</em> faster at once.</p>
+    <p>The strategic point: caching is frequently the <em>largest</em> single cost lever, precisely because real traffic is far more repetitive than people expect — a long tail of unique queries sits on top of a fat head of common ones. Measure your actual query distribution (Track 6 traces) and you’ll often find a handful of questions account for a big share of volume; caching those alone can slash cost.</p>
+    <p>Combine exact caching for identical repeats, prefix caching for your fixed system prompt/tools, and a conservative semantic cache for paraphrases, and you can cut both spend and latency substantially with almost no quality risk — provided you respect the boundaries (no personalized/time-sensitive caching, sane invalidation, tuned thresholds). It’s the rare optimization that makes things both cheaper <em>and</em> faster at once.</p>
   </div>
 
   <p>Caching avoids calls; the next lever makes the calls you <em>do</em> make cheaper by not over-using your most expensive model. Next: <strong>model routing</strong>.</p>
 
 </main>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

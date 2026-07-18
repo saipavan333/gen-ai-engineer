@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Patterns &amp; anti-patterns — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="2.5">
 <main class="lesson">
@@ -122,7 +122,9 @@ do two things and return JSON only:
 
   <div class="box deep">
     <div class="box-label">Deep dive: from clever prompts to engineered prompts</div>
-    <p>The leap from hobbyist to professional is treating prompts as <em>versioned, tested artifacts</em>, not one-off strings. Three habits make that real. <strong>Template and parameterize:</strong> keep the prompt as a template with slots (the role and rules fixed, the data injected), so it’s reusable and you’re changing one thing at a time. <strong>Version it:</strong> store prompts in code with a version label, because a “small tweak” can quietly regress other cases — and you want to be able to roll back. <strong>Test it on a set:</strong> never judge a prompt by one happy example; run it across a handful of varied, realistic inputs (including edge cases) and look at the failures. The moment you can <em>measure</em> a prompt across a dataset, prompting stops being vibes — which is exactly what Track 6 (evals) builds.</p>
+    <p>The leap from hobbyist to professional is treating prompts as <em>versioned, tested artifacts</em>, not one-off strings. Three habits make that real. <strong>Template and parameterize:</strong> keep the prompt as a template with slots (the role and rules fixed, the data injected), so it’s reusable and you’re changing one thing at a time.</p>
+    <p><strong>Version it:</strong> store prompts in code with a version label, because a “small tweak” can quietly regress other cases — and you want to be able to roll back. <strong>Test it on a set:</strong> never judge a prompt by one happy example; run it across a handful of varied, realistic inputs (including edge cases) and look at the failures.</p>
+    <p>The moment you can <em>measure</em> a prompt across a dataset, prompting stops being vibes — which is exactly what Track 6 (evals) builds.</p>
     <p>A few advanced moves for your back pocket: <strong>prefill / lead the answer</strong> — start the assistant’s reply for it (e.g., begin with <code>{</code> to push toward JSON, or “Step 1:” to force reasoning). <strong>Least-to-most</strong> — have the model first list sub-problems, then solve them in order, for hard tasks. <strong>Self-check</strong> — ask it to review its own draft against the requirements before finalizing. And always remember the ladder from earlier tracks: if prompting alone keeps failing, the answer may be grounding (RAG), tools, or fine-tuning — prompting is the first lever, not the only one.</p>
   </div>
 
@@ -174,7 +176,7 @@ do two things and return JSON only:
   input.value = WEAK; lint();
 })();
 </script>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

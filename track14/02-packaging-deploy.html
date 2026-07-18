@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Packaging &amp; deploy — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="14.2">
 <main class="lesson">
@@ -83,14 +83,15 @@ API_KEY <span class="o">=</span> os.<span class="f">environ</span>.<span class="
 
   <div class="box deep">
     <div class="box-label">Deep dive: the twelve-factor habits that make services deployable</div>
-    <p>What you just did — config from the environment, dependencies pinned, one command to run — are pieces of a widely used checklist for cloud services often called the “twelve-factor app.” A few of its ideas are worth carrying everywhere. <strong>Strict separation of config from code</strong> (what you practiced) means the same build runs in every environment. <strong>Statelessness</strong> means your service shouldn’t store important data in its own memory or local disk between requests, because a deployment might run several copies of it and replace them at any time; anything that must persist goes to a database or object store. This is what lets a platform run three, then ten, copies of your container behind a load balancer to handle traffic — horizontal scaling — without any of them stepping on each other.</p>
+    <p>What you just did — config from the environment, dependencies pinned, one command to run — are pieces of a widely used checklist for cloud services often called the “twelve-factor app.” A few of its ideas are worth carrying everywhere. <strong>Strict separation of config from code</strong> (what you practiced) means the same build runs in every environment.</p>
+    <p><strong>Statelessness</strong> means your service shouldn’t store important data in its own memory or local disk between requests, because a deployment might run several copies of it and replace them at any time; anything that must persist goes to a database or object store. This is what lets a platform run three, then ten, copies of your container behind a load balancer to handle traffic — horizontal scaling — without any of them stepping on each other.</p>
     <p>For LLM services specifically, statelessness has a twist worth naming in interviews: conversation “memory” must live outside the process (a database or cache keyed by session), never in a local variable, precisely because the next request might hit a different container. Combine that with the operational ring from the last lesson — timeouts, rate limits, caching, streaming — and you have the shape of a real deployment: a stateless, containerized, env-configured service with persistence and state pushed to backing stores. You don’t need to memorize the whole twelve-factor list; you need the instinct that <em>code is fixed, config and state live outside it</em>, because that instinct is what makes something you can actually run at scale.</p>
   </div>
 
   <p>Your service can run anywhere. But every change you make risks breaking quality — so before anything ships, it should have to pass your evals. Next: <strong>CI for prompts &amp; evals.</strong></p>
 
 </main>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Structured output &amp; JSON — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="2.4">
 <main class="lesson">
@@ -130,7 +130,8 @@ t <span class="o">=</span> <span class="f">extract</span>(<span class="s">"My ca
 
   <div class="box deep">
     <div class="box-label">Deep dive: how JSON mode actually guarantees valid JSON</div>
-    <p>“JSON mode” and schema-constrained output aren’t just a stern instruction — they change the <em>decoding</em> step from Track 1. Remember the model outputs a probability over every possible next token, and a sampler picks one. <span class="term">Constrained decoding</span> adds a filter: at each step, it masks out any token that would make the output violate the grammar (or schema), so only tokens that keep the JSON valid can be chosen. If the model is mid-string, a closing brace is forbidden; if a field expects a boolean, only <code>true</code>/<code>false</code> tokens are allowed. The result is output that is <em>guaranteed</em> to parse, by construction. Providers expose this as “JSON mode,” “structured outputs,” or “function calling”; libraries like Outlines and llama.cpp grammars do it locally.</p>
+    <p>“JSON mode” and schema-constrained output aren’t just a stern instruction — they change the <em>decoding</em> step from Track 1. Remember the model outputs a probability over every possible next token, and a sampler picks one. <span class="term">Constrained decoding</span> adds a filter: at each step, it masks out any token that would make the output violate the grammar (or schema), so only tokens that keep the JSON valid can be chosen.</p>
+    <p>If the model is mid-string, a closing brace is forbidden; if a field expects a boolean, only <code>true</code>/<code>false</code> tokens are allowed. The result is output that is <em>guaranteed</em> to parse, by construction. Providers expose this as “JSON mode,” “structured outputs,” or “function calling”; libraries like Outlines and llama.cpp grammars do it locally.</p>
     <p>Two caveats keep you honest. First, constrained decoding guarantees <em>shape</em>, not <em>truth</em> — the model can still fill valid fields with wrong values, so semantic validation and grounding still matter. Second, even with a JSON mode, keep the validate-and-retry loop: it’s your safety net for the value-level errors a grammar can’t catch (wrong enum, impossible date, hallucinated id). Shape from the decoder, correctness from your validation — use both.</p>
   </div>
 
@@ -191,7 +192,7 @@ t <span class="o">=</span> <span class="f">extract</span>(<span class="s">"My ca
   validate();
 })();
 </script>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

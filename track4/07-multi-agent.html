@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Multi-agent &amp; orchestration — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="4.7">
 <main class="lesson">
@@ -120,7 +120,8 @@ SPECIALISTS <span class="o">=</span> {
 
   <div class="box deep">
     <div class="box-label">Deep dive: communication is the bottleneck</div>
-    <p>The hidden cost of multi-agent systems is <em>communication</em>. When agent A hands off to agent B, everything B needs must be packed into that message — and natural-language handoffs are lossy. Subtle context (a constraint mentioned early, a tentative decision) gets dropped, and errors compound down a chain: a small misunderstanding at stage one becomes a wrong deliverable at stage four. This is why naive “just add more agents” designs often perform <em>worse</em> than a single capable agent — the coordination tax exceeds the specialization benefit. Techniques that help: a shared state/“blackboard” all agents can read and write (so context isn’t re-transmitted and distorted), structured handoffs (pass typed data, not just prose), and an orchestrator that validates each result before passing it on.</p>
+    <p>The hidden cost of multi-agent systems is <em>communication</em>. When agent A hands off to agent B, everything B needs must be packed into that message — and natural-language handoffs are lossy. Subtle context (a constraint mentioned early, a tentative decision) gets dropped, and errors compound down a chain: a small misunderstanding at stage one becomes a wrong deliverable at stage four. This is why naive “just add more agents” designs often perform <em>worse</em> than a single capable agent — the coordination tax exceeds the specialization benefit.</p>
+    <p>Techniques that help: a shared state/“blackboard” all agents can read and write (so context isn’t re-transmitted and distorted), structured handoffs (pass typed data, not just prose), and an orchestrator that validates each result before passing it on.</p>
     <p>The strategic read for the current year: the industry has cooled on sprawling multi-agent architectures and warmed to “one strong agent with great tools, memory, and guards, plus a few specialists only where roles are truly distinct.” The reasons are exactly the above — coordination overhead and lost context. So treat multi-agent as a targeted technique: use a router when request types are clearly different, a pipeline when there’s a real assembly line, parallelism for independent work — and resist the urge to model your org chart in agents. The best multi-agent system is usually the smallest one that the task genuinely requires.</p>
   </div>
 
@@ -152,7 +153,7 @@ SPECIALISTS <span class="o">=</span> {
   route();
 })();
 </script>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

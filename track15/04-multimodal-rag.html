@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Multimodal RAG — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="15.4">
 <main class="lesson">
@@ -75,14 +75,17 @@ hits <span class="o">=</span> util.<span class="f">cos_sim</span>(q_vec, img_vec
 
   <div class="box deep">
     <div class="box-label">Deep dive: choosing your approach, and evaluating it</div>
-    <p>The CLIP-vs-caption choice is a genuine engineering trade-off worth being able to reason about aloud. <strong>Shared-space embeddings</strong> shine when the query is about visual appearance and captions would be lossy or missing — product search, “find similar images,” style matching — and they need no per-image LLM pass, so indexing is cheap at scale. Their limit is that a single image vector can miss fine detail and can’t easily be searched on facts that aren’t visual (a price, a model number). <strong>Caption-then-embed</strong> shines when you can write rich, structured descriptions (a VLM extracting specs from each product image) and want to search on those specifics with your existing text stack; its costs are the up-front captioning compute and the risk that anything the caption omits becomes unsearchable. Many strong systems use both and fuse the results — the multimodal version of hybrid search.</p>
-    <p>Evaluation ties it together and is the part candidates forget. Multimodal retrieval is measured just like text retrieval (Track&nbsp;3): a golden set of queries with known-relevant images, scored with recall@k and friends — did the right image make the top-k? You measure each approach on <em>your</em> data because the winner is corpus-dependent: CLIP may dominate on a clean photo catalog and lose on scanned documents where a VLM’s reading of the text matters more. And the generation half needs its own check — did the VLM’s answer actually reflect the retrieved image, or did it hallucinate (faithfulness, Track&nbsp;6/12)? The through-line of this entire track is that multimodal is your familiar toolkit — retrieval, grounding, evaluation, hybrid fusion — applied to images and audio. Master that framing and you can build, and defend, systems over any kind of data, which is exactly the range that makes a GenAI engineer valuable.</p>
+    <p>The CLIP-vs-caption choice is a genuine engineering trade-off worth being able to reason about aloud. <strong>Shared-space embeddings</strong> shine when the query is about visual appearance and captions would be lossy or missing — product search, “find similar images,” style matching — and they need no per-image LLM pass, so indexing is cheap at scale. Their limit is that a single image vector can miss fine detail and can’t easily be searched on facts that aren’t visual (a price, a model number).</p>
+    <p><strong>Caption-then-embed</strong> shines when you can write rich, structured descriptions (a VLM extracting specs from each product image) and want to search on those specifics with your existing text stack; its costs are the up-front captioning compute and the risk that anything the caption omits becomes unsearchable. Many strong systems use both and fuse the results — the multimodal version of hybrid search.</p>
+    <p>Evaluation ties it together and is the part candidates forget. Multimodal retrieval is measured just like text retrieval (Track&nbsp;3): a golden set of queries with known-relevant images, scored with recall@k and friends — did the right image make the top-k? You measure each approach on <em>your</em> data because the winner is corpus-dependent: CLIP may dominate on a clean photo catalog and lose on scanned documents where a VLM’s reading of the text matters more.</p>
+    <p>And the generation half needs its own check — did the VLM’s answer actually reflect the retrieved image, or did it hallucinate (faithfulness, Track&nbsp;6/12)? The through-line of this entire track is that multimodal is your familiar toolkit — retrieval, grounding, evaluation, hybrid fusion — applied to images and audio.</p>
+    <p>Master that framing and you can build, and defend, systems over any kind of data, which is exactly the range that makes a GenAI engineer valuable.</p>
   </div>
 
   <p>You can now bring vision, documents, audio, and multimodal retrieval into your work. Let’s pressure-test it. Next: the <strong>interview check</strong>.</p>
 
 </main>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Defense in depth — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="7.7">
 <main class="lesson">
@@ -93,13 +93,14 @@
   <div class="box deep">
     <div class="box-label">Deep dive: the security mindset for LLM products</div>
     <p>The throughline of this entire track is a mindset shift: <strong>you cannot make the model safe, so you make the system safe around it.</strong> The model is a brilliant, gullible component that processes untrusted text and (often) takes actions; treat it like any untrusted, internet-facing component and apply decades of security wisdom — least privilege, defense in depth, validate everything crossing a boundary, assume breach, monitor and respond. None of the individual techniques are exotic; the skill is composing them appropriately and never trusting any single one (including the model’s good behavior).</p>
-    <p>Two closing principles. First, <strong>security is proportional</strong>: a careful threat model (Lesson 7.1) tells you which assets and exposures actually matter, so you can invest depth where it counts and avoid security theater where it doesn’t. Second, <strong>safety is continuous, not a checkbox</strong>: attacks evolve, so you red-team, fold successful attacks into your eval suite (Track 6), monitor production, and update defenses — the same flywheel that drives quality also drives safety. Master this and you can put an LLM in front of real users, and even give it real capabilities, with justified confidence. That confidence — earned through layered, measured, evolving defenses — is what it means to ship a <em>trustworthy</em> AI product, which is the whole point of being an applied GenAI engineer rather than a demo-builder.</p>
+    <p>Two closing principles. First, <strong>security is proportional</strong>: a careful threat model (Lesson 7.1) tells you which assets and exposures actually matter, so you can invest depth where it counts and avoid security theater where it doesn’t. Second, <strong>safety is continuous, not a checkbox</strong>: attacks evolve, so you red-team, fold successful attacks into your eval suite (Track 6), monitor production, and update defenses — the same flywheel that drives quality also drives safety.</p>
+    <p>Master this and you can put an LLM in front of real users, and even give it real capabilities, with justified confidence. That confidence — earned through layered, measured, evolving defenses — is what it means to ship a <em>trustworthy</em> AI product, which is the whole point of being an applied GenAI engineer rather than a demo-builder.</p>
   </div>
 
   <p>You can now defend an LLM product against the adversarial world. Time to pressure-test it. On to the <strong>Track 7 interview check</strong>.</p>
 
 </main>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

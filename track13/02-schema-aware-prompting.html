@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Schema-aware prompting — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="13.2">
 <main class="lesson">
@@ -112,14 +112,15 @@ A: SELECT p.name, SUM(i.qty) AS units
 
   <div class="box deep">
     <div class="box-label">Deep dive: the schema you show is a design choice, not a given</div>
-    <p>It’s tempting to treat the schema as fixed input, but the best text-to-SQL engineers <em>curate</em> what the model sees. Raw production tables are often hostile to a language model: cryptic names (<code>dim_cust_x</code>), columns whose meaning depends on tribal knowledge, statuses encoded as integers, and metrics that require three joins and a filter to compute correctly. Pointing a model at that is asking for confident mistakes. Instead, teams build a friendly surface just for the model — well-named views, a data dictionary of column meanings, and canonical definitions of business metrics — so that “revenue” is a real column on a view, not a fragile expression the model must reinvent every time.</p>
+    <p>It’s tempting to treat the schema as fixed input, but the best text-to-SQL engineers <em>curate</em> what the model sees. Raw production tables are often hostile to a language model: cryptic names (<code>dim_cust_x</code>), columns whose meaning depends on tribal knowledge, statuses encoded as integers, and metrics that require three joins and a filter to compute correctly. Pointing a model at that is asking for confident mistakes.</p>
+    <p>Instead, teams build a friendly surface just for the model — well-named views, a data dictionary of column meanings, and canonical definitions of business metrics — so that “revenue” is a real column on a view, not a fragile expression the model must reinvent every time.</p>
     <p>This reframes the whole problem in your favor. The accuracy of a text-to-SQL system is determined less by the model and more by the quality of the semantic layer you put in front of it — the naming, the documentation, the example queries, the curated views. That is data modeling and metadata engineering, done for a new kind of consumer. When you present text-to-SQL work this way in an interview — “I’d invest in a clean semantic layer and a library of example queries, because that’s what moves accuracy” — you sound like someone who has actually shipped it, because that insight only comes from taking correctness seriously.</p>
   </div>
 
   <p>Now the model can write good SQL. Before we ever run it, we have to make sure it can’t hurt us. Next: <strong>generating safe, correct SQL.</strong></p>
 
 </main>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Golden sets — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="6.2">
 <main class="lesson">
@@ -105,13 +105,14 @@ golden <span class="o">=</span> [
   <div class="box deep">
     <div class="box-label">Deep dive: bootstrapping and curating a golden set</div>
     <p>The most common excuse for skipping evals is “we don’t have labeled data.” You can bootstrap one fast. Use real logs if you have them; if not, have a strong model <em>generate</em> candidate questions from your documents or product, then spend a little human time selecting and correcting the answers — an hour of curation yields a usable set. Mix in any known tricky cases from bug reports and support tickets. The goal isn’t a massive academic benchmark; it’s a few dozen cases that genuinely represent what your system must handle, including the parts that scare you.</p>
-    <p>Two curation disciplines keep it honest. First, guard against <strong>contamination</strong>: if you’re fine-tuning, the golden set must not overlap with training data, or your scores lie (Track 5.3). Second, beware <strong>overfitting to the eval</strong>: if you obsessively tune until you ace one fixed set, you may be optimizing for the set rather than the task — so periodically refresh it with new real cases, and keep a portion you look at rarely. Treat the golden set like a living test suite owned by the team: versioned, reviewed, and growing. A team with a sharp, well-maintained golden set can move fast <em>and</em> safely; a team without one is flying blind no matter how good its prompts look.</p>
+    <p>Two curation disciplines keep it honest. First, guard against <strong>contamination</strong>: if you’re fine-tuning, the golden set must not overlap with training data, or your scores lie (Track 5.3). Second, beware <strong>overfitting to the eval</strong>: if you obsessively tune until you ace one fixed set, you may be optimizing for the set rather than the task — so periodically refresh it with new real cases, and keep a portion you look at rarely.</p>
+    <p>Treat the golden set like a living test suite owned by the team: versioned, reviewed, and growing. A team with a sharp, well-maintained golden set can move fast <em>and</em> safely; a team without one is flying blind no matter how good its prompts look.</p>
   </div>
 
   <p>Keyword and exact-match criteria can’t judge open-ended quality like “is this answer helpful and faithful?” For that, you enlist a model as the grader. Next: <strong>LLM-as-judge</strong>.</p>
 
 </main>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

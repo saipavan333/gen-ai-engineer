@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Model routing — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="8.4">
 <main class="lesson">
@@ -94,13 +94,14 @@
   <div class="box deep">
     <div class="box-label">Deep dive: the cost/quality frontier</div>
     <p>Routing is really about navigating a frontier: for any task, there’s a curve trading cost against quality, and your job is to sit at the best point for <em>your</em> requirements. The key insight is that the curve is rarely linear — for easy queries, a small model gets you to ~99% of the quality at ~10% of the cost, so forcing them through a frontier model is almost pure waste. The savings come from recognizing that quality demand is <em>heterogeneous</em>: different requests need different points on the curve, and a single model choice for all of them is a compromise that overpays for the easy and (if you picked small) underdelivers on the hard.</p>
-    <p>Two practical extensions. First, routing composes with everything else in this track — you cache first (skip the call), then route (right-size the call), then within the chosen model trim tokens and stream. Second, the router itself has a cost and an error rate: a cheap heuristic is free but coarse; an LLM-as-judge router is accurate but adds a call; a small trained classifier is a nice middle. Choose the router sophistication that pays for itself, and — as always — <em>measure</em>: track the escalation rate, the cost saved, and the quality on each path, so routing is a tuned, monitored system rather than a guess. Done well, model routing is frequently the second-biggest cost lever after caching, and it lets you offer frontier-grade quality where it matters while keeping the bill sane.</p>
+    <p>Two practical extensions. First, routing composes with everything else in this track — you cache first (skip the call), then route (right-size the call), then within the chosen model trim tokens and stream. Second, the router itself has a cost and an error rate: a cheap heuristic is free but coarse; an LLM-as-judge router is accurate but adds a call; a small trained classifier is a nice middle.</p>
+    <p>Choose the router sophistication that pays for itself, and — as always — <em>measure</em>: track the escalation rate, the cost saved, and the quality on each path, so routing is a tuned, monitored system rather than a guess. Done well, model routing is frequently the second-biggest cost lever after caching, and it lets you offer frontier-grade quality where it matters while keeping the bill sane.</p>
   </div>
 
   <p>So far we’ve optimized <em>around</em> the model. Now we make the model itself cheaper and faster to run — crucial when you self-host. Next: <strong>quantization</strong>.</p>
 
 </main>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

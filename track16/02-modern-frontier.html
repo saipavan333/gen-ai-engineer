@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>The modern frontier — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="16.2">
 <main class="lesson">
@@ -21,7 +21,8 @@
   <p><strong>Multimodal by default and reasoning as a dial.</strong> Text-only is becoming the exception; models increasingly see and hear (Track&nbsp;15), and inference-time reasoning (Lesson&nbsp;16.1) is now a lever you choose. The frontier is less “one bigger model” and more “a toolbox of capabilities you compose.”</p>
 
   <h2>Open vs closed: a real design choice</h2>
-  <p>One decision this surfaces is <span class="term">open-weight</span> vs <span class="term">closed</span> (API-only) models. Closed models (accessed over an API) often have the highest peak capability and require no infrastructure, but you send data to a third party, pay per token, and can’t control versioning. Open-weight models you run yourself give you control, privacy (data never leaves your environment), predictable cost at scale, and no vendor lock-in — at the price of running the infrastructure and, often, somewhat lower peak capability. The right answer is use-case-dependent: a privacy-sensitive internal tool may demand open/local; a low-volume feature needing top capability may favor a closed API. Being able to reason about that trade-off is a senior signal.</p>
+  <p>One decision this surfaces is <span class="term">open-weight</span> vs <span class="term">closed</span> (API-only) models. Closed models (accessed over an API) often have the highest peak capability and require no infrastructure, but you send data to a third party, pay per token, and can’t control versioning. Open-weight models you run yourself give you control, privacy (data never leaves your environment), predictable cost at scale, and no vendor lock-in — at the price of running the infrastructure and, often, somewhat lower peak capability.</p>
+  <p>The right answer is use-case-dependent: a privacy-sensitive internal tool may demand open/local; a low-volume feature needing top capability may favor a closed API. Being able to reason about that trade-off is a senior signal.</p>
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -41,7 +42,8 @@
       <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
       <div class="sol-body">
         <p><strong>Where large context helps:</strong> it genuinely simplifies cases where the relevant material is modest and bounded — reasoning over a single long document, a whole small codebase, or a long conversation — where retrieval would add complexity for little gain. So the balance shifts: you can often retrieve fewer, larger chunks and lean on the model to find the needle.</p>
-        <p><strong>Why keep retrieval:</strong> pasting <em>all</em> company docs into every prompt is slow (latency scales with tokens), expensive (you pay for every token, every call — potentially enormous at volume), and less accurate (irrelevant content distracts, and facts buried mid-context get missed — “lost in the middle”). It also can’t handle data that changes: retrieval re-indexes; a giant static prompt goes stale. And most corpora simply don’t fit even huge windows. So the measured take: use large context to <em>simplify</em> where the content is small and self-contained, but keep retrieval as the scalable way to give the model only the relevant, current slice — cheaper, faster, fresher, and more accurate. It’s not either/or; it’s matching the tool to the size and freshness of the data. That nuanced answer — neither “RAG is dead” hype nor “never use long context” dogma — is exactly what marks an engineer who reasons from principles.</p>
+        <p><strong>Why keep retrieval:</strong> pasting <em>all</em> company docs into every prompt is slow (latency scales with tokens), expensive (you pay for every token, every call — potentially enormous at volume), and less accurate (irrelevant content distracts, and facts buried mid-context get missed — “lost in the middle”). It also can’t handle data that changes: retrieval re-indexes; a giant static prompt goes stale.</p>
+        <p>And most corpora simply don’t fit even huge windows. So the measured take: use large context to <em>simplify</em> where the content is small and self-contained, but keep retrieval as the scalable way to give the model only the relevant, current slice — cheaper, faster, fresher, and more accurate. It’s not either/or; it’s matching the tool to the size and freshness of the data. That nuanced answer — neither “RAG is dead” hype nor “never use long context” dogma — is exactly what marks an engineer who reasons from principles.</p>
       </div>
     </details>
   </div>
@@ -62,14 +64,16 @@
 
   <div class="box deep">
     <div class="box-label">Deep dive: how to stay current without burning out</div>
-    <p>The anxiety of a fast field is real: it can feel like you must read every paper and try every model or fall behind. You don’t, and the engineers who last don’t either. The trick is a two-layer mental model. The <strong>bottom layer is fundamentals</strong> — tokens, embeddings, attention, sampling, RAG, agents, evaluation, safety, cost — and these barely change; a new model still predicts next tokens, still hallucinates, still needs grounding and evals. Everything in this course is that layer, deliberately, because it’s durable. The <strong>top layer is specifics</strong> — which model is best, current prices, exact context sizes, new APIs — and this churns constantly. You keep the bottom layer deep and treat the top layer as lookups: when you need a specific, you check it, because you know it will have changed.</p>
-    <p>Concretely, this means when a shiny new model or technique appears, you don’t panic — you ask principled questions you already know how to answer: what capability does this add (more training, more test-time compute, a new modality, better tools)? what does it cost in money and latency? how would I <em>evaluate</em> whether it’s actually better on my use case (run it against my golden set)? does it change my architecture or just swap a component? That evaluation-first reflex — “I’ll measure it on my data” rather than “I’ll adopt it because it’s new” — is what keeps you current <em>and</em> grounded. It’s also, not coincidentally, what makes you trustworthy to a team: the person who can calmly assess the frontier against real requirements is far more valuable than the one who chases every headline. Stay curious about the top layer, but invest in the bottom one — it’s where your durable value lives.</p>
+    <p>The anxiety of a fast field is real: it can feel like you must read every paper and try every model or fall behind. You don’t, and the engineers who last don’t either. The trick is a two-layer mental model. The <strong>bottom layer is fundamentals</strong> — tokens, embeddings, attention, sampling, RAG, agents, evaluation, safety, cost — and these barely change; a new model still predicts next tokens, still hallucinates, still needs grounding and evals.</p>
+    <p>Everything in this course is that layer, deliberately, because it’s durable. The <strong>top layer is specifics</strong> — which model is best, current prices, exact context sizes, new APIs — and this churns constantly. You keep the bottom layer deep and treat the top layer as lookups: when you need a specific, you check it, because you know it will have changed.</p>
+    <p>Concretely, this means when a shiny new model or technique appears, you don’t panic — you ask principled questions you already know how to answer: what capability does this add (more training, more test-time compute, a new modality, better tools)? what does it cost in money and latency? how would I <em>evaluate</em> whether it’s actually better on my use case (run it against my golden set)? does it change my architecture or just swap a component? That evaluation-first reflex — “I’ll measure it on my data” rather than “I’ll adopt it because it’s new” — is what keeps you current <em>and</em> grounded.</p>
+    <p>It’s also, not coincidentally, what makes you trustworthy to a team: the person who can calmly assess the frontier against real requirements is far more valuable than the one who chases every headline. Stay curious about the top layer, but invest in the bottom one — it’s where your durable value lives.</p>
   </div>
 
   <p>Capability is only half of building well. The other half is building <em>responsibly</em>. Next: <strong>bias &amp; fairness.</strong></p>
 
 </main>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

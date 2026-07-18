@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>What LLMs can &amp; can't do — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="1.6">
 <main class="lesson">
@@ -114,14 +114,16 @@ prompt <span class="o">=</span> <span class="s">f"Context: </span>{context}<span
   <div class="box deep">
     <div class="box-label">Deep dive: detecting and reducing hallucination in practice</div>
     <p>You can’t eliminate hallucination, but you can drive it down a lot. The toolkit, roughly in order of power:</p>
-    <p><strong>Ground the model</strong> (biggest lever): put the real facts in the context and instruct it to answer only from them — and to say “I don’t know” when they’re absent. A model summarizing provided text is far more reliable than one recalling from memory. <strong>Give it tools</strong>: for math, call a calculator; for fresh facts, call search; for your data, call your API (Track 4). Don’t ask the model to <em>be</em> a database — let it <em>use</em> one. <strong>Constrain and verify the output</strong>: ask for citations and check that quoted text actually appears in the sources; validate structured fields; use a second model or rules to flag unsupported claims (Tracks 6–7). <strong>Lower the temperature</strong> for factual tasks so you’re not adding randomness on top. And <strong>design the UX for doubt</strong>: show sources, let users verify, and don’t present generated answers as infallible.</p>
+    <p><strong>Ground the model</strong> (biggest lever): put the real facts in the context and instruct it to answer only from them — and to say “I don’t know” when they’re absent. A model summarizing provided text is far more reliable than one recalling from memory. <strong>Give it tools</strong>: for math, call a calculator; for fresh facts, call search; for your data, call your API (Track 4).</p>
+    <p>Don’t ask the model to <em>be</em> a database — let it <em>use</em> one. <strong>Constrain and verify the output</strong>: ask for citations and check that quoted text actually appears in the sources; validate structured fields; use a second model or rules to flag unsupported claims (Tracks 6–7). <strong>Lower the temperature</strong> for factual tasks so you’re not adding randomness on top.</p>
+    <p>And <strong>design the UX for doubt</strong>: show sources, let users verify, and don’t present generated answers as infallible.</p>
     <p>The mental model to carry into every project: <em>an LLM is a brilliant reasoner over the information you give it, and an unreliable witness about anything you don’t.</em> Build systems that play to the first half and never depend on the second.</p>
   </div>
 
   <p>That’s the engine, end to end: tokens, embeddings, context, attention, sampling, and the honest map of strengths and limits. Time to check it stuck — and to see what an interviewer would ask. On to the <strong>Track 1 interview check</strong>.</p>
 
 </main>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Vision-language models — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="15.1">
 <main class="lesson">
@@ -39,7 +39,8 @@ reply <span class="o">=</span> ollama.<span class="f">chat</span>(
   <p>The interface barely changed — an <code>images</code> field — but the capability jumped enormously. Common uses: describing images, <span class="term">visual question answering</span> (“how many people are in this photo?”), reading text in an image, understanding charts and diagrams, and extracting structured data from documents (the next lesson).</p>
 
   <h2>Where VLMs break</h2>
-  <p>VLMs are impressive and unreliable in specific, predictable ways — and naming these is a senior signal. They’re weak at <strong>precise spatial reasoning</strong> (exact positions, “is A to the left of B”), <strong>counting</strong> many objects, and reading <strong>small or dense text</strong> reliably. And they <strong>hallucinate visually</strong> just like text models hallucinate facts — confidently describing an object that isn’t there, especially if your question presupposes it (“what breed is the dog?” when there’s no dog). The mitigations are familiar: ask neutral questions, don’t presuppose, verify critical extractions, and for exact text use OCR as a check. Treat a VLM’s reading of an image the way you treat any model output — useful, fluent, and to be verified when it matters.</p>
+  <p>VLMs are impressive and unreliable in specific, predictable ways — and naming these is a senior signal. They’re weak at <strong>precise spatial reasoning</strong> (exact positions, “is A to the left of B”), <strong>counting</strong> many objects, and reading <strong>small or dense text</strong> reliably. And they <strong>hallucinate visually</strong> just like text models hallucinate facts — confidently describing an object that isn’t there, especially if your question presupposes it (“what breed is the dog?” when there’s no dog).</p>
+  <p>The mitigations are familiar: ask neutral questions, don’t presuppose, verify critical extractions, and for exact text use OCR as a check. Treat a VLM’s reading of an image the way you treat any model output — useful, fluent, and to be verified when it matters.</p>
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -87,7 +88,7 @@ reply <span class="o">=</span> ollama.<span class="f">chat</span>(
   <p>The single most valuable business application of vision is turning documents into data. Next: <strong>document AI &amp; OCR.</strong></p>
 
 </main>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

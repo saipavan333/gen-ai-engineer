@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Instruction tuning — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="5.5">
 <main class="lesson">
@@ -101,14 +101,15 @@ trainer.<span class="f">train</span>()
 
   <div class="box deep">
     <div class="box-label">Deep dive: why preference tuning exists</div>
-    <p>SFT alone has a ceiling: it can only teach the model to imitate the responses you wrote, and writing a perfect demonstration for every situation is hard — sometimes it’s far easier to <em>compare</em> two responses than to author the ideal one. Preference tuning exploits this. In <span class="term">RLHF</span>, humans rank model outputs, a “reward model” learns to predict those rankings, and the model is then optimized to produce outputs the reward model scores highly — letting it discover good behavior beyond any single demonstration. <span class="term">DPO</span> achieves a similar effect more simply, directly training on preferred-vs-rejected pairs without a separate reward model, which is why it’s become popular for teams doing their own alignment.</p>
+    <p>SFT alone has a ceiling: it can only teach the model to imitate the responses you wrote, and writing a perfect demonstration for every situation is hard — sometimes it’s far easier to <em>compare</em> two responses than to author the ideal one. Preference tuning exploits this.</p>
+    <p>In <span class="term">RLHF</span>, humans rank model outputs, a “reward model” learns to predict those rankings, and the model is then optimized to produce outputs the reward model scores highly — letting it discover good behavior beyond any single demonstration. <span class="term">DPO</span> achieves a similar effect more simply, directly training on preferred-vs-rejected pairs without a separate reward model, which is why it’s become popular for teams doing their own alignment.</p>
     <p>For your own projects, the practical takeaway is a ladder: <strong>SFT first</strong> — it’s simpler, cheaper, and solves most “make it behave like X” needs. Reach for <strong>preference tuning</strong> only when you need to optimize subtle trade-offs SFT can’t easily capture (nuanced helpfulness, refusing the right things, ranking among already-good answers) and you can collect preference comparisons. Most applied fine-tuning you’ll do is SFT with LoRA on a few hundred excellent examples — understanding RLHF/DPO mainly lets you reason about how the assistants you build on were aligned, and recognize when your task genuinely needs that extra machinery.</p>
   </div>
 
   <p>You’ve trained a model. The non-negotiable final step is proving it actually got better — without quietly breaking. Next: <strong>evaluating a fine-tune</strong>.</p>
 
 </main>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

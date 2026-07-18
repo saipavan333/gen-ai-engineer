@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PII &amp; privacy — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="7.4">
 <main class="lesson">
@@ -100,8 +100,10 @@ log(<span class="f">redact</span>(raw))                 <span class="c"># "Email
 
   <div class="box deep">
     <div class="box-label">Deep dive: privacy and observability must be designed together</div>
-    <p>There’s a real tension in this track: Track 6 told you to log everything for debugging and evals, and this lesson tells you to be careful what you store. The resolution isn’t to pick one — it’s to design them together. Redact PII <em>before</em> it’s written to traces (so your logs are useful but not a liability), keep raw data only transiently where you truly need it, set retention windows that auto-delete, and gate access to whatever sensitive data remains. Done right, you get full observability over <em>redacted</em> data, which is enough to debug the vast majority of issues. When you genuinely need un-redacted data (a hard bug), pull it under stricter access controls and short retention.</p>
-    <p>Two broader points for production. First, the <strong>third-party question</strong> is often the biggest one: sending user data to an external model API means it leaves your infrastructure, so you must check the provider’s data-handling terms (do they train on it? how long do they retain it?), and for the most sensitive data, consider self-hosting an open model (the free local stack from this course) so nothing leaves at all. Second, <strong>privacy is a legal and trust issue, not just technical</strong> — regulations like GDPR/CCPA carry real penalties, and users’ trust is hard to win back once lost. Treat personal data as something you’re borrowing, not owning: collect the minimum, protect it in transit and at rest, redact it from logs and outputs, delete it when done, and be able to honor deletion requests. That posture keeps you both compliant and trustworthy.</p>
+    <p>There’s a real tension in this track: Track 6 told you to log everything for debugging and evals, and this lesson tells you to be careful what you store. The resolution isn’t to pick one — it’s to design them together. Redact PII <em>before</em> it’s written to traces (so your logs are useful but not a liability), keep raw data only transiently where you truly need it, set retention windows that auto-delete, and gate access to whatever sensitive data remains.</p>
+    <p>Done right, you get full observability over <em>redacted</em> data, which is enough to debug the vast majority of issues. When you genuinely need un-redacted data (a hard bug), pull it under stricter access controls and short retention.</p>
+    <p>Two broader points for production. First, the <strong>third-party question</strong> is often the biggest one: sending user data to an external model API means it leaves your infrastructure, so you must check the provider’s data-handling terms (do they train on it? how long do they retain it?), and for the most sensitive data, consider self-hosting an open model (the free local stack from this course) so nothing leaves at all.</p>
+    <p>Second, <strong>privacy is a legal and trust issue, not just technical</strong> — regulations like GDPR/CCPA carry real penalties, and users’ trust is hard to win back once lost. Treat personal data as something you’re borrowing, not owning: collect the minimum, protect it in transit and at rest, redact it from logs and outputs, delete it when done, and be able to honor deletion requests. That posture keeps you both compliant and trustworthy.</p>
   </div>
 
   <p>We’ve protected your instructions and your data. Now we make sure the model doesn’t produce harmful content in the first place — or at least never ships it. Next: <strong>content safety</strong>.</p>
@@ -136,7 +138,7 @@ log(<span class="f">redact</span>(raw))                 <span class="c"># "Email
   render();
 })();
 </script>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

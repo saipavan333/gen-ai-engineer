@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Vector databases &amp; indexes — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="3.4">
 <main class="lesson">
@@ -125,13 +125,15 @@ res <span class="o">=</span> col.<span class="f">query</span>(
   <div class="box deep">
     <div class="box-label">Deep dive: the recall/latency curve, and filtering gotchas</div>
     <p>Every ANN index exposes a knob that slides between “fast and approximate” and “slow and exact.” For HNSW it’s <code>ef</code> (how many candidates to explore during search) and <code>M</code> (graph connectivity at build time); for IVF it’s <code>nprobe</code> (how many clusters to scan). Turning them up raises recall and latency together. The professional move is to fix a target — say, “recall@10 ≥ 0.95 at p95 latency &lt; 30 ms” — and tune to hit it on your data, rather than accepting defaults blindly. Defaults are a guess about someone else’s corpus.</p>
-    <p>Filtering has a subtle trap worth knowing. Combining a metadata filter with ANN search isn’t free: if the filter is very selective (say, 0.1% of vectors match), a naive “search then filter” can return mostly filtered-out neighbors, tanking recall, while “filter then search” can be slow. Good vector DBs implement <em>filtered ANN</em> to handle this, but you should test retrieval quality <em>with your real filters applied</em>, not just on the open index. And for strict isolation (regulated data, hard multi-tenancy), consider separate collections/indexes per tenant rather than relying on a filter — defense in depth beats a single <code>where</code> clause. As always: the data and access model around the vectors is where production RAG is won or lost.</p>
+    <p>Filtering has a subtle trap worth knowing. Combining a metadata filter with ANN search isn’t free: if the filter is very selective (say, 0.1% of vectors match), a naive “search then filter” can return mostly filtered-out neighbors, tanking recall, while “filter then search” can be slow.</p>
+    <p>Good vector DBs implement <em>filtered ANN</em> to handle this, but you should test retrieval quality <em>with your real filters applied</em>, not just on the open index. And for strict isolation (regulated data, hard multi-tenancy), consider separate collections/indexes per tenant rather than relying on a filter — defense in depth beats a single <code>where</code> clause.</p>
+    <p>As always: the data and access model around the vectors is where production RAG is won or lost.</p>
   </div>
 
   <p>Even a great index returns an <em>approximate</em>, similarity-only ranking. To squeeze out real precision, you add a second pass that reads each candidate carefully. Next: <strong>retrieval &amp; reranking</strong>.</p>
 
 </main>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

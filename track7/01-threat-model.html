@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>The threat model — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="7.1">
 <main class="lesson">
@@ -101,13 +101,14 @@
   <div class="box deep">
     <div class="box-label">Deep dive: think like an attacker, and know the catalog</div>
     <p>Good LLM security comes from adopting an adversarial mindset: for every input your system reads and every output it produces, ask “if someone wanted to abuse this, how would they?” Could a crafted message make the agent ignore its rules, reveal its system prompt, call a dangerous tool, or leak data it retrieved for another user? This is <span class="term">red-teaming</span> — deliberately attacking your own system — and it’s the fastest way to find holes before attackers do. Build a small suite of adversarial test cases (alongside your golden set from Track 6) and run them on every change.</p>
-    <p>You don’t have to invent the catalog from scratch. The security community maintains the <strong>OWASP Top 10 for LLM Applications</strong>, which enumerates the recurring risks — prompt injection, insecure output handling, sensitive information disclosure, excessive agency, and more — with mitigations. It’s the canonical checklist, and interviewers love when you reference it. The throughline for this whole track: an LLM is a powerful, gullible component wired to untrusted text and (often) real actions. Your job is to put trustworthy, deterministic guards <em>around</em> it — at the input, the prompt, the tools, and the output — so that when (not if) the model is fooled, the blast radius is contained. The next lessons build each of those guards.</p>
+    <p>You don’t have to invent the catalog from scratch. The security community maintains the <strong>OWASP Top 10 for LLM Applications</strong>, which enumerates the recurring risks — prompt injection, insecure output handling, sensitive information disclosure, excessive agency, and more — with mitigations. It’s the canonical checklist, and interviewers love when you reference it. The throughline for this whole track: an LLM is a powerful, gullible component wired to untrusted text and (often) real actions.</p>
+    <p>Your job is to put trustworthy, deterministic guards <em>around</em> it — at the input, the prompt, the tools, and the output — so that when (not if) the model is fooled, the blast radius is contained. The next lessons build each of those guards.</p>
   </div>
 
   <p>The most important and most LLM-specific threat is the one where untrusted text becomes instructions. Let’s tackle it head-on. Next: <strong>prompt injection</strong>.</p>
 
 </main>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

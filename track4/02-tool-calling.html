@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Tool / function calling — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="4.2">
 <main class="lesson">
@@ -119,7 +119,13 @@ final <span class="o">=</span> ollama.<span class="f">chat</span>(model<span cla
 
   <div class="box deep">
     <div class="box-label">Deep dive: parallel calls, errors, and tools as an attack surface</div>
-    <p>Three things separate a toy tool integration from a robust one. <strong>Parallel tool calls</strong>: capable models can request several tools at once (“get weather in Paris <em>and</em> London”), so handle a <em>list</em> of tool calls, run them (possibly concurrently), and return all results. <strong>Error handling</strong>: tools fail — APIs time out, args are bad, results are empty. Return errors back to the model as tool results (“get_weather failed: city not found”) so it can adapt, rather than crashing the loop; this turns failures into recoverable steps. <strong>Idempotency and retries</strong>: for actions with side effects (sending email, charging a card), design so a retry doesn’t double-fire.</p>
+    <p>Three things separate a toy tool integration from a robust one.</p>
+
+  <ul>
+    <li><strong>Parallel tool calls</strong> — capable models can request several tools at once (“get weather in Paris <em>and</em> London”), so handle a <em>list</em> of tool calls, run them (possibly concurrently), and return all the results.</li>
+    <li><strong>Error handling</strong> — tools fail: APIs time out, arguments are bad, results come back empty. Return errors to the model as tool results (“get_weather failed: city not found”) so it can adapt, rather than crashing the loop. This turns failures into recoverable steps.</li>
+    <li><strong>Idempotency and retries</strong> — for actions with side effects, such as sending email or charging a card, design so that a retry cannot double-fire.</li>
+  </ul>
     <p>And treat tools as a serious security boundary. The model decides which tool to call and with what arguments, and that decision can be influenced by untrusted input (a malicious document, a crafted user message — prompt injection, Track 7). So: never expose a dangerous tool (delete data, send money, run shell commands) without validation and, for high-stakes actions, human approval (Lesson 4.8). Whitelist tools per context, validate every argument, and assume the model’s tool calls can be adversarially steered. The convenience of “the model can just call your functions” is also its risk — give it only capabilities you’d be comfortable a stranger triggering.</p>
   </div>
 
@@ -169,7 +175,7 @@ final <span class="o">=</span> ollama.<span class="f">chat</span>(model<span cla
   render();
 })();
 </script>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Advanced agents — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="12.2">
 <main class="lesson">
@@ -47,7 +47,8 @@
     <span class="k">return</span> escalate_to_human(goal, history)        <span class="c"># graceful fail, not a spin</span></code></pre>
 
   <h2>Evaluate the journey, not just the destination</h2>
-  <p>The biggest mistake in agent evaluation is grading only the final answer. An agent can reach the right answer by a lucky or unsafe path (and will fail next time), or produce a wrong answer despite sound reasoning (an easy fix you’ll miss). So you evaluate the <span class="term">trajectory</span> — the full sequence of thoughts, tool calls, and results — on a golden set of tasks. Track <strong>task success rate</strong> as the headline metric, but also per-step measures: did it pick the right tool, were arguments well-formed, did it recover from errors, how many steps and tokens did it take. Tracing every step (Track&nbsp;6) is what makes this possible — without traces, an agent is an unobservable black box and you’re debugging by vibes.</p>
+  <p>The biggest mistake in agent evaluation is grading only the final answer. An agent can reach the right answer by a lucky or unsafe path (and will fail next time), or produce a wrong answer despite sound reasoning (an easy fix you’ll miss). So you evaluate the <span class="term">trajectory</span> — the full sequence of thoughts, tool calls, and results — on a golden set of tasks.</p>
+  <p>Track <strong>task success rate</strong> as the headline metric, but also per-step measures: did it pick the right tool, were arguments well-formed, did it recover from errors, how many steps and tokens did it take. Tracing every step (Track&nbsp;6) is what makes this possible — without traces, an agent is an unobservable black box and you’re debugging by vibes.</p>
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -90,13 +91,14 @@
   <div class="box deep">
     <div class="box-label">Deep dive: when multi-agent helps — and when it just adds failure points</div>
     <p>Multi-agent systems are fashionable, and sometimes genuinely useful: when a task has clearly separable roles (a researcher, a coder, a critic), distinct tool/permission scopes, or benefits from an explicit critique step, splitting responsibilities can raise quality and keep each agent’s context focused. The common shape is a supervisor that decomposes a goal and routes sub-tasks to specialists, or a sequential pipeline where each stage hands off to the next. Done well, this mirrors a small team and can outperform one agent juggling everything.</p>
-    <p>But every additional agent is another thing that can misunderstand, hallucinate, or stall, and the handoffs between them are new failure surfaces where context gets lost and errors propagate. Coordination has real cost in latency, tokens, and debuggability — a five-agent system is five times the places to look when something breaks. The honest default is to reach for multi-agent only when a single well-equipped agent with good tools, reflection, and guards has demonstrably hit a ceiling. Many “multi-agent” problems are really one agent that needed better tools or a clearer prompt. As with everything in this track, let the eval decide: if adding an agent doesn’t move task success rate on your golden set, it’s just added complexity and cost.</p>
+    <p>But every additional agent is another thing that can misunderstand, hallucinate, or stall, and the handoffs between them are new failure surfaces where context gets lost and errors propagate. Coordination has real cost in latency, tokens, and debuggability — a five-agent system is five times the places to look when something breaks.</p>
+    <p>The honest default is to reach for multi-agent only when a single well-equipped agent with good tools, reflection, and guards has demonstrably hit a ceiling. Many “multi-agent” problems are really one agent that needed better tools or a clearer prompt. As with everything in this track, let the eval decide: if adding an agent doesn’t move task success rate on your golden set, it’s just added complexity and cost.</p>
   </div>
 
   <p>You can build agents that are bounded, observable, and measured. The thread running through both RAG and agents is evaluation — so let’s deepen that next: <strong>advanced evals.</strong></p>
 
 </main>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

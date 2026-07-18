@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>LoRA &amp; QLoRA — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="5.4">
 <main class="lesson">
@@ -101,13 +101,14 @@ trainer.<span class="f">save_model</span>(<span class="s">"my-adapter"</span>)  
   <div class="box deep">
     <div class="box-label">Deep dive: ranks, layers, and serving adapters</div>
     <p>A few practical levers. <strong>Rank <code>r</code></strong> sets the adapter’s capacity: low (4–8) for simple style/format shifts, higher (16–64) for harder tasks; too high wastes parameters and risks overfitting, too low underfits — tune it against validation. <strong><code>lora_alpha</code></strong> scales the adapter’s influence (a common heuristic is alpha ≈ 2×r). <strong>Target modules</strong> decides which layers get adapters; “all-linear” is a strong default, but adapting only attention projections is lighter. As always, you let evaluation (Lesson 5.6) decide, not folklore.</p>
-    <p>At serving time you have two options. You can <strong>merge</strong> the adapter into the base to get a single standalone model (simplest to deploy, but you lose the swap-ability). Or you can <strong>keep adapters separate</strong> and load them on top of a shared base — which is what makes the “one base, many fine-tunes” pattern so powerful: serving infrastructure can hold one base in memory and dynamically apply different adapters per request, even batching requests for different adapters together. This is how a platform offers dozens of customer-specific fine-tunes affordably. The takeaway: LoRA didn’t just make fine-tuning <em>cheaper to train</em> — it made fine-tunes <em>cheap to store and serve at scale</em>, which is arguably why fine-tuning became practical for everyone, including you on a free GPU.</p>
+    <p>At serving time you have two options. You can <strong>merge</strong> the adapter into the base to get a single standalone model (simplest to deploy, but you lose the swap-ability). Or you can <strong>keep adapters separate</strong> and load them on top of a shared base — which is what makes the “one base, many fine-tunes” pattern so powerful: serving infrastructure can hold one base in memory and dynamically apply different adapters per request, even batching requests for different adapters together. This is how a platform offers dozens of customer-specific fine-tunes affordably.</p>
+    <p>The takeaway: LoRA didn’t just make fine-tuning <em>cheaper to train</em> — it made fine-tunes <em>cheap to store and serve at scale</em>, which is arguably why fine-tuning became practical for everyone, including you on a free GPU.</p>
   </div>
 
   <p>LoRA is the <em>how</em>; the most common <em>what</em> is teaching a model to follow instructions in your style. Next: <strong>instruction tuning</strong>.</p>
 
 </main>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

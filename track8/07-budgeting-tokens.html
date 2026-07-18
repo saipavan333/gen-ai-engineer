@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Budgeting tokens — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="8.7">
 <main class="lesson">
@@ -93,13 +93,15 @@ parts <span class="o">=</span> {
   <div class="box deep">
     <div class="box-label">Deep dive: the compounding economics of lean prompts</div>
     <p>Token budgeting feels small per call and is enormous in aggregate, which is exactly why it’s the most universally-applied serving optimization. Trim 500 tokens from a prompt that runs ten million times a month and you’ve saved five billion tokens a month, every month, on top of faster responses — and you did it once. This compounding is why disciplined teams keep prompts ruthlessly lean: it’s free money that recurs. It also reframes some earlier-track decisions through a cost lens: every few-shot example you add (Track 2) is a permanent per-call tax, which is one reason fine-tuning to shrink prompts (Track 5) can pay for itself; every extra retrieved chunk (Track 3) costs tokens forever, which is another reason to retrieve precisely rather than dumping context.</p>
-    <p>Two cautions keep it from becoming penny-wise-pound-foolish. First, <strong>don’t trim into a quality regression</strong> — cutting the example or context the model actually needed costs you more in wrong answers than you saved in tokens, so every trim is a change you validate against your eval set (Track 6), watching quality as you cut. Second, <strong>measure, don’t guess</strong>: instrument your requests (Track 6 tracing) to see the real token breakdown, because intuition about where tokens go is often wrong (people obsess over the system prompt while context dominates). The mature loop is: measure the token budget per request → trim the biggest component → confirm quality held → re-measure. Do that, and token budgeting becomes a precise, ongoing optimization rather than blind cutting — and combined with caching, routing, and (if self-hosting) quantization and batching, it’s how you take a feature that worked in a demo and make it cheap and fast enough to serve millions.</p>
+    <p>Two cautions keep it from becoming penny-wise-pound-foolish. First, <strong>don’t trim into a quality regression</strong> — cutting the example or context the model actually needed costs you more in wrong answers than you saved in tokens, so every trim is a change you validate against your eval set (Track 6), watching quality as you cut.</p>
+    <p>Second, <strong>measure, don’t guess</strong>: instrument your requests (Track 6 tracing) to see the real token breakdown, because intuition about where tokens go is often wrong (people obsess over the system prompt while context dominates). The mature loop is: measure the token budget per request → trim the biggest component → confirm quality held → re-measure.</p>
+    <p>Do that, and token budgeting becomes a precise, ongoing optimization rather than blind cutting — and combined with caching, routing, and (if self-hosting) quantization and batching, it’s how you take a feature that worked in a demo and make it cheap and fast enough to serve millions.</p>
   </div>
 
   <p>You now have the full serving toolkit — cost, latency, and the levers for both. Time to pressure-test it. On to the <strong>Track 8 interview check</strong>.</p>
 
 </main>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

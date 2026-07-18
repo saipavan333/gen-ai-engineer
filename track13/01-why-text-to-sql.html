@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Why text-to-SQL — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="13.1">
 <main class="lesson">
@@ -49,7 +49,9 @@
 
   <h2>Where it breaks (be honest in interviews)</h2>
   <p>Text-to-SQL demos beautifully and then meets reality. The failure modes are predictable, and naming them is a senior signal:</p>
-  <p><strong>Ambiguity.</strong> “Show me our best customers” — best by revenue? order count? recency? The model has to guess, and may guess differently than the user meant. <strong>Schema misunderstanding.</strong> It may hallucinate a column that doesn’t exist, pick the wrong table when names are similar, or botch a multi-table join. <strong>Wrong-but-runs.</strong> The scariest case: the SQL executes without error but computes the wrong thing (e.g., double-counts through a bad join), returning a confident, wrong number. <strong>Scale &amp; dialect.</strong> Hundreds of tables won’t fit in the prompt, and SQL dialects differ (SQLite vs Postgres vs BigQuery). Each of these has a mitigation you’ll learn — schema selection, validation, self-correction, and evaluation — but a system that ignores them is a liability, because <em>a wrong number that looks right is worse than an error</em>.</p>
+  <p><strong>Ambiguity.</strong> “Show me our best customers” — best by revenue? order count? recency? The model has to guess, and may guess differently than the user meant. <strong>Schema misunderstanding.</strong> It may hallucinate a column that doesn’t exist, pick the wrong table when names are similar, or botch a multi-table join.</p>
+  <p><strong>Wrong-but-runs.</strong> The scariest case: the SQL executes without error but computes the wrong thing (e.g., double-counts through a bad join), returning a confident, wrong number. <strong>Scale &amp; dialect.</strong> Hundreds of tables won’t fit in the prompt, and SQL dialects differ (SQLite vs Postgres vs BigQuery).</p>
+  <p>Each of these has a mitigation you’ll learn — schema selection, validation, self-correction, and evaluation — but a system that ignores them is a liability, because <em>a wrong number that looks right is worse than an error</em>.</p>
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -100,7 +102,7 @@
   <p>The whole system rises or falls on how well the model understands your schema. So that’s where we start building. Next: <strong>schema-aware prompting.</strong></p>
 
 </main>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

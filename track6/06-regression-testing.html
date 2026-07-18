@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Regression-testing prompts — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="6.6">
 <main class="lesson">
@@ -105,7 +105,8 @@ GOLDEN <span class="o">=</span> [
   <div class="box deep">
     <div class="box-label">Deep dive: making eval part of the development loop</div>
     <p>The endgame is that evaluating an LLM change feels as routine as running tests on code. Concretely: prompts live in version control; a change opens a pull request; CI runs the eval suite (keyword/structural checks for closed outputs, LLM-judge thresholds for fuzzy quality) against the golden set; the result posts as a check with per-category scores and any regressions highlighted; the gate blocks merges that regress critical cases or drop the overall score. Reviewers see “quality 0.91 → 0.94, no regressions” instead of arguing about a few cherry-picked examples. This is how fast-moving teams ship LLM changes daily without breaking things.</p>
-    <p>Two pragmatic notes. First, balance <strong>strictness vs. friction</strong>: gate hard on critical/safety cases and overall score, but allow small movement on individual fuzzy cases so the suite isn’t paralyzingly flaky — and invest in determinism (temp 0, robust assertions) so the signal is trustworthy. Second, the suite must <strong>keep growing</strong>: every production incident becomes a new permanent test, so the same bug can never ship twice. Combined with tracing (which supplies the failures) and online eval (which validates real impact), regression testing closes the loop — your golden set, your CI gate, and your production observability together form a system where quality only ratchets upward. That ratchet, more than any single technique, is what “shipping reliable LLM products” actually means.</p>
+    <p>Two pragmatic notes. First, balance <strong>strictness vs. friction</strong>: gate hard on critical/safety cases and overall score, but allow small movement on individual fuzzy cases so the suite isn’t paralyzingly flaky — and invest in determinism (temp 0, robust assertions) so the signal is trustworthy. Second, the suite must <strong>keep growing</strong>: every production incident becomes a new permanent test, so the same bug can never ship twice.</p>
+    <p>Combined with tracing (which supplies the failures) and online eval (which validates real impact), regression testing closes the loop — your golden set, your CI gate, and your production observability together form a system where quality only ratchets upward. That ratchet, more than any single technique, is what “shipping reliable LLM products” actually means.</p>
   </div>
 
   <p>You’ve built the full evaluation toolkit — the skill that quietly underlies every other track. Time to pressure-test it. On to the <strong>Track 6 interview check</strong>.</p>
@@ -151,7 +152,7 @@ GOLDEN <span class="o">=</span> [
   render();
 })();
 </script>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

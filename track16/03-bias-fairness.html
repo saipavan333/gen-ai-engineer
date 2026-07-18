@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Responsible AI: bias &amp; fairness — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="16.3">
 <main class="lesson">
@@ -26,7 +26,15 @@
 <span class="c"># a large gap across groups on identical qualifications = bias to fix</span></code></pre>
 
   <h2>Reducing it (defense in depth, again)</h2>
-  <p>No single fix makes a system “fair”; you layer mitigations and keep measuring. <strong>Data</strong>: for anything you fine-tune, curate for balance and representation. <strong>Prompting</strong>: instruct the model to ignore irrelevant attributes and judge on stated qualifications. <strong>Output checks</strong>: validate and monitor decisions for disparate patterns (Track&nbsp;7’s output validation, aimed at fairness). <strong>Human oversight</strong>: keep a person in the loop for consequential decisions rather than fully automating them. <strong>Transparency</strong>: document what the system does, its known limitations, and how it was tested — a practice often formalized as a <span class="term">model card</span>. And crucially, <strong>question whether an LLM should make the decision at all</strong> — sometimes the responsible design is to assist a human, not replace their judgment.</p>
+  <p>No single fix makes a system “fair”. You layer mitigations and keep measuring.</p>
+
+  <ul>
+    <li><strong>Data</strong> — for anything you fine-tune, curate for balance and representation.</li>
+    <li><strong>Prompting</strong> — instruct the model to ignore irrelevant attributes and judge on stated qualifications.</li>
+    <li><strong>Output checks</strong> — validate and monitor decisions for disparate patterns. This is Track&nbsp;7’s output validation, aimed at fairness.</li>
+    <li><strong>Human oversight</strong> — keep a person in the loop for consequential decisions rather than fully automating them.</li>
+  </ul>
+  <p><strong>Transparency</strong>: document what the system does, its known limitations, and how it was tested — a practice often formalized as a <span class="term">model card</span>. And crucially, <strong>question whether an LLM should make the decision at all</strong> — sometimes the responsible design is to assist a human, not replace their judgment.</p>
 
   <h2>Find the gap the average hides</h2>
   <p>Introduce a hidden gap between two groups. Watch the overall accuracy stay comfortably high while one group is quietly failed.</p>
@@ -51,7 +59,8 @@
       <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
       <div class="sol-body">
         <p><strong>The evaluation:</strong> disaggregated accuracy — break the 90% down by the groups that matter (gender, ethnicity signals, age proxies, etc.), and run matched tests where identical qualifications carry only a different name or school. The aggregate number is meaningless for fairness because it can hide a large per-group gap: 90% overall could be 96% for one group and 75% for another.</p>
-        <p><strong>If it reveals a gap:</strong> do not ship as-is. Investigate the cause (biased training/prompt, a proxy feature like zip code or name doing the discriminating), apply mitigations (remove/neutralize the proxy, adjust the prompt to focus on qualifications, add output checks), and re-measure. Add human review so no candidate is auto-rejected on the model’s word alone, and document the findings and limits in a model card. If the gap can’t be reliably closed, the responsible decision may be to <em>not</em> automate screening and instead have the tool assist a human reviewer. The through-line: for decisions about people, “accurate on average” is not the bar — “equitable across groups, verified, and overseen” is, and proving that is an engineering task, not a slogan.</p>
+        <p><strong>If it reveals a gap:</strong> do not ship as-is. Investigate the cause (biased training/prompt, a proxy feature like zip code or name doing the discriminating), apply mitigations (remove/neutralize the proxy, adjust the prompt to focus on qualifications, add output checks), and re-measure. Add human review so no candidate is auto-rejected on the model’s word alone, and document the findings and limits in a model card.</p>
+        <p>If the gap can’t be reliably closed, the responsible decision may be to <em>not</em> automate screening and instead have the tool assist a human reviewer. The through-line: for decisions about people, “accurate on average” is not the bar — “equitable across groups, verified, and overseen” is, and proving that is an engineering task, not a slogan.</p>
       </div>
     </details>
   </div>
@@ -72,14 +81,15 @@
 
   <div class="box deep">
     <div class="box-label">Deep dive: fairness is contextual, and it’s a sociotechnical problem</div>
-    <p>One reason this is hard — and worth being honest about in an interview — is that “fair” has no single mathematical definition that satisfies every intuition. Researchers have formalized several fairness criteria (equal accuracy across groups, equal false-positive rates, equal opportunity, and others), and a famous result is that some of them are mutually incompatible: you often <em>cannot</em> satisfy all reasonable definitions at once, so which one applies depends on the context and the harms involved. That means fairness isn’t a checkbox you compute; it’s a judgment about your specific application — what decision is being made, who bears the cost of each kind of error, and what the domain and the law require. A thoughtful engineer names the relevant notion of fairness for the use case rather than pretending there’s a universal metric.</p>
+    <p>One reason this is hard — and worth being honest about in an interview — is that “fair” has no single mathematical definition that satisfies every intuition. Researchers have formalized several fairness criteria (equal accuracy across groups, equal false-positive rates, equal opportunity, and others), and a famous result is that some of them are mutually incompatible: you often <em>cannot</em> satisfy all reasonable definitions at once, so which one applies depends on the context and the harms involved. That means fairness isn’t a checkbox you compute; it’s a judgment about your specific application — what decision is being made, who bears the cost of each kind of error, and what the domain and the law require.</p>
+    <p>A thoughtful engineer names the relevant notion of fairness for the use case rather than pretending there’s a universal metric.</p>
     <p>The deeper point is that bias is a <strong>sociotechnical</strong> problem: it lives in the interaction between the model, the data, the product design, and the humans and institutions around it — not in the weights alone. So the strongest mitigations are often not clever algorithms but design decisions: keeping a human in the loop, giving affected people a way to appeal, choosing <em>not</em> to build a high-risk automated decision, being transparent about limitations, and including diverse perspectives when defining what “good” means. This connects straight to the next lesson: because these harms are real and hard, they’re increasingly the subject of regulation, which turns “we should be responsible” into “we’re legally required to be.” Treating responsibility as a first-class engineering requirement — measured, documented, and designed for — is both the ethical stance and, increasingly, the compliant one.</p>
   </div>
 
   <p>Responsibility is also becoming law. Next: <strong>governance &amp; regulation.</strong></p>
 
 </main>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>

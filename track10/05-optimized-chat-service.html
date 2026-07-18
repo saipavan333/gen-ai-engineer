@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Capstone: a cost &amp; latency-optimized chat service — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=4">
+  <link rel="stylesheet" href="../assets/styles.css?v=5">
 </head>
 <body data-base="../" data-lesson="10.5">
 <main class="lesson">
@@ -97,7 +97,8 @@ metrics <span class="o">=</span> {<span class="s">"requests"</span>: <span class
     <details class="sol">
       <summary><span class="chev">▸</span> The interview narrative</summary>
       <div class="sol-body">
-        <p>“I built a chat service designed for production economics. Per request it checks a cache (a big share of real traffic repeats), routes easy queries to a small model and hard ones to a larger one, trims the history to a token budget, streams the response for low perceived latency, and caps output length. Crucially, it records metrics — cache hit-rate, routing split, latency — so I can <em>prove</em> the savings rather than assume them. I’d measure first to find the real bottleneck, then apply the lever that targets it.” This proves you can take a feature from “works” to “affordable and fast at scale,” which is what separates a prototype from a product.</p>
+        <p>“I built a chat service designed for production economics. Per request it checks a cache (a big share of real traffic repeats), routes easy queries to a small model and hard ones to a larger one, trims the history to a token budget, streams the response for low perceived latency, and caps output length.</p>
+        <p>Crucially, it records metrics — cache hit-rate, routing split, latency — so I can <em>prove</em> the savings rather than assume them. I’d measure first to find the real bottleneck, then apply the lever that targets it.” This proves you can take a feature from “works” to “affordable and fast at scale,” which is what separates a prototype from a product.</p>
       </div>
     </details>
   </div>
@@ -137,7 +138,7 @@ metrics <span class="o">=</span> {<span class="s">"requests"</span>: <span class
   <p>That’s the whole path — from zero to a job-ready applied GenAI engineer who can ship real, reliable LLM products end to end. The tools will keep changing; the fundamentals, the judgment, and the measure-first discipline you’ve built will not. Now go build something, measure it, and ship it. You’re ready.</p>
 
 </main>
-<script src="../assets/curriculum.js?v=4"></script>
-<script src="../assets/app.js?v=4"></script>
+<script src="../assets/curriculum.js?v=5"></script>
+<script src="../assets/app.js?v=5"></script>
 </body>
 </html>
