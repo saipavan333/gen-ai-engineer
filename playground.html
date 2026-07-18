@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Python Playground — Applied GenAI Engineer</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;450;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/styles.css">
+  <script>try{var t=localStorage.getItem("age_theme");if(t&&t!=="graphite")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+</head>
+<body data-page="playground">
+  <header class="site-header">
+    <a class="brand" href="index.html"><img class="logo" src="assets/favicon.svg" alt="" width="26" height="26"><span class="brand-name">Applied GenAI Engineer</span></a>
+    <span class="spacer"></span>
+    <a class="hdr-link" href="index.html">&larr; Back to course</a>
+  </header>
+
+  <main class="pg">
+    <h1 class="pg-title">Python Playground</h1>
+    <p class="pg-lead">Real Python, running entirely in your browser — no install, no account, nothing to pay. Perfect for trying the course’s logic, string, and data examples. The first run loads Python (a few seconds); after that it’s instant.</p>
+
+    <div class="pg-ex" id="pgex"></div>
+    <div class="pg-card">
+      <div class="pg-bar"><span class="pg-dot" id="pgdot"></span><span id="pgstatus">booting…</span><span class="pg-spacer"></span><span class="pg-hint">Ctrl/⌘+Enter to run</span><button id="pgrun" class="pg-run" disabled>▶ Run</button></div>
+      <textarea id="pgcode" class="pg-code" spellcheck="false" rows="12"></textarea>
+    </div>
+    <div class="pg-out-label">output</div>
+    <pre id="pgout" class="pg-out">Loading Python…</pre>
+    <p class="pg-note">This runs standard-library Python. For the course’s AI examples (Ollama, transformers, PyTorch) use free Google Colab — but for quick practice with tokens, lists, functions, and JSON, this is instant and offline-friendly.</p>
+  </main>
+
+  <script type="module">
+    import { loadPyodide } from "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.mjs";
+    const out=document.getElementById('pgout'), ta=document.getElementById('pgcode'), btn=document.getElementById('pgrun'), st=document.getElementById('pgstatus'), dot=document.getElementById('pgdot');
+    const EX=[
+      ["Tokens: split & count", `text = "Retrieval-augmented generation grounds the model"\ntokens = text.replace("-", " ").split()\nprint("tokens:", tokens)\nprint("count:", len(tokens))\nprint("avg word length:", round(sum(len(w) for w in tokens)/len(tokens), 2))`],
+      ["List comprehension", `docs = ["  Refunds  ", "Shipping", "  Returns"]\nclean = [d.strip().lower() for d in docs]\nprint(clean)\nprint("long:", [w for w in clean if len(w) > 6])`],
+      ["A function", `def build_prompt(topic, n=3):\n    return f"Explain {topic} in {n} sentences."\n\nfor t in ["tokens", "embeddings", "RAG"]:\n    print(build_prompt(t))`],
+      ["Safe JSON parse", `import json\nraw = '{"intent": "refund"}'\ntry:\n    data = json.loads(raw)\n    print("intent:", data.get("intent", "unknown"))\nexcept json.JSONDecodeError:\n    print("bad JSON")`]
+    ];
+    document.getElementById('pgex').innerHTML = EX.map((e,i)=>`<button class="lab-ex-btn" data-i="${i}">${e[0]}</button>`).join('');
+    ta.value = EX[0][1];
+    document.querySelectorAll('#pgex button').forEach(b=>b.addEventListener('click',()=>{ ta.value = EX[+b.dataset.i][1]; }));
+    let py=null;
+    (async()=>{
+      try{
+        py = await loadPyodide();
+        py.setStdout({ batched:(s)=>{ out.textContent += s + "\n"; } });
+        py.setStderr({ batched:(s)=>{ out.textContent += s + "\n"; } });
+        st.textContent="ready"; dot.classList.add('on'); btn.disabled=false; out.textContent="Ready — press Run ▶";
+      }catch(e){ st.textContent="failed to load"; out.textContent="Could not load Python in this browser: "+e; }
+    })();
+    async function run(){
+      if(!py) return;
+      out.textContent=""; btn.disabled=true; st.textContent="running…";
+      try{ const r = await py.runPythonAsync(ta.value); if(r!==undefined && r!==null) out.textContent += "=> " + r + "\n"; }
+      catch(e){ out.textContent += String(e); }
+      finally{ btn.disabled=false; st.textContent="ready"; }
+    }
+    btn.addEventListener('click', run);
+    ta.addEventListener('keydown', (e)=>{ if((e.ctrlKey||e.metaKey) && e.key==='Enter'){ e.preventDefault(); run(); } });
+  </script>
+</body>
+</html>

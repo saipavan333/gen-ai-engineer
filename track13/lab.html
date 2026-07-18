@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lab: Build a safe text-to-SQL runner — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="13.6">
+<main class="lesson">
+
+  <span class="eyebrow">Track 13 · Lab</span>
+  <h1>Lab: Build a safe text-to-SQL runner</h1>
+  <p class="lead">This is the one that plays to your decade of data work. You’ll spin up a <strong>real SQLite database in this page</strong>, write the safety layer that stands between a language model and your data, then try to break it — and watch it hold.</p>
+
+  <div class="box note">
+    <div class="box-label">How to use this lab</div>
+    <p>Run the cells <strong>in order</strong> — they share memory. This is genuine SQLite (Python’s <code>sqlite3</code> runs inside the browser), so the queries and the blocked attacks are all real.</p>
+  </div>
+
+  <h2>Step 1 — Stand up a real database</h2>
+  <p>An in-memory SQLite database with the two-table schema from this track. Nothing is installed and nothing leaves your machine.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step1_db.py</span></div>
+<pre><code><span class="k">import</span> sqlite3
+
+con <span class="o">=</span> sqlite3.<span class="f">connect</span>(<span class="s">":memory:"</span>)
+cur <span class="o">=</span> con.<span class="f">cursor</span>()
+cur.<span class="f">executescript</span>(<span class="s">"""</span>
+<span class="s">CREATE TABLE customers (id INTEGER PRIMARY KEY, name TEXT, country TEXT);</span>
+<span class="s">CREATE TABLE orders (id INTEGER PRIMARY KEY, customer_id INTEGER, amount REAL, status TEXT);</span>
+<span class="s">INSERT INTO customers VALUES (1,'Ada Lovelace','Canada'),(2,'Bo Zhang','USA'),(3,'Cyrus Vane','Canada');</span>
+<span class="s">INSERT INTO orders VALUES (1,1,120.0,'paid'),(2,2,80.0,'paid'),(3,1,50.0,'refunded'),(4,3,200.0,'paid');</span>
+<span class="s">"""</span>)
+con.<span class="f">commit</span>()
+
+<span class="f">print</span>(<span class="s">"tables:"</span>, [r[<span class="n">0</span>] <span class="k">for</span> r <span class="k">in</span> cur.<span class="f">execute</span>(
+    <span class="s">"SELECT name FROM sqlite_master WHERE type='table'"</span>)])
+<span class="f">print</span>(<span class="s">"orders loaded:"</span>, cur.<span class="f">execute</span>(<span class="s">"SELECT COUNT(*) FROM orders"</span>).<span class="f">fetchone</span>()[<span class="n">0</span>])</code></pre>
+
+  <h2>Step 2 — Write the guard</h2>
+  <p>Never run generated SQL unchecked. Two rules stop the overwhelming majority of damage: <strong>one statement only</strong> (no semicolon-stacked payloads) and <strong>reads only</strong>. Build it, then test it against three candidates before it ever touches the database.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step2_guard.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">validate</span>(sql):
+    q <span class="o">=</span> sql.<span class="f">strip</span>().<span class="f">rstrip</span>(<span class="s">";"</span>).<span class="f">strip</span>()
+    <span class="k">if</span> <span class="s">";"</span> <span class="k">in</span> q:
+        <span class="k">raise</span> <span class="f">ValueError</span>(<span class="s">"only a single statement is allowed"</span>)
+    <span class="k">if</span> <span class="k">not</span> q.<span class="f">lower</span>().<span class="f">startswith</span>((<span class="s">"select"</span>, <span class="s">"with"</span>)):
+        <span class="k">raise</span> <span class="f">ValueError</span>(<span class="s">"only SELECT queries are allowed"</span>)
+    <span class="k">return</span> q
+
+<span class="k">for</span> candidate <span class="k">in</span> [<span class="s">"SELECT * FROM orders"</span>,
+                  <span class="s">"DROP TABLE customers"</span>,
+                  <span class="s">"SELECT 1; DROP TABLE customers"</span>]:
+    <span class="k">try</span>:
+        <span class="f">validate</span>(candidate)
+        <span class="f">print</span>(<span class="s">"ALLOWED :"</span>, candidate)
+    <span class="k">except</span> <span class="f">ValueError</span> <span class="k">as</span> e:
+        <span class="f">print</span>(<span class="s">"BLOCKED :"</span>, candidate, <span class="s">"->"</span>, e)</code></pre>
+
+  <h2>Step 3 — Answer real questions</h2>
+  <p>Now the useful half: the SQL a text-to-SQL model would generate for three business questions, run through the guard and executed for real.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step3_answer.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">run_safe</span>(sql, limit<span class="o">=</span><span class="n">100</span>):
+    q <span class="o">=</span> <span class="f">validate</span>(sql)
+    rows <span class="o">=</span> cur.<span class="f">execute</span>(q <span class="o">+</span> <span class="s">" LIMIT "</span> <span class="o">+</span> <span class="f">str</span>(limit)).<span class="f">fetchall</span>()
+    cols <span class="o">=</span> [d[<span class="n">0</span>] <span class="k">for</span> d <span class="k">in</span> cur.description]
+    <span class="k">return</span> cols, rows
+
+questions <span class="o">=</span> {
+  <span class="s">"Total revenue from paid orders"</span>:
+      <span class="s">"SELECT SUM(amount) AS revenue FROM orders WHERE status = 'paid'"</span>,
+  <span class="s">"Spend by customers in Canada"</span>:
+      <span class="s">"SELECT SUM(o.amount) AS spent FROM orders o "</span>
+      <span class="s">"JOIN customers c ON c.id = o.customer_id WHERE c.country = 'Canada'"</span>,
+  <span class="s">"Top customer by spend"</span>:
+      <span class="s">"SELECT c.name, SUM(o.amount) AS spend FROM orders o "</span>
+      <span class="s">"JOIN customers c ON c.id = o.customer_id GROUP BY c.id ORDER BY spend DESC"</span>,
+}
+
+<span class="k">for</span> question, sql <span class="k">in</span> questions.<span class="f">items</span>():
+    cols, rows <span class="o">=</span> <span class="f">run_safe</span>(sql)
+    <span class="f">print</span>(question)
+    <span class="f">print</span>(<span class="s">"   "</span>, cols, <span class="s">"->"</span>, rows)</code></pre>
+
+  <h2>Step 4 — Try to break it</h2>
+  <p>The real test. Throw the attacks a prompt-injected model might produce and confirm your data survives.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step4_attack.py</span></div>
+<pre><code>attacks <span class="o">=</span> [
+    <span class="s">"DROP TABLE customers"</span>,
+    <span class="s">"SELECT * FROM orders; DELETE FROM orders"</span>,
+    <span class="s">"UPDATE orders SET amount = 0"</span>,
+]
+
+<span class="k">for</span> a <span class="k">in</span> attacks:
+    <span class="k">try</span>:
+        <span class="f">run_safe</span>(a)
+        <span class="f">print</span>(<span class="s">"!! GOT THROUGH:"</span>, a)
+    <span class="k">except</span> <span class="f">ValueError</span> <span class="k">as</span> e:
+        <span class="f">print</span>(<span class="s">"blocked:"</span>, a, <span class="s">"->"</span>, e)
+
+<span class="f">print</span>()
+<span class="f">print</span>(<span class="s">"customers still present:"</span>, cur.<span class="f">execute</span>(
+    <span class="s">"SELECT COUNT(*) FROM customers"</span>).<span class="f">fetchone</span>()[<span class="n">0</span>])
+<span class="f">print</span>(<span class="s">"orders still present:   "</span>, cur.<span class="f">execute</span>(
+    <span class="s">"SELECT COUNT(*) FROM orders"</span>).<span class="f">fetchone</span>()[<span class="n">0</span>])</code></pre>
+
+  <div class="box key">
+    <div class="box-label">The point of this lab</div>
+    <p>Every attack was blocked in <em>application code</em> — and in production you’d add the control that can’t be argued with at all: a <strong>read-only database user</strong>, so even a bug in this validator can’t destroy data. Defence in depth means assuming your own guard is imperfect.</p>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Make it yours</div>
+    <p><strong>1.</strong> Delete the semicolon check in <code>validate</code> and re-run Step 4. Which attack now gets through, and what does that tell you about stacked statements?<br>
+    <strong>2.</strong> The <code>run_safe</code> helper appends <code>LIMIT</code> blindly. Find the query where that would break, and fix it.<br>
+    <strong>3.</strong> Add a question of your own (“how many refunded orders?”), write the SQL, and run it.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> <code>SELECT * FROM orders; DELETE FROM orders</code> gets through the prefix check because it <em>starts</em> with SELECT — and the second statement deletes your data. That’s why “starts with SELECT” alone is not a guard; stacked statements must be rejected outright.</p>
+        <p><strong>2.</strong> Any query that already ends in a <code>LIMIT</code> (or uses one inside a subquery at the end) breaks with a syntax error when you append another. A robust runner parses the query or wraps it — e.g. <code>SELECT * FROM ( … ) LIMIT 100</code> — rather than string-concatenating. Small detail, real production bug.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">What you built</div>
+    <ul>
+      <li>A <strong>real database</strong> running locally, seeded and queried.</li>
+      <li>A <strong>validator</strong> enforcing single-statement, read-only SQL.</li>
+      <li>A <strong>safe execution path</strong> with bounded results.</li>
+      <li>A <strong>live attack test</strong> proving the guard holds.</li>
+    </ul>
+    <p>This is the core of every trustworthy “chat with your database” feature — and you can now defend every line of it in an interview.</p>
+  </div>
+
+  <p>You’ve built the safety layer that makes text-to-SQL shippable. Next: <strong>Track&nbsp;14, Productionization &amp; LLMOps.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

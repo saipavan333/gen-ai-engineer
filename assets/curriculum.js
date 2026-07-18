@@ -22,7 +22,8 @@ window.CURRICULUM = {
         { n: "1.4", title: "Context windows & attention",       file: "track1/04-context-attention.html",  built: true },
         { n: "1.5", title: "Sampling & decoding",               file: "track1/05-sampling.html",           built: true },
         { n: "1.6", title: "What LLMs can & can't do",          file: "track1/06-capabilities-limits.html",built: true },
-        { n: "1.7", title: "Interview check: How LLMs Work",    file: "track1/07-interview.html",          built: true }
+        { n: "1.7", title: "Interview check: How LLMs Work",    file: "track1/07-interview.html",          built: true },
+        { n: "1.8", title: "Lab: Build a mini language model", file: "track1/lab.html", built: true }
       ]
     },
     {
@@ -34,7 +35,8 @@ window.CURRICULUM = {
         { n: "2.3", title: "Chain-of-thought & reasoning",      file: "track2/03-chain-of-thought.html",   built: true },
         { n: "2.4", title: "Structured output & JSON",          file: "track2/04-structured-output.html",  built: true },
         { n: "2.5", title: "Patterns & anti-patterns",          file: "track2/05-patterns.html",           built: true },
-        { n: "2.6", title: "Interview check: Prompting",        file: "track2/06-interview.html",          built: true }
+        { n: "2.6", title: "Interview check: Prompting",        file: "track2/06-interview.html",          built: true },
+        { n: "2.7", title: "Lab: Build a prompt engine", file: "track2/lab.html", built: true }
       ]
     },
     {
@@ -49,7 +51,8 @@ window.CURRICULUM = {
         { n: "3.6", title: "Hybrid search",                  file: "track3/06-hybrid-search.html",          built: true },
         { n: "3.7", title: "Grounding & citations",          file: "track3/07-grounding-citations.html",    built: true },
         { n: "3.8", title: "Evaluating retrieval quality",   file: "track3/08-evaluating-retrieval.html",   built: true },
-        { n: "3.9", title: "Interview check: RAG",           file: "track3/09-interview.html",              built: true }
+        { n: "3.9", title: "Interview check: RAG",           file: "track3/09-interview.html",              built: true },
+        { n: "3.10", title: "Lab: Build a tiny RAG pipeline", file: "track3/lab.html", built: true }
       ]
     },
     {
@@ -64,7 +67,8 @@ window.CURRICULUM = {
         { n: "4.6", title: "MCP (Model Context Protocol)",   file: "track4/06-mcp.html",               built: true },
         { n: "4.7", title: "Multi-agent & orchestration",    file: "track4/07-multi-agent.html",       built: true },
         { n: "4.8", title: "Failure modes & guards",         file: "track4/08-failure-modes.html",     built: true },
-        { n: "4.9", title: "Interview check: Agents",        file: "track4/09-interview.html",         built: true }
+        { n: "4.9", title: "Interview check: Agents",        file: "track4/09-interview.html",         built: true },
+        { n: "4.10", title: "Lab: Build an agent loop", file: "track4/lab.html", built: true }
       ]
     },
     {
@@ -77,7 +81,8 @@ window.CURRICULUM = {
         { n: "5.4", title: "LoRA & QLoRA", file: "track5/04-lora-qlora.html", built: true },
         { n: "5.5", title: "Instruction tuning", file: "track5/05-instruction-tuning.html", built: true },
         { n: "5.6", title: "Evaluating a fine-tune", file: "track5/06-evaluating-finetune.html", built: true },
-        { n: "5.7", title: "Interview check: Fine-tuning", file: "track5/07-interview.html", built: true }
+        { n: "5.7", title: "Interview check: Fine-tuning", file: "track5/07-interview.html", built: true },
+        { n: "5.8", title: "Lab: Prepare data & size a LoRA", file: "track5/lab.html", built: true }
       ]
     },
     {
@@ -90,7 +95,8 @@ window.CURRICULUM = {
         { n: "6.4", title: "Offline vs online evals", file: "track6/04-offline-online.html", built: true },
         { n: "6.5", title: "Tracing & observability", file: "track6/05-tracing-observability.html", built: true },
         { n: "6.6", title: "Regression-testing prompts", file: "track6/06-regression-testing.html", built: true },
-        { n: "6.7", title: "Interview check: Evals", file: "track6/07-interview.html", built: true }
+        { n: "6.7", title: "Interview check: Evals", file: "track6/07-interview.html", built: true },
+        { n: "6.8", title: "Lab: Build an eval harness", file: "track6/lab.html", built: true }
       ]
     },
     {
@@ -104,7 +110,8 @@ window.CURRICULUM = {
         { n: "7.5", title: "Content safety", file: "track7/05-content-safety.html", built: true },
         { n: "7.6", title: "Output validation", file: "track7/06-output-validation.html", built: true },
         { n: "7.7", title: "Defense in depth", file: "track7/07-defense-in-depth.html", built: true },
-        { n: "7.8", title: "Interview check: Safety", file: "track7/08-interview.html", built: true }
+        { n: "7.8", title: "Interview check: Safety", file: "track7/08-interview.html", built: true },
+        { n: "7.9", title: "Lab: Break a bot, then build the guard", file: "track7/lab.html", built: true }
       ]
     },
     {
@@ -118,7 +125,8 @@ window.CURRICULUM = {
         { n: "8.5", title: "Quantization", file: "track8/05-quantization.html", built: true },
         { n: "8.6", title: "Batching & throughput", file: "track8/06-batching-throughput.html", built: true },
         { n: "8.7", title: "Budgeting tokens", file: "track8/07-budgeting-tokens.html", built: true },
-        { n: "8.8", title: "Interview check: Serving", file: "track8/08-interview.html", built: true }
+        { n: "8.8", title: "Interview check: Serving", file: "track8/08-interview.html", built: true },
+        { n: "8.9", title: "Lab: Build a cost & latency calculator", file: "track8/lab.html", built: true }
       ]
     },
     {
@@ -151,7 +159,8 @@ window.CURRICULUM = {
         { n: "11.1", title: "Your study plan", file: "track11/01-study-plan.html", built: true },
         { n: "11.2", title: "Portfolio playbook", file: "track11/02-portfolio.html", built: true },
         { n: "11.3", title: "Positioning your experience", file: "track11/03-positioning.html", built: true },
-        { n: "11.4", title: "Mock interview drill", file: "track11/04-mock-interview.html", built: true }
+        { n: "11.4", title: "Mock interview drill", file: "track11/04-mock-interview.html", built: true },
+        { n: "11.5", title: "Lab: Generate your portfolio README", file: "track11/lab.html", built: true }
       ]
     },
     {
@@ -160,7 +169,8 @@ window.CURRICULUM = {
       lessons: [
         { n: "12.1", title: "Advanced RAG", file: "track12/01-advanced-rag.html", built: true },
         { n: "12.2", title: "Advanced agents", file: "track12/02-advanced-agents.html", built: true },
-        { n: "12.3", title: "Advanced evals", file: "track12/03-advanced-evals.html", built: true }
+        { n: "12.3", title: "Advanced evals", file: "track12/03-advanced-evals.html", built: true },
+        { n: "12.4", title: "Lab: Advanced retrieval, measured", file: "track12/lab.html", built: true }
       ]
     },
     {
@@ -171,7 +181,8 @@ window.CURRICULUM = {
         { n: "13.2", title: "Schema-aware prompting", file: "track13/02-schema-aware-prompting.html", built: true },
         { n: "13.3", title: "Generating safe, correct SQL", file: "track13/03-safe-sql.html", built: true },
         { n: "13.4", title: "The self-correcting SQL agent", file: "track13/04-self-correcting-agent.html", built: true },
-        { n: "13.5", title: "Interview check: Data & SQL agents", file: "track13/05-interview.html", built: true }
+        { n: "13.5", title: "Interview check: Data & SQL agents", file: "track13/05-interview.html", built: true },
+        { n: "13.6", title: "Lab: Build a safe text-to-SQL runner", file: "track13/lab.html", built: true }
       ]
     },
     {
@@ -182,7 +193,8 @@ window.CURRICULUM = {
         { n: "14.2", title: "Packaging & deploy", file: "track14/02-packaging-deploy.html", built: true },
         { n: "14.3", title: "CI for prompts & evals", file: "track14/03-ci-evals.html", built: true },
         { n: "14.4", title: "Monitoring in production", file: "track14/04-monitoring.html", built: true },
-        { n: "14.5", title: "Interview check: LLMOps", file: "track14/05-interview.html", built: true }
+        { n: "14.5", title: "Interview check: LLMOps", file: "track14/05-interview.html", built: true },
+        { n: "14.6", title: "Lab: Build a production monitor", file: "track14/lab.html", built: true }
       ]
     },
     {
@@ -193,7 +205,8 @@ window.CURRICULUM = {
         { n: "15.2", title: "Document AI & OCR", file: "track15/02-document-ai-ocr.html", built: true },
         { n: "15.3", title: "Audio: speech-to-text & TTS", file: "track15/03-audio.html", built: true },
         { n: "15.4", title: "Multimodal RAG", file: "track15/04-multimodal-rag.html", built: true },
-        { n: "15.5", title: "Interview check: Multimodal", file: "track15/05-interview.html", built: true }
+        { n: "15.5", title: "Interview check: Multimodal", file: "track15/05-interview.html", built: true },
+        { n: "15.6", title: "Lab: Document extraction you can trust", file: "track15/lab.html", built: true }
       ]
     },
     {
@@ -204,7 +217,8 @@ window.CURRICULUM = {
         { n: "16.2", title: "The modern frontier", file: "track16/02-modern-frontier.html", built: true },
         { n: "16.3", title: "Responsible AI: bias & fairness", file: "track16/03-bias-fairness.html", built: true },
         { n: "16.4", title: "Governance & regulation", file: "track16/04-governance-regulation.html", built: true },
-        { n: "16.5", title: "Interview check: Frontier & Responsible AI", file: "track16/05-interview.html", built: true }
+        { n: "16.5", title: "Interview check: Frontier & Responsible AI", file: "track16/05-interview.html", built: true },
+        { n: "16.6", title: "Lab: Catch bias with disaggregated evaluation", file: "track16/lab.html", built: true }
       ]
     }
   ]

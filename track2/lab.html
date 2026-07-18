@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lab: Build a prompt engine — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="2.7">
+<main class="lesson">
+
+  <span class="eyebrow">Track 2 · Lab</span>
+  <h1>Lab: Build a prompt engine</h1>
+  <p class="lead">Prompts stop being strings you paste and start being <em>code you can test</em>. You’ll build a template engine, a few-shot builder, and the parse-and-validate layer that turns a model’s chattiness into data your program can trust.</p>
+
+  <div class="box note">
+    <div class="box-label">How to use this lab</div>
+    <p>Run the cells <strong>in order</strong> — they share memory. All plain Python, running right here.</p>
+  </div>
+
+  <h2>Step 1 — Templates, not strings</h2>
+  <p>Hard-coded prompts don’t scale. A template with named fields lets you generate thousands of consistent prompts from data — and change the wording in one place.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step1_template.py</span></div>
+<pre><code>TEMPLATE <span class="o">=</span> (<span class="s">"You are a concise support agent.\n"</span>
+            <span class="s">"Answer in {sentences} sentences, in a {tone} tone.\n\n"</span>
+            <span class="s">"Question: {question}"</span>)
+
+<span class="k">def</span> <span class="f">build_prompt</span>(template, <span class="o">**</span>fields):
+    <span class="k">return</span> template.<span class="f">format</span>(<span class="o">**</span>fields)
+
+<span class="f">print</span>(<span class="f">build_prompt</span>(TEMPLATE, sentences<span class="o">=</span><span class="n">2</span>, tone<span class="o">=</span><span class="s">"friendly"</span>,
+                   question<span class="o">=</span><span class="s">"How long do refunds take?"</span>))</code></pre>
+
+  <h2>Step 2 — Teach by example (few-shot)</h2>
+  <p>Instructions describe the task; examples <em>demonstrate</em> it. For classification, two or three examples usually beat a paragraph of rules.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step2_fewshot.py</span></div>
+<pre><code>EXAMPLES <span class="o">=</span> [
+    (<span class="s">"Where is my order?"</span>,        <span class="s">"shipping"</span>),
+    (<span class="s">"I want my money back"</span>,     <span class="s">"refund"</span>),
+    (<span class="s">"The app crashes on login"</span>, <span class="s">"bug"</span>),
+]
+
+<span class="k">def</span> <span class="f">few_shot_prompt</span>(question):
+    shots <span class="o">=</span> <span class="s">"\n"</span>.<span class="f">join</span>(<span class="s">"Ticket: "</span> <span class="o">+</span> t <span class="o">+</span> <span class="s">"\nLabel: "</span> <span class="o">+</span> l <span class="k">for</span> t, l <span class="k">in</span> EXAMPLES)
+    <span class="k">return</span> (<span class="s">"Classify the support ticket. Reply with one label only.\n\n"</span>
+            <span class="o">+</span> shots <span class="o">+</span> <span class="s">"\n\nTicket: "</span> <span class="o">+</span> question <span class="o">+</span> <span class="s">"\nLabel:"</span>)
+
+<span class="f">print</span>(<span class="f">few_shot_prompt</span>(<span class="s">"My card was charged twice"</span>))</code></pre>
+
+  <h2>Step 3 — Ask for JSON, then survive the reply</h2>
+  <p>Asking for JSON is easy; <em>getting</em> clean JSON every time is not. Models add friendly preambles. Build the salvage-and-parse layer that assumes it will misbehave.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step3_parse.py</span></div>
+<pre><code><span class="k">import</span> json, re
+
+<span class="k">def</span> <span class="f">fake_model</span>(sloppy<span class="o">=</span><span class="k">False</span>):
+    <span class="k">if</span> sloppy:
+        <span class="k">return</span> <span class="s">'Sure! Here you go: {"intent": "refund", "urgency": "high"}'</span>
+    <span class="k">return</span> <span class="s">'{"intent": "refund", "urgency": "high"}'</span>
+
+<span class="k">def</span> <span class="f">parse_json</span>(text):
+    <span class="k">try</span>:
+        <span class="k">return</span> json.<span class="f">loads</span>(text)
+    <span class="k">except</span> json.JSONDecodeError:
+        m <span class="o">=</span> re.<span class="f">search</span>(<span class="s">r"\{.*\}"</span>, text, re.S)    <span class="c"># salvage the object</span>
+        <span class="k">if</span> m:
+            <span class="k">try</span>:
+                <span class="k">return</span> json.<span class="f">loads</span>(m.<span class="f">group</span>(<span class="n">0</span>))
+            <span class="k">except</span> json.JSONDecodeError:
+                <span class="k">pass</span>
+    <span class="k">return</span> <span class="k">None</span>
+
+<span class="f">print</span>(<span class="s">"clean :"</span>, <span class="f">parse_json</span>(<span class="f">fake_model</span>()))
+<span class="f">print</span>(<span class="s">"sloppy:"</span>, <span class="f">parse_json</span>(<span class="f">fake_model</span>(sloppy<span class="o">=</span><span class="k">True</span>)))
+<span class="f">print</span>(<span class="s">"junk  :"</span>, <span class="f">parse_json</span>(<span class="s">"no json at all"</span>))</code></pre>
+
+  <h2>Step 4 — Validate before you trust</h2>
+  <p>Parsing proves it’s JSON. <strong>Validation</strong> proves it’s the JSON you asked for. This is the layer that stops bad data reaching your database.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step4_validate.py</span></div>
+<pre><code>ALLOWED_URGENCY <span class="o">=</span> {<span class="s">"low"</span>, <span class="s">"high"</span>}
+
+<span class="k">def</span> <span class="f">validate</span>(obj):
+    <span class="k">if</span> <span class="k">not</span> <span class="f">isinstance</span>(obj, <span class="f">dict</span>):
+        <span class="k">return</span> <span class="k">False</span>, <span class="s">"not an object"</span>
+    <span class="k">for</span> field <span class="k">in</span> (<span class="s">"intent"</span>, <span class="s">"urgency"</span>):
+        <span class="k">if</span> field <span class="k">not</span> <span class="k">in</span> obj:
+            <span class="k">return</span> <span class="k">False</span>, <span class="s">"missing field: "</span> <span class="o">+</span> field
+        <span class="k">if</span> <span class="k">not</span> <span class="f">isinstance</span>(obj[field], <span class="f">str</span>):
+            <span class="k">return</span> <span class="k">False</span>, <span class="s">"wrong type: "</span> <span class="o">+</span> field
+    <span class="k">if</span> obj[<span class="s">"urgency"</span>] <span class="k">not</span> <span class="k">in</span> ALLOWED_URGENCY:
+        <span class="k">return</span> <span class="k">False</span>, <span class="s">"urgency must be low or high"</span>
+    <span class="k">return</span> <span class="k">True</span>, <span class="s">"ok"</span>
+
+<span class="k">for</span> raw <span class="k">in</span> [<span class="s">'{"intent":"refund","urgency":"high"}'</span>,
+            <span class="s">'{"intent":"refund"}'</span>,
+            <span class="s">'{"intent":"refund","urgency":"URGENT"}'</span>,
+            <span class="s">'not json'</span>]:
+    obj <span class="o">=</span> <span class="f">parse_json</span>(raw)
+    result <span class="o">=</span> <span class="f">validate</span>(obj) <span class="k">if</span> obj <span class="k">else</span> (<span class="k">False</span>, <span class="s">"unparseable"</span>)
+    <span class="f">print</span>(result, <span class="s">"|"</span>, raw)</code></pre>
+
+  <div class="box key">
+    <div class="box-label">What you built</div>
+    <ul>
+      <li>A <strong>template engine</strong> — prompts generated from data, edited in one place.</li>
+      <li>A <strong>few-shot builder</strong> that teaches by demonstration.</li>
+      <li>A <strong>tolerant parser</strong> that salvages JSON from chatty replies.</li>
+      <li>A <strong>validator</strong> that rejects the right-shaped-but-wrong answers.</li>
+    </ul>
+    <p>Parse <em>and</em> validate is the pattern behind every reliable LLM feature. Structure in, structure out, nothing trusted in between.</p>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Make it yours</div>
+    <p><strong>1.</strong> Add a <code>confidence</code> float field and validate it lies between 0 and 1.<br>
+    <strong>2.</strong> Make <code>fake_model</code> return truncated JSON (<code>{"intent": "ref</code>). What should your app do — retry, fall back, or fail loudly? Defend your choice.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show reasoning</summary>
+      <div class="sol-body">
+        <p>Retry once (truncation is often transient), then fall back to a safe default and log it. Failing loudly to the user is right only when a wrong value is worse than no value — for a support classifier, defaulting to “needs human review” is far safer than guessing “low urgency.” Match the fallback to the cost of being wrong.</p>
+      </div>
+    </details>
+  </div>
+
+  <p>Your prompts are now code. Next you’ll give the model your documents: <strong>Track&nbsp;3, RAG.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

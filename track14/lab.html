@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lab: Build a production monitor — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="14.6">
+<main class="lesson">
+
+  <span class="eyebrow">Track 14 · Lab</span>
+  <h1>Lab: Build a production monitor</h1>
+  <p class="lead">Averages lie. You’ll generate a realistic request log, compute the metrics that actually matter (p50, p95, error rate, cost/day), write alert rules — then simulate a bad day and watch your monitor catch a regression no average would have shown.</p>
+
+  <div class="box note">
+    <div class="box-label">How to use this lab</div>
+    <p>Run the cells <strong>in order</strong> — they share memory. Plain Python, running here.</p>
+  </div>
+
+  <h2>Step 1 — Generate a request log</h2>
+  <p>Every production LLM call should emit a trace: tokens in, tokens out, latency, success. Here’s a day of them.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step1_log.py</span></div>
+<pre><code><span class="k">import</span> random
+random.<span class="f">seed</span>(<span class="n">7</span>)
+
+<span class="k">def</span> <span class="f">make_log</span>(n<span class="o">=</span><span class="n">500</span>, bad_day<span class="o">=</span><span class="k">False</span>):
+    rows <span class="o">=</span> []
+    <span class="k">for</span> _ <span class="k">in</span> <span class="f">range</span>(n):
+        in_tok  <span class="o">=</span> random.<span class="f">randint</span>(<span class="n">400</span>, <span class="n">1200</span>)
+        out_tok <span class="o">=</span> random.<span class="f">randint</span>(<span class="n">80</span>, <span class="n">300</span>)
+        latency <span class="o">=</span> <span class="n">0.25</span> <span class="o">+</span> in_tok <span class="o">/</span> <span class="n">1000</span> <span class="o">*</span> <span class="n">0.12</span> <span class="o">+</span> out_tok <span class="o">*</span> <span class="n">0.012</span>
+        <span class="k">if</span> bad_day <span class="k">and</span> random.<span class="f">random</span>() <span class="o">&lt;</span> <span class="n">0.15</span>:
+            latency <span class="o">*=</span> <span class="n">3</span>                                  <span class="c"># a slow tail appears</span>
+        error <span class="o">=</span> random.<span class="f">random</span>() <span class="o">&lt;</span> (<span class="n">0.06</span> <span class="k">if</span> bad_day <span class="k">else</span> <span class="n">0.01</span>)
+        rows.<span class="f">append</span>({<span class="s">"latency"</span>: <span class="f">round</span>(latency, <span class="n">3</span>), <span class="s">"in"</span>: in_tok,
+                     <span class="s">"out"</span>: out_tok, <span class="s">"error"</span>: error})
+    <span class="k">return</span> rows
+
+monday <span class="o">=</span> <span class="f">make_log</span>()
+<span class="f">print</span>(<span class="s">"requests:"</span>, <span class="f">len</span>(monday))
+<span class="f">print</span>(<span class="s">"sample  :"</span>, monday[<span class="n">0</span>])</code></pre>
+
+  <h2>Step 2 — The metrics that matter</h2>
+  <p>Report <strong>percentiles</strong>, not means. The average hides the users having a terrible time; p95 is where they live.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step2_metrics.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">pct</span>(values, p):
+    v <span class="o">=</span> <span class="f">sorted</span>(values)
+    k <span class="o">=</span> <span class="f">int</span>(<span class="f">round</span>((p <span class="o">/</span> <span class="n">100</span>) <span class="o">*</span> (<span class="f">len</span>(v) <span class="o">-</span> <span class="n">1</span>)))
+    <span class="k">return</span> v[k]
+
+<span class="k">def</span> <span class="f">summarize</span>(log):
+    lat    <span class="o">=</span> [r[<span class="s">"latency"</span>] <span class="k">for</span> r <span class="k">in</span> log <span class="k">if</span> <span class="k">not</span> r[<span class="s">"error"</span>]]
+    errors <span class="o">=</span> <span class="f">sum</span>(<span class="n">1</span> <span class="k">for</span> r <span class="k">in</span> log <span class="k">if</span> r[<span class="s">"error"</span>])
+    cost   <span class="o">=</span> <span class="f">sum</span>((r[<span class="s">"in"</span>] <span class="o">*</span> <span class="n">0.15</span> <span class="o">+</span> r[<span class="s">"out"</span>] <span class="o">*</span> <span class="n">0.60</span>) <span class="o">/</span> <span class="n">1000000</span> <span class="k">for</span> r <span class="k">in</span> log)
+    <span class="k">return</span> {<span class="s">"mean"</span>: <span class="f">round</span>(<span class="f">sum</span>(lat) <span class="o">/</span> <span class="f">len</span>(lat), <span class="n">2</span>),
+            <span class="s">"p50"</span>: <span class="f">round</span>(<span class="f">pct</span>(lat, <span class="n">50</span>), <span class="n">2</span>),
+            <span class="s">"p95"</span>: <span class="f">round</span>(<span class="f">pct</span>(lat, <span class="n">95</span>), <span class="n">2</span>),
+            <span class="s">"error_rate"</span>: <span class="f">round</span>(errors <span class="o">/</span> <span class="f">len</span>(log), <span class="n">3</span>),
+            <span class="s">"cost_per_day"</span>: <span class="f">round</span>(cost, <span class="n">4</span>)}
+
+mon <span class="o">=</span> <span class="f">summarize</span>(monday)
+<span class="f">print</span>(mon)</code></pre>
+
+  <h2>Step 3 — Alert rules</h2>
+  <p>A dashboard nobody watches is decoration. Thresholds turn metrics into something that wakes you up.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step3_alerts.py</span></div>
+<pre><code>RULES <span class="o">=</span> {<span class="s">"p95"</span>: <span class="n">3.0</span>, <span class="s">"error_rate"</span>: <span class="n">0.03</span>, <span class="s">"cost_per_day"</span>: <span class="n">0.20</span>}
+
+<span class="k">def</span> <span class="f">check_alerts</span>(metrics):
+    fired <span class="o">=</span> []
+    <span class="k">for</span> key, limit <span class="k">in</span> RULES.<span class="f">items</span>():
+        <span class="k">if</span> metrics[key] <span class="o">&gt;</span> limit:
+            fired.<span class="f">append</span>(key <span class="o">+</span> <span class="s">" = "</span> <span class="o">+</span> <span class="f">str</span>(metrics[key]) <span class="o">+</span> <span class="s">" exceeds "</span> <span class="o">+</span> <span class="f">str</span>(limit))
+    <span class="k">return</span> fired
+
+<span class="f">print</span>(<span class="s">"monday alerts:"</span>, <span class="f">check_alerts</span>(mon) <span class="k">or</span> <span class="s">"none - healthy"</span>)</code></pre>
+
+  <h2>Step 4 — A bad day arrives</h2>
+  <p>Now a day where a slow tail and more errors creep in. Watch which number moves first — and notice how little the <em>mean</em> reacts.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step4_regression.py</span></div>
+<pre><code>tuesday <span class="o">=</span> <span class="f">make_log</span>(bad_day<span class="o">=</span><span class="k">True</span>)
+tue <span class="o">=</span> <span class="f">summarize</span>(tuesday)
+<span class="f">print</span>(<span class="s">"tuesday:"</span>, tue)
+<span class="f">print</span>(<span class="s">"alerts :"</span>, <span class="f">check_alerts</span>(tue) <span class="k">or</span> <span class="s">"none"</span>)
+
+<span class="f">print</span>(<span class="s">"\nchange vs monday"</span>)
+<span class="k">for</span> key <span class="k">in</span> mon:
+    <span class="f">print</span>(<span class="s">"  "</span>, key, mon[key], <span class="s">"->"</span>, tue[key],
+          <span class="s">"  delta"</span>, <span class="f">round</span>(tue[key] <span class="o">-</span> mon[key], <span class="n">4</span>))</code></pre>
+
+  <div class="box key">
+    <div class="box-label">The lesson in the numbers</div>
+    <p>The <strong>mean</strong> barely twitched while <strong>p95</strong> jumped — the slow tail hit a minority of users hard, which is exactly the shape of most real incidents. Alert on percentiles and error rate; use the mean only for capacity planning.</p>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Make it yours</div>
+    <p><strong>1.</strong> Add a p99 and re-run the bad day. Which fires earliest?<br>
+    <strong>2.</strong> Add a <code>cached</code> flag to the log so cached calls cost nothing, and recompute cost/day.<br>
+    <strong>3.</strong> Your alert fires at 3am. Which single extra field in the log would most help you diagnose it — and why?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show reasoning</summary>
+      <div class="sol-body">
+        <p><strong>3.</strong> A trace/request ID that links the metric back to the full record — prompt, retrieved context, model, output. Metrics tell you <em>that</em> something broke; only the trace tells you <em>why</em>. Monitoring without traces means you'll know you have a problem and have no way to find it.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">What you built</div>
+    <ul>
+      <li>A <strong>request log</strong> — the raw material of observability.</li>
+      <li><strong>Percentile metrics</strong>, error rate, and daily cost.</li>
+      <li><strong>Alert rules</strong> that turn numbers into action.</li>
+      <li>A <strong>day-over-day regression check</strong>.</li>
+    </ul>
+  </div>
+
+  <p>Next: perception — <strong>Track&nbsp;15, Multimodal AI.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

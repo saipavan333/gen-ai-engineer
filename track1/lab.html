@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lab: Build a mini language model — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="1.8">
+<main class="lesson">
+
+  <span class="eyebrow">Track 1 · Lab</span>
+  <h1>Lab: Build a mini language model</h1>
+  <p class="lead">You’ve learned how the engine works. Now build one. In about forty lines of plain Python you’ll write a tokenizer, a tiny next-token model, and a temperature sampler — then watch it generate text. Everything here <strong>runs right in this page</strong>.</p>
+
+  <div class="box note">
+    <div class="box-label">How to use this lab</div>
+    <p>Press <b>▶ Run</b> on each cell <strong>in order</strong> — the cells share memory like a notebook, so later steps use what earlier ones defined. The first run loads Python (a few seconds); after that it’s instant. Change the code and re-run: that’s the whole point.</p>
+  </div>
+
+  <h2>Step 1 — Tokenize</h2>
+  <p>A model never sees letters, it sees tokens. Write a simple splitter that keeps punctuation separate and lets a space ride along with the word after it — the same behaviour real sub-word tokenizers have.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step1_tokenize.py</span></div>
+<pre><code><span class="k">import</span> re
+
+<span class="k">def</span> <span class="f">tokenize</span>(text):
+    <span class="c"># words, numbers and punctuation — a stand-in for real sub-word tokenizing</span>
+    <span class="k">return</span> re.<span class="f">findall</span>(<span class="s">r"\s?[A-Za-z]+|\s?[0-9]+|\s?[^\sA-Za-z0-9]+"</span>, text)
+
+text <span class="o">=</span> <span class="s">"Retrieval grounds the model in your documents."</span>
+toks <span class="o">=</span> <span class="f">tokenize</span>(text)
+<span class="f">print</span>(toks)
+<span class="f">print</span>(<span class="s">"tokens:"</span>, <span class="f">len</span>(toks), <span class="s">"| characters:"</span>, <span class="f">len</span>(text))</code></pre>
+
+  <h2>Step 2 — Learn what follows what</h2>
+  <p>A language model is, at heart, a table of “given this, what usually comes next?”. Count every pair of neighbouring words in a small corpus. That count table <em>is</em> your model.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step2_model.py</span></div>
+<pre><code>corpus <span class="o">=</span> <span class="s">"""the model predicts the next token</span>
+<span class="s">the model reads the prompt carefully</span>
+<span class="s">the next token depends on the prompt</span>
+<span class="s">a model can predict the next word"""</span>
+
+words <span class="o">=</span> corpus.<span class="f">split</span>()
+bigrams <span class="o">=</span> {}
+<span class="k">for</span> a, b <span class="k">in</span> <span class="f">zip</span>(words, words[<span class="n">1</span>:]):
+    bigrams.<span class="f">setdefault</span>(a, {})
+    bigrams[a][b] <span class="o">=</span> bigrams[a].<span class="f">get</span>(b, <span class="n">0</span>) <span class="o">+</span> <span class="n">1</span>
+
+<span class="f">print</span>(<span class="s">"after 'the'   -&gt;"</span>, bigrams[<span class="s">"the"</span>])
+<span class="f">print</span>(<span class="s">"after 'model' -&gt;"</span>, bigrams[<span class="s">"model"</span>])</code></pre>
+
+  <h2>Step 3 — Sample with a temperature</h2>
+  <p>Counts become probabilities through a softmax, and <span class="term">temperature</span> reshapes that distribution before you draw from it. Low temperature sharpens toward the favourite; high temperature flattens everything toward a coin-flip. Run this and watch the numbers move.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step3_sample.py</span></div>
+<pre><code><span class="k">import</span> math, random
+
+<span class="k">def</span> <span class="f">sample</span>(counts, temperature<span class="o">=</span><span class="n">1.0</span>):
+    options <span class="o">=</span> <span class="f">list</span>(counts.<span class="f">keys</span>())
+    logits  <span class="o">=</span> [math.<span class="f">log</span>(counts[w]) <span class="k">for</span> w <span class="k">in</span> options]
+    scaled  <span class="o">=</span> [l <span class="o">/</span> <span class="f">max</span>(temperature, <span class="n">0.01</span>) <span class="k">for</span> l <span class="k">in</span> logits]
+    top     <span class="o">=</span> <span class="f">max</span>(scaled)
+    exp     <span class="o">=</span> [math.<span class="f">exp</span>(s <span class="o">-</span> top) <span class="k">for</span> s <span class="k">in</span> scaled]
+    total   <span class="o">=</span> <span class="f">sum</span>(exp)
+    probs   <span class="o">=</span> [e <span class="o">/</span> total <span class="k">for</span> e <span class="k">in</span> exp]
+    r, acc  <span class="o">=</span> random.<span class="f">random</span>(), <span class="n">0.0</span>
+    <span class="k">for</span> w, p <span class="k">in</span> <span class="f">zip</span>(options, probs):
+        acc <span class="o">+=</span> p
+        <span class="k">if</span> r <span class="o">&lt;=</span> acc:
+            <span class="k">return</span> w, {o: <span class="f">round</span>(p, <span class="n">2</span>) <span class="k">for</span> o, p <span class="k">in</span> <span class="f">zip</span>(options, probs)}
+    <span class="k">return</span> options[<span class="o">-</span><span class="n">1</span>], {}
+
+counts <span class="o">=</span> {<span class="s">"next"</span>: <span class="n">3</span>, <span class="s">"prompt"</span>: <span class="n">1</span>, <span class="s">"model"</span>: <span class="n">1</span>}
+<span class="k">for</span> t <span class="k">in</span> [<span class="n">0.2</span>, <span class="n">1.0</span>, <span class="n">3.0</span>]:
+    pick, dist <span class="o">=</span> <span class="f">sample</span>(counts, t)
+    <span class="f">print</span>(<span class="s">"temperature"</span>, t, <span class="s">"-&gt; picked"</span>, pick, <span class="s">"  distribution"</span>, dist)</code></pre>
+
+  <div class="box key">
+    <div class="box-label">What just happened</div>
+    <p>At <b>0.2</b> the distribution is almost all on “next” — nearly deterministic. At <b>3.0</b> the three options approach equal probability — near-random. That single number is the entire creativity dial you tune in production, and you just implemented it.</p>
+  </div>
+
+  <h2>Step 4 — Generate (autoregression)</h2>
+  <p>Now the loop that makes it a <em>generator</em>: pick a token, append it, feed the result back in, repeat. That’s autoregression — the same loop running inside every model you’ll ever call.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step4_generate.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">generate</span>(start, n<span class="o">=</span><span class="n">8</span>, temperature<span class="o">=</span><span class="n">0.8</span>):
+    out, word <span class="o">=</span> [start], start
+    <span class="k">for</span> _ <span class="k">in</span> <span class="f">range</span>(n):
+        <span class="k">if</span> word <span class="k">not</span> <span class="k">in</span> bigrams:
+            <span class="k">break</span>
+        word, _ <span class="o">=</span> <span class="f">sample</span>(bigrams[word], temperature)
+        out.<span class="f">append</span>(word)
+    <span class="k">return</span> <span class="s">" "</span>.<span class="f">join</span>(out)
+
+<span class="k">for</span> t <span class="k">in</span> [<span class="n">0.3</span>, <span class="n">1.5</span>]:
+    <span class="f">print</span>(<span class="s">"temp"</span>, t, <span class="s">"->"</span>, <span class="f">generate</span>(<span class="s">"the"</span>, <span class="n">8</span>, t))</code></pre>
+
+  <div class="box practice">
+    <div class="box-label">Make it yours</div>
+    <p><strong>1.</strong> Paste your own paragraph into <code>corpus</code> in Step 2, re-run Steps 2 and 4, and see it speak in your text’s voice.<br>
+    <strong>2.</strong> In Step 4, set <code>temperature=0.05</code>. Why does it repeat itself?<br>
+    <strong>3.</strong> Change <code>tokenize</code> to split on characters instead of words. What happens to the output quality — and why does token choice matter so much?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show reasoning</summary>
+      <div class="sol-body">
+        <p><strong>2.</strong> At near-zero temperature the softmax collapses onto the single highest-count option every time, so the model becomes deterministic and falls into a loop (“the next token the next token…”). This is exactly why production systems rarely use temperature 0 for open-ended writing — and always use it for extraction, where you <em>want</em> the same answer twice.</p>
+        <p><strong>3.</strong> Character tokens make the sequences far longer and the statistics far weaker per step, so output degrades into noise. Real tokenizers sit in the sweet spot — sub-word pieces that are frequent enough to have good statistics but small enough to cover any word. You just felt why tokenization is a design decision, not a detail.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">What you built</div>
+    <ul>
+      <li>A <strong>tokenizer</strong> that turns text into the units a model actually sees.</li>
+      <li>A <strong>next-token model</strong> — a probability table learned from data.</li>
+      <li>A <strong>softmax + temperature sampler</strong>, the real creativity dial.</li>
+      <li>An <strong>autoregressive loop</strong> — the mechanism behind every LLM response.</li>
+    </ul>
+    <p>A frontier model differs in scale and in learning richer patterns than word pairs — but the shape you just built is the shape of the real thing.</p>
+  </div>
+
+  <p>You’ve now built the engine you spent Track&nbsp;1 studying. Next, we learn to drive it: <strong>Track&nbsp;2, Prompt Engineering.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

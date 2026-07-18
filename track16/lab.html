@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lab: Catch bias with disaggregated evaluation — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="16.6">
+<main class="lesson">
+
+  <span class="eyebrow">Track 16 · Lab</span>
+  <h1>Lab: Catch bias with disaggregated evaluation</h1>
+  <p class="lead">A screening model reports 83% accuracy and everyone celebrates. You’ll build the evaluation that looks underneath that number — and find the group it quietly fails, using matched candidates whose only difference is their name.</p>
+
+  <div class="box note">
+    <div class="box-label">How to use this lab</div>
+    <p>Run the cells <strong>in order</strong> — they share memory. This is the exact technique you’d use before letting any model touch decisions about people.</p>
+  </div>
+
+  <h2>Step 1 — Build matched pairs</h2>
+  <p>The trick is control: identical qualifications, only the name differs. Any difference in outcome can then only come from the name.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step1_cases.py</span></div>
+<pre><code><span class="c"># (group, candidate, correct decision) — qualifications are matched across groups</span>
+CASES <span class="o">=</span> [
+    (<span class="s">"group_a"</span>, <span class="s">"Ada Lovelace, 8 years experience, Python"</span>, <span class="s">"advance"</span>),
+    (<span class="s">"group_a"</span>, <span class="s">"Grace Hopper, 10 years experience, C++"</span>,  <span class="s">"advance"</span>),
+    (<span class="s">"group_a"</span>, <span class="s">"Alan Turing, 6 years experience, ML"</span>,     <span class="s">"advance"</span>),
+    (<span class="s">"group_b"</span>, <span class="s">"Amara Okafor, 8 years experience, Python"</span>, <span class="s">"advance"</span>),
+    (<span class="s">"group_b"</span>, <span class="s">"Wei Zhang, 10 years experience, C++"</span>,      <span class="s">"advance"</span>),
+    (<span class="s">"group_b"</span>, <span class="s">"Priya Nair, 6 years experience, ML"</span>,       <span class="s">"advance"</span>),
+]
+<span class="f">print</span>(<span class="s">"matched cases:"</span>, <span class="f">len</span>(CASES))
+<span class="f">print</span>(<span class="s">"every candidate here is qualified - the correct answer is always 'advance'"</span>)</code></pre>
+
+  <h2>Step 2 — Two screeners</h2>
+  <p><code>v1</code> judges on years of experience. <code>v2</code> also picked up a shortcut from its training data — the kind nobody writes on purpose and nobody notices without this test.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step2_models.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">years_of</span>(text):
+    <span class="k">return</span> <span class="f">int</span>(text.<span class="f">split</span>(<span class="s">","</span>)[<span class="n">1</span>].<span class="f">strip</span>().<span class="f">split</span>()[<span class="n">0</span>])
+
+<span class="k">def</span> <span class="f">screener_v1</span>(text):                       <span class="c"># judges qualifications only</span>
+    <span class="k">return</span> <span class="s">"advance"</span> <span class="k">if</span> <span class="f">years_of</span>(text) <span class="o">&gt;=</span> <span class="n">5</span> <span class="k">else</span> <span class="s">"reject"</span>
+
+SHORTCUT <span class="o">=</span> (<span class="s">"amara"</span>, <span class="s">"wei"</span>, <span class="s">"priya"</span>)       <span class="c"># names it saw less often in training</span>
+
+<span class="k">def</span> <span class="f">screener_v2</span>(text):                       <span class="c"># accidentally learned a name shortcut</span>
+    name <span class="o">=</span> text.<span class="f">split</span>(<span class="s">","</span>)[<span class="n">0</span>].<span class="f">lower</span>()
+    <span class="k">if</span> <span class="f">any</span>(h <span class="k">in</span> name <span class="k">for</span> h <span class="k">in</span> SHORTCUT) <span class="k">and</span> <span class="f">years_of</span>(text) <span class="o">&lt;</span> <span class="n">9</span>:
+        <span class="k">return</span> <span class="s">"reject"</span>
+    <span class="k">return</span> <span class="s">"advance"</span> <span class="k">if</span> <span class="f">years_of</span>(text) <span class="o">&gt;=</span> <span class="n">5</span> <span class="k">else</span> <span class="s">"reject"</span>
+
+<span class="f">print</span>(<span class="f">screener_v2</span>(<span class="s">"Alan Turing, 6 years experience, ML"</span>))
+<span class="f">print</span>(<span class="f">screener_v2</span>(<span class="s">"Priya Nair, 6 years experience, ML"</span>))</code></pre>
+
+  <h2>Step 3 — The number that hides the problem</h2>
+  <p>Now measure overall accuracy, then split it by group. This one contrast is the whole lesson.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step3_disaggregate.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">accuracy</span>(model, cases):
+    <span class="k">return</span> <span class="f">sum</span>(<span class="n">1</span> <span class="k">for</span> g, t, y <span class="k">in</span> cases <span class="k">if</span> model(t) <span class="o">==</span> y) <span class="o">/</span> <span class="f">len</span>(cases)
+
+<span class="k">def</span> <span class="f">by_group</span>(model, cases):
+    groups <span class="o">=</span> {}
+    <span class="k">for</span> g, t, y <span class="k">in</span> cases:
+        groups.<span class="f">setdefault</span>(g, [<span class="n">0</span>, <span class="n">0</span>])
+        groups[g][<span class="n">1</span>] <span class="o">+=</span> <span class="n">1</span>
+        <span class="k">if</span> model(t) <span class="o">==</span> y:
+            groups[g][<span class="n">0</span>] <span class="o">+=</span> <span class="n">1</span>
+    <span class="k">return</span> {g: <span class="f">round</span>(c <span class="o">/</span> n, <span class="n">2</span>) <span class="k">for</span> g, (c, n) <span class="k">in</span> groups.<span class="f">items</span>()}
+
+<span class="k">for</span> name, m <span class="k">in</span> [(<span class="s">"v1"</span>, screener_v1), (<span class="s">"v2"</span>, screener_v2)]:
+    <span class="f">print</span>(name, <span class="s">"| overall accuracy:"</span>, <span class="f">round</span>(<span class="f">accuracy</span>(m, CASES), <span class="n">2</span>),
+          <span class="s">"| by group:"</span>, <span class="f">by_group</span>(m, CASES))</code></pre>
+
+  <div class="box warn">
+    <div class="box-label">Look at v2 carefully</div>
+    <p>Its overall score still looks respectable — but the per-group split shows one group scoring far below the other, on <em>identical qualifications</em>. Ship on the aggregate and you ship discrimination you never measured.</p>
+  </div>
+
+  <h2>Step 4 — Gate on the gap, not the average</h2>
+  <p>Make the disparity a first-class metric with its own threshold, exactly like a quality gate.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step4_gate.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">disparity</span>(model, cases):
+    g <span class="o">=</span> <span class="f">by_group</span>(model, cases)
+    <span class="k">return</span> <span class="f">round</span>(<span class="f">max</span>(g.<span class="f">values</span>()) <span class="o">-</span> <span class="f">min</span>(g.<span class="f">values</span>()), <span class="n">2</span>)
+
+MAX_GAP <span class="o">=</span> <span class="n">0.05</span>
+
+<span class="k">for</span> name, m <span class="k">in</span> [(<span class="s">"v1"</span>, screener_v1), (<span class="s">"v2"</span>, screener_v2)]:
+    gap <span class="o">=</span> <span class="f">disparity</span>(m, CASES)
+    <span class="f">print</span>(name, <span class="s">"| disparity"</span>, gap, <span class="s">"->"</span>,
+          <span class="s">"PASS"</span> <span class="k">if</span> gap <span class="o">&lt;=</span> MAX_GAP <span class="k">else</span> <span class="s">"BLOCKED - do not ship"</span>)</code></pre>
+
+  <div class="box practice">
+    <div class="box-label">Make it yours</div>
+    <p><strong>1.</strong> Remove the name from the input before screening. Does the gap close — and is “just delete the name” a complete fix in the real world?<br>
+    <strong>2.</strong> The gap can’t be closed and the launch date is next week. What do you recommend, and to whom?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> It closes here because the name was the only signal. In reality bias hides in <em>proxies</em> — postcode, school, employment gaps, phrasing — so deleting the obvious field rarely suffices. You have to keep measuring outcomes per group, not just remove the field you thought was responsible.</p>
+        <p><strong>2.</strong> Recommend not automating the decision: use the model to assist reviewers rather than reject candidates, document the known disparity, and put it in front of whoever owns the legal and reputational risk. Under risk-based regulation this is a high-risk use, and "we shipped knowing it was unfair" is the worst possible position — technically, ethically, and legally.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">What you built</div>
+    <ul>
+      <li><strong>Matched-pair test cases</strong> that isolate a single variable.</li>
+      <li><strong>Disaggregated accuracy</strong> — the measurement the aggregate hides.</li>
+      <li>A <strong>disparity metric</strong> with a hard gate.</li>
+      <li>The judgment to <strong>decline to automate</strong> when the gap won't close.</li>
+    </ul>
+  </div>
+
+  <p>You can now measure fairness, not just accuracy — the skill that separates responsible engineers from confident ones.</p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

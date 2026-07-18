@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lab: Generate your portfolio README — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="11.5">
+<main class="lesson">
+
+  <span class="eyebrow">Track 11 · Lab</span>
+  <h1>Lab: Generate your portfolio README</h1>
+  <p class="lead">This lab produces something you’ll actually use. Fill in your project, generate a README in the shape hiring managers respond to, then score it against the checklist — and watch a typical README fail it.</p>
+
+  <div class="box note">
+    <div class="box-label">How to use this lab</div>
+    <p>Run the cells <strong>in order</strong>. Edit <code>PROJECT</code> in Step 1 with your real capstone, re-run, and copy the output straight into your repo.</p>
+  </div>
+
+  <h2>Step 1 — Describe your project</h2>
+  <p>Note what this structure forces you to have: decisions with reasons, measured results, and honest limitations. If you can’t fill these in, the project isn’t finished — and that’s useful to learn now rather than in an interview.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step1_project.py</span></div>
+<pre><code>PROJECT <span class="o">=</span> {
+    <span class="s">"name"</span>: <span class="s">"docs-assistant"</span>,
+    <span class="s">"one_liner"</span>: <span class="s">"A grounded Q&amp;A assistant over a company's help-center docs."</span>,
+    <span class="s">"stack"</span>: [<span class="s">"Python"</span>, <span class="s">"Chroma"</span>, <span class="s">"Ollama (llama3.2)"</span>, <span class="s">"sentence-transformers"</span>],
+    <span class="s">"decisions"</span>: [
+        (<span class="s">"Chunk size 500 with 50 overlap"</span>,
+         <span class="s">"200-char chunks split definitions across boundaries and hurt 'what is X' answers"</span>),
+        (<span class="s">"Hybrid BM25 + dense retrieval"</span>,
+         <span class="s">"pure vector search missed exact product names"</span>),
+    ],
+    <span class="s">"results"</span>: {<span class="s">"golden_set"</span>: <span class="n">40</span>, <span class="s">"recall_at_5"</span>: <span class="n">0.86</span>, <span class="s">"faithfulness"</span>: <span class="n">0.92</span>},
+    <span class="s">"limitations"</span>: [<span class="s">"multi-hop questions need query decomposition"</span>,
+                    <span class="s">"no reranker yet"</span>],
+    <span class="s">"run"</span>: [<span class="s">"pip install -r requirements.txt"</span>, <span class="s">"ollama pull llama3.2"</span>,
+            <span class="s">"python ingest.py"</span>, <span class="s">"python app.py"</span>],
+}
+<span class="f">print</span>(PROJECT[<span class="s">"name"</span>], <span class="s">"-"</span>, PROJECT[<span class="s">"one_liner"</span>])</code></pre>
+
+  <h2>Step 2 — Generate the README</h2>
+  <div class="code-label"><span class="dot"></span><span class="fname">step2_render.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">render</span>(p):
+    L <span class="o">=</span> []
+    L.<span class="f">append</span>(<span class="s">"# "</span> <span class="o">+</span> p[<span class="s">"name"</span>] <span class="o">+</span> <span class="s">" - "</span> <span class="o">+</span> p[<span class="s">"one_liner"</span>])
+    L.<span class="f">append</span>(<span class="s">""</span>)
+    L.<span class="f">append</span>(<span class="s">"## Stack"</span>)
+    L.<span class="f">append</span>(<span class="s">", "</span>.<span class="f">join</span>(p[<span class="s">"stack"</span>]))
+    L.<span class="f">append</span>(<span class="s">""</span>)
+    L.<span class="f">append</span>(<span class="s">"## Key decisions and trade-offs"</span>)
+    <span class="k">for</span> choice, why <span class="k">in</span> p[<span class="s">"decisions"</span>]:
+        L.<span class="f">append</span>(<span class="s">"- **"</span> <span class="o">+</span> choice <span class="o">+</span> <span class="s">"** - "</span> <span class="o">+</span> why <span class="o">+</span> <span class="s">"."</span>)
+    L.<span class="f">append</span>(<span class="s">""</span>)
+    L.<span class="f">append</span>(<span class="s">"## Results (measured)"</span>)
+    r <span class="o">=</span> p[<span class="s">"results"</span>]
+    L.<span class="f">append</span>(<span class="s">"On a "</span> <span class="o">+</span> <span class="f">str</span>(r[<span class="s">"golden_set"</span>]) <span class="o">+</span> <span class="s">"-question golden set: recall@5 = "</span>
+             <span class="o">+</span> <span class="f">str</span>(r[<span class="s">"recall_at_5"</span>]) <span class="o">+</span> <span class="s">", faithfulness = "</span> <span class="o">+</span> <span class="f">str</span>(r[<span class="s">"faithfulness"</span>]) <span class="o">+</span> <span class="s">"."</span>)
+    L.<span class="f">append</span>(<span class="s">""</span>)
+    L.<span class="f">append</span>(<span class="s">"## Limitations and next steps"</span>)
+    <span class="k">for</span> lim <span class="k">in</span> p[<span class="s">"limitations"</span>]:
+        L.<span class="f">append</span>(<span class="s">"- "</span> <span class="o">+</span> lim)
+    L.<span class="f">append</span>(<span class="s">""</span>)
+    L.<span class="f">append</span>(<span class="s">"## Run it"</span>)
+    <span class="k">for</span> c <span class="k">in</span> p[<span class="s">"run"</span>]:
+        L.<span class="f">append</span>(<span class="s">"    "</span> <span class="o">+</span> c)
+    <span class="k">return</span> <span class="s">"\n"</span>.<span class="f">join</span>(L)
+
+readme <span class="o">=</span> <span class="f">render</span>(PROJECT)
+<span class="f">print</span>(readme)</code></pre>
+
+  <h2>Step 3 — Score it against the hiring checklist</h2>
+  <p>A reviewer spends about ninety seconds. These five things decide whether they keep reading.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step3_score.py</span></div>
+<pre><code>CHECKS <span class="o">=</span> {
+    <span class="s">"one-line description up top"</span>: <span class="k">lambda</span> t: t.<span class="f">startswith</span>(<span class="s">"# "</span>) <span class="k">and</span> <span class="s">" - "</span> <span class="k">in</span> t.<span class="f">splitlines</span>()[<span class="n">0</span>],
+    <span class="s">"explains decisions"</span>:          <span class="k">lambda</span> t: <span class="s">"Key decisions"</span> <span class="k">in</span> t,
+    <span class="s">"reports measured results"</span>:    <span class="k">lambda</span> t: <span class="s">"Results (measured)"</span> <span class="k">in</span> t,
+    <span class="s">"states limitations"</span>:           <span class="k">lambda</span> t: <span class="s">"Limitations"</span> <span class="k">in</span> t,
+    <span class="s">"has run instructions"</span>:        <span class="k">lambda</span> t: <span class="s">"Run it"</span> <span class="k">in</span> t,
+}
+
+<span class="k">def</span> <span class="f">score_readme</span>(text):
+    passed <span class="o">=</span> {name: fn(text) <span class="k">for</span> name, fn <span class="k">in</span> CHECKS.<span class="f">items</span>()}
+    <span class="k">return</span> <span class="f">sum</span>(passed.<span class="f">values</span>()) <span class="o">/</span> <span class="f">len</span>(passed), passed
+
+score, detail <span class="o">=</span> <span class="f">score_readme</span>(readme)
+<span class="k">for</span> name, ok <span class="k">in</span> detail.<span class="f">items</span>():
+    <span class="f">print</span>((<span class="s">"PASS"</span> <span class="k">if</span> ok <span class="k">else</span> <span class="s">"MISS"</span>), <span class="s">"|"</span>, name)
+<span class="f">print</span>(<span class="s">"score:"</span>, <span class="f">round</span>(score <span class="o">*</span> <span class="n">100</span>), <span class="s">"%"</span>)</code></pre>
+
+  <h2>Step 4 — Compare with a typical README</h2>
+  <div class="code-label"><span class="dot"></span><span class="fname">step4_compare.py</span></div>
+<pre><code>WEAK <span class="o">=</span> <span class="s">"# docs-assistant\n\nA RAG app I built.\n\n## Setup\nRun main.py\n"</span>
+
+weak_score, weak_detail <span class="o">=</span> <span class="f">score_readme</span>(WEAK)
+<span class="f">print</span>(<span class="s">"typical README score:"</span>, <span class="f">round</span>(weak_score <span class="o">*</span> <span class="n">100</span>), <span class="s">"%"</span>)
+<span class="k">for</span> name, ok <span class="k">in</span> weak_detail.<span class="f">items</span>():
+    <span class="k">if</span> <span class="k">not</span> ok:
+        <span class="f">print</span>(<span class="s">"   missing:"</span>, name)
+
+<span class="f">print</span>(<span class="s">"\nSame project. The difference is evidence."</span>)</code></pre>
+
+  <div class="box practice">
+    <div class="box-label">Make it yours</div>
+    <p><strong>1.</strong> Paste the README of a project you've actually shipped into <code>score_readme</code>. Which check fails first?<br>
+    <strong>2.</strong> You have no measured results because you never built a golden set. What's the fastest honest fix &#8212; and what do you write if the numbers are mediocre?</p>
+    <details class="sol">
+      <summary><span class="chev">&#9656; </span>Show reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> Almost always "reports measured results" and "states limitations". Most READMEs describe what was built and how to install it &#8212; the two sections that signal engineering judgment are the ones people skip.</p>
+        <p><strong>2.</strong> Write twenty questions you expect the system to handle, label the correct answer or source, and score against them. That's an afternoon. And publish the mediocre number: "recall@5 = 0.71, and here's what I'd fix next" reads as an engineer who measures. A README with no numbers reads as someone who never checked.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">What you built</div>
+    <ul>
+      <li>A <strong>README generator</strong> in the shape reviewers respond to.</li>
+      <li>A <strong>scorer</strong> against the ninety-second checklist.</li>
+      <li>Proof of the gap between “a project” and <strong>evidence</strong>.</li>
+    </ul>
+    <p>Edit <code>PROJECT</code> with your real capstone, re-run, and paste the output into your repo. That single file does more hiring work than another feature.</p>
+  </div>
+
+  <p>Next, rehearse delivering it: <strong>Lesson&nbsp;11.4, the mock interview drill.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

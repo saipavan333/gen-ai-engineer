@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lab: Build a cost &amp; latency calculator — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="8.9">
+<main class="lesson">
+
+  <span class="eyebrow">Track 8 · Lab</span>
+  <h1>Lab: Build a cost &amp; latency calculator</h1>
+  <p class="lead">Every serving decision is arithmetic you can do yourself. Build the model that turns tokens into dollars and seconds, then pull the four real levers — routing, caching, trimming, streaming — and watch a scary bill become a small one.</p>
+
+  <div class="box note">
+    <div class="box-label">How to use this lab</div>
+    <p>Run the cells <strong>in order</strong> — they share memory. Prices are illustrative; the <em>shape</em> of the maths is what transfers.</p>
+  </div>
+
+  <h2>Step 1 — Tokens to dollars</h2>
+  <p>Cost is per token, and input and output are priced differently. Start with the estimator and the per-call formula.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step1_cost.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">estimate_tokens</span>(text):
+    <span class="k">return</span> <span class="f">max</span>(<span class="n">1</span>, <span class="f">len</span>(text) <span class="o">//</span> <span class="n">4</span>)          <span class="c"># ~4 characters per token in English</span>
+
+PRICES <span class="o">=</span> {                                  <span class="c"># $ per 1M tokens (illustrative)</span>
+    <span class="s">"small"</span>: {<span class="s">"in"</span>: <span class="n">0.15</span>, <span class="s">"out"</span>: <span class="n">0.60</span>},
+    <span class="s">"large"</span>: {<span class="s">"in"</span>: <span class="n">3.00</span>, <span class="s">"out"</span>: <span class="n">15.00</span>},
+}
+
+<span class="k">def</span> <span class="f">cost_per_call</span>(in_tokens, out_tokens, model<span class="o">=</span><span class="s">"small"</span>):
+    p <span class="o">=</span> PRICES[model]
+    <span class="k">return</span> (in_tokens <span class="o">*</span> p[<span class="s">"in"</span>] <span class="o">+</span> out_tokens <span class="o">*</span> p[<span class="s">"out"</span>]) <span class="o">/</span> <span class="n">1000000</span>
+
+prompt <span class="o">=</span> <span class="s">"You are a helpful support agent. "</span> <span class="o">*</span> <span class="n">40</span>
+<span class="f">print</span>(<span class="s">"prompt tokens:"</span>, <span class="f">estimate_tokens</span>(prompt))
+<span class="f">print</span>(<span class="s">"small model per call: $"</span>, <span class="f">round</span>(<span class="f">cost_per_call</span>(<span class="n">800</span>, <span class="n">200</span>, <span class="s">"small"</span>), <span class="n">6</span>))
+<span class="f">print</span>(<span class="s">"large model per call: $"</span>, <span class="f">round</span>(<span class="f">cost_per_call</span>(<span class="n">800</span>, <span class="n">200</span>, <span class="s">"large"</span>), <span class="n">6</span>))</code></pre>
+
+  <h2>Step 2 — Scale it to a real workload</h2>
+  <p>Per-call costs look trivially small. Multiply by traffic and they stop being trivial. Also find out <em>where</em> the money actually goes.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step2_workload.py</span></div>
+<pre><code>IN_TOK, OUT_TOK, RPD <span class="o">=</span> <span class="n">800</span>, <span class="n">200</span>, <span class="n">20000</span>      <span class="c"># tokens in, tokens out, requests/day</span>
+
+<span class="k">def</span> <span class="f">monthly</span>(in_t, out_t, rpd, model<span class="o">=</span><span class="s">"small"</span>):
+    <span class="k">return</span> <span class="f">cost_per_call</span>(in_t, out_t, model) <span class="o">*</span> rpd <span class="o">*</span> <span class="n">30</span>
+
+<span class="k">for</span> m <span class="k">in</span> (<span class="s">"small"</span>, <span class="s">"large"</span>):
+    <span class="f">print</span>(m, <span class="s">"model -> $"</span>, <span class="f">round</span>(<span class="f">monthly</span>(IN_TOK, OUT_TOK, RPD, m), <span class="n">2</span>), <span class="s">"per month"</span>)
+
+p <span class="o">=</span> PRICES[<span class="s">"large"</span>]
+in_share  <span class="o">=</span> IN_TOK <span class="o">*</span> p[<span class="s">"in"</span>]
+out_share <span class="o">=</span> OUT_TOK <span class="o">*</span> p[<span class="s">"out"</span>]
+total <span class="o">=</span> in_share <span class="o">+</span> out_share
+<span class="f">print</span>(<span class="s">"\nof each call's cost:"</span>, <span class="f">round</span>(in_share <span class="o">/</span> total <span class="o">*</span> <span class="n">100</span>), <span class="s">"% input,"</span>,
+      <span class="f">round</span>(out_share <span class="o">/</span> total <span class="o">*</span> <span class="n">100</span>), <span class="s">"% output"</span>)</code></pre>
+
+  <h2>Step 3 — Pull the levers</h2>
+  <p>Now the part that pays your salary. Route easy requests to the cheap model, cache repeats, trim the prompt — and stack them.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step3_levers.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">with_levers</span>(in_t, out_t, rpd, cache_hit<span class="o">=</span><span class="n">0.0</span>, cheap_share<span class="o">=</span><span class="n">0.0</span>, trim<span class="o">=</span><span class="n">0.0</span>):
+    in_t <span class="o">=</span> in_t <span class="o">*</span> (<span class="n">1</span> <span class="o">-</span> trim)              <span class="c"># shorter prompt</span>
+    paid <span class="o">=</span> rpd <span class="o">*</span> (<span class="n">1</span> <span class="o">-</span> cache_hit)          <span class="c"># cached calls cost nothing</span>
+    cheap <span class="o">=</span> paid <span class="o">*</span> cheap_share
+    big   <span class="o">=</span> paid <span class="o">-</span> cheap
+    daily <span class="o">=</span> (cheap <span class="o">*</span> <span class="f">cost_per_call</span>(in_t, out_t, <span class="s">"small"</span>)
+             <span class="o">+</span> big   <span class="o">*</span> <span class="f">cost_per_call</span>(in_t, out_t, <span class="s">"large"</span>))
+    <span class="k">return</span> daily <span class="o">*</span> <span class="n">30</span>
+
+<span class="f">print</span>(<span class="s">"everything on the large model : $"</span>, <span class="f">round</span>(<span class="f">with_levers</span>(IN_TOK, OUT_TOK, RPD), <span class="n">2</span>))
+<span class="f">print</span>(<span class="s">"+ route 80% to the small model: $"</span>, <span class="f">round</span>(<span class="f">with_levers</span>(IN_TOK, OUT_TOK, RPD, cheap_share<span class="o">=</span><span class="n">0.8</span>), <span class="n">2</span>))
+<span class="f">print</span>(<span class="s">"+ 40% cache hit rate          : $"</span>, <span class="f">round</span>(<span class="f">with_levers</span>(IN_TOK, OUT_TOK, RPD, <span class="n">0.4</span>, <span class="n">0.8</span>), <span class="n">2</span>))
+<span class="f">print</span>(<span class="s">"+ trim the prompt by 30%      : $"</span>, <span class="f">round</span>(<span class="f">with_levers</span>(IN_TOK, OUT_TOK, RPD, <span class="n">0.4</span>, <span class="n">0.8</span>, <span class="n">0.3</span>), <span class="n">2</span>))</code></pre>
+
+  <h2>Step 4 — Latency, and what streaming really does</h2>
+  <p>Latency splits in two: <strong>prefill</strong> (reading your prompt → time to first token) and <strong>decode</strong> (writing the answer, one token at a time). Long prompts delay the <em>start</em>; long answers stretch the <em>finish</em>.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step4_latency.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">latency</span>(in_tokens, out_tokens, prefill_per_1k<span class="o">=</span><span class="n">0.12</span>, per_out_token<span class="o">=</span><span class="n">0.012</span>):
+    ttft   <span class="o">=</span> <span class="n">0.25</span> <span class="o">+</span> (in_tokens <span class="o">/</span> <span class="n">1000</span>) <span class="o">*</span> prefill_per_1k   <span class="c"># time to first token</span>
+    decode <span class="o">=</span> out_tokens <span class="o">*</span> per_out_token
+    <span class="k">return</span> ttft, ttft <span class="o">+</span> decode
+
+<span class="k">for</span> label, i, o <span class="k">in</span> [(<span class="s">"short prompt"</span>, <span class="n">200</span>, <span class="n">200</span>),
+                    (<span class="s">"long prompt "</span>, <span class="n">4000</span>, <span class="n">200</span>),
+                    (<span class="s">"long answer "</span>, <span class="n">800</span>, <span class="n">800</span>)]:
+    ttft, total <span class="o">=</span> <span class="f">latency</span>(i, o)
+    <span class="f">print</span>(label, <span class="s">"| first token"</span>, <span class="f">round</span>(ttft, <span class="n">2</span>), <span class="s">"s | full answer"</span>, <span class="f">round</span>(total, <span class="n">2</span>), <span class="s">"s"</span>)
+
+<span class="f">print</span>(<span class="s">"\nStreaming doesn't change the total — it changes when the user sees word one."</span>)
+<span class="f">print</span>(<span class="s">"That's why a long prompt hurts perceived speed more than a long answer."</span>)</code></pre>
+
+  <div class="box key">
+    <div class="box-label">What you built</div>
+    <ul>
+      <li>A <strong>cost model</strong>: tokens → dollars, input vs output priced separately.</li>
+      <li>A <strong>workload projection</strong> that turns fractions of a cent into a monthly bill.</li>
+      <li>A <strong>lever simulator</strong>: routing, caching, trimming — stacked.</li>
+      <li>A <strong>latency model</strong> separating time-to-first-token from decode time.</li>
+    </ul>
+    <p>You can now answer “what will this cost and how fast will it feel?” with arithmetic instead of a shrug — which is exactly what gets asked in system-design rounds.</p>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Make it yours</div>
+    <p><strong>1.</strong> Your feature has a 5,000-token prompt and a 100-token answer. Which lever helps most — trimming the prompt or shortening the answer? Prove it with the code.<br>
+    <strong>2.</strong> An agent makes 6 calls per task. Change the model to charge per <em>task</em>, not per call. What happens to the monthly figure?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> Trimming the prompt, by a wide margin — with 5,000 in and 100 out, input dominates both the token count and the time-to-first-token, even though output is priced higher per token. Always optimise where the tokens actually are, which is why you measure before you tune.</p>
+        <p><strong>2.</strong> Roughly 6× — and worse in practice, because each step re-sends a growing history, so input tokens balloon across the task. This is why agents need per-task budgets, not per-call ones; a "cheap" model in a chatty loop is not cheap.</p>
+      </div>
+    </details>
+  </div>
+
+  <p>You can now make it fast and affordable. Next: proving you can do all of it — <strong>Track&nbsp;9, the Interview Bank.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

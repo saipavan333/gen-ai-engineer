@@ -131,8 +131,8 @@ golden <span class="o">=</span> {
     for (var i = 1; i <= N; i++) {
       var on = relevant[i];
       html += '<div class="ev-item" data-i="' + i + '" style="display:inline-flex;align-items:center;gap:8px;margin:4px 6px 4px 0;cursor:pointer;' +
-        'border:1.5px solid ' + (on ? "#2faa55" : "#e8e3da") + ';background:' + (on ? "#eefaf0" : "#fff") + ';border-radius:9px;padding:7px 11px;font-size:13px">' +
-        '<b>#' + i + '</b> <span style="color:' + (on ? "#15803d" : "#94a3b8") + '">' + (on ? "relevant" : "not relevant") + '</span></div>';
+        'border:1.5px solid ' + (on ? "#2faa55" : "#28303e") + ';background:' + (on ? "rgba(47,170,85,.14)" : "rgba(255,255,255,.03)") + ';border-radius:9px;padding:7px 11px;font-size:13px">' +
+        '<b>#' + i + '</b> <span style="color:' + (on ? "#4ade80" : "#94a3b8") + '">' + (on ? "relevant" : "not relevant") + '</span></div>';
     }
     list.innerHTML = html;
     list.querySelectorAll(".ev-item").forEach(function (el) {

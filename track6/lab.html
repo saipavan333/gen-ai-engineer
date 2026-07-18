@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lab: Build an eval harness — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="6.8">
+<main class="lesson">
+
+  <span class="eyebrow">Track 6 · Lab</span>
+  <h1>Lab: Build an eval harness that catches a regression</h1>
+  <p class="lead">This is the skill that separates people who ship AI from people who demo it. You’ll build a golden set, a scorer, and a quality gate — then watch a “friendlier” new version get <strong>blocked</strong> because your harness caught the damage it did.</p>
+
+  <div class="box note">
+    <div class="box-label">How to use this lab</div>
+    <p>Run the cells <strong>in order</strong> — they share memory. Everything is plain Python and runs in this page.</p>
+  </div>
+
+  <h2>Step 1 — Write a golden set</h2>
+  <p>A <span class="term">golden set</span> is a fixed list of cases with known-good expectations. Note the last case: the right answer is a <em>refusal</em>. Testing that your system knows when to say “I don’t know” is as important as testing what it knows.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step1_golden.py</span></div>
+<pre><code>GOLDEN <span class="o">=</span> [
+    {<span class="s">"q"</span>: <span class="s">"How long do refunds take?"</span>,      <span class="s">"must_have"</span>: [<span class="s">"5"</span>, <span class="s">"business days"</span>]},
+    {<span class="s">"q"</span>: <span class="s">"Is shipping free?"</span>,              <span class="s">"must_have"</span>: [<span class="s">"free"</span>, <span class="s">"50"</span>]},
+    {<span class="s">"q"</span>: <span class="s">"How do I reset my password?"</span>,    <span class="s">"must_have"</span>: [<span class="s">"forgot password"</span>]},
+    {<span class="s">"q"</span>: <span class="s">"Do gift cards expire?"</span>,          <span class="s">"must_have"</span>: [<span class="s">"never expire"</span>]},
+    {<span class="s">"q"</span>: <span class="s">"What is the capital of France?"</span>, <span class="s">"must_have"</span>: [<span class="s">"don't know"</span>]},
+]
+
+<span class="f">print</span>(<span class="s">"golden set size:"</span>, <span class="f">len</span>(GOLDEN))
+<span class="k">for</span> row <span class="k">in</span> GOLDEN:
+    <span class="f">print</span>(<span class="s">" -"</span>, row[<span class="s">"q"</span>], <span class="s">"->"</span>, row[<span class="s">"must_have"</span>])</code></pre>
+
+  <h2>Step 2 — Score an answer</h2>
+  <p>Scoring must be automatic or it won’t happen. This one checks that the required facts appear; production harnesses add exact-match for structured fields and an LLM judge for open-ended prose.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step2_score.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">score_answer</span>(answer, must_have):
+    a <span class="o">=</span> answer.<span class="f">lower</span>()
+    hits <span class="o">=</span> [k <span class="k">for</span> k <span class="k">in</span> must_have <span class="k">if</span> k.<span class="f">lower</span>() <span class="k">in</span> a]
+    <span class="k">return</span> <span class="f">len</span>(hits) <span class="o">/</span> <span class="f">len</span>(must_have), hits
+
+<span class="f">print</span>(<span class="f">score_answer</span>(<span class="s">"Refunds take 5 business days."</span>, [<span class="s">"5"</span>, <span class="s">"business days"</span>]))
+<span class="f">print</span>(<span class="f">score_answer</span>(<span class="s">"Usually about a week."</span>,        [<span class="s">"5"</span>, <span class="s">"business days"</span>]))</code></pre>
+
+  <h2>Step 3 — Evaluate two versions</h2>
+  <p>Here are two “models”. <code>v2</code> is the kind of change that feels like an improvement — warmer, more helpful, less likely to refuse. Run it and read the per-case scores carefully.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step3_evaluate.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">model_v1</span>(q):
+    ql <span class="o">=</span> q.<span class="f">lower</span>()
+    <span class="k">if</span> <span class="s">"refund"</span> <span class="k">in</span> ql:   <span class="k">return</span> <span class="s">"Refunds take 5 business days to your original payment method."</span>
+    <span class="k">if</span> <span class="s">"shipping"</span> <span class="k">in</span> ql: <span class="k">return</span> <span class="s">"Shipping is free on orders over $50."</span>
+    <span class="k">if</span> <span class="s">"password"</span> <span class="k">in</span> ql: <span class="k">return</span> <span class="s">"Click Forgot Password on the login page."</span>
+    <span class="k">if</span> <span class="s">"gift"</span> <span class="k">in</span> ql:     <span class="k">return</span> <span class="s">"Gift cards never expire."</span>
+    <span class="k">return</span> <span class="s">"I don't know based on the documents."</span>
+
+<span class="k">def</span> <span class="f">model_v2</span>(q):   <span class="c"># a 'friendlier' rewrite that stopped refusing</span>
+    ql <span class="o">=</span> q.<span class="f">lower</span>()
+    <span class="k">if</span> <span class="s">"refund"</span> <span class="k">in</span> ql:   <span class="k">return</span> <span class="s">"Refunds are processed quickly, usually within a week."</span>
+    <span class="k">if</span> <span class="s">"shipping"</span> <span class="k">in</span> ql: <span class="k">return</span> <span class="s">"Shipping is free on orders over $50."</span>
+    <span class="k">if</span> <span class="s">"password"</span> <span class="k">in</span> ql: <span class="k">return</span> <span class="s">"Click Forgot Password on the login page."</span>
+    <span class="k">if</span> <span class="s">"gift"</span> <span class="k">in</span> ql:     <span class="k">return</span> <span class="s">"Gift cards never expire."</span>
+    <span class="k">return</span> <span class="s">"The capital of France is Paris."</span>
+
+<span class="k">def</span> <span class="f">evaluate</span>(model):
+    total, rows <span class="o">=</span> <span class="n">0.0</span>, []
+    <span class="k">for</span> case <span class="k">in</span> GOLDEN:
+        ans <span class="o">=</span> model(case[<span class="s">"q"</span>])
+        s, _ <span class="o">=</span> <span class="f">score_answer</span>(ans, case[<span class="s">"must_have"</span>])
+        total <span class="o">+=</span> s
+        rows.<span class="f">append</span>((<span class="f">round</span>(s, <span class="n">2</span>), case[<span class="s">"q"</span>][:<span class="n">30</span>], ans[:<span class="n">44</span>]))
+    <span class="k">return</span> total <span class="o">/</span> <span class="f">len</span>(GOLDEN), rows
+
+<span class="k">for</span> name, m <span class="k">in</span> [(<span class="s">"v1"</span>, model_v1), (<span class="s">"v2"</span>, model_v2)]:
+    avg, rows <span class="o">=</span> <span class="f">evaluate</span>(m)
+    <span class="f">print</span>(<span class="s">"\n==="</span>, name, <span class="s">" average score:"</span>, <span class="f">round</span>(avg, <span class="n">3</span>))
+    <span class="k">for</span> r <span class="k">in</span> rows:
+        <span class="f">print</span>(<span class="s">"   "</span>, r)</code></pre>
+
+  <h2>Step 4 — Gate the deploy</h2>
+  <p>The number only matters if it can <em>stop</em> something. This is the whole mechanism: score the change, compare to a threshold, exit non-zero on failure — which is what turns a red build in CI.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step4_gate.py</span></div>
+<pre><code>THRESHOLD <span class="o">=</span> <span class="n">0.9</span>
+
+<span class="k">def</span> <span class="f">gate</span>(name, model):
+    avg, _ <span class="o">=</span> <span class="f">evaluate</span>(model)
+    ok <span class="o">=</span> avg <span class="o">&gt;=</span> THRESHOLD
+    <span class="f">print</span>(name, <span class="s">"scored"</span>, <span class="f">round</span>(avg, <span class="n">2</span>), <span class="s">"| threshold"</span>, THRESHOLD, <span class="s">"->"</span>,
+          <span class="s">"PASS - ship it"</span> <span class="k">if</span> ok <span class="k">else</span> <span class="s">"BLOCKED - do not deploy"</span>)
+    <span class="k">return</span> ok
+
+<span class="f">gate</span>(<span class="s">"v1"</span>, model_v1)
+<span class="f">gate</span>(<span class="s">"v2"</span>, model_v2)
+<span class="f">print</span>(<span class="s">"\nv2 sounded friendlier — and silently broke two cases."</span>)
+<span class="f">print</span>(<span class="s">"Without this gate, it ships. With it, the build goes red."</span>)</code></pre>
+
+  <div class="box key">
+    <div class="box-label">What just happened</div>
+    <p><code>v2</code> lost the refund fact <em>and</em> stopped refusing the unanswerable question — it confidently claimed Paris. Both are exactly the kind of regression no human eyeballing three outputs would catch. Your harness caught both in under a second.</p>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Make it yours</div>
+    <p><strong>1.</strong> Add a case whose right answer is a refusal (something the docs don’t cover). Does <code>v1</code> still pass?<br>
+    <strong>2.</strong> Lower <code>THRESHOLD</code> to 0.7 — <code>v2</code> now passes. What does that teach you about picking a threshold?<br>
+    <strong>3.</strong> A real production failure arrives: a user asked something and got a bad answer. Add it to <code>GOLDEN</code>. You’ve just made that bug impossible to reintroduce.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show reasoning</summary>
+      <div class="sol-body">
+        <p><strong>2.</strong> A threshold set to whatever makes the current build pass is theatre. Pick it from what the product actually requires, and only lower it deliberately with a reason. A gate you relax whenever it's inconvenient stops being a gate.</p>
+        <p><strong>3.</strong> This is the flywheel: every real failure becomes a permanent test case, so the system can never regress the same way twice. Over months that golden set becomes the most valuable asset you own — competitors can copy your prompts, not your library of hard-won failures.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">What you built</div>
+    <ul>
+      <li>A <strong>golden set</strong> including a refusal case.</li>
+      <li>An automatic <strong>scorer</strong>.</li>
+      <li>An <strong>A/B evaluation</strong> across two versions.</li>
+      <li>A <strong>quality gate</strong> that blocks a regression — the core of eval-driven development.</li>
+    </ul>
+  </div>
+
+  <p>You can now prove whether a change helped. Next: making sure it’s safe — <strong>Track&nbsp;7, Guardrails &amp; Safety.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

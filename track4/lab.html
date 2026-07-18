@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lab: Build an agent loop — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="4.10">
+<main class="lesson">
+
+  <span class="eyebrow">Track 4 · Lab</span>
+  <h1>Lab: Build an agent loop with real tools</h1>
+  <p class="lead">An agent is a loop: think, act, observe, repeat. You’ll write real tools, a planner that decides which to call, the loop that runs them — and then the guards that stop it spinning forever, which is what separates a demo from something you’d let run unattended.</p>
+
+  <div class="box note">
+    <div class="box-label">How to use this lab</div>
+    <p>Run the cells <strong>in order</strong> — they share memory. The planner is a small rule-based stand-in for a model, so the loop mechanics stay visible.</p>
+  </div>
+
+  <h2>Step 1 — Give it tools</h2>
+  <p>A tool is just a function plus a contract. Note the calculator refuses anything but arithmetic characters — a tool should never be a hole through which arbitrary code escapes.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step1_tools.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">tool_calculator</span>(expr):
+    allowed <span class="o">=</span> <span class="f">set</span>(<span class="s">"0123456789+-*/(). "</span>)
+    <span class="k">if</span> <span class="k">not</span> <span class="f">set</span>(expr) <span class="o">&lt;=</span> allowed:          <span class="c"># refuse anything but arithmetic</span>
+        <span class="k">return</span> <span class="s">"error: unsupported characters"</span>
+    <span class="k">try</span>:
+        <span class="k">return</span> <span class="f">str</span>(<span class="f">eval</span>(expr, {<span class="s">"__builtins__"</span>: {}}, {}))
+    <span class="k">except</span> <span class="f">Exception</span> <span class="k">as</span> e:
+        <span class="k">return</span> <span class="s">"error: "</span> <span class="o">+</span> <span class="f">str</span>(e)
+
+ORDERS <span class="o">=</span> {<span class="s">"A100"</span>: <span class="s">"shipped"</span>, <span class="s">"B200"</span>: <span class="s">"processing"</span>}
+
+<span class="k">def</span> <span class="f">tool_order_status</span>(order_id):
+    <span class="k">return</span> ORDERS.<span class="f">get</span>(order_id.<span class="f">strip</span>().<span class="f">upper</span>(), <span class="s">"unknown order"</span>)
+
+TOOLS <span class="o">=</span> {<span class="s">"calculator"</span>: tool_calculator, <span class="s">"order_status"</span>: tool_order_status}
+
+<span class="f">print</span>(TOOLS[<span class="s">"calculator"</span>](<span class="s">"120 * 3"</span>))
+<span class="f">print</span>(TOOLS[<span class="s">"calculator"</span>](<span class="s">"__import__('os')"</span>))
+<span class="f">print</span>(TOOLS[<span class="s">"order_status"</span>](<span class="s">"a100"</span>))</code></pre>
+
+  <h2>Step 2 — A planner that decides</h2>
+  <p>The planner looks at the question and what it has already observed, then returns either an <em>action</em> or a <em>final answer</em>. A real model returns this as text you parse; the decision shape is identical.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step2_planner.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">planner</span>(question, observations):
+    q <span class="o">=</span> question.<span class="f">lower</span>()
+    used <span class="o">=</span> [t <span class="k">for</span> t, _ <span class="k">in</span> observations]
+    <span class="k">if</span> <span class="s">"order"</span> <span class="k">in</span> q <span class="k">and</span> <span class="s">"order_status"</span> <span class="k">not</span> <span class="k">in</span> used:
+        order_id <span class="o">=</span> q.<span class="f">split</span>()[<span class="o">-</span><span class="n">1</span>].<span class="f">strip</span>(<span class="s">"?."</span>)
+        <span class="k">return</span> (<span class="s">"action"</span>, <span class="s">"order_status"</span>, order_id)
+    <span class="k">if</span> <span class="s">"total"</span> <span class="k">in</span> q <span class="k">and</span> <span class="s">"calculator"</span> <span class="k">not</span> <span class="k">in</span> used:
+        <span class="k">return</span> (<span class="s">"action"</span>, <span class="s">"calculator"</span>, <span class="s">"3 * 120"</span>)
+    <span class="k">if</span> observations:
+        <span class="k">return</span> (<span class="s">"final"</span>, <span class="k">None</span>, <span class="s">"Based on the tool result: "</span> <span class="o">+</span> observations[<span class="o">-</span><span class="n">1</span>][<span class="n">1</span>])
+    <span class="k">return</span> (<span class="s">"final"</span>, <span class="k">None</span>, <span class="s">"I don't know"</span>)
+
+<span class="f">print</span>(<span class="f">planner</span>(<span class="s">"What is the status of order A100?"</span>, []))
+<span class="f">print</span>(<span class="f">planner</span>(<span class="s">"What is the status of order A100?"</span>, [(<span class="s">"order_status"</span>, <span class="s">"shipped"</span>)]))</code></pre>
+
+  <h2>Step 3 — Run the loop</h2>
+  <p>Act, observe, feed the observation back, decide again. Notice the <code>max_steps</code> cap: an agent without one is an outage waiting to happen.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step3_loop.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">run_agent</span>(question, max_steps<span class="o">=</span><span class="n">4</span>):
+    <span class="f">print</span>(<span class="s">"Q:"</span>, question)
+    observations <span class="o">=</span> []
+    <span class="k">for</span> step <span class="k">in</span> <span class="f">range</span>(max_steps):
+        kind, tool, arg <span class="o">=</span> <span class="f">planner</span>(question, observations)
+        <span class="k">if</span> kind <span class="o">==</span> <span class="s">"final"</span>:
+            <span class="f">print</span>(<span class="s">"   FINAL:"</span>, arg)
+            <span class="k">return</span> arg
+        <span class="k">if</span> tool <span class="k">not</span> <span class="k">in</span> TOOLS:
+            <span class="f">print</span>(<span class="s">"   invalid tool:"</span>, tool)
+            <span class="k">return</span> <span class="s">"error"</span>
+        result <span class="o">=</span> TOOLS[tool](arg)
+        <span class="f">print</span>(<span class="s">"   step"</span>, step <span class="o">+</span> <span class="n">1</span>, <span class="s">"| action:"</span>, tool, arg, <span class="s">"-> observation:"</span>, result)
+        observations.<span class="f">append</span>((tool, result))
+    <span class="f">print</span>(<span class="s">"   step cap reached — escalating to a human"</span>)
+    <span class="k">return</span> <span class="s">"escalated"</span>
+
+<span class="f">run_agent</span>(<span class="s">"What is the status of order A100?"</span>)
+<span class="f">print</span>()
+<span class="f">run_agent</span>(<span class="s">"What is the total for 3 items?"</span>)</code></pre>
+
+  <h2>Step 4 — Make it fail, then contain it</h2>
+  <p>Now a broken planner that never finishes — the classic runaway agent. Two guards stop it: a step cap and repeat-detection.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step4_guard.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">bad_planner</span>(question, observations):
+    <span class="k">return</span> (<span class="s">"action"</span>, <span class="s">"order_status"</span>, <span class="s">"A100"</span>)      <span class="c"># never returns 'final'</span>
+
+<span class="k">def</span> <span class="f">run_bounded</span>(question, planner_fn, max_steps<span class="o">=</span><span class="n">5</span>):
+    observations, seen <span class="o">=</span> [], <span class="f">set</span>()
+    <span class="k">for</span> step <span class="k">in</span> <span class="f">range</span>(max_steps):
+        kind, tool, arg <span class="o">=</span> planner_fn(question, observations)
+        <span class="k">if</span> kind <span class="o">==</span> <span class="s">"final"</span>:
+            <span class="k">return</span> <span class="s">"final: "</span> <span class="o">+</span> arg
+        <span class="k">if</span> (tool, arg) <span class="k">in</span> seen:
+            <span class="k">return</span> <span class="s">"stopped: repeated the same action, no progress"</span>
+        seen.<span class="f">add</span>((tool, arg))
+        result <span class="o">=</span> TOOLS[tool](arg)
+        <span class="f">print</span>(<span class="s">"   step"</span>, step <span class="o">+</span> <span class="n">1</span>, <span class="s">"->"</span>, tool, result)
+        observations.<span class="f">append</span>((tool, result))
+    <span class="k">return</span> <span class="s">"stopped: step cap"</span>
+
+<span class="f">print</span>(<span class="f">run_bounded</span>(<span class="s">"status of order A100?"</span>, bad_planner))</code></pre>
+
+  <div class="box key">
+    <div class="box-label">What you built</div>
+    <ul>
+      <li><strong>Tools</strong> with contracts and input validation.</li>
+      <li>A <strong>planner</strong> that chooses an action or finishes.</li>
+      <li>The <strong>ReAct loop</strong> — act, observe, decide again.</li>
+      <li><strong>Guards</strong>: step caps and repeat-detection, so failure is bounded.</li>
+    </ul>
+    <p>Every production agent is this, plus better planning and more tools. The guards are not optional extras — they are the difference between an agent and an incident.</p>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Make it yours</div>
+    <p><strong>1.</strong> Add a <code>refund(order_id, amount)</code> tool. What should the loop require before calling it — and why is that different from the read-only tools?<br>
+    <strong>2.</strong> Remove the repeat-check in Step 4. What happens, and what would that cost against a paid API?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> Refunding moves real money and is hard to reverse, so it needs human approval (or a hard limit plus an audit log) before execution. Read-only tools can run freely; write tools should be gated by how costly and irreversible the action is — that risk-tiering is the heart of safe agent design.</p>
+        <p><strong>2.</strong> It runs to the step cap, repeating an identical call each time — every step a real API call you pay for. Without the cap it would loop forever. That's how a demo agent becomes a surprise invoice.</p>
+      </div>
+    </details>
+  </div>
+
+  <p>Your agent acts, and fails safely. Next: teaching a model new behaviour — <strong>Track&nbsp;5, Fine-tuning.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

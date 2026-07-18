@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lab: Advanced retrieval, measured — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="12.4">
+<main class="lesson">
+
+  <span class="eyebrow">Track 12 · Lab</span>
+  <h1>Lab: Advanced retrieval, measured</h1>
+  <p class="lead">Basic retrieval fails on a question you’ll meet constantly: the user’s words don’t match the document’s. You’ll watch it fail, fix it with query expansion and rank fusion, add a reranker — and then <strong>prove</strong> the improvement with recall@k instead of claiming it.</p>
+
+  <div class="box note">
+    <div class="box-label">How to use this lab</div>
+    <p>Run the cells <strong>in order</strong> — they share memory. Plain Python, running here.</p>
+  </div>
+
+  <h2>Step 1 — Watch baseline retrieval miss</h2>
+  <p>The user says “locked out”; the document says “account recovery”. Same meaning, different words — and a lexical scorer struggles.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step1_baseline.py</span></div>
+<pre><code><span class="k">import</span> math, re
+<span class="k">from</span> collections <span class="k">import</span> Counter
+
+DOCS <span class="o">=</span> [
+ <span class="s">"Refunds are issued within 5 business days to your original payment method."</span>,
+ <span class="s">"You can return any item within 30 days of delivery for a full refund."</span>,
+ <span class="s">"Standard shipping is free on orders over $50."</span>,
+ <span class="s">"To reset your password, click Forgot Password on the login page."</span>,
+ <span class="s">"If you are locked out of your account, use the account recovery form."</span>,
+ <span class="s">"Gift cards are non-refundable and never expire."</span>,
+]
+STOP <span class="o">=</span> {<span class="s">"the"</span>,<span class="s">"a"</span>,<span class="s">"an"</span>,<span class="s">"is"</span>,<span class="s">"are"</span>,<span class="s">"to"</span>,<span class="s">"of"</span>,<span class="s">"for"</span>,<span class="s">"on"</span>,<span class="s">"in"</span>,<span class="s">"do"</span>,<span class="s">"my"</span>,<span class="s">"you"</span>,<span class="s">"your"</span>,<span class="s">"can"</span>,<span class="s">"how"</span>,<span class="s">"and"</span>,<span class="s">"it"</span>,<span class="s">"if"</span>}
+
+<span class="k">def</span> <span class="f">vec</span>(t):
+    <span class="k">return</span> <span class="f">Counter</span>(w <span class="k">for</span> w <span class="k">in</span> re.<span class="f">findall</span>(<span class="s">r"[a-z0-9]+"</span>, t.<span class="f">lower</span>())
+                   <span class="k">if</span> <span class="f">len</span>(w) <span class="o">&gt;</span> <span class="n">2</span> <span class="k">and</span> w <span class="k">not</span> <span class="k">in</span> STOP)
+
+<span class="k">def</span> <span class="f">cos</span>(a, b):
+    sh <span class="o">=</span> <span class="f">set</span>(a) <span class="o">&amp;</span> <span class="f">set</span>(b)
+    dot <span class="o">=</span> <span class="f">sum</span>(a[w] <span class="o">*</span> b[w] <span class="k">for</span> w <span class="k">in</span> sh)
+    na <span class="o">=</span> math.<span class="f">sqrt</span>(<span class="f">sum</span>(v<span class="o">*</span>v <span class="k">for</span> v <span class="k">in</span> a.<span class="f">values</span>()))
+    nb <span class="o">=</span> math.<span class="f">sqrt</span>(<span class="f">sum</span>(v<span class="o">*</span>v <span class="k">for</span> v <span class="k">in</span> b.<span class="f">values</span>()))
+    <span class="k">return</span> dot <span class="o">/</span> (na <span class="o">*</span> nb) <span class="k">if</span> na <span class="k">and</span> nb <span class="k">else</span> <span class="n">0.0</span>
+
+INDEX <span class="o">=</span> [(d, <span class="f">vec</span>(d)) <span class="k">for</span> d <span class="k">in</span> DOCS]
+
+<span class="k">def</span> <span class="f">search</span>(q, k<span class="o">=</span><span class="n">3</span>):
+    qv <span class="o">=</span> <span class="f">vec</span>(q)
+    s <span class="o">=</span> [(<span class="f">cos</span>(qv, dv), d) <span class="k">for</span> d, dv <span class="k">in</span> INDEX]
+    s.<span class="f">sort</span>(reverse<span class="o">=</span><span class="k">True</span>, key<span class="o">=</span><span class="k">lambda</span> x: x[<span class="n">0</span>])
+    <span class="k">return</span> s[:k]
+
+QUERY <span class="o">=</span> <span class="s">"I cannot sign in and need to get back into my profile"</span>
+<span class="f">print</span>(<span class="s">"baseline for:"</span>, QUERY)
+<span class="k">for</span> sc, d <span class="k">in</span> <span class="f">search</span>(QUERY):
+    <span class="f">print</span>(<span class="s">"  "</span>, <span class="f">round</span>(sc, <span class="n">3</span>), <span class="s">"|"</span>, d[:<span class="n">54</span>])</code></pre>
+
+  <h2>Step 2 — Expand the query, then fuse the rankings</h2>
+  <p>Ask the same thing several ways, retrieve for each, and reward documents that rank well across <em>all</em> of them. That’s reciprocal rank fusion.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step2_expand.py</span></div>
+<pre><code>EXPANSIONS <span class="o">=</span> {QUERY: [<span class="s">"reset password"</span>, <span class="s">"account recovery"</span>, <span class="s">"locked out of account"</span>]}
+
+<span class="k">def</span> <span class="f">rrf</span>(queries, k<span class="o">=</span><span class="n">3</span>, kconst<span class="o">=</span><span class="n">60</span>):
+    scores <span class="o">=</span> {}
+    <span class="k">for</span> q <span class="k">in</span> queries:
+        <span class="k">for</span> rank, (sc, d) <span class="k">in</span> <span class="f">enumerate</span>(<span class="f">search</span>(q, k<span class="o">=</span><span class="f">len</span>(DOCS))):
+            <span class="k">if</span> sc <span class="o">&lt;=</span> <span class="n">0</span>:
+                <span class="k">continue</span>
+            scores[d] <span class="o">=</span> scores.<span class="f">get</span>(d, <span class="n">0</span>) <span class="o">+</span> <span class="n">1</span> <span class="o">/</span> (kconst <span class="o">+</span> rank)
+    <span class="k">return</span> <span class="f">sorted</span>(scores.<span class="f">items</span>(), key<span class="o">=</span><span class="k">lambda</span> x: <span class="o">-</span>x[<span class="n">1</span>])[:k]
+
+queries <span class="o">=</span> [QUERY] <span class="o">+</span> EXPANSIONS[QUERY]
+<span class="f">print</span>(<span class="s">"expanded + fused:"</span>)
+<span class="k">for</span> d, s <span class="k">in</span> <span class="f">rrf</span>(queries):
+    <span class="f">print</span>(<span class="s">"  "</span>, <span class="f">round</span>(s, <span class="n">4</span>), <span class="s">"|"</span>, d[:<span class="n">54</span>])</code></pre>
+
+  <h2>Step 3 — Rerank the shortlist</h2>
+  <p>Retrieval is cheap and approximate; reranking is expensive and accurate, so you run it only on the shortlist. Here “coverage” stands in for a cross-encoder.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step3_rerank.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">rerank</span>(query, candidates):
+    qw <span class="o">=</span> <span class="f">set</span>(<span class="f">vec</span>(query)) <span class="o">|</span> <span class="f">set</span>(<span class="f">vec</span>(<span class="s">" "</span>.<span class="f">join</span>(EXPANSIONS.<span class="f">get</span>(query, []))))
+    out <span class="o">=</span> []
+    <span class="k">for</span> d <span class="k">in</span> candidates:
+        dw <span class="o">=</span> <span class="f">set</span>(<span class="f">vec</span>(d))
+        coverage <span class="o">=</span> <span class="f">len</span>(qw <span class="o">&amp;</span> dw) <span class="o">/</span> <span class="f">max</span>(<span class="n">1</span>, <span class="f">len</span>(qw))
+        out.<span class="f">append</span>((<span class="f">round</span>(coverage, <span class="n">3</span>), d))
+    out.<span class="f">sort</span>(reverse<span class="o">=</span><span class="k">True</span>, key<span class="o">=</span><span class="k">lambda</span> x: x[<span class="n">0</span>])
+    <span class="k">return</span> out
+
+shortlist <span class="o">=</span> [d <span class="k">for</span> d, _ <span class="k">in</span> <span class="f">rrf</span>(queries, k<span class="o">=</span><span class="n">4</span>)]
+<span class="k">for</span> sc, d <span class="k">in</span> <span class="f">rerank</span>(QUERY, shortlist):
+    <span class="f">print</span>(<span class="s">"  "</span>, sc, <span class="s">"|"</span>, d[:<span class="n">54</span>])</code></pre>
+
+  <h2>Step 4 — Prove it with recall@k</h2>
+  <p>Never claim an improvement you haven’t measured. Define the right answer for each question, then score both pipelines.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step4_measure.py</span></div>
+<pre><code>GOLD <span class="o">=</span> {
+  QUERY: <span class="s">"If you are locked out of your account, use the account recovery form."</span>,
+  <span class="s">"How long do refunds take?"</span>: <span class="s">"Refunds are issued within 5 business days to your original payment method."</span>,
+}
+
+<span class="k">def</span> <span class="f">recall_at_k</span>(fn, k<span class="o">=</span><span class="n">2</span>):
+    hits <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> q, gold <span class="k">in</span> GOLD.<span class="f">items</span>():
+        got <span class="o">=</span> fn(q, k)
+        <span class="k">if</span> gold <span class="k">in</span> got:
+            hits <span class="o">+=</span> <span class="n">1</span>
+    <span class="k">return</span> hits <span class="o">/</span> <span class="f">len</span>(GOLD)
+
+<span class="k">def</span> <span class="f">pipeline_baseline</span>(q, k):
+    <span class="k">return</span> [d <span class="k">for</span> _, d <span class="k">in</span> <span class="f">search</span>(q, k)]
+
+<span class="k">def</span> <span class="f">pipeline_advanced</span>(q, k):
+    <span class="k">return</span> [d <span class="k">for</span> d, _ <span class="k">in</span> <span class="f">rrf</span>([q] <span class="o">+</span> EXPANSIONS.<span class="f">get</span>(q, []), k)]
+
+<span class="f">print</span>(<span class="s">"recall@2 baseline:"</span>, <span class="f">recall_at_k</span>(pipeline_baseline))
+<span class="f">print</span>(<span class="s">"recall@2 advanced:"</span>, <span class="f">recall_at_k</span>(pipeline_advanced))</code></pre>
+
+  <div class="box practice">
+    <div class="box-label">Make it yours</div>
+    <p><strong>1.</strong> Re-run <code>recall_at_k</code> with k=3 instead of k=5. Does fusion still beat the baseline, and why does k change the story?<br>
+    <strong>2.</strong> Reranking added real latency. How would you decide whether to keep it?</p>
+    <details class="sol">
+      <summary><span class="chev">&#9656; </span>Show reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> A smaller k is a harder test, so the gap usually widens. At large k the right document is somewhere in the pile and everything looks healthy &#8212; which is exactly how weak retrieval hides. Report recall at the k you actually feed the model, not the k that flatters you.</p>
+        <p><strong>2.</strong> Measure the recall lift against the added p95 latency and cost per query. If reranking buys two points of recall and doubles latency, drop it &#8212; or apply it selectively, only when the top result's score falls below a confidence threshold. "Always on" is a decision too, and it should be one you measured.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">What you built</div>
+    <ul>
+      <li>A <strong>reproduction of the vocabulary-mismatch failure</strong> — the one that breaks real RAG.</li>
+      <li><strong>Query expansion + reciprocal rank fusion</strong>.</li>
+      <li>A <strong>rerank stage</strong> over a cheap shortlist.</li>
+      <li><strong>recall@k</strong> measured before and after — evidence, not opinion.</li>
+    </ul>
+    <p>“I improved retrieval” means nothing. “I lifted recall@2 from 0.5 to 1.0 on our golden set with query expansion” is an engineering claim.</p>
+  </div>
+
+  <p>Next: how the field is changing, and building it responsibly — <strong>Track&nbsp;16.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

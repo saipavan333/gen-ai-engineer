@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Revision — Applied GenAI Engineer</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;450;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/styles.css">
+  <script>try{var t=localStorage.getItem("age_theme");if(t&&t!=="graphite")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+</head>
+<body data-page="review">
+  <header class="site-header">
+    <a class="brand" href="index.html"><img class="logo" src="assets/favicon.svg" alt="" width="26" height="26"><span class="brand-name">Applied GenAI Engineer</span></a>
+    <span class="spacer"></span>
+    <a class="hdr-link" href="index.html">&larr; Back to course</a>
+  </header>
+  <main class="rv">
+    <h1>Revision</h1>
+    <p class="rv-lead">Spaced repetition is the highest-leverage way to actually remember what you learn: revisit each lesson at growing intervals (1 → 3 → 7 → 21 days) instead of cramming once. Every lesson you mark complete is scheduled here automatically.</p>
+    <div class="rv-sum" id="sum"></div>
+    <div id="due"></div>
+    <div id="up"></div>
+  </main>
+  <script src="assets/curriculum.js"></script>
+  <script>
+  (function () {
+    var C = window.CURRICULUM, flat = {};
+    C.sections.forEach(function (s) { s.lessons.forEach(function (l) { if (l.built) flat[l.n] = { title: l.title, file: l.file, num: s.num, track: s.title }; }); });
+    var RKEY = "age_review_v1", DAY = 86400000, SR = [1, 3, 7, 21, 60], now = Date.now();
+    function load() { try { return JSON.parse(localStorage.getItem(RKEY)) || {}; } catch (e) { return {}; } }
+    function save() { try { localStorage.setItem(RKEY, JSON.stringify(REV)); } catch (e) {} }
+    var REV = load();
+    function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+    function days(ms) { var d = Math.max(1, Math.round(ms / DAY)); return d + " day" + (d > 1 ? "s" : ""); }
+    function card(it) {
+      var f = flat[it.n];
+      return '<div class="rv-card"><div class="rv-card-b"><span class="rv-n">' + it.n + '</span><a class="rv-title" data-file="' + f.file + '">' + esc(f.title) +
+        '</a><div class="rv-track">Track ' + f.num + " · " + esc(f.track) + '</div></div>' +
+        '<div class="rv-acts"><a class="rv-open" data-file="' + f.file + '">Open</a><button class="rv-did" data-n="' + it.n + '">&#10003; Reviewed</button></div></div>';
+    }
+    function render() {
+      var due = [], up = [];
+      Object.keys(REV).forEach(function (n) { if (!flat[n]) return; (REV[n].due <= now ? due : up).push({ n: n, r: REV[n] }); });
+      due.sort(function (a, b) { return a.r.due - b.r.due; });
+      up.sort(function (a, b) { return a.r.due - b.r.due; });
+      var total = Object.keys(REV).filter(function (n) { return flat[n]; }).length;
+      document.getElementById("sum").innerHTML = "<b>" + total + "</b> lessons completed · <b>" + due.length + "</b> due for review now";
+      var dueEl = document.getElementById("due"), upEl = document.getElementById("up");
+      if (!total) { dueEl.innerHTML = '<p class="rv-empty">Nothing here yet. Open any lesson and tap <b>“Mark this lesson complete”</b> — it will be scheduled here for spaced review, the proven way to remember what you learn.</p>'; upEl.innerHTML = ""; return; }
+      dueEl.innerHTML = due.length ? due.map(card).join("") : '<p class="rv-empty">Nothing due right now — nicely done. Come back tomorrow. &#10003;</p>';
+      Array.prototype.forEach.call(dueEl.querySelectorAll("[data-file]"), function (a) { a.href = a.getAttribute("data-file"); });
+      upEl.innerHTML = up.length ? ('<div class="rv-lbl">coming up</div>' + up.slice(0, 15).map(function (it) { var f = flat[it.n]; return '<div class="rv-up"><span class="rv-n">' + it.n + "</span> " + esc(f.title) + '<span class="rv-when">in ' + days(it.r.due - now) + "</span></div>"; }).join("")) : "";
+    }
+    document.addEventListener("click", function (e) {
+      var b = e.target.closest && e.target.closest(".rv-did"); if (!b) return;
+      var n = b.getAttribute("data-n"), r = REV[n] || { reviews: 0 };
+      r.reviews = (r.reviews || 0) + 1;
+      r.due = Date.now() + SR[Math.min(r.reviews, SR.length - 1)] * DAY;
+      REV[n] = r; save(); render();
+    });
+    render();
+  })();
+  </script>
+</body>
+</html>

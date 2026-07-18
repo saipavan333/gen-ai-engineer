@@ -3,36 +3,48 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Applied GenAI Engineer — a self-paced path from zero to job-ready</title>
-  <meta name="description" content="A free, self-paced course that takes you from zero to a job-ready applied generative-AI / LLM engineer.">
+  <title>Applied GenAI Engineer — learn how intelligence is built, then build it</title>
+  <meta name="description" content="A free, self-paced masterclass that takes you from zero to a job-ready applied generative-AI / LLM engineer. 16 tracks, 104 lessons, plain English.">
   <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body data-page="home" data-base="">
 
-  <section class="home-hero">
-    <img class="hero-logo" src="assets/favicon.svg" alt="Applied GenAI Engineer logo" width="76" height="76">
-    <span class="eyebrow">Self-paced &middot; free to run &middot; built for beginners</span>
-    <h1>Become an<br><span class="grad">Applied GenAI Engineer</span></h1>
-    <p class="sub">From &ldquo;what is a token?&rdquo; to shipping real, reliable LLM products end&#8209;to&#8209;end. No prior ML, no paid subscriptions, no hand-waving &mdash; every idea is explained from the ground up, then proven, then practiced.</p>
-    <div class="home-cta">
-      <a class="btn primary" href="start-here/00-how-to-use.html">Start here &rarr;</a>
-      <a class="btn ghost" href="track1/01-what-is-an-llm.html">Peek at Track&nbsp;1</a>
-    </div>
-    <div class="home-meta">
-      <span><b>16 tracks</b> + capstones</span>
-      <span><b>104 lessons</b> ready now</span>
-      <span><b>$0</b> to run everything</span>
-      <span><b>Zero</b> assumed background</span>
+  <section class="gh">
+    <div class="gh-inner">
+      <div class="gh-badge"><img src="assets/favicon.svg" alt="" width="18" height="18"> Applied GenAI Engineer</div>
+      <h1 class="gh-h1">Learn how intelligence is built — then build it.</h1>
+      <p class="gh-sub">This is the whole idea of the course, live. A model writes by predicting one token at a time. <b>Drag the temperature</b> and watch it choose.</p>
+
+      <div class="gen">
+        <div class="gen-head">
+          <span class="gen-title">next-token generator</span><span class="gen-spacer"></span>
+          <span>temperature <b id="tval">0.70</b></span><span id="live" class="gen-live">● generating</span>
+        </div>
+        <div class="gen-line"><span id="gout"></span><span id="caret" class="gen-caret"></span></div>
+        <div class="gen-lbl">next token — sampled from</div>
+        <div id="cands" class="gen-cands"></div>
+        <div class="gen-ctrl">
+          <span>precise</span>
+          <input id="temp" type="range" min="4" max="140" value="70" aria-label="temperature">
+          <span>creative</span>
+        </div>
+        <div class="gen-hint">drag the dial — low temperature writes sense, high temperature gets bold and strange</div>
+      </div>
+
+      <div class="gh-cta">
+        <a class="gh-btn primary" href="start-here/00-how-to-use.html">Start the path →</a>
+        <a class="gh-btn ghost" id="home-resume" href="start-here/00-how-to-use.html">Start where you left off</a>
+      </div>
+      <div class="gh-chips"><span><b>16</b> tracks</span><span><b>104</b> lessons</span><span><b>$0</b> to run</span><span><b>Zero</b> background</span></div>
     </div>
   </section>
 
   <div class="home-wrap">
-
     <div class="path-note">
       <b>How this works.</b> This is a true learning <em>path</em>: every track builds on the one before it, and nothing
       ever depends on something taught later. Start at the top and go in order. Each lesson is self-contained &mdash;
       open it, read the concept, run the example, take the quiz, do the practice. Use the <b>Next</b> button at the
-      bottom of each lesson to walk the path; it always drops you at the top of the next one.
+      bottom of each lesson to walk the path. Your progress is saved on this device, so the roadmap below fills in as you go.
     </div>
 
     <h2>What every lesson gives you</h2>
@@ -51,17 +63,59 @@
     </div>
 
     <h2>The path</h2>
-    <p class="h2sub">Sixteen tracks from first principles to shipped products, landing the role, and specializing &mdash; every track is fully built.</p>
+    <p class="h2sub">Sixteen tracks from first principles to shipped products, landing the role, and specializing. Click any track to drill into its lessons.</p>
     <div id="roadmap"></div>
 
     <div class="path-note" style="margin-top:34px">
-      <b>A note on cost.</b> Everything here is designed to run for free. You'll use free, open tools &mdash; Google Colab
-      (a free notebook in your browser), small open-source models you can run on your own machine, and pure-Python
-      examples that need no model at all. There is never a step that asks you to pay for an API or a subscription.
+      <b>A note on cost.</b> Everything here is designed to run for free &mdash; Google Colab, small open-source models
+      you can run on your own machine, and pure-Python examples that need no model at all. There is never a step that asks you to pay.
     </div>
-
   </div>
 
+  <script>
+  (function(){
+    var out=document.getElementById('gout'), cands=document.getElementById('cands'),
+        temp=document.getElementById('temp'), tval=document.getElementById('tval'),
+        caret=document.getElementById('caret'), live=document.getElementById('live');
+    if(!out||!cands||!temp) return;
+    var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var sentences=[
+      ["A","language","model","predicts","the","next","token."],
+      ["Retrieval","grounds","the","model","in","your","documents."],
+      ["You","will","build,","evaluate,","and","ship","real","systems."],
+      ["Attention","lets","each","token","weigh","every","other."]
+    ];
+    var pool=["vector","gradient","prompt","neuron","banana","dragon","waffle","nebula","llama","entropy","syntax","spice","quantum","pixel","comet","velvet"];
+    var T=0.7, si=0, ti=0, built=[];
+    function softmax(l,t){var m=Math.max.apply(null,l),e=l.map(function(x){return Math.exp((x-m)/Math.max(0.05,t));}),s=e.reduce(function(a,b){return a+b;},0);return e.map(function(x){return x/s;});}
+    function pick(p){var r=Math.random(),a=0;for(var i=0;i<p.length;i++){a+=p[i];if(r<=a)return i;}return p.length-1;}
+    function rnd(ex){var w;do{w=pool[Math.floor(Math.random()*pool.length)];}while(w===ex);return w;}
+    function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+    function renderCands(items,chosen){
+      cands.innerHTML=items.map(function(it,i){var on=i===chosen;
+        return '<div class="gc"><span class="gc-tok'+(on?' on':'')+'">'+esc(it.tok)+'</span>'
+          +'<span class="gc-bar"><span class="gc-fill'+(on?' on':'')+'" style="width:'+(it.p*100).toFixed(0)+'%"></span></span>'
+          +'<span class="gc-pct'+(on?' on':'')+'">'+(it.p*100).toFixed(0)+'%</span>'
+          +(on?'<span class="gc-pick">picked</span>':'<span class="gc-pad"></span>')+'</div>';
+      }).join('');
+    }
+    function step(){
+      var s=sentences[si];
+      if(ti>=s.length){ ti=0; si=(si+1)%sentences.length; built=[]; setTimeout(function(){out.textContent='';},60); return setTimeout(step,900); }
+      var intended=s[ti];
+      var items=[{tok:intended,l:2.3},{tok:rnd(intended),l:0.8},{tok:rnd(intended),l:0.25}];
+      var probs=softmax(items.map(function(x){return x.l;}),T);
+      var order=items.map(function(it,i){return {tok:it.tok,p:probs[i]};}).sort(function(a,b){return b.p-a.p;});
+      var chosen=pick(order.map(function(o){return o.p;}));
+      renderCands(order,chosen);
+      built.push(order[chosen].tok); out.textContent=built.join(' ')+' '; ti++;
+      setTimeout(step,340);
+    }
+    temp.addEventListener('input',function(){ T=temp.value/100; tval.textContent=T.toFixed(2); });
+    if(reduce){ out.textContent="A language model predicts the next token."; renderCands([{tok:'token.',p:.82},{tok:'word.',p:.12},{tok:'symbol.',p:.06}],0); if(live)live.textContent='● paused'; if(caret)caret.style.display='none'; }
+    else { if(caret)setInterval(function(){caret.style.opacity=caret.style.opacity==='0'?'1':'0';},520); setTimeout(step,500); }
+  })();
+  </script>
   <script src="assets/curriculum.js"></script>
   <script src="assets/app.js"></script>
 </body>

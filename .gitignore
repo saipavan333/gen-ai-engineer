@@ -1,0 +1,8 @@
+# editor / OS noise
+.DS_Store
+Thumbs.db
+*.swp
+
+# local backups and scratch copies
+*.backup.js
+*.bak

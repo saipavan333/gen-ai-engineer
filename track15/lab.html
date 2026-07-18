@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lab: Document extraction you can trust — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="15.6">
+<main class="lesson">
+
+  <span class="eyebrow">Track 15 · Lab</span>
+  <h1>Lab: Document extraction you can trust</h1>
+  <p class="lead">Turning a scanned invoice into database rows is the highest-value multimodal task in business — and the easiest to get dangerously wrong. You’ll extract the fields, validate them, cross-check the arithmetic, and build the routing rule that decides what a human must see.</p>
+
+  <div class="box note">
+    <div class="box-label">How to use this lab</div>
+    <p>Run the cells <strong>in order</strong> — they share memory. We start from the text a vision model or OCR would hand you, which is where the engineering actually begins.</p>
+  </div>
+
+  <h2>Step 1 — The document as text</h2>
+  <p>This is what comes out of OCR or a VLM: roughly structured, inconsistently spaced, no schema.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step1_ocr.py</span></div>
+<pre><code>OCR_TEXT <span class="o">=</span> <span class="s">"""ACME SUPPLIES LTD</span>
+<span class="s">Invoice #  INV-2025-0473</span>
+<span class="s">Date: 14/03/2025</span>
+
+<span class="s">Description        Qty   Price</span>
+<span class="s">Widget A            3    40.00</span>
+<span class="s">Cable pack          2    15.50</span>
+<span class="s">Shipping                  9.99</span>
+
+<span class="s">TOTAL DUE   $ 160.99</span>
+<span class="s">Payment terms: net 30</span>
+<span class="s">"""</span>
+
+<span class="f">print</span>(OCR_TEXT)</code></pre>
+
+  <h2>Step 2 — Extract the fields</h2>
+  <p>A VLM can return JSON directly; either way you must pull structure out of text and never assume it succeeded.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step2_extract.py</span></div>
+<pre><code><span class="k">import</span> re
+
+<span class="k">def</span> <span class="f">extract</span>(text):
+    out <span class="o">=</span> {}
+    m <span class="o">=</span> re.<span class="f">search</span>(<span class="s">r"invoice\s*#?\s*([A-Z0-9\-]+)"</span>, text, re.I)
+    out[<span class="s">"invoice_no"</span>] <span class="o">=</span> m.<span class="f">group</span>(<span class="n">1</span>) <span class="k">if</span> m <span class="k">else</span> <span class="k">None</span>
+    m <span class="o">=</span> re.<span class="f">search</span>(<span class="s">r"date:\s*([0-9]{1,2}/[0-9]{1,2}/[0-9]{4})"</span>, text, re.I)
+    out[<span class="s">"date"</span>] <span class="o">=</span> m.<span class="f">group</span>(<span class="n">1</span>) <span class="k">if</span> m <span class="k">else</span> <span class="k">None</span>
+    m <span class="o">=</span> re.<span class="f">search</span>(<span class="s">r"total\s*due\s*\$?\s*([0-9]+(?:\.[0-9]{2})?)"</span>, text, re.I)
+    out[<span class="s">"total"</span>] <span class="o">=</span> <span class="f">float</span>(m.<span class="f">group</span>(<span class="n">1</span>)) <span class="k">if</span> m <span class="k">else</span> <span class="k">None</span>
+    out[<span class="s">"vendor"</span>] <span class="o">=</span> text.<span class="f">strip</span>().<span class="f">splitlines</span>()[<span class="n">0</span>].<span class="f">strip</span>()
+    <span class="k">return</span> out
+
+fields <span class="o">=</span> <span class="f">extract</span>(OCR_TEXT)
+<span class="f">print</span>(fields)</code></pre>
+
+  <h2>Step 3 — Validate and normalise</h2>
+  <p>Extraction gives you strings. Validation decides whether they’re usable — and normalising the date is where silent disasters hide (is 14/03 March or December?).</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step3_validate.py</span></div>
+<pre><code><span class="k">from</span> datetime <span class="k">import</span> datetime
+
+<span class="k">def</span> <span class="f">normalize_date</span>(d):
+    <span class="k">for</span> fmt <span class="k">in</span> (<span class="s">"%d/%m/%Y"</span>, <span class="s">"%m/%d/%Y"</span>):
+        <span class="k">try</span>:
+            <span class="k">return</span> datetime.<span class="f">strptime</span>(d, fmt).<span class="f">strftime</span>(<span class="s">"%Y-%m-%d"</span>)
+        <span class="k">except</span> <span class="f">ValueError</span>:
+            <span class="k">pass</span>
+    <span class="k">return</span> <span class="k">None</span>
+
+<span class="k">def</span> <span class="f">validate</span>(f):
+    errs <span class="o">=</span> []
+    <span class="k">if</span> <span class="k">not</span> f.<span class="f">get</span>(<span class="s">"invoice_no"</span>): errs.<span class="f">append</span>(<span class="s">"missing invoice number"</span>)
+    <span class="k">if</span> <span class="k">not</span> f.<span class="f">get</span>(<span class="s">"vendor"</span>):     errs.<span class="f">append</span>(<span class="s">"missing vendor"</span>)
+    <span class="k">if</span> f.<span class="f">get</span>(<span class="s">"total"</span>) <span class="k">is</span> <span class="k">None</span>:
+        errs.<span class="f">append</span>(<span class="s">"missing total"</span>)
+    <span class="k">elif</span> <span class="k">not</span> (<span class="n">0</span> <span class="o">&lt;</span> f[<span class="s">"total"</span>] <span class="o">&lt;</span> <span class="n">100000</span>):
+        errs.<span class="f">append</span>(<span class="s">"total out of plausible range"</span>)
+    iso <span class="o">=</span> <span class="f">normalize_date</span>(f.<span class="f">get</span>(<span class="s">"date"</span>) <span class="k">or</span> <span class="s">""</span>)
+    <span class="k">if</span> <span class="k">not</span> iso:
+        errs.<span class="f">append</span>(<span class="s">"unparseable date"</span>)
+    <span class="k">else</span>:
+        f[<span class="s">"date"</span>] <span class="o">=</span> iso
+    <span class="k">return</span> f, errs
+
+fields, errs <span class="o">=</span> <span class="f">validate</span>(fields)
+<span class="f">print</span>(fields)
+<span class="f">print</span>(<span class="s">"problems:"</span>, errs <span class="k">or</span> <span class="s">"none"</span>)</code></pre>
+
+  <h2>Step 4 — Cross-check, then decide who sees it</h2>
+  <p>The strongest defence against a confident wrong number is a second, independent calculation. Then route by risk — because paying the wrong invoice is not reversible.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step4_route.py</span></div>
+<pre><code>LINE_ITEMS <span class="o">=</span> [(<span class="s">"Widget A"</span>, <span class="n">3</span>, <span class="n">40.00</span>), (<span class="s">"Cable pack"</span>, <span class="n">2</span>, <span class="n">15.50</span>), (<span class="s">"Shipping"</span>, <span class="n">1</span>, <span class="n">9.99</span>)]
+
+<span class="k">def</span> <span class="f">cross_check</span>(total, items, tolerance<span class="o">=</span><span class="n">0.01</span>):
+    computed <span class="o">=</span> <span class="f">round</span>(<span class="f">sum</span>(q <span class="o">*</span> p <span class="k">for</span> _, q, p <span class="k">in</span> items), <span class="n">2</span>)
+    <span class="k">return</span> computed, <span class="f">abs</span>(computed <span class="o">-</span> total) <span class="o">&lt;=</span> tolerance
+
+computed, matches <span class="o">=</span> <span class="f">cross_check</span>(fields[<span class="s">"total"</span>], LINE_ITEMS)
+<span class="f">print</span>(<span class="s">"line items sum to"</span>, computed, <span class="s">"| invoice says"</span>, fields[<span class="s">"total"</span>], <span class="s">"| match:"</span>, matches)
+
+<span class="k">def</span> <span class="f">route</span>(f, errs, matches, auto_limit<span class="o">=</span><span class="n">500</span>):
+    <span class="k">if</span> errs:            <span class="k">return</span> <span class="s">"HUMAN REVIEW - extraction problems: "</span> <span class="o">+</span> <span class="f">str</span>(errs)
+    <span class="k">if</span> <span class="k">not</span> matches:    <span class="k">return</span> <span class="s">"HUMAN REVIEW - total does not match line items"</span>
+    <span class="k">if</span> f[<span class="s">"total"</span>] <span class="o">&gt;</span> auto_limit:
+        <span class="k">return</span> <span class="s">"HUMAN APPROVAL - amount above the auto-pay limit"</span>
+    <span class="k">return</span> <span class="s">"AUTO-APPROVED"</span>
+
+<span class="f">print</span>(<span class="f">route</span>(fields, errs, matches))</code></pre>
+
+  <div class="box practice">
+    <div class="box-label">Make it yours</div>
+    <p><strong>1.</strong> Change the invoice total to <code>1600.99</code> in <code>OCR_TEXT</code> and re-run Steps 2–4. Which guard catches it — and would a VLM alone have noticed?<br>
+    <strong>2.</strong> The date <code>14/03/2025</code> is unambiguous, but <code>03/04/2025</code> is not. What should the system do when both formats parse?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> The cross-check catches it — the line items sum to 160.99 and the stated total doesn't match, so it routes to a human. A VLM reading the document alone would happily report 1600.99 with full confidence, because it has nothing to compare against. Independent verification beats a better reader.</p>
+        <p><strong>2.</strong> Don't guess. Either use a locale/vendor convention you can justify, or flag it for review. A silently mis-parsed date can shift a payment by months, and nothing in the output would look wrong.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">What you built</div>
+    <ul>
+      <li><strong>Field extraction</strong> from realistic, messy document text.</li>
+      <li><strong>Validation and normalisation</strong>, including the date trap.</li>
+      <li>An <strong>independent cross-check</strong> against line items.</li>
+      <li><strong>Risk-based routing</strong> — auto-approve, review, or require a human.</li>
+    </ul>
+    <p>Accuracy alone doesn't make extraction shippable. Calibrated uncertainty and a human handoff do.</p>
+  </div>
+
+  <p>Next: where the field is heading, and building it responsibly — <strong>Track&nbsp;16.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lab: Build a tiny RAG pipeline — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="3.10">
+<main class="lesson">
+
+  <span class="eyebrow">Track 3 · Lab</span>
+  <h1>Lab: Build a tiny RAG pipeline</h1>
+  <p class="lead">Chunk, embed, retrieve, ground — the whole pipeline, written by you in plain Python, running in this page. No vector database, no API key. Once you’ve built it small, the production version is just the same shape with better parts.</p>
+
+  <div class="box note">
+    <div class="box-label">How to use this lab</div>
+    <p>Run the cells <strong>in order</strong> — they share memory like a notebook. Then break things: change the question, drop a chunk, and watch retrieval respond.</p>
+  </div>
+
+  <h2>Step 1 — Chunk the documents</h2>
+  <p>Retrieval works over <em>chunks</em>, not whole documents, so the model gets a small, relevant slice instead of everything. Here each line is one chunk; real systems split on paragraphs or a fixed size with overlap.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step1_chunk.py</span></div>
+<pre><code>DOC <span class="o">=</span> <span class="s">"""Refunds are issued within 5 business days to your original payment method.</span>
+<span class="s">You can return any item within 30 days of delivery for a full refund.</span>
+<span class="s">Standard shipping is free on orders over $50; express shipping costs $9.99.</span>
+<span class="s">Our support team is available Monday to Friday, 9am to 6pm EST.</span>
+<span class="s">To reset your password, click Forgot Password on the login page.</span>
+<span class="s">Gift cards are non-refundable and never expire."""</span>
+
+chunks <span class="o">=</span> [c.<span class="f">strip</span>() <span class="k">for</span> c <span class="k">in</span> DOC.<span class="f">split</span>(<span class="s">"\n"</span>) <span class="k">if</span> c.<span class="f">strip</span>()]
+<span class="k">for</span> i, c <span class="k">in</span> <span class="f">enumerate</span>(chunks):
+    <span class="f">print</span>(i, <span class="s">"|"</span>, c[:<span class="n">58</span>])
+<span class="f">print</span>(<span class="s">"total chunks:"</span>, <span class="f">len</span>(chunks))</code></pre>
+
+  <h2>Step 2 — Turn text into vectors, and compare them</h2>
+  <p>Real systems use an embedding model; the <em>idea</em> is identical and you can build it here: represent each chunk as a bag of meaningful words, then measure similarity as the cosine of the angle between two vectors. Same maths, smaller brain.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step2_vectors.py</span></div>
+<pre><code><span class="k">import</span> math, re
+<span class="k">from</span> collections <span class="k">import</span> Counter
+
+STOP <span class="o">=</span> {<span class="s">"the"</span>,<span class="s">"a"</span>,<span class="s">"an"</span>,<span class="s">"is"</span>,<span class="s">"are"</span>,<span class="s">"to"</span>,<span class="s">"of"</span>,<span class="s">"for"</span>,<span class="s">"on"</span>,<span class="s">"in"</span>,<span class="s">"do"</span>,<span class="s">"my"</span>,<span class="s">"you"</span>,<span class="s">"your"</span>,<span class="s">"can"</span>,<span class="s">"how"</span>,<span class="s">"and"</span>,<span class="s">"it"</span>}
+
+<span class="k">def</span> <span class="f">vec</span>(text):
+    words <span class="o">=</span> [w <span class="k">for</span> w <span class="k">in</span> re.<span class="f">findall</span>(<span class="s">r"[a-z0-9]+"</span>, text.<span class="f">lower</span>())
+             <span class="k">if</span> w <span class="k">not</span> <span class="k">in</span> STOP <span class="k">and</span> <span class="f">len</span>(w) <span class="o">&gt;</span> <span class="n">2</span>]
+    <span class="k">return</span> <span class="f">Counter</span>(words)
+
+<span class="k">def</span> <span class="f">cosine</span>(a, b):
+    shared <span class="o">=</span> <span class="f">set</span>(a) <span class="o">&amp;</span> <span class="f">set</span>(b)
+    dot <span class="o">=</span> <span class="f">sum</span>(a[w] <span class="o">*</span> b[w] <span class="k">for</span> w <span class="k">in</span> shared)
+    na <span class="o">=</span> math.<span class="f">sqrt</span>(<span class="f">sum</span>(v<span class="o">*</span>v <span class="k">for</span> v <span class="k">in</span> a.<span class="f">values</span>()))
+    nb <span class="o">=</span> math.<span class="f">sqrt</span>(<span class="f">sum</span>(v<span class="o">*</span>v <span class="k">for</span> v <span class="k">in</span> b.<span class="f">values</span>()))
+    <span class="k">return</span> dot <span class="o">/</span> (na <span class="o">*</span> nb) <span class="k">if</span> na <span class="k">and</span> nb <span class="k">else</span> <span class="n">0.0</span>
+
+index <span class="o">=</span> [(c, <span class="f">vec</span>(c)) <span class="k">for</span> c <span class="k">in</span> chunks]
+<span class="f">print</span>(<span class="s">"indexed"</span>, <span class="f">len</span>(index), <span class="s">"chunks"</span>)
+<span class="f">print</span>(<span class="s">"vector for chunk 0:"</span>, <span class="f">dict</span>(<span class="f">vec</span>(chunks[<span class="n">0</span>])))</code></pre>
+
+  <h2>Step 3 — Retrieve the top-k</h2>
+  <p>Score every chunk against the question and keep the best few. Notice the third question: nothing scores above zero, which is the signal a good system uses to say “I don’t know” instead of inventing an answer.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step3_retrieve.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">retrieve</span>(query, k<span class="o">=</span><span class="n">2</span>):
+    qv <span class="o">=</span> <span class="f">vec</span>(query)
+    scored <span class="o">=</span> [(<span class="f">cosine</span>(qv, cv), c) <span class="k">for</span> c, cv <span class="k">in</span> index]
+    scored.<span class="f">sort</span>(reverse<span class="o">=</span><span class="k">True</span>, key<span class="o">=</span><span class="k">lambda</span> x: x[<span class="n">0</span>])
+    <span class="k">return</span> [(<span class="f">round</span>(s, <span class="n">3</span>), c) <span class="k">for</span> s, c <span class="k">in</span> scored[:k] <span class="k">if</span> s <span class="o">&gt;</span> <span class="n">0</span>]
+
+<span class="k">for</span> q <span class="k">in</span> [<span class="s">"How long do refunds take?"</span>, <span class="s">"Is shipping free?"</span>, <span class="s">"What is the capital of France?"</span>]:
+    <span class="f">print</span>(<span class="s">"\nQ:"</span>, q)
+    hits <span class="o">=</span> <span class="f">retrieve</span>(q)
+    <span class="k">if</span> <span class="k">not</span> hits:
+        <span class="f">print</span>(<span class="s">"   (nothing relevant — the system should refuse)"</span>)
+    <span class="k">for</span> s, c <span class="k">in</span> hits:
+        <span class="f">print</span>(<span class="s">"  "</span>, s, <span class="s">"|"</span>, c[:<span class="n">58</span>])</code></pre>
+
+  <h2>Step 4 — Ground the answer</h2>
+  <p>The final move: put only the retrieved chunks into the prompt, demand citations, and instruct the model to refuse when the context doesn’t contain the answer. This prompt is what actually stops hallucination.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step4_ground.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">build_prompt</span>(query, k<span class="o">=</span><span class="n">2</span>):
+    hits <span class="o">=</span> <span class="f">retrieve</span>(query, k)
+    <span class="k">if</span> <span class="k">not</span> hits:
+        <span class="k">return</span> <span class="k">None</span>
+    context <span class="o">=</span> <span class="s">"\n"</span>.<span class="f">join</span>(<span class="s">f"[</span>{i<span class="o">+</span><span class="n">1</span>}<span class="s">] </span>{c}<span class="s">"</span> <span class="k">for</span> i, (s, c) <span class="k">in</span> <span class="f">enumerate</span>(hits))
+    <span class="k">return</span> (<span class="s">"Answer using ONLY the context. Cite sources like [1].\n"</span>
+            <span class="s">"If the answer is not in the context, say you don't know.\n\n"</span>
+            <span class="s">"Context:\n"</span> <span class="o">+</span> context <span class="o">+</span> <span class="s">"\n\nQuestion: "</span> <span class="o">+</span> query <span class="o">+</span> <span class="s">"\nAnswer:"</span>)
+
+<span class="f">print</span>(<span class="f">build_prompt</span>(<span class="s">"How long do refunds take?"</span>))
+<span class="f">print</span>(<span class="s">"\n--- an unanswerable question ---"</span>)
+<span class="f">print</span>(<span class="f">build_prompt</span>(<span class="s">"What is the capital of France?"</span>))</code></pre>
+
+  <div class="box key">
+    <div class="box-label">What just happened</div>
+    <p>The last line printed <code>None</code> — no context, so no prompt, so no answer. That refusal path is not a failure; it’s the single most valuable behaviour a grounded system has. A RAG app that guesses when it has nothing is worse than one that admits it.</p>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Make it yours</div>
+    <p><strong>1.</strong> Ask <em>“How do I change my password?”</em> — it retrieves the reset chunk even though the words differ a little. Why does it still work, and where would this simple approach fail?<br>
+    <strong>2.</strong> Set <code>k=4</code> in Step 4. Does the prompt get better or just longer?<br>
+    <strong>3.</strong> Add your own document lines to <code>DOC</code>, re-run Steps 1–4, and query them.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> It works because “password” overlaps literally. It fails the moment wording diverges — ask “I’m locked out of my account” and this bag-of-words scorer finds nothing, because it matches <em>words</em>, not <em>meaning</em>. That gap is precisely why production RAG uses embedding models: they place “locked out” near “reset password” in vector space. You just felt the limitation that justifies the whole embedding stack.</p>
+        <p><strong>2.</strong> Longer, and usually slightly worse — you drag in irrelevant chunks that distract the model and cost tokens. More context is not more accuracy; that’s why reranking and tight top-k matter (Track 12).</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">What you built</div>
+    <ul>
+      <li><strong>Chunking</strong> — splitting documents into retrievable units.</li>
+      <li><strong>Vectors + cosine similarity</strong> — the maths behind every embedding search.</li>
+      <li><strong>Top-k retrieval</strong> with a real relevance threshold.</li>
+      <li><strong>A grounding prompt</strong> with citations and an explicit refusal path.</li>
+    </ul>
+    <p>Swap your <code>vec()</code> for an embedding model and your list for a vector database, and this is production RAG. The shape doesn’t change.</p>
+  </div>
+
+  <p>You’ve built retrieval end to end. Next you’ll let the model take actions: <strong>Track&nbsp;4, Agents &amp; Tool Use.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lab: Prepare data &amp; size a LoRA — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-base="../" data-lesson="5.8">
+<main class="lesson">
+
+  <span class="eyebrow">Track 5 · Lab</span>
+  <h1>Lab: Prepare data and size a LoRA</h1>
+  <p class="lead">Fine-tuning is 90% data work and a little arithmetic. You’ll build a training dataset, run the quality checks that decide whether the tune succeeds, compute exactly how few parameters LoRA trains — and write the decision function that tells you whether to fine-tune at all.</p>
+
+  <div class="box note">
+    <div class="box-label">How to use this lab</div>
+    <p>Run the cells <strong>in order</strong> — they share memory. No GPU required: this is the preparation and the maths, which is where the real decisions live.</p>
+  </div>
+
+  <h2>Step 1 — Build the dataset</h2>
+  <p>Instruction tuning wants a consistent shape: an instruction, an optional input, and the output you want the model to imitate.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step1_dataset.py</span></div>
+<pre><code><span class="k">import</span> json
+
+RAW <span class="o">=</span> [
+    {<span class="s">"question"</span>: <span class="s">"How long do refunds take?"</span>,   <span class="s">"answer"</span>: <span class="s">"Refunds take 5 business days."</span>},
+    {<span class="s">"question"</span>: <span class="s">"Is shipping free?"</span>,           <span class="s">"answer"</span>: <span class="s">"Shipping is free on orders over $50."</span>},
+    {<span class="s">"question"</span>: <span class="s">"How do I reset my password?"</span>, <span class="s">"answer"</span>: <span class="s">"Use Forgot Password on the login page."</span>},
+]
+
+<span class="k">def</span> <span class="f">to_instruction</span>(row):
+    <span class="k">return</span> {<span class="s">"instruction"</span>: <span class="s">"Answer the customer's question in one sentence."</span>,
+            <span class="s">"input"</span>: row[<span class="s">"question"</span>], <span class="s">"output"</span>: row[<span class="s">"answer"</span>]}
+
+dataset <span class="o">=</span> [<span class="f">to_instruction</span>(r) <span class="k">for</span> r <span class="k">in</span> RAW]
+<span class="k">for</span> d <span class="k">in</span> dataset[:<span class="n">2</span>]:
+    <span class="f">print</span>(json.<span class="f">dumps</span>(d))
+<span class="f">print</span>(<span class="s">"examples:"</span>, <span class="f">len</span>(dataset))</code></pre>
+
+  <h2>Step 2 — Quality checks that decide the outcome</h2>
+  <p>Duplicates teach the model to over-weight one answer; short outputs teach it to be unhelpful. Catching these beats any hyper-parameter tuning.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step2_quality.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">check</span>(rows, min_len<span class="o">=</span><span class="n">10</span>):
+    clean, problems, seen <span class="o">=</span> [], [], <span class="f">set</span>()
+    <span class="k">for</span> i, d <span class="k">in</span> <span class="f">enumerate</span>(rows):
+        <span class="k">if</span> <span class="k">not</span> d.<span class="f">get</span>(<span class="s">"output"</span>) <span class="k">or</span> <span class="f">len</span>(d[<span class="s">"output"</span>]) <span class="o">&lt;</span> min_len:
+            problems.<span class="f">append</span>((i, <span class="s">"output too short"</span>)); <span class="k">continue</span>
+        key <span class="o">=</span> d[<span class="s">"input"</span>].<span class="f">strip</span>().<span class="f">lower</span>()
+        <span class="k">if</span> key <span class="k">in</span> seen:
+            problems.<span class="f">append</span>((i, <span class="s">"duplicate input"</span>)); <span class="k">continue</span>
+        seen.<span class="f">add</span>(key); clean.<span class="f">append</span>(d)
+    <span class="k">return</span> clean, problems
+
+noisy <span class="o">=</span> dataset <span class="o">+</span> [dataset[<span class="n">0</span>], {<span class="s">"instruction"</span>: <span class="s">"x"</span>, <span class="s">"input"</span>: <span class="s">"hi"</span>, <span class="s">"output"</span>: <span class="s">"ok"</span>}]
+clean, problems <span class="o">=</span> <span class="f">check</span>(noisy)
+<span class="f">print</span>(<span class="s">"kept:"</span>, <span class="f">len</span>(clean), <span class="s">"of"</span>, <span class="f">len</span>(noisy))
+<span class="f">print</span>(<span class="s">"dropped:"</span>, problems)</code></pre>
+
+  <h2>Step 3 — Why LoRA is cheap (the actual numbers)</h2>
+  <p>Full fine-tuning updates every weight. LoRA freezes them and trains two small matrices per projection. Run this and see the ratio for yourself — it’s the reason you can tune on free Colab.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step3_lora_math.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">full_params</span>(d_model, n_layers):
+    <span class="k">return</span> <span class="n">4</span> <span class="o">*</span> d_model <span class="o">*</span> d_model <span class="o">*</span> n_layers        <span class="c"># 4 big d x d projections per layer</span>
+
+<span class="k">def</span> <span class="f">lora_params</span>(d_model, n_layers, rank):
+    <span class="k">return</span> <span class="n">4</span> <span class="o">*</span> <span class="n">2</span> <span class="o">*</span> d_model <span class="o">*</span> rank <span class="o">*</span> n_layers     <span class="c"># two d x r matrices instead</span>
+
+d, layers <span class="o">=</span> <span class="n">4096</span>, <span class="n">32</span>
+full <span class="o">=</span> <span class="f">full_params</span>(d, layers)
+<span class="f">print</span>(<span class="s">"full fine-tune trainable params:"</span>, <span class="f">format</span>(full, <span class="s">","</span>))
+<span class="k">for</span> r <span class="k">in</span> (<span class="n">4</span>, <span class="n">8</span>, <span class="n">16</span>, <span class="n">64</span>):
+    lo <span class="o">=</span> <span class="f">lora_params</span>(d, layers, r)
+    <span class="f">print</span>(<span class="s">"  rank"</span>, r, <span class="s">"-> "</span>, <span class="f">format</span>(lo, <span class="s">","</span>), <span class="s">" = "</span>,
+          <span class="f">round</span>(lo <span class="o">/</span> full <span class="o">*</span> <span class="n">100</span>, <span class="n">3</span>), <span class="s">"% of the weights"</span>)</code></pre>
+
+  <div class="box key">
+    <div class="box-label">Read that output again</div>
+    <p>At rank 8 you train well under <b>1%</b> of the parameters — which is why the adapter is a few megabytes, why it fits in free GPU memory, and why you can keep one base model with many swappable adapters.</p>
+  </div>
+
+  <h2>Step 4 — Should you fine-tune at all?</h2>
+  <p>The most valuable output of this track is often “don’t”. Encode the decision so it isn’t a vibe.</p>
+  <div class="code-label"><span class="dot"></span><span class="fname">step4_decide.py</span></div>
+<pre><code><span class="k">def</span> <span class="f">should_finetune</span>(need_fresh_facts, need_style, examples, tried_prompting):
+    <span class="k">if</span> need_fresh_facts:
+        <span class="k">return</span> <span class="s">"No - use RAG. Fine-tuning does not add changing knowledge."</span>
+    <span class="k">if</span> <span class="k">not</span> tried_prompting:
+        <span class="k">return</span> <span class="s">"Not yet - try prompting and few-shot first."</span>
+    <span class="k">if</span> examples <span class="o">&lt;</span> <span class="n">200</span>:
+        <span class="k">return</span> <span class="s">"Probably not - gather more examples first."</span>
+    <span class="k">if</span> need_style:
+        <span class="k">return</span> <span class="s">"Yes - consistent style/format is what fine-tuning is for."</span>
+    <span class="k">return</span> <span class="s">"Maybe - measure whether prompting already clears the bar."</span>
+
+<span class="f">print</span>(<span class="f">should_finetune</span>(<span class="k">True</span>,  <span class="k">False</span>, <span class="n">5000</span>, <span class="k">True</span>))
+<span class="f">print</span>(<span class="f">should_finetune</span>(<span class="k">False</span>, <span class="k">True</span>,  <span class="n">1000</span>, <span class="k">True</span>))
+<span class="f">print</span>(<span class="f">should_finetune</span>(<span class="k">False</span>, <span class="k">True</span>,  <span class="n">50</span>,   <span class="k">True</span>))
+<span class="f">print</span>(<span class="f">should_finetune</span>(<span class="k">False</span>, <span class="k">True</span>,  <span class="n">1000</span>, <span class="k">False</span>))</code></pre>
+
+  <div class="box practice">
+    <div class="box-label">Make it yours</div>
+    <p><strong>1.</strong> Change the rank from 8 to 64 and recompute the trainable percentage. At what point does LoRA stop being the cheap option?<br>
+    <strong>2.</strong> You have 200 clean examples and a factual-accuracy problem. Run <code>should_finetune()</code> — then defend the answer in your own words.</p>
+    <details class="sol">
+      <summary><span class="chev">&#9656; </span>Show reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> Trainable parameters grow roughly linearly with rank, so rank 64 is about eight times rank 8. It's still far below full fine-tuning, but the gap narrows while the quality gain flattens — most tasks see little benefit above rank 16&#8211;32. High rank means you're paying for capacity you can't fill with a small dataset.</p>
+        <p><strong>2.</strong> Don't fine-tune. Two hundred examples is thin, and more importantly fine-tuning teaches <em>form</em> &#8212; tone, structure, output format &#8212; not <em>facts</em>. A factual-accuracy problem is a retrieval problem. Fine-tuning on it produces a model that's confidently wrong in a more consistent voice.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">What you built</div>
+    <ul>
+      <li>An <strong>instruction dataset</strong> in the shape trainers expect.</li>
+      <li><strong>Quality gates</strong> — dedupe and length checks that decide success.</li>
+      <li>The <strong>LoRA parameter maths</strong>, in real numbers.</li>
+      <li>A <strong>decision function</strong> that tells you when <em>not</em> to fine-tune.</li>
+    </ul>
+  </div>
+
+  <p>Next: proving quality — <strong>Track&nbsp;6, Evals &amp; Observability.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js"></script>
+<script src="../assets/app.js"></script>
+</body>
+</html>
