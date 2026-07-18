@@ -36,7 +36,7 @@
   }
   /* ---- interactive labs (mounted per data-lab attribute) ---- */
   if (!document.getElementById("age-labs")) {
-    var ls = document.createElement("script"); ls.id = "age-labs"; ls.src = link("assets/labs.js");
+    var ls = document.createElement("script"); ls.id = "age-labs"; ls.src = link("assets/labs.js?v=2");
     document.head.appendChild(ls);
   }
 
@@ -62,6 +62,8 @@
   for (var i = 0; i < flat.length; i++) { if (flat[i].n === curN) { curIdx = i; break; } }
   var cur = curIdx >= 0 ? flat[curIdx] : null;
 
+  function isLab(l) { return /lab\.html$/.test(l.file || ""); }
+
   /* =============== HEADER =============== */
   var header = el("header", "site-header");
   var brand = el("a", "brand");
@@ -71,6 +73,9 @@
   var pgl = el("a", "hdr-link hdr-play", "▶ Playground");
   pgl.href = link("playground.html");
   header.appendChild(pgl);
+  var lbl = el("a", "hdr-link hdr-labs", "⚙ Labs");
+  lbl.href = link("labs.html");
+  header.appendChild(lbl);
   var rvl = el("a", "hdr-link hdr-review");
   rvl.href = link("review.html");
   var _dc = dueCount();
@@ -123,9 +128,10 @@
       if (l.built) {
         var a = el("a");
         a.href = link(l.file);
-        var cls = []; if (l.n === curN) cls.push("active"); if (DONE[l.n]) cls.push("done");
+        var cls = []; if (l.n === curN) cls.push("active"); if (DONE[l.n]) cls.push("done"); if (isLab(l)) cls.push("is-lab");
         if (cls.length) a.className = cls.join(" ");
         a.innerHTML = '<span class="ln">' + l.n + '</span><span>' + l.title + "</span>" +
+          (isLab(l) ? '<span class="ln-lab">LAB</span>' : "") +
           (DONE[l.n] ? '<span class="ln-check" aria-hidden="true">&#10003;</span>' : "");
         li.appendChild(a);
       } else {
@@ -236,7 +242,8 @@
       var card = el("div", "track-card" + (s.ready ? "" : " locked") + (allDone ? " complete" : ""));
       var statusCls = s.ready ? "ready" : "soon";
       var statusTxt = s.ready ? (allDone ? "✓ Done" : "Ready") : "Coming next";
-      var meta = s.ready ? built + " lessons &middot; concept, demo, quiz, practice" : s.lessons.length + " lessons planned";
+      var nLabs = s.lessons.filter(function (l) { return l.built && isLab(l); }).length;
+      var meta = s.ready ? built + " lessons" + (nLabs ? " &middot; <b>" + nLabs + " hands-on lab</b>" : "") + " &middot; concept, demo, quiz, practice" : s.lessons.length + " lessons planned";
       var prog = s.ready ? '<span class="tk-prog"><span class="tk-prog-t">' + d + '/' + built + '</span><span class="tk-prog-bar"><i style="width:' + (built ? Math.round(d / built * 100) : 0) + '%"></i></span></span>' : "";
       var head = el("button", "tk-head"); head.type = "button"; head.setAttribute("aria-expanded", "false");
       head.innerHTML =
@@ -255,8 +262,9 @@
           var li = el("li");
           if (l.built) {
             var a = el("a"); a.href = link(l.file);
-            if (DONE[l.n]) a.className = "done";
+            var rc = []; if (DONE[l.n]) rc.push("done"); if (isLab(l)) rc.push("is-lab"); if (rc.length) a.className = rc.join(" ");
             a.innerHTML = '<span class="ln">' + l.n + '</span><span>' + l.title + "</span>" +
+          (isLab(l) ? '<span class="ln-lab">LAB</span>' : "") +
               (DONE[l.n] ? '<span class="ln-check" aria-hidden="true">&#10003;</span>' : "");
             li.appendChild(a);
           } else {

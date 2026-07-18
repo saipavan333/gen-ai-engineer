@@ -781,3 +781,56 @@ body{ background: transparent; }
 .run-btn.colab{ background:linear-gradient(180deg,#f59e0b,#d97706); color:#2b1a02; }
 .copy-btn{ font-family:var(--font-body); font-weight:600; font-size:12.5px; color:var(--ink-soft); background:transparent; border:1px solid var(--line); border-radius:8px; padding:6px 12px; cursor:pointer; }
 .copy-btn:hover{ border-color:var(--accent); color:var(--accent-deep); }
+
+/* ============ LAB VISIBILITY (badges + labs index) ============ */
+.ln-lab{
+  margin-left:auto; flex:none;
+  font-size:.62rem; font-weight:800; letter-spacing:.09em;
+  padding:.16em .5em; border-radius:999px;
+  color:var(--accent-ink, #7dd3fc);
+  background:color-mix(in srgb, var(--accent, #38bdf8) 16%, transparent);
+  border:1px solid color-mix(in srgb, var(--accent, #38bdf8) 38%, transparent);
+}
+.nav-list a.is-lab .ln, .tk-lessons a.is-lab .ln{
+  color:var(--accent, #38bdf8); font-weight:700;
+}
+.nav-list a.is-lab, .tk-lessons a.is-lab{
+  background:color-mix(in srgb, var(--accent, #38bdf8) 7%, transparent);
+}
+.nav-list a.is-lab:hover, .tk-lessons a.is-lab:hover{
+  background:color-mix(in srgb, var(--accent, #38bdf8) 13%, transparent);
+}
+.hdr-labs{ white-space:nowrap; }
+
+/* labs index page */
+.labs-wrap{ max-width:1080px; margin:0 auto; padding:2.2rem 1.4rem 4rem; }
+.labs-head{ margin-bottom:2rem; }
+.labs-head h1{ margin:.2rem 0 .5rem; }
+.labs-head p{ color:var(--muted); max-width:62ch; line-height:1.65; }
+.labs-grid{
+  display:grid; gap:1rem;
+  grid-template-columns:repeat(auto-fill, minmax(290px, 1fr));
+}
+.lab-card2{
+  display:flex; flex-direction:column; gap:.55rem;
+  padding:1.1rem 1.15rem 1.2rem;
+  border:1px solid var(--line); border-radius:14px;
+  background:var(--surface);
+  text-decoration:none; color:inherit;
+  transition:transform .16s ease, border-color .16s ease, background .16s ease;
+}
+.lab-card2:hover{
+  transform:translateY(-3px);
+  border-color:color-mix(in srgb, var(--accent, #38bdf8) 52%, var(--line));
+  background:color-mix(in srgb, var(--accent, #38bdf8) 6%, var(--surface));
+}
+.lab-card2 .lc-track{
+  font-size:.68rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--accent, #38bdf8);
+}
+.lab-card2 h3{ margin:0; font-size:1.02rem; line-height:1.35; }
+.lab-card2 p{ margin:0; font-size:.88rem; line-height:1.6; color:var(--muted); }
+.lab-card2 .lc-go{
+  margin-top:auto; padding-top:.5rem;
+  font-size:.82rem; font-weight:650; color:var(--accent, #38bdf8);
+}
