@@ -904,10 +904,13 @@ body{ background: transparent; }
 
 /* preset button active state */
 .lab-ex-btn.on{
-  background:color-mix(in srgb, var(--accent, #38bdf8) 20%, transparent);
-  border-color:color-mix(in srgb, var(--accent, #38bdf8) 55%, transparent);
-  color:var(--fg);
+  background:var(--accent);
+  border-color:var(--accent);
+  color:#0e1117;
+  font-weight:750;
+  box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
 }
+.lab-ex-btn.on:hover{ background:var(--accent-deep, var(--accent)); color:#0e1117; }
 @media (max-width:560px){
   .wg-bar{ grid-template-columns:1fr; gap:.2rem; }
   .wb-v{ text-align:left; }
