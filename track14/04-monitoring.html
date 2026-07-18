@@ -4,12 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Monitoring in production — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=5">
+  <link rel="stylesheet" href="../assets/styles.css?v=6">
 </head>
-<body data-base="../" data-lesson="14.4">
+<body data-base="../" data-lesson="12.4">
 <main class="lesson">
 
-  <span class="eyebrow">Productionization &amp; LLMOps · Lesson 14.4</span>
+  <span class="eyebrow">Productionization &amp; LLMOps · Lesson 12.4</span>
   <h1>Monitoring in production</h1>
   <p class="lead">Your evals test what you thought of. Real users do what you didn’t. Monitoring is how you see the truth of your system in the wild — and turn its failures into the next round of improvements.</p>
 
@@ -34,7 +34,7 @@
 
   <h2>The loop that makes it worth it</h2>
   <p>Monitoring isn’t just dashboards to stare at — it’s the input to a loop. When you spot a class of failure in production (a question type that gets bad answers, an injection that slipped past), you do two things: fix it, and <strong>add it to your golden set</strong> so the eval gate (last lesson) prevents it forever.</p>
-  <p>Real user thumbs-downs become new test cases; live traffic becomes the source of your next eval improvements. This is the flywheel from Track&nbsp;6 and Track&nbsp;12, now closed end to end: monitor → find failures → fix + add to golden set → the gate blocks that failure forever → monitor again.</p>
+  <p>Real user thumbs-downs become new test cases; live traffic becomes the source of your next eval improvements. This is the flywheel from Track&nbsp;6 and Track&nbsp;11, now closed end to end: monitor → find failures → fix + add to golden set → the gate blocks that failure forever → monitor again.</p>
   <p>A system wired this way gets <em>more</em> reliable the longer it runs.</p>
 
   <h2>Watch an incident hide inside the average</h2>
@@ -96,7 +96,7 @@
   <p>You can now build, package, gate, deploy, and watch an LLM service. Let’s consolidate it the way an interviewer will test it. Next: the <strong>interview check</strong>.</p>
 
 </main>
-<script src="../assets/curriculum.js?v=5"></script>
-<script src="../assets/app.js?v=5"></script>
+<script src="../assets/curriculum.js?v=6"></script>
+<script src="../assets/app.js?v=6"></script>
 </body>
 </html>

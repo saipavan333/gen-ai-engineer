@@ -35,19 +35,18 @@
 <rect x="80" y="512.5" width="560" height="86" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
 <rect x="80" y="515" width="560" height="86" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
 <rect x="80" y="510" width="560" height="86" rx="13" ry="13" fill="url(#g_accent)" stroke="#4f46e5" stroke-width="1.8"/>
-<text x="360.0" y="544.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="18" fill="#312e81" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Prove it</text>
-<text x="360.0" y="559.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">9 · Interview Bank   |   10 · Capstones</text>
+<text x="360.0" y="544.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="18" fill="#312e81" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Specialize</text>
+<text x="360.0" y="559.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">9 · Text-to-SQL   |   10 · Multimodal   |   11 · Going Deeper</text>
 <rect x="80" y="632.5" width="560" height="86" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
 <rect x="80" y="635" width="560" height="86" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
 <rect x="80" y="630" width="560" height="86" rx="13" ry="13" fill="url(#g_practice)" stroke="#7c3aed" stroke-width="1.8"/>
-<text x="360.0" y="664.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="18" fill="#4c1d95" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Land it &amp; go further</text>
-<text x="360.0" y="679.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">11 · Get Hired   |   12 · Going Deeper</text>
+<text x="360.0" y="664.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="18" fill="#4c1d95" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Operate &amp; contextualize</text>
+<text x="360.0" y="679.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">12 · LLMOps   |   13 · Frontier &amp; Responsible AI</text>
 <rect x="80" y="752.5" width="560" height="86" rx="13" ry="13" fill="#0f172a" opacity="0.055"/>
 <rect x="80" y="755" width="560" height="86" rx="13" ry="13" fill="#1e293b" opacity="0.035"/>
 <rect x="80" y="750" width="560" height="86" rx="13" ry="13" fill="url(#g_ink)" stroke="#334155" stroke-width="1.8"/>
-<text x="360.0" y="776.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="18" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Specialize &amp; modernize</text>
-<text x="360.0" y="791.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">13 · Text-to-SQL   |   14 · LLMOps   |   15 · Multimodal</text>
-<text x="360.0" y="807.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">16 · Frontier &amp; Responsible AI</text>
+<text x="360.0" y="784.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="18" fill="#0f172a" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Prove it &amp; land it</text>
+<text x="360.0" y="799.0" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6675" text-anchor="middle" font-weight="normal" dominant-baseline="middle" xml:space="preserve">14 · Capstones   |   15 · Interview Bank   |   16 · Get Hired</text>
 <line x1="360" y1="116" x2="360.0" y2="136.0" stroke="#94a3b8" stroke-width="2.4" stroke-linecap="round"/>
 <polygon points="360.0,148.0 355.2,136.0 364.8,136.0" fill="#94a3b8"/>
 <line x1="360" y1="236" x2="360.0" y2="256.0" stroke="#94a3b8" stroke-width="2.4" stroke-linecap="round"/>

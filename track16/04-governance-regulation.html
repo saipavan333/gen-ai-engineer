@@ -4,12 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Governance &amp; regulation — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=5">
+  <link rel="stylesheet" href="../assets/styles.css?v=6">
 </head>
-<body data-base="../" data-lesson="16.4">
+<body data-base="../" data-lesson="13.4">
 <main class="lesson">
 
-  <span class="eyebrow">Frontier &amp; Responsible AI · Lesson 16.4</span>
+  <span class="eyebrow">Frontier &amp; Responsible AI · Lesson 13.4</span>
   <h1>Governance &amp; regulation</h1>
   <p class="lead">“Be responsible” is becoming “comply with the law.” You don’t need to be a lawyer, but you do need to understand how AI regulation is structured, because it shapes what you’re allowed to build and what you must document. This is the literacy interviewers increasingly expect.</p>
 
@@ -51,7 +51,7 @@
       <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
       <div class="sol-body">
         <p><strong>(a) FAQ chatbot → limited risk.</strong> Obligation: transparency — disclose to users that they’re talking to an AI, not a human. Otherwise light-touch.</p>
-        <p><strong>(b) Loan-scoring AI → high risk.</strong> Credit decisions materially affect people’s lives, so this tier brings the heavy obligations: documented risk management, data governance, bias/accuracy testing, human oversight (a person can review/override), transparency to affected people, and record-keeping. You’d design audit trails and disaggregated evaluation (Lesson 16.3) from day one.</p>
+        <p><strong>(b) Loan-scoring AI → high risk.</strong> Credit decisions materially affect people’s lives, so this tier brings the heavy obligations: documented risk management, data governance, bias/accuracy testing, human oversight (a person can review/override), transparency to affected people, and record-keeping. You’d design audit trails and disaggregated evaluation (Lesson 13.3) from day one.</p>
         <p><strong>(c) Spam filter → minimal risk.</strong> Essentially no special obligations — it’s a low-stakes classifier.</p>
         <p><strong>Why this matters:</strong> the same technology (an LLM classifier) lands in three different tiers purely because of <em>what decision it affects</em>. That’s the whole logic of risk-based regulation, and it’s why the first question for any new AI feature isn’t “can we build it?” but “what does it affect, and therefore what must it satisfy?” Knowing to ask that — and that the loan model needs oversight and documentation the spam filter doesn’t — is the literacy that keeps a team out of trouble and marks you as someone who thinks past the demo.</p>
       </div>
@@ -74,8 +74,8 @@
 
   <div class="box deep">
     <div class="box-label">Deep dive: governance is mostly engineering you already know</div>
-    <p>Here’s the reassuring part, and a genuinely strong interview point: much of what high-risk compliance <em>requires</em> is the good engineering this course already taught — just written down and made auditable. “Accuracy and robustness testing” is your evaluation suite (Track&nbsp;6). “Risk management and known limitations” is the failure-mode thinking and the model card (Lesson&nbsp;16.3). “Human oversight” is the human-in-the-loop design you use for high-stakes actions (Tracks&nbsp;7, 15).</p>
-    <p>“Record-keeping” is the tracing and logging from your production monitoring (Track&nbsp;14). “Data governance” is the pipeline and data-quality discipline you’ve done for a decade. Compliance isn’t a separate, alien workstream so much as the artifacts of responsible engineering, organized so an auditor (or a regulator) can inspect them.</p>
+    <p>Here’s the reassuring part, and a genuinely strong interview point: much of what high-risk compliance <em>requires</em> is the good engineering this course already taught — just written down and made auditable. “Accuracy and robustness testing” is your evaluation suite (Track&nbsp;6). “Risk management and known limitations” is the failure-mode thinking and the model card (Lesson&nbsp;13.3). “Human oversight” is the human-in-the-loop design you use for high-stakes actions (Tracks&nbsp;7, 15).</p>
+    <p>“Record-keeping” is the tracing and logging from your production monitoring (Track&nbsp;12). “Data governance” is the pipeline and data-quality discipline you’ve done for a decade. Compliance isn’t a separate, alien workstream so much as the artifacts of responsible engineering, organized so an auditor (or a regulator) can inspect them.</p>
     <p>That reframing is powerful in two ways. First, it means the right time to build for governance is <em>upfront</em>, because the eval sets, audit logs, documentation, and oversight steps are cheap to design in and expensive to retrofit — the same lesson as security and evals throughout the course.</p>
     <p>Second, it positions you well: a data engineer who can talk about audit trails, data governance, testing, and documentation is already fluent in the language of AI governance, because those are your existing strengths applied to a new domain. When an interviewer raises regulation, the answer that impresses isn’t reciting statutes — it’s “I’d identify the risk tier, and for high-risk uses I’d build in evaluation, human oversight, logging, and documentation from the start, because that’s both the responsible design and what compliance will require.” That connects ethics, engineering, and law in one sentence, which is exactly the maturity these questions are probing for.</p>
   </div>
@@ -83,7 +83,7 @@
   <p>You now understand where the field is going and how to build in it responsibly. Let’s consolidate it the way an interviewer will. Next: the <strong>interview check</strong> — and the finish line of the course.</p>
 
 </main>
-<script src="../assets/curriculum.js?v=5"></script>
-<script src="../assets/app.js?v=5"></script>
+<script src="../assets/curriculum.js?v=6"></script>
+<script src="../assets/app.js?v=6"></script>
 </body>
 </html>

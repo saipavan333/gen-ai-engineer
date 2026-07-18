@@ -4,12 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>The self-correcting SQL agent — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=5">
+  <link rel="stylesheet" href="../assets/styles.css?v=6">
 </head>
-<body data-base="../" data-lesson="13.4">
+<body data-base="../" data-lesson="9.4">
 <main class="lesson">
 
-  <span class="eyebrow">Structured Data &amp; Text-to-SQL · Lesson 13.4</span>
+  <span class="eyebrow">Structured Data &amp; Text-to-SQL · Lesson 9.4</span>
   <h1>The self-correcting SQL agent</h1>
   <p class="lead">First tries fail: a wrong column name, a bad join, a dialect quirk. The trick that makes text-to-SQL feel reliable is letting the system read its own error and fix itself — the agent loop from Track&nbsp;4, pointed at a database.</p>
 
@@ -23,14 +23,14 @@
   </figure>
 
   <h2>The loop, with guards</h2>
-  <p>As with any agent (Track&nbsp;4, and Track&nbsp;12’s reliability patterns), the loop must be <strong>bounded</strong>: cap the retries so a query it can’t fix doesn’t spin forever or run up cost. Two or three attempts catches almost all recoverable errors; past that, fail gracefully and tell the user (or hand off to a human).</p>
+  <p>As with any agent (Track&nbsp;4, and Track&nbsp;11’s reliability patterns), the loop must be <strong>bounded</strong>: cap the retries so a query it can’t fix doesn’t spin forever or run up cost. Two or three attempts catches almost all recoverable errors; past that, fail gracefully and tell the user (or hand off to a human).</p>
   <div class="code-label"><span class="dot"></span><span class="fname">sql_agent.py</span></div>
 <pre><code><span class="k">def</span> <span class="f">answer_question</span>(question, db_path, max_tries<span class="o">=</span><span class="n">3</span>):
-    messages <span class="o">=</span> <span class="f">build_prompt</span>(question)        <span class="c"># schema + question (Lesson 13.2)</span>
+    messages <span class="o">=</span> <span class="f">build_prompt</span>(question)        <span class="c"># schema + question (Lesson 9.2)</span>
     <span class="k">for</span> attempt <span class="k">in</span> <span class="f">range</span>(max_tries):
         sql <span class="o">=</span> <span class="f">llm</span>(messages)                  <span class="c"># model writes a SELECT</span>
         <span class="k">try</span>:
-            rows <span class="o">=</span> <span class="f">run_readonly</span>(sql, db_path)   <span class="c"># safe runner (Lesson 13.3)</span>
+            rows <span class="o">=</span> <span class="f">run_readonly</span>(sql, db_path)   <span class="c"># safe runner (Lesson 9.3)</span>
         <span class="k">except</span> <span class="f">Exception</span> <span class="k">as</span> err:
             <span class="c"># hand the DB's own error back and let it fix the query</span>
             messages <span class="o">+=</span> <span class="s">f"\nThat query failed with: </span>{err}<span class="s">\nFix it and return only SQL."</span>
@@ -60,7 +60,7 @@
       <summary><span class="chev">▸</span> Show solution &amp; reasoning</summary>
       <div class="sol-body">
         <p><strong>Exact error vs generic retry:</strong> the specific message localizes the fix. <code>no such column: customer.country</code> tells the model precisely what to change (the table is <code>customers</code>); <code>near "GROUP": syntax error</code> points at the clause to repair. A generic “try again” gives the model nothing new, so it’s likely to reproduce the same mistake — you’d be paying for another identical failure. Feeding back concrete observations is the core of what makes the agent loop work.</p>
-        <p><strong>Why bound the retries:</strong> some questions can’t be answered from the schema (the data simply isn’t there), and without a cap the loop would retry forever, burning time and money on an impossible task — the runaway-agent failure from Track&nbsp;12. A small cap catches the recoverable cases (the vast majority) and then fails gracefully with a helpful message, which is both cheaper and a better user experience than an infinite spinner. Bounded loops are non-negotiable in production.</p>
+        <p><strong>Why bound the retries:</strong> some questions can’t be answered from the schema (the data simply isn’t there), and without a cap the loop would retry forever, burning time and money on an impossible task — the runaway-agent failure from Track&nbsp;11. A small cap catches the recoverable cases (the vast majority) and then fails gracefully with a helpful message, which is both cheaper and a better user experience than an infinite spinner. Bounded loops are non-negotiable in production.</p>
       </div>
     </details>
   </div>
@@ -88,7 +88,7 @@
   <p>You can now build a safe, self-correcting text-to-SQL system. The last question is the one interviewers always ask: how do you know it’s any good? Next: the <strong>interview check</strong>, where evaluation ties it together.</p>
 
 </main>
-<script src="../assets/curriculum.js?v=5"></script>
-<script src="../assets/app.js?v=5"></script>
+<script src="../assets/curriculum.js?v=6"></script>
+<script src="../assets/app.js?v=6"></script>
 </body>
 </html>

@@ -4,12 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Reasoning models &amp; test-time compute — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=5">
+  <link rel="stylesheet" href="../assets/styles.css?v=6">
 </head>
-<body data-base="../" data-lesson="16.1">
+<body data-base="../" data-lesson="13.1">
 <main class="lesson">
 
-  <span class="eyebrow">Frontier &amp; Responsible AI · Lesson 16.1</span>
+  <span class="eyebrow">Frontier &amp; Responsible AI · Lesson 13.1</span>
   <h1>Reasoning models &amp; test-time compute</h1>
   <p class="lead">A major shift in the field: instead of only making models bigger, we now let them <em>think longer</em> at answer time. Understanding “reasoning models” and “test-time compute” keeps you current and helps you choose the right model for a job.</p>
 
@@ -77,7 +77,7 @@
   <div class="box deep">
     <div class="box-label">Deep dive: why this changes how you build, not just what you buy</div>
     <p>The rise of test-time compute has a few consequences worth carrying into interviews and design discussions. First, it adds a genuinely new dimension to the cost/latency thinking from Track&nbsp;8: “which model” is no longer just big-vs-small, it’s also how-hard-should-it-think, and both are routing decisions driven by task difficulty and your quality bar. A mature system might triage a request — cheap model first, escalate to a reasoning model only if the task looks hard or the first answer fails a check — spending expensive thinking exactly where it earns its keep. That triage is an architecture choice you can design, not a property of any single model.</p>
-    <p>Second, it reframes some problems you’d otherwise solve with elaborate agent scaffolding. A lot of early agent work manually orchestrated “think, then act, then reflect” loops (Track&nbsp;4, Track&nbsp;12) partly to squeeze more reasoning out of models that answered too quickly. As models internalize deep reasoning, some of that scaffolding gets simpler — the model does more of the careful thinking itself.</p>
+    <p>Second, it reframes some problems you’d otherwise solve with elaborate agent scaffolding. A lot of early agent work manually orchestrated “think, then act, then reflect” loops (Track&nbsp;4, Track&nbsp;11) partly to squeeze more reasoning out of models that answered too quickly. As models internalize deep reasoning, some of that scaffolding gets simpler — the model does more of the careful thinking itself.</p>
     <p>But not all of it: agents still need tools, memory, and bounded loops, and reasoning models still hallucinate, still can’t know private facts, and still need grounding and evaluation. The durable lesson is that the field advances by giving models new ways to spend compute — more parameters, more data, more inference-time thinking, more tools — and your job is to <em>compose</em> those capabilities into reliable systems.</p>
     <p>Knowing that reasoning is now a dial you can turn, at a price, is what lets you make that call deliberately instead of defaulting to the most expensive model for everything.</p>
   </div>
@@ -85,7 +85,7 @@
   <p>Reasoning is one frontier shift; there are several worth a working engineer’s awareness. Next: <strong>the modern frontier.</strong></p>
 
 </main>
-<script src="../assets/curriculum.js?v=5"></script>
-<script src="../assets/app.js?v=5"></script>
+<script src="../assets/curriculum.js?v=6"></script>
+<script src="../assets/app.js?v=6"></script>
 </body>
 </html>

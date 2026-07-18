@@ -4,12 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Capstone: a fine-tuned domain model — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=5">
+  <link rel="stylesheet" href="../assets/styles.css?v=6">
 </head>
-<body data-base="../" data-lesson="10.4">
+<body data-base="../" data-lesson="14.4">
 <main class="lesson">
 
-  <span class="eyebrow">Track 10 · Capstone 10.4</span>
+  <span class="eyebrow">Track 14 · Capstone 14.4</span>
   <h1>Capstone: a fine-tuned domain model</h1>
   <p class="lead">Fine-tune a small open model to adopt a specific behavior — a consistent format, tone, or narrow skill — using QLoRA on a free Colab GPU, then <em>prove</em> it improved without breaking general ability. This demonstrates Track 5 end to end and shows you can do the thing most candidates only talk about.</p>
 
@@ -91,10 +91,10 @@ general <span class="o">=</span> [<span class="s">"Translate 'hello' to French."
 
   <div class="box practice">
     <div class="box-label">Extensions</div>
-    <p><strong>1.</strong> Replace the format check with an <strong>LLM-as-judge</strong> (reuse your harness from 10.3) for richer quality scoring.<br>
+    <p><strong>1.</strong> Replace the format check with an <strong>LLM-as-judge</strong> (reuse your harness from 14.3) for richer quality scoring.<br>
     <strong>2.</strong> Demonstrate <strong>prompt-shrinking</strong> (Track 8.7): show the fine-tuned model needs a shorter prompt than the base to get the same behavior — quantify the token savings.<br>
     <strong>3.</strong> Try <strong>distillation</strong> (Track 5.1 deep dive): use a bigger model to generate training data for the small one.<br>
-    <strong>4.</strong> Combine with <strong>RAG</strong> (10.1): fine-tune for format/tone, retrieve for facts — the production pattern.</p>
+    <strong>4.</strong> Combine with <strong>RAG</strong> (14.1): fine-tune for format/tone, retrieve for facts — the production pattern.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> The interview narrative</summary>
       <div class="sol-body">
@@ -120,7 +120,7 @@ general <span class="o">=</span> [<span class="s">"Translate 'hello' to French."
   <p>You can build, measure, agent-ify, and fine-tune. The final capstone makes it all fast and cheap enough to actually run. Next: <strong>a cost &amp; latency-optimized chat service</strong>.</p>
 
 </main>
-<script src="../assets/curriculum.js?v=5"></script>
-<script src="../assets/app.js?v=5"></script>
+<script src="../assets/curriculum.js?v=6"></script>
+<script src="../assets/app.js?v=6"></script>
 </body>
 </html>

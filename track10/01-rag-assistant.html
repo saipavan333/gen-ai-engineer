@@ -4,12 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Capstone: RAG assistant over your docs — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=5">
+  <link rel="stylesheet" href="../assets/styles.css?v=6">
 </head>
-<body data-base="../" data-lesson="10.1">
+<body data-base="../" data-lesson="14.1">
 <main class="lesson">
 
-  <span class="eyebrow">Track 10 · Capstone 10.1</span>
+  <span class="eyebrow">Track 14 · Capstone 14.1</span>
   <h1>Capstone: a RAG assistant over your docs</h1>
   <p class="lead">Your flagship project: a grounded, cited question-answering assistant over documents <em>you</em> provide, with a real evaluation. It runs entirely free and local, demonstrates Tracks 1–8 in one artifact, and is the single best thing to show in an interview. Build it, and you can talk about every topic in this course from experience.</p>
 
@@ -85,7 +85,7 @@ Question: {question}"""</span>
         <span class="f">print</span>(r[<span class="s">"answer"</span>], <span class="s">"\n— sources:"</span>, <span class="f">set</span>(r[<span class="s">"sources"</span>]))</code></pre>
 
   <h2>Step 3 — Evaluate (the part that wins)</h2>
-  <p>Build a small golden set and measure retrieval (does the right source appear?) and grounding (does it abstain when it should?). This is what separates your project from everyone else’s (Track 6, Track 9.5).</p>
+  <p>Build a small golden set and measure retrieval (does the right source appear?) and grounding (does it abstain when it should?). This is what separates your project from everyone else’s (Track 6, Track 15.5).</p>
   <div class="code-label"><span class="dot"></span><span class="fname">eval.py</span></div>
 <pre><code><span class="k">from</span> rag <span class="k">import</span> answer
 
@@ -128,7 +128,7 @@ n <span class="o">=</span> <span class="f">len</span>(golden)
     <details class="sol">
       <summary><span class="chev">▸</span> How to talk about it in an interview</summary>
       <div class="sol-body">
-        <p>Anchor every answer to this project. <em>Fundamentals:</em> “I chunk into ~120-word pieces with overlap because tokens are the unit of retrieval and boundary ideas get lost otherwise.” <em>RAG:</em> “I separate retrieval and generation metrics so I know which half to fix.” <em>System design:</em> “Here’s how I’d scale it — a managed vector DB with ANN, hybrid + rerank, caching, and per-tenant filtering.” <em>Evals:</em> “I built a golden set and gate changes on it.” <em>Serving:</em> “At volume I’d cache and route easy queries to a smaller model.” <em>Behavioral:</em> “The trickiest bug was a retrieval miss from over-large chunks — I traced it, fixed chunking, and added an eval case so it can’t recur.” One project, every round (Track 9.4).</p>
+        <p>Anchor every answer to this project. <em>Fundamentals:</em> “I chunk into ~120-word pieces with overlap because tokens are the unit of retrieval and boundary ideas get lost otherwise.” <em>RAG:</em> “I separate retrieval and generation metrics so I know which half to fix.” <em>System design:</em> “Here’s how I’d scale it — a managed vector DB with ANN, hybrid + rerank, caching, and per-tenant filtering.” <em>Evals:</em> “I built a golden set and gate changes on it.” <em>Serving:</em> “At volume I’d cache and route easy queries to a smaller model.” <em>Behavioral:</em> “The trickiest bug was a retrieval miss from over-large chunks — I traced it, fixed chunking, and added an eval case so it can’t recur.” One project, every round (Track 15.4).</p>
       </div>
     </details>
   </div>
@@ -150,7 +150,7 @@ n <span class="o">=</span> <span class="f">len</span>(golden)
   <p>You have a flagship project that answers every interview round. Next, give a model the ability to <em>act</em>. Next capstone: <strong>a tool-using agent</strong>.</p>
 
 </main>
-<script src="../assets/curriculum.js?v=5"></script>
-<script src="../assets/app.js?v=5"></script>
+<script src="../assets/curriculum.js?v=6"></script>
+<script src="../assets/app.js?v=6"></script>
 </body>
 </html>

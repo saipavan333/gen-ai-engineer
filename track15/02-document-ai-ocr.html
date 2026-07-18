@@ -4,12 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Document AI &amp; OCR — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=5">
+  <link rel="stylesheet" href="../assets/styles.css?v=6">
 </head>
-<body data-base="../" data-lesson="15.2">
+<body data-base="../" data-lesson="10.2">
 <main class="lesson">
 
-  <span class="eyebrow">Multimodal AI · Lesson 15.2</span>
+  <span class="eyebrow">Multimodal AI · Lesson 10.2</span>
   <h1>Document AI &amp; OCR</h1>
   <p class="lead">Turning documents into structured data — invoices, forms, receipts, contracts — is the highest-value multimodal use case in business, and one VLMs changed overnight. This lesson covers OCR, the new VLM-based approach, and how to make extraction trustworthy.</p>
 
@@ -19,7 +19,7 @@
 
   <h2>The old way vs the new way</h2>
   <p><strong>The old way:</strong> OCR the document, then write rules and regular expressions to find fields (“the total is the number after the word ‘Total’”). This is brittle — every vendor’s invoice has a different layout, so the rules break constantly and each new format is a new engineering project. Teams spent years on this.</p>
-  <p><strong>The new way:</strong> hand the document image straight to a VLM and ask for structured output. The model reads the text <em>and understands the layout</em>, so it can find the total whether it’s top-right, bottom, or in a table — no per-vendor rules. You combine two things you already know: multimodal input (Lesson&nbsp;15.1) and structured JSON output (Track&nbsp;2), ideally validated against a schema (Track&nbsp;7).</p>
+  <p><strong>The new way:</strong> hand the document image straight to a VLM and ask for structured output. The model reads the text <em>and understands the layout</em>, so it can find the total whether it’s top-right, bottom, or in a table — no per-vendor rules. You combine two things you already know: multimodal input (Lesson&nbsp;10.1) and structured JSON output (Track&nbsp;2), ideally validated against a schema (Track&nbsp;7).</p>
   <div class="code-label"><span class="dot"></span><span class="fname">extract_invoice.py</span></div>
 <pre><code><span class="k">import</span> ollama, json
 <span class="k">from</span> pydantic <span class="k">import</span> BaseModel
@@ -83,14 +83,14 @@ data <span class="o">=</span> Invoice(<span class="o">**</span>json.<span class=
     <div class="box-label">Deep dive: how you evaluate an extraction system</div>
     <p>Document extraction is a place where the evaluation discipline from Track&nbsp;6 becomes very concrete, and interviewers love it because it’s measurable. You build a golden set of documents with hand-verified correct fields, then measure <strong>field-level accuracy</strong> — for each field (vendor, total, date), what fraction of documents did the system get exactly right?</p>
     <p>Aggregate accuracy hides problems, so you break it down by field (maybe <code>total</code> is 99% but <code>due_date</code> is 80% because of date-format confusion) and by document type or vendor (one layout may be far worse). That breakdown tells you exactly where to invest — a better prompt for dates, an OCR cross-check for totals, a human step for the one bad layout.</p>
-    <p>Two subtleties make you sound experienced. First, define “correct” carefully: is <code>4210.0</code> equal to <code>4210.00</code>? is a date correct in any format or only <code>YYYY-MM-DD</code>? Normalizing before comparison matters, exactly like comparing SQL result sets rather than strings (Track&nbsp;13). Second, distinguish the cost of different errors: a missing field the system <em>flags</em> as low-confidence is cheap (a human fills it in), while a wrong field returned with confidence is expensive (it flows into a payment).</p>
+    <p>Two subtleties make you sound experienced. First, define “correct” carefully: is <code>4210.0</code> equal to <code>4210.00</code>? is a date correct in any format or only <code>YYYY-MM-DD</code>? Normalizing before comparison matters, exactly like comparing SQL result sets rather than strings (Track&nbsp;9). Second, distinguish the cost of different errors: a missing field the system <em>flags</em> as low-confidence is cheap (a human fills it in), while a wrong field returned with confidence is expensive (it flows into a payment).</p>
     <p>So you don’t just maximize accuracy — you tune the system to prefer “I’m not sure, please check” over confident wrong answers on the fields that matter. Designing extraction around <em>calibrated uncertainty and human handoff</em>, not just raw accuracy, is what turns a flashy demo into something a finance team will actually trust with their invoices.</p>
   </div>
 
   <p>Vision covered — now the other sense. Next: <strong>audio: speech-to-text and text-to-speech.</strong></p>
 
 </main>
-<script src="../assets/curriculum.js?v=5"></script>
-<script src="../assets/app.js?v=5"></script>
+<script src="../assets/curriculum.js?v=6"></script>
+<script src="../assets/app.js?v=6"></script>
 </body>
 </html>

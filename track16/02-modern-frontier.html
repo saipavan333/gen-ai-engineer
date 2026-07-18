@@ -4,21 +4,21 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>The modern frontier — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=5">
+  <link rel="stylesheet" href="../assets/styles.css?v=6">
 </head>
-<body data-base="../" data-lesson="16.2">
+<body data-base="../" data-lesson="13.2">
 <main class="lesson">
 
-  <span class="eyebrow">Frontier &amp; Responsible AI · Lesson 16.2</span>
+  <span class="eyebrow">Frontier &amp; Responsible AI · Lesson 13.2</span>
   <h1>The modern frontier</h1>
   <p class="lead">The field moves fast enough that specifics go stale in months. This lesson isn’t a news roundup — it’s a durable map of the shifts that matter to a builder, and a way to stay current without drowning in hype.</p>
 
   <h2>The shifts worth tracking</h2>
   <p>A working engineer doesn’t need to chase every release, but should understand the directions the field is moving, because they change design decisions.</p>
-  <p><strong>Long context windows.</strong> Context windows have grown from a few thousand tokens to hundreds of thousands or millions. This is genuinely useful — you can feed whole documents or codebases — but it doesn’t make RAG obsolete, a claim you’ll hear and should push back on. Stuffing a million tokens is slow, expensive, and suffers “lost in the middle” (Track&nbsp;12); retrieval is still how you keep context small, cheap, relevant, and current. The shift changes the <em>balance</em> (you can retrieve fewer, larger chunks), not the principle.</p>
+  <p><strong>Long context windows.</strong> Context windows have grown from a few thousand tokens to hundreds of thousands or millions. This is genuinely useful — you can feed whole documents or codebases — but it doesn’t make RAG obsolete, a claim you’ll hear and should push back on. Stuffing a million tokens is slow, expensive, and suffers “lost in the middle” (Track&nbsp;11); retrieval is still how you keep context small, cheap, relevant, and current. The shift changes the <em>balance</em> (you can retrieve fewer, larger chunks), not the principle.</p>
   <p><strong>More capable agents.</strong> Tool use and multi-step reliability keep improving, making the agent patterns from Tracks&nbsp;4 and&nbsp;12 more practical — but the failure modes (compounding errors, loops, cost) and the mitigations (bounds, validation, evals) remain.</p>
   <p><strong>Small, efficient, and open models.</strong> Alongside the giant frontier models, small models keep getting more capable — many now run on a laptop or phone. Combined with strong <span class="term">open-weight</span> models (whose parameters you can download and run yourself), this makes cheap, private, local AI increasingly viable — exactly the free/local stack this course uses.</p>
-  <p><strong>Multimodal by default and reasoning as a dial.</strong> Text-only is becoming the exception; models increasingly see and hear (Track&nbsp;15), and inference-time reasoning (Lesson&nbsp;16.1) is now a lever you choose. The frontier is less “one bigger model” and more “a toolbox of capabilities you compose.”</p>
+  <p><strong>Multimodal by default and reasoning as a dial.</strong> Text-only is becoming the exception; models increasingly see and hear (Track&nbsp;10), and inference-time reasoning (Lesson&nbsp;13.1) is now a lever you choose. The frontier is less “one bigger model” and more “a toolbox of capabilities you compose.”</p>
 
   <h2>Open vs closed: a real design choice</h2>
   <p>One decision this surfaces is <span class="term">open-weight</span> vs <span class="term">closed</span> (API-only) models. Closed models (accessed over an API) often have the highest peak capability and require no infrastructure, but you send data to a third party, pay per token, and can’t control versioning. Open-weight models you run yourself give you control, privacy (data never leaves your environment), predictable cost at scale, and no vendor lock-in — at the price of running the infrastructure and, often, somewhat lower peak capability.</p>
@@ -73,7 +73,7 @@
   <p>Capability is only half of building well. The other half is building <em>responsibly</em>. Next: <strong>bias &amp; fairness.</strong></p>
 
 </main>
-<script src="../assets/curriculum.js?v=5"></script>
-<script src="../assets/app.js?v=5"></script>
+<script src="../assets/curriculum.js?v=6"></script>
+<script src="../assets/app.js?v=6"></script>
 </body>
 </html>

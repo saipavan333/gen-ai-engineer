@@ -4,12 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Capstone: a cost &amp; latency-optimized chat service — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=5">
+  <link rel="stylesheet" href="../assets/styles.css?v=6">
 </head>
-<body data-base="../" data-lesson="10.5">
+<body data-base="../" data-lesson="14.5">
 <main class="lesson">
 
-  <span class="eyebrow">Track 10 · Capstone 10.5</span>
+  <span class="eyebrow">Track 14 · Capstone 14.5</span>
   <h1>Capstone: a cost &amp; latency-optimized chat service</h1>
   <p class="lead">The final project: a production-style chat service that wraps an LLM with the serving levers from Track 8 — caching, routing, streaming, token budgeting — and <em>measures</em> the savings. It’s the difference between a demo and something you could actually run at scale, and it completes your end-to-end engineer’s toolkit.</p>
 
@@ -93,7 +93,7 @@ metrics <span class="o">=</span> {<span class="s">"requests"</span>: <span class
     <strong>2.</strong> Add <strong>token counting</strong> (Track 8.1) to estimate cost per request and per day, and log it.<br>
     <strong>3.</strong> Add <strong>guardrails</strong> (Track 7): input/output moderation around the service.<br>
     <strong>4.</strong> Wrap it in a small <strong>web API</strong> (FastAPI) with Server-Sent Events so the browser streams tokens.<br>
-    <strong>5.</strong> Combine with RAG (10.1) so the service answers from your docs <em>and</em> is optimized.</p>
+    <strong>5.</strong> Combine with RAG (14.1) so the service answers from your docs <em>and</em> is optimized.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> The interview narrative</summary>
       <div class="sol-body">
@@ -127,9 +127,9 @@ metrics <span class="o">=</span> {<span class="s">"requests"</span>: <span class
   <div class="box key">
     <div class="box-label">Your launch checklist</div>
     <ul>
-      <li><strong>Build the capstones</strong> — start with the RAG assistant (10.1) and the eval harness (10.3); they anchor every interview.</li>
+      <li><strong>Build the capstones</strong> — start with the RAG assistant (14.1) and the eval harness (14.3); they anchor every interview.</li>
       <li><strong>Put them on GitHub</strong> with clear READMEs (decisions, eval results, “what’s next”) — your portfolio.</li>
-      <li><strong>Rehearse the interview bank</strong> (Track 9) out loud until the answers are automatic.</li>
+      <li><strong>Rehearse the interview bank</strong> (Track 15) out loud until the answers are automatic.</li>
       <li><strong>Keep the flywheel turning</strong> — as you learn, fold new failures into your evals; measure, don’t guess.</li>
       <li><strong>Stay grounded</strong>: the model is a brilliant, fallible component; your job is the trustworthy system around it.</li>
     </ul>
@@ -138,7 +138,7 @@ metrics <span class="o">=</span> {<span class="s">"requests"</span>: <span class
   <p>That’s the whole path — from zero to a job-ready applied GenAI engineer who can ship real, reliable LLM products end to end. The tools will keep changing; the fundamentals, the judgment, and the measure-first discipline you’ve built will not. Now go build something, measure it, and ship it. You’re ready.</p>
 
 </main>
-<script src="../assets/curriculum.js?v=5"></script>
-<script src="../assets/app.js?v=5"></script>
+<script src="../assets/curriculum.js?v=6"></script>
+<script src="../assets/app.js?v=6"></script>
 </body>
 </html>

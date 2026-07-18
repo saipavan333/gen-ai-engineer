@@ -36,9 +36,9 @@
   }
   /* ---- interactive labs (mounted per data-lab attribute) ---- */
   if (!document.getElementById("age-labs")) {
-    var ls = document.createElement("script"); ls.id = "age-labs"; ls.src = link("assets/labs.js?v=5");
+    var ls = document.createElement("script"); ls.id = "age-labs"; ls.src = link("assets/labs.js?v=6");
     document.head.appendChild(ls);
-    var ws = document.createElement("script"); ws.id = "age-widgets"; ws.src = link("assets/widgets.js?v=5");
+    var ws = document.createElement("script"); ws.id = "age-widgets"; ws.src = link("assets/widgets.js?v=6");
     document.head.appendChild(ws);
   }
 
