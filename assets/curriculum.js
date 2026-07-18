@@ -23,7 +23,8 @@ window.CURRICULUM = {
         { n: "1.5", title: "Sampling & decoding", file: "track1/05-sampling.html", built: true },
         { n: "1.6", title: "What LLMs can & can't do", file: "track1/06-capabilities-limits.html", built: true },
         { n: "1.7", title: "Interview check: How LLMs Work", file: "track1/07-interview.html", built: true },
-        { n: "1.8", title: "Lab: Build a mini language model", file: "track1/lab.html", built: true }
+        { n: "1.8", title: "Lab: Build a mini language model", file: "track1/lab.html", built: true },
+        { n: "1.9", title: "Visual Lab: Watch a prediction happen", file: "track1/visual-lab.html", built: true }
       ]
     },
     {

@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visual Lab: Watch a prediction happen — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css?v=7">
+</head>
+<body data-base="../" data-lesson="1.9">
+<main class="lesson">
+
+  <span class="eyebrow">Track 1 · Visual Lab</span>
+  <h1>Watch a prediction happen</h1>
+  <p class="lead">Everything Track&nbsp;1 explained — tokens, embeddings, attention, probabilities, sampling — is one loop that runs over and over. Here it is, running, with nothing hidden. Press play and watch a single word get chosen.</p>
+
+  <div class="box note">
+    <div class="box-label">How to use this lab</div>
+    <p>Press <strong>▶ Play</strong> to watch the full cycle, or <strong>Step</strong> to move one stage at a time and read what each one does. Change the sentence, change the temperature, and run it again.</p>
+  </div>
+
+  <div class="vlab" id="vlab">
+    <div class="vl-bar">
+      <button class="vl-btn primary" id="vl-play">▶ Play</button>
+      <button class="vl-btn" id="vl-step">Step ⏭</button>
+      <button class="vl-btn" id="vl-reset">↺ Reset</button>
+      <label class="vl-speed">speed
+        <input type="range" id="vl-speed" min="1" max="5" step="1" value="3">
+      </label>
+      <label class="vl-speed">temperature <b id="vl-tval">0.8</b>
+        <input type="range" id="vl-temp" min="1" max="25" step="1" value="8">
+      </label>
+    </div>
+
+    <div class="vl-input-row">
+      <label for="vl-text">the sentence so far</label>
+      <input type="text" id="vl-text" value="the model reads the" spellcheck="false">
+    </div>
+
+    <ol class="vl-stages" id="vl-stages">
+      <li data-s="0"><span>1</span> Tokenize</li>
+      <li data-s="1"><span>2</span> Embed</li>
+      <li data-s="2"><span>3</span> Attend</li>
+      <li data-s="3"><span>4</span> Score</li>
+      <li data-s="4"><span>5</span> Sample</li>
+      <li data-s="5"><span>6</span> Append</li>
+    </ol>
+
+    <div class="vl-stage-wrap">
+      <svg id="vl-svg" viewBox="0 0 900 380" role="img" aria-label="Animated view of one prediction step"></svg>
+    </div>
+
+    <div class="vl-caption" id="vl-caption">Press play. The model is about to choose the next word — you'll see exactly how.</div>
+  </div>
+
+  <div class="box practice">
+    <div class="box-label">Make it yours</div>
+    <p><strong>1.</strong> Set temperature to its lowest and run it five times. Then set it to its highest and run it five times. What changes — the <em>probabilities</em>, or the <em>choice</em>?<br>
+    <strong>2.</strong> Type a sentence ending in a word the model has never seen. Watch stage 4. What does it do when it has no good options?<br>
+    <strong>3.</strong> Watch stage 3 closely. Which earlier word does the last word lean on most, and does that match how <em>you</em> would read the sentence?</p>
+    <details class="sol">
+      <summary><span class="chev">&#9656; </span>Show reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> Temperature never changes what the model believes — stage 4 is identical every time. It only reshapes the distribution just before the draw in stage 5. Low temperature keeps picking the favourite; high temperature spreads the chance around. That is the whole difference between "reliable" and "creative", and it costs nothing to change.</p>
+        <p><strong>2.</strong> It still produces a distribution — it always does. With no strong signal the bars flatten out and the choice becomes close to arbitrary. A model has no mechanism for "I don't know"; it only has flatter probabilities. That is precisely why grounding and refusal rules have to be engineered around it.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">What you just saw</div>
+    <ul>
+      <li>Text becoming <strong>tokens</strong> — the units the model actually reads.</li>
+      <li>Tokens becoming <strong>vectors</strong>, so meaning turns into arithmetic.</li>
+      <li><strong>Attention</strong> reaching back to decide which earlier words matter.</li>
+      <li>A <strong>probability distribution</strong> over every possible next token.</li>
+      <li><strong>Sampling</strong> — one draw, shaped by temperature.</li>
+      <li>The token appended, and the whole loop running again.</li>
+    </ul>
+    <p>A frontier model differs in scale, and in learning far richer patterns than this one. The loop is the same.</p>
+  </div>
+
+  <p>Now build it yourself in code: <strong>Lesson&nbsp;1.8, the mini language model lab.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js?v=7"></script>
+<script src="../assets/app.js?v=7"></script>
+<script src="../assets/visual-labs.js?v=7"></script>
+</body>
+</html>

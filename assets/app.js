@@ -36,9 +36,9 @@
   }
   /* ---- interactive labs (mounted per data-lab attribute) ---- */
   if (!document.getElementById("age-labs")) {
-    var ls = document.createElement("script"); ls.id = "age-labs"; ls.src = link("assets/labs.js?v=6");
+    var ls = document.createElement("script"); ls.id = "age-labs"; ls.src = link("assets/labs.js?v=7");
     document.head.appendChild(ls);
-    var ws = document.createElement("script"); ws.id = "age-widgets"; ws.src = link("assets/widgets.js?v=6");
+    var ws = document.createElement("script"); ws.id = "age-widgets"; ws.src = link("assets/widgets.js?v=7");
     document.head.appendChild(ws);
   }
 
@@ -64,7 +64,8 @@
   for (var i = 0; i < flat.length; i++) { if (flat[i].n === curN) { curIdx = i; break; } }
   var cur = curIdx >= 0 ? flat[curIdx] : null;
 
-  function isLab(l) { return /lab\.html$/.test(l.file || ""); }
+  function isLab(l) { return /(^|\/)lab\.html$/.test(l.file || ""); }
+  function isVisual(l) { return /visual-lab\.html$/.test(l.file || ""); }
 
   /* =============== HEADER =============== */
   var header = el("header", "site-header");
@@ -130,10 +131,10 @@
       if (l.built) {
         var a = el("a");
         a.href = link(l.file);
-        var cls = []; if (l.n === curN) cls.push("active"); if (DONE[l.n]) cls.push("done"); if (isLab(l)) cls.push("is-lab");
+        var cls = []; if (l.n === curN) cls.push("active"); if (DONE[l.n]) cls.push("done"); if (isLab(l) || isVisual(l)) cls.push("is-lab");
         if (cls.length) a.className = cls.join(" ");
         a.innerHTML = '<span class="ln">' + l.n + '</span><span>' + l.title + "</span>" +
-          (isLab(l) ? '<span class="ln-lab">LAB</span>' : "") +
+          (isVisual(l) ? '<span class="ln-lab vis">VISUAL</span>' : isLab(l) ? '<span class="ln-lab">LAB</span>' : "") +
           (DONE[l.n] ? '<span class="ln-check" aria-hidden="true">&#10003;</span>' : "");
         li.appendChild(a);
       } else {
@@ -264,9 +265,9 @@
           var li = el("li");
           if (l.built) {
             var a = el("a"); a.href = link(l.file);
-            var rc = []; if (DONE[l.n]) rc.push("done"); if (isLab(l)) rc.push("is-lab"); if (rc.length) a.className = rc.join(" ");
+            var rc = []; if (DONE[l.n]) rc.push("done"); if (isLab(l) || isVisual(l)) rc.push("is-lab"); if (rc.length) a.className = rc.join(" ");
             a.innerHTML = '<span class="ln">' + l.n + '</span><span>' + l.title + "</span>" +
-          (isLab(l) ? '<span class="ln-lab">LAB</span>' : "") +
+          (isVisual(l) ? '<span class="ln-lab vis">VISUAL</span>' : isLab(l) ? '<span class="ln-lab">LAB</span>' : "") +
               (DONE[l.n] ? '<span class="ln-check" aria-hidden="true">&#10003;</span>' : "");
             li.appendChild(a);
           } else {
