@@ -77,6 +77,11 @@ res <span class="o">=</span> col.<span class="f">query</span>(
     <p>The filter means even if an account-billing chunk were similar, it could never be returned for an X200 query — that’s your permission/scoping boundary, enforced at search time. Swap Chroma for FAISS, Qdrant, Weaviate, or Postgres’s <code>pgvector</code> later; the concepts are identical.</p>
   </div>
 
+  <h2>Exact or approximate?</h2>
+  <p>Drag the corpus size. This one curve explains why small projects need no vector database at all, and why large ones cannot live without an index.</p>
+
+  <div class="lab" data-lab="vectorindex"></div>
+
   <div class="box key">
     <div class="box-label">Key points</div>
     <ul>

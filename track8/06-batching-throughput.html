@@ -31,6 +31,11 @@
     <p>You rarely implement batching by hand. If you call a hosted API, the provider batches for you. If you self-host, you use a serving engine — <strong>vLLM</strong>, TGI, or similar (and even Ollama for local) — that does continuous batching automatically. Your job is to <em>understand</em> the trade-off so you configure and reason about it well, not to write the batching loop.</p>
   </div>
 
+  <h2>Throughput against latency</h2>
+  <p>Increase the batch size. Throughput climbs, the GPU stops idling &mdash; and every individual user waits longer. There is no setting that wins both.</p>
+
+  <div class="lab" data-lab="batching"></div>
+
   <div class="box key">
     <div class="box-label">Key points</div>
     <ul>

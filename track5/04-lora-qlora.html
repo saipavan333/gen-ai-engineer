@@ -53,6 +53,11 @@ trainer.<span class="f">save_model</span>(<span class="s">"my-adapter"</span>)  
     <p>The output isn’t a new multi-gigabyte model — it’s a tiny adapter you load on top of the base at inference. That’s why teams can serve many fine-tunes cheaply: one base model, many small adapters swapped in as needed.</p>
   </div>
 
+  <h2>Size a LoRA yourself</h2>
+  <p>Pick a base model and a rank, and watch what you would actually be training. The percentage is the whole reason LoRA exists.</p>
+
+  <div class="lab" data-lab="lora"></div>
+
   <div class="box key">
     <div class="box-label">Key points</div>
     <ul>

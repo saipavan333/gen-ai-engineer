@@ -28,6 +28,11 @@
   <h2>The loop that makes it worth it</h2>
   <p>Monitoring isn’t just dashboards to stare at — it’s the input to a loop. When you spot a class of failure in production (a question type that gets bad answers, an injection that slipped past), you do two things: fix it, and <strong>add it to your golden set</strong> so the eval gate (last lesson) prevents it forever. Real user thumbs-downs become new test cases; live traffic becomes the source of your next eval improvements. This is the flywheel from Track&nbsp;6 and Track&nbsp;12, now closed end to end: monitor → find failures → fix + add to golden set → the gate blocks that failure forever → monitor again. A system wired this way gets <em>more</em> reliable the longer it runs.</p>
 
+  <h2>Watch an incident hide inside the average</h2>
+  <p>Slowly raise the share of requests hitting a slow path. Keep your eye on the mean while p95 takes off &mdash; this is why nobody alerts on averages.</p>
+
+  <div class="lab" data-lab="monitor"></div>
+
   <div class="box key">
     <div class="box-label">Key points</div>
     <ul>

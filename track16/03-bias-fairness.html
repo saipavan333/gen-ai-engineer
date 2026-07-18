@@ -28,6 +28,11 @@
   <h2>Reducing it (defense in depth, again)</h2>
   <p>No single fix makes a system “fair”; you layer mitigations and keep measuring. <strong>Data</strong>: for anything you fine-tune, curate for balance and representation. <strong>Prompting</strong>: instruct the model to ignore irrelevant attributes and judge on stated qualifications. <strong>Output checks</strong>: validate and monitor decisions for disparate patterns (Track&nbsp;7’s output validation, aimed at fairness). <strong>Human oversight</strong>: keep a person in the loop for consequential decisions rather than fully automating them. <strong>Transparency</strong>: document what the system does, its known limitations, and how it was tested — a practice often formalized as a <span class="term">model card</span>. And crucially, <strong>question whether an LLM should make the decision at all</strong> — sometimes the responsible design is to assist a human, not replace their judgment.</p>
 
+  <h2>Find the gap the average hides</h2>
+  <p>Introduce a hidden gap between two groups. Watch the overall accuracy stay comfortably high while one group is quietly failed.</p>
+
+  <div class="lab" data-lab="fairness"></div>
+
   <div class="box key">
     <div class="box-label">Key points</div>
     <ul>

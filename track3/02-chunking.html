@@ -49,9 +49,9 @@
   <div class="demo" id="chunk-demo">
     <div class="demo-head"><span class="tag">Live demo</span><h4>Chunk visualizer</h4></div>
     <div class="row">
-      <div><label>Chunk size: <b><span id="cz-size">14</span></b> words</label>
+      <div><label>Chunk size: <b><span id="cz-size-v">14</span></b> words</label>
         <input type="range" id="cz-size" min="4" max="40" step="1" value="14"></div>
-      <div><label>Overlap: <b><span id="cz-ov">3</span></b> words</label>
+      <div><label>Overlap: <b><span id="cz-ov-v">3</span></b> words</label>
         <input type="range" id="cz-ov" min="0" max="12" step="1" value="3"></div>
     </div>
     <label>Document</label>
@@ -141,8 +141,8 @@ records <span class="o">=</span> [{<span class="s">"text"</span>: c, <span class
   function render() {
     var S = parseInt(size.value, 10), O = parseInt(ov.value, 10);
     if (O >= S) O = S - 1;
-    document.getElementById("cz-size").textContent = S;
-    document.getElementById("cz-ov").textContent = O;
+    document.getElementById("cz-size-v").textContent = S;
+    document.getElementById("cz-ov-v").textContent = O;
     var words = input.value.split(/\s+/).filter(Boolean);
     var step = S - O, chunks = [];
     for (var i = 0; i < words.length; i += step) {

@@ -4,7 +4,7 @@
    ============================================================ */
 (function () {
   "use strict";
-  var LABS = {};
+  var LABS = (window.AGE_LABS = window.AGE_LABS || {});
   function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 
   /* ---------- Tokenizer Forge (Track 1) ---------- */
@@ -214,6 +214,7 @@
     });
     initRunners();
   }
+  window.AGE_MOUNT = mountAll;
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mountAll); else mountAll();
   setTimeout(mountAll, 250);
 })();

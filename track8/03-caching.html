@@ -56,6 +56,11 @@ sem_q, sem_v, sem_a <span class="o">=</span> [], <span class="kc">None</span>, [
     <p>Cache the wrong things and you serve stale or wrong answers. Don’t cache <strong>personalized</strong> responses across users (one user could get another’s answer), <strong>time-sensitive</strong> answers (today’s price), or <strong>non-deterministic creative</strong> tasks where variety is the point. And set the semantic threshold carefully — a too-loose semantic cache confidently returns a near-miss answer. Cache the stable, shared, repeatable stuff; invalidate when the underlying data changes.</p>
   </div>
 
+  <h2>What a cache is worth</h2>
+  <p>Drag the hit rate. Cost and latency both fall, and neither requires a better model, a bigger machine, or a single change to your prompt.</p>
+
+  <div class="lab" data-lab="caching"></div>
+
   <div class="box key">
     <div class="box-label">Key points</div>
     <ul>
