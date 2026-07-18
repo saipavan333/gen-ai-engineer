@@ -151,7 +151,7 @@ records <span class="o">=</span> [{<span class="s">"text"</span>: c, <span class
     }
     var html = "";
     chunks.forEach(function (c, i) {
-      html += '<div style="background:' + COLORS[i % COLORS.length] + ';border:1px solid rgba(0,0,0,.07);border-radius:8px;padding:8px 11px;margin:6px 0;font-size:13.5px">' +
+      html += '<div style="background:' + COLORS[i % COLORS.length] + ';color:#1e293b;border:1px solid rgba(0,0,0,.07);border-radius:8px;padding:8px 11px;margin:6px 0;font-size:13.5px">' +
         '<b style="color:#475569">chunk ' + (i + 1) + '</b> &nbsp;' + c + '</div>';
     });
     out.innerHTML = html +

@@ -913,3 +913,17 @@ body{ background: transparent; }
   .wb-v{ text-align:left; }
 }
 .wg-val{ color:var(--accent, #38bdf8); font-variant-numeric:tabular-nums; font-weight:700; }
+
+/* ============ CONTRAST FIXES (dark theme) ============
+   .demo inputs hardcoded background:#fff while inheriting the theme's
+   light --ink, which made typed text effectively invisible. */
+.demo input[type=text], .demo textarea, .demo select{
+  background: var(--surface-2, #fff);
+  color: var(--ink);
+  border-color: var(--line);
+}
+.demo input[type=text]::placeholder, .demo textarea::placeholder{ color: var(--muted); }
+.demo input[type=text]:focus, .demo textarea:focus, .demo select:focus{
+  outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  outline-offset: 1px;
+}
