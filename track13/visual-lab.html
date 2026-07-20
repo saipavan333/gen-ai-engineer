@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visual Lab: Watch a question become safe SQL — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css?v=12">
+</head>
+<body data-base="../" data-lesson="9.7">
+<main class="lesson">
+
+  <span class="eyebrow">Track 9 · Visual Lab</span>
+  <h1>Watch a question become safe SQL</h1>
+  <p class="lead">Text-to-SQL is the highest-leverage GenAI skill for a data engineer — and the one where a wrong move costs the most. Watch a plain-English question become a query, pass a safety gate, and run; then watch a destructive request meet the same gate.</p>
+
+  <div class="box note">
+    <div class="box-label">How to use this lab</div>
+    <p>Press <strong>▶ Play</strong> for the whole journey, or <strong>Step</strong> to pause on each stage. Watch the safety gate at stage 4 — and what it does at stage 6 when the request turns destructive.</p>
+  </div>
+
+  <div class="vlab" data-vlab="textsql"></div>
+
+  <div class="box practice">
+    <div class="box-label">Make it yours</div>
+    <p><strong>1.</strong> The gate rejects the DELETE by <em>statement type</em>, not by scanning for the word "delete". Why is checking the parsed statement type safer than string-matching for dangerous words?<br>
+    <strong>2.</strong> The generated SELECT "looks right". Name two things that could still be wrong with it that the safety gate would happily let through.</p>
+    <details class="sol">
+      <summary><span class="chev">&#9656; </span>Show reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> String-matching is a blocklist, and blocklists are endless to maintain and trivial to evade — comments, casing, encodings, a <code>DELETE</code> hidden after a semicolon in a second statement. Parsing the SQL and asking "what statement type is this?" is an allowlist: you permit exactly <code>SELECT</code> and reject everything else by construction, including forms you never thought to blocklist. Allowlists fail closed; blocklists fail open.</p>
+        <p><strong>2.</strong> The gate guarantees the query is <em>safe to run</em>, not <em>correct</em>. It could still join on the wrong key, use the wrong date window, double-count from a fan-out join, or filter on <code>status = 'cancelled'</code> when the real value is <code>'canceled'</code>. Safety and correctness are different problems — the gate handles the first; evals and a human handle the second.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">What you just saw</div>
+    <ul>
+      <li><strong>Schema grounding</strong> — the model needs the real tables and columns, not a guess.</li>
+      <li>Generated SQL that <strong>looks right</strong>, which is exactly what you must not trust.</li>
+      <li>A <strong>safety gate in code</strong> — allowlist, read-only, single statement, row limit.</li>
+      <li>The same gate <strong>rejecting a destructive request</strong> the model proposed.</li>
+    </ul>
+  </div>
+
+  <p>Now build the safe runner in code: <strong>Lesson&nbsp;9.6, the text-to-SQL lab.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js?v=12"></script>
+<script src="../assets/app.js?v=12"></script>
+<script src="../assets/visual-labs.js?v=12"></script>
+</body>
+</html>

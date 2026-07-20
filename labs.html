@@ -7,7 +7,7 @@
   <meta name="description" content="Twenty-two hands-on labs — build in Python, or watch the mechanism run — build a language model, a RAG pipeline, an agent loop, an eval harness, and more.">
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;450;500;600;700&display=swap">
-  <link rel="stylesheet" href="assets/styles.css?v=11">
+  <link rel="stylesheet" href="assets/styles.css?v=12">
   <script>try{var t=localStorage.getItem("age_theme");if(t&&t!=="graphite")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
 </head>
 <body data-page="labs">
@@ -43,10 +43,11 @@
     <p class="pg-note" style="margin-top:2rem">Interview Bank and Capstones have no lab — they're already hands-on by design.</p>
   </main>
 
-  <script src="assets/curriculum.js?v=11"></script>
+  <script src="assets/curriculum.js?v=12"></script>
   <script>
   (function () {
     var BUILDS = {
+      "9.7":  "A plain-English question becomes SQL, passes a safety gate (SELECT-only allowlist, read-only, row limit), and runs — then a destructive request is rejected on sight.",
       "2.8":  "A bare instruction becomes a production prompt one component at a time — watch three sample runs stop disagreeing and lock to one parseable answer.",
       "6.9":  "A harmless-looking prompt change passes the average but fails two specific cases — including the refusal. Watch the per-case gate block the merge.",
       "8.10": "One request from prompt to reply: prefill read in parallel, decode written one token at a time, and where the seconds and cents actually go.",

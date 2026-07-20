@@ -840,3 +840,94 @@
     }
   };
 })();
+
+/* ============ visual lab: text-to-SQL safety ============ */
+(function () {
+  "use strict";
+  var VL = window.AGE_VLABS, H = window.AGE_VL_HELPERS;
+  var e = H.e, h = H.h, esc = H.esc, PALETTE = H.PALETTE, buildLab = H.buildLab;
+
+  /* =====================================================================
+     9.7  TEXTSQL — watch a question become safe SQL, then watch a
+     destructive one get stopped at the gate.
+     ===================================================================== */
+  VL.textsql = function (root) {
+    var SCHEMA = [
+      ["orders", ["id", "customer_id", "total", "status", "created_at"]],
+      ["customers", ["id", "name", "region"]]
+    ];
+    var api = buildLab(root, {
+      title: "Watch a question become safe SQL",
+      viewBox: "0 0 900 400",
+      intro: "Press play. A plain-English question becomes SQL, passes a safety gate, and runs — then a destructive request meets the same gate.",
+      stages: [
+        { label: "Question", caption: "<b>A plain-English question</b> and the database schema. The model can’t answer from the question alone — it needs to know the real tables and columns." },
+        { label: "Ground", caption: "<b>Schema grounding.</b> The exact table and column names go into the prompt. Without this the model invents plausible names like <code>order_total</code> that don’t exist, and the query fails." },
+        { label: "Generate", caption: "<b>Generate SQL.</b> The model writes a query against the real schema. It looks right — but ‘looks right’ is exactly what you must not trust with a database." },
+        { label: "Safety gate", caption: "<b>The safety gate.</b> Parse the SQL and check it against an allowlist: SELECT only, no writes, no multiple statements, a row limit. This is code, not a prompt — it holds even if the model is fooled." },
+        { label: "Run", caption: "<b>Run it.</b> The query passed the gate, so it executes read-only and returns rows. Every step from here is auditable." },
+        { label: "Blocked", caption: "<b>Now a destructive request.</b> ‘delete cancelled orders’ becomes a DELETE — and the same gate rejects it on sight. The model never gets to touch your data directly." }
+      ],
+      onReset: function (a) { a.clear(); },
+      onStage: function (i, a) { draw(a, i); }
+    });
+    function draw(a, stage) {
+      a.clear();
+      /* schema panel (always) */
+      a.svg.appendChild(e("text", { x: 24, y: 26, class: "vl-lbl" }, "schema"));
+      var sy = 40;
+      SCHEMA.forEach(function (t, ti) {
+        a.svg.appendChild(e("rect", { x: 24, y: sy, width: 250, height: 26, rx: 6,
+          fill: PALETTE[ti % 8] + "22", stroke: PALETTE[ti % 8], "stroke-width": 1.3, class: "vl-tok" }));
+        a.svg.appendChild(e("text", { x: 36, y: sy + 17, class: "vl-role", fill: PALETTE[ti % 8] }, t[0]));
+        sy += 30;
+        t[1].forEach(function (col) {
+          var grounded = stage >= 1;
+          a.svg.appendChild(e("text", { x: 44, y: sy + 13, class: grounded ? "vl-btok" : "vl-wgt" }, "· " + col));
+          sy += 20;
+        });
+        sy += 6;
+      });
+      /* right column: question -> sql -> gate -> result */
+      var rx = 300;
+      a.svg.appendChild(e("text", { x: rx, y: 26, class: "vl-lbl" }, stage >= 5 ? "a destructive request" : "the question"));
+      var q = stage >= 5 ? "delete the cancelled orders" : "total revenue by region last month";
+      a.svg.appendChild(e("rect", { x: rx, y: 38, width: 576, height: 34, rx: 8,
+        fill: "#f59e0b12", stroke: "#f59e0b", "stroke-width": 1.3, class: "vl-tok" }));
+      a.svg.appendChild(e("text", { x: rx + 14, y: 60, class: "vl-mono" }, "“" + q + "”"));
+
+      if (stage >= 2) {
+        var sql = stage >= 5
+          ? "DELETE FROM orders WHERE status = 'cancelled';"
+          : "SELECT c.region, SUM(o.total) AS revenue\n  FROM orders o JOIN customers c ON o.customer_id = c.id\n  WHERE o.created_at >= date('now','-1 month')\n  GROUP BY c.region;";
+        a.svg.appendChild(e("text", { x: rx, y: 100, class: "vl-lbl" }, "generated SQL"));
+        sql.split("\n").forEach(function (line, i) {
+          a.svg.appendChild(e("text", { x: rx, y: 122 + i * 20, class: "vl-mono",
+            style: "animation-delay:" + i * 60 + "ms" }, line));
+        });
+      }
+      if (stage >= 3) {
+        var destructive = stage >= 5;
+        var gy = 224;
+        a.svg.appendChild(e("rect", { x: rx, y: gy, width: 576, height: 58, rx: 9,
+          fill: destructive ? "#fb718518" : "#34d39914", stroke: destructive ? "#fb7185" : "#34d399", "stroke-width": 1.5 }));
+        a.svg.appendChild(e("text", { x: rx + 14, y: gy + 22, class: "vl-lbl" }, "safety gate — allowlist"));
+        a.svg.appendChild(e("text", { x: rx + 14, y: gy + 44, class: destructive ? "vl-warn" : "vl-cite" },
+          destructive ? "REJECTED — statement type DELETE is not on the allowlist (SELECT only)"
+                      : "PASS — SELECT only · single statement · read-only · row limit applied"));
+      }
+      if (stage === 4) {
+        var ry = 300;
+        a.svg.appendChild(e("text", { x: rx, y: ry, class: "vl-lbl" }, "result"));
+        [["region", "revenue"], ["North", "48,200"], ["South", "31,050"], ["West", "27,880"]].forEach(function (row, i) {
+          a.svg.appendChild(e("text", { x: rx, y: ry + 20 + i * 20, class: i === 0 ? "vl-btok" : "vl-mono" },
+            row[0] + "        " + row[1]));
+        });
+      }
+      if (stage >= 5) {
+        a.svg.appendChild(e("text", { x: rx, y: 316, class: "vl-doc" },
+          "The model proposed a write. Your code — not the model — decided it never runs."));
+      }
+    }
+  };
+})();

@@ -146,7 +146,8 @@ window.CURRICULUM = {
         { n: "9.3", title: "Generating safe, correct SQL", file: "track13/03-safe-sql.html", built: true },
         { n: "9.4", title: "The self-correcting SQL agent", file: "track13/04-self-correcting-agent.html", built: true },
         { n: "9.5", title: "Interview check: Data & SQL agents", file: "track13/05-interview.html", built: true },
-        { n: "9.6", title: "Lab: Build a safe text-to-SQL runner", file: "track13/lab.html", built: true }
+        { n: "9.6", title: "Lab: Build a safe text-to-SQL runner", file: "track13/lab.html", built: true },
+        { n: "9.7", title: "Visual Lab: Watch a question become safe SQL", file: "track13/visual-lab.html", built: true }
       ]
     },
     {
