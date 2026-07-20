@@ -23,8 +23,8 @@ window.CURRICULUM = {
         { n: "1.5", title: "Sampling & decoding", file: "track1/05-sampling.html", built: true },
         { n: "1.6", title: "What LLMs can & can't do", file: "track1/06-capabilities-limits.html", built: true },
         { n: "1.7", title: "Interview check: How LLMs Work", file: "track1/07-interview.html", built: true },
-        { n: "1.8", title: "Lab: Build a mini language model", file: "track1/lab.html", built: true },
-        { n: "1.9", title: "Visual Lab: Watch a prediction happen", file: "track1/visual-lab.html", built: true }
+        { n: "1.8", title: "Visual Lab: Watch a prediction happen", file: "track1/visual-lab.html", built: true },
+        { n: "1.9", title: "Lab: Build a mini language model", file: "track1/lab.html", built: true }
       ]
     },
     {
@@ -37,8 +37,8 @@ window.CURRICULUM = {
         { n: "2.4", title: "Structured output & JSON", file: "track2/04-structured-output.html", built: true },
         { n: "2.5", title: "Patterns & anti-patterns", file: "track2/05-patterns.html", built: true },
         { n: "2.6", title: "Interview check: Prompting", file: "track2/06-interview.html", built: true },
-        { n: "2.7", title: "Lab: Build a prompt engine", file: "track2/lab.html", built: true },
-        { n: "2.8", title: "Visual Lab: Watch a prompt get reliable", file: "track2/visual-lab.html", built: true }
+        { n: "2.7", title: "Visual Lab: Watch a prompt get reliable", file: "track2/visual-lab.html", built: true },
+        { n: "2.8", title: "Lab: Build a prompt engine", file: "track2/lab.html", built: true }
       ]
     },
     {
@@ -54,8 +54,8 @@ window.CURRICULUM = {
         { n: "3.7", title: "Grounding & citations", file: "track3/07-grounding-citations.html", built: true },
         { n: "3.8", title: "Evaluating retrieval quality", file: "track3/08-evaluating-retrieval.html", built: true },
         { n: "3.9", title: "Interview check: RAG", file: "track3/09-interview.html", built: true },
-        { n: "3.10", title: "Lab: Build a tiny RAG pipeline", file: "track3/lab.html", built: true },
-        { n: "3.11", title: "Visual Lab: A question's journey through RAG", file: "track3/visual-lab.html", built: true }
+        { n: "3.10", title: "Visual Lab: A question's journey through RAG", file: "track3/visual-lab.html", built: true },
+        { n: "3.11", title: "Lab: Build a tiny RAG pipeline", file: "track3/lab.html", built: true }
       ]
     },
     {
@@ -71,8 +71,8 @@ window.CURRICULUM = {
         { n: "4.7", title: "Multi-agent & orchestration", file: "track4/07-multi-agent.html", built: true },
         { n: "4.8", title: "Failure modes & guards", file: "track4/08-failure-modes.html", built: true },
         { n: "4.9", title: "Interview check: Agents", file: "track4/09-interview.html", built: true },
-        { n: "4.10", title: "Lab: Build an agent loop", file: "track4/lab.html", built: true },
-        { n: "4.11", title: "Visual Lab: The agent loop, and how it runs away", file: "track4/visual-lab.html", built: true }
+        { n: "4.10", title: "Visual Lab: The agent loop, and how it runs away", file: "track4/visual-lab.html", built: true },
+        { n: "4.11", title: "Lab: Build an agent loop", file: "track4/lab.html", built: true }
       ]
     },
     {
@@ -86,8 +86,8 @@ window.CURRICULUM = {
         { n: "5.5", title: "Instruction tuning", file: "track5/05-instruction-tuning.html", built: true },
         { n: "5.6", title: "Evaluating a fine-tune", file: "track5/06-evaluating-finetune.html", built: true },
         { n: "5.7", title: "Interview check: Fine-tuning", file: "track5/07-interview.html", built: true },
-        { n: "5.8", title: "Lab: Prepare data & size a LoRA", file: "track5/lab.html", built: true },
-        { n: "5.9", title: "Visual Lab: What fine-tuning actually changes", file: "track5/visual-lab.html", built: true }
+        { n: "5.8", title: "Visual Lab: What fine-tuning actually changes", file: "track5/visual-lab.html", built: true },
+        { n: "5.9", title: "Lab: Prepare data & size a LoRA", file: "track5/lab.html", built: true }
       ]
     },
     {
@@ -101,8 +101,8 @@ window.CURRICULUM = {
         { n: "6.5", title: "Tracing & observability", file: "track6/05-tracing-observability.html", built: true },
         { n: "6.6", title: "Regression-testing prompts", file: "track6/06-regression-testing.html", built: true },
         { n: "6.7", title: "Interview check: Evals", file: "track6/07-interview.html", built: true },
-        { n: "6.8", title: "Lab: Build an eval harness", file: "track6/lab.html", built: true },
-        { n: "6.9", title: "Visual Lab: Watch an eval gate catch a regression", file: "track6/visual-lab.html", built: true }
+        { n: "6.8", title: "Visual Lab: Watch an eval gate catch a regression", file: "track6/visual-lab.html", built: true },
+        { n: "6.9", title: "Lab: Build an eval harness", file: "track6/lab.html", built: true }
       ]
     },
     {
@@ -117,8 +117,8 @@ window.CURRICULUM = {
         { n: "7.6", title: "Output validation", file: "track7/06-output-validation.html", built: true },
         { n: "7.7", title: "Defense in depth", file: "track7/07-defense-in-depth.html", built: true },
         { n: "7.8", title: "Interview check: Safety", file: "track7/08-interview.html", built: true },
-        { n: "7.9", title: "Lab: Break a bot, then build the guard", file: "track7/lab.html", built: true },
-        { n: "7.10", title: "Visual Lab: Watch an attack meet your defences", file: "track7/visual-lab.html", built: true }
+        { n: "7.9", title: "Visual Lab: Watch an attack meet your defences", file: "track7/visual-lab.html", built: true },
+        { n: "7.10", title: "Lab: Break a bot, then build the guard", file: "track7/lab.html", built: true }
       ]
     },
     {
@@ -133,8 +133,8 @@ window.CURRICULUM = {
         { n: "8.6", title: "Batching & throughput", file: "track8/06-batching-throughput.html", built: true },
         { n: "8.7", title: "Budgeting tokens", file: "track8/07-budgeting-tokens.html", built: true },
         { n: "8.8", title: "Interview check: Serving", file: "track8/08-interview.html", built: true },
-        { n: "8.9", title: "Lab: Build a cost & latency calculator", file: "track8/lab.html", built: true },
-        { n: "8.10", title: "Visual Lab: Watch tokens become time and money", file: "track8/visual-lab.html", built: true }
+        { n: "8.9", title: "Visual Lab: Watch tokens become time and money", file: "track8/visual-lab.html", built: true },
+        { n: "8.10", title: "Lab: Build a cost & latency calculator", file: "track8/lab.html", built: true }
       ]
     },
     {
@@ -146,8 +146,8 @@ window.CURRICULUM = {
         { n: "9.3", title: "Generating safe, correct SQL", file: "track13/03-safe-sql.html", built: true },
         { n: "9.4", title: "The self-correcting SQL agent", file: "track13/04-self-correcting-agent.html", built: true },
         { n: "9.5", title: "Interview check: Data & SQL agents", file: "track13/05-interview.html", built: true },
-        { n: "9.6", title: "Lab: Build a safe text-to-SQL runner", file: "track13/lab.html", built: true },
-        { n: "9.7", title: "Visual Lab: Watch a question become safe SQL", file: "track13/visual-lab.html", built: true }
+        { n: "9.6", title: "Visual Lab: Watch a question become safe SQL", file: "track13/visual-lab.html", built: true },
+        { n: "9.7", title: "Lab: Build a safe text-to-SQL runner", file: "track13/lab.html", built: true }
       ]
     },
     {
@@ -159,8 +159,8 @@ window.CURRICULUM = {
         { n: "10.3", title: "Audio: speech-to-text & TTS", file: "track15/03-audio.html", built: true },
         { n: "10.4", title: "Multimodal RAG", file: "track15/04-multimodal-rag.html", built: true },
         { n: "10.5", title: "Interview check: Multimodal", file: "track15/05-interview.html", built: true },
-        { n: "10.6", title: "Lab: Document extraction you can trust", file: "track15/lab.html", built: true },
-        { n: "10.7", title: "Visual Lab: Watch a document become data", file: "track15/visual-lab.html", built: true }
+        { n: "10.6", title: "Visual Lab: Watch a document become data", file: "track15/visual-lab.html", built: true },
+        { n: "10.7", title: "Lab: Document extraction you can trust", file: "track15/lab.html", built: true }
       ]
     },
     {

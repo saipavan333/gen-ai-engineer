@@ -7,7 +7,7 @@
   <meta name="description" content="Twenty-two hands-on labs — build in Python, or watch the mechanism run — build a language model, a RAG pipeline, an agent loop, an eval harness, and more.">
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;450;500;600;700&display=swap">
-  <link rel="stylesheet" href="assets/styles.css?v=13">
+  <link rel="stylesheet" href="assets/styles.css?v=14">
   <script>try{var t=localStorage.getItem("age_theme");if(t&&t!=="graphite")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
 </head>
 <body data-page="labs">
@@ -43,33 +43,33 @@
     <p class="pg-note" style="margin-top:2rem">Interview Bank and Capstones have no lab — they're already hands-on by design.</p>
   </main>
 
-  <script src="assets/curriculum.js?v=13"></script>
+  <script src="assets/curriculum.js?v=14"></script>
   <script>
   (function () {
     var BUILDS = {
-      "10.7": "A scanned invoice becomes structured data, then validation, an independent line-item cross-check, and risk-based routing to a human.",
-      "9.7":  "A plain-English question becomes SQL, passes a safety gate (SELECT-only allowlist, read-only, row limit), and runs — then a destructive request is rejected on sight.",
-      "2.8":  "A bare instruction becomes a production prompt one component at a time — watch three sample runs stop disagreeing and lock to one parseable answer.",
-      "6.9":  "A harmless-looking prompt change passes the average but fails two specific cases — including the refusal. Watch the per-case gate block the merge.",
-      "8.10": "One request from prompt to reply: prefill read in parallel, decode written one token at a time, and where the seconds and cents actually go.",
-      "1.9":  "Six animated stages over live numbers — tokenize, embed, attend, score, sample, append. Watch temperature change the draw without changing the belief.",
-      "3.11": "A question becomes a point in space, finds its nearest documents, and comes back with an answer it can cite. Retrieval as geometry, not keywords.",
-      "4.11": "Thought, action, observation — then the same loop with a failing tool, running away until the step budget stops it.",
-      "5.9":  "Which weights a fine-tune touches. Full training versus a frozen base with small adapters, and the rank slider that sets your whole cost.",
-      "7.10": "An injection payload travelling through five defences. Switch layers off and find out which ones were actually doing the work.",
-      "1.8":  "A tokenizer, a next-token probability table, a softmax sampler with temperature, and the autoregressive loop — the engine behind every LLM.",
-      "2.7":  "A reusable prompt engine: templates, few-shot examples, structured output, and a check that the model actually followed the format.",
-      "3.10": "A working RAG pipeline end to end — chunking, embeddings, cosine similarity, top-k retrieval, grounded answers, and a refusal when nothing matches.",
-      "4.10": "An agent that reasons, calls tools, and stops safely — with bounded steps, repeat detection, and a readable trace of every decision.",
-      "5.8":  "Instruction-data formatting, dedupe and length checks, the LoRA parameter math showing under 1% trainable, and a should-I-fine-tune decision function.",
-      "6.8":  "A golden set, an eval harness, and a quality gate — then you watch it catch a regression that a human spot-check would have missed.",
-      "7.9":  "A prompt-injection attack that works, then the layered guard that stops it — input filtering, instruction hierarchy, and output validation.",
-      "8.9":  "A cost and latency model: prefill versus decode, tokens to dollars, caching, and the trade-off curve you'll defend in a design review.",
+      "10.7": "Field extraction from messy OCR text, validation and date normalisation, an independent cross-check, and risk-based human routing.",
+      "9.7":  "A text-to-SQL runner against real SQLite: schema grounding, a read-only allowlist, query validation, and the blocked-write test.",
+      "2.8":  "A reusable prompt engine: templates, few-shot examples, structured output, and a check that the model actually followed the format.",
+      "6.9":  "A golden set, an eval harness, and a quality gate — then you watch it catch a regression that a human spot-check would have missed.",
+      "8.10": "A cost and latency model: prefill versus decode, tokens to dollars, caching, and the trade-off curve you'll defend in a design review.",
+      "1.9":  "A tokenizer, a next-token probability table, a softmax sampler with temperature, and the autoregressive loop — the engine behind every LLM.",
+      "3.11": "A working RAG pipeline end to end — chunking, embeddings, cosine similarity, top-k retrieval, grounded answers, and a refusal when nothing matches.",
+      "4.11": "An agent that reasons, calls tools, and stops safely — with bounded steps, repeat detection, and a readable trace of every decision.",
+      "5.9":  "Instruction-data formatting, dedupe and length checks, the LoRA parameter math showing under 1% trainable, and a should-I-fine-tune decision function.",
+      "7.10": "A prompt-injection attack that works, then the layered guard that stops it — input filtering, instruction hierarchy, and output validation.",
+      "1.8":  "Six animated stages over live numbers — tokenize, embed, attend, score, sample, append. Watch temperature change the draw without changing the belief.",
+      "2.7":  "A bare instruction becomes a production prompt one component at a time — watch three sample runs stop disagreeing and lock to one parseable answer.",
+      "3.10": "A question becomes a point in space, finds its nearest documents, and comes back with an answer it can cite. Retrieval as geometry, not keywords.",
+      "4.10": "Thought, action, observation — then the same loop with a failing tool, running away until the step budget stops it.",
+      "5.8":  "Which weights a fine-tune touches. Full training versus a frozen base with small adapters, and the rank slider that sets your whole cost.",
+      "6.8":  "A harmless-looking prompt change passes the average but fails two specific cases — including the refusal. Watch the per-case gate block the merge.",
+      "7.9":  "An injection payload travelling through five defences. Switch layers off and find out which ones were actually doing the work.",
+      "8.9":  "One request from prompt to reply: prefill read in parallel, decode written one token at a time, and where the seconds and cents actually go.",
       "16.5": "A portfolio README in the shape hiring managers respond to, plus a scorer that shows why a typical README fails the ninety-second test.",
       "11.4": "Query expansion, reciprocal rank fusion, and a reranking stage — then recall@k proving the lift over a plain cosine baseline.",
-      "9.6": "A text-to-SQL runner against real SQLite: schema grounding, a read-only allowlist, query validation, and the blocked-write test.",
+      "9.6": "A plain-English question becomes SQL, passes a safety gate (SELECT-only allowlist, read-only, row limit), and runs — then a destructive request is rejected on sight.",
       "12.6": "A production monitor — p50/p95 latency, error rate, cost per day, alert rules — then a simulated bad day the averages would have hidden.",
-      "10.6": "Field extraction from messy OCR text, validation and date normalisation, an independent cross-check, and risk-based human routing.",
+      "10.6": "A scanned invoice becomes structured data, then validation, an independent line-item cross-check, and risk-based routing to a human.",
       "13.6": "Matched-pair test cases, disaggregated accuracy, and a disparity gate that blocks a model the aggregate score called healthy."
     };
     var C = window.CURRICULUM;
