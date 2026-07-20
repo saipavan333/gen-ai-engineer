@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visual Lab: A question's journey through RAG — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css?v=8">
+</head>
+<body data-base="../" data-lesson="3.11">
+<main class="lesson">
+
+  <span class="eyebrow">Track 3 · Visual Lab</span>
+  <h1>A question's journey through RAG</h1>
+  <p class="lead">RAG is usually drawn as boxes and arrows, which hides the one idea that matters: retrieval is <em>geometry</em>. Watch a question become a point in space, find its nearest neighbours, and come back with an answer it can prove.</p>
+
+  <div class="box note">
+    <div class="box-label">How to use this lab</div>
+    <p>Press <strong>▶ Play</strong> for the whole journey, or <strong>Step</strong> to pause on each stage. Switch the question and run it again — watch where it lands, and which documents light up.</p>
+  </div>
+
+  <div class="vlab" data-vlab="rag"></div>
+
+  <div class="box practice">
+    <div class="box-label">Make it yours</div>
+    <p><strong>1.</strong> Run “is postage free”. The word <em>postage</em> never appears in any document — so how does it still find the shipping snippet?<br>
+    <strong>2.</strong> Watch stage 4 for each question. What would happen at stage 6 if the two nearest documents were both irrelevant?<br>
+    <strong>3.</strong> Only two chunks are kept. What breaks if you keep twenty instead?</p>
+    <details class="sol">
+      <summary><span class="chev">&#9656; </span>Show reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> Because nothing here matches words. Both the question and the document became positions in a shared space, and “postage” lands near “shipping” because they were used in similar contexts during training. That is the entire reason RAG beats keyword search on natural phrasing — and also why it can miss an exact product code that keyword search would nail.</p>
+        <p><strong>2.</strong> The model would answer anyway, fluently and wrongly, from whatever it was handed. Retrieval failure does not look like an error — it looks like a confident answer. That is why you measure recall separately from answer quality.</p>
+        <p><strong>3.</strong> Cost and latency rise with every token, and accuracy often <em>falls</em>: the relevant chunk gets buried among near-misses, and facts in the middle of a long context are the ones models most often overlook. More retrieved text is not more knowledge.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">What you just saw</div>
+    <ul>
+      <li>Documents becoming <strong>points in a space</strong>, not keywords in an index.</li>
+      <li>A question embedded by the <strong>same model</strong>, into the <strong>same space</strong>.</li>
+      <li>Retrieval as <strong>measuring distance</strong> — the whole mechanism, in one step.</li>
+      <li>The context window being <strong>assembled</strong>, and becoming the only thing the model knows.</li>
+      <li>An answer that can be <strong>traced to a source</strong>.</li>
+    </ul>
+  </div>
+
+  <p>Now build the whole pipeline in code: <strong>Lesson&nbsp;3.10, the tiny RAG lab.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js?v=8"></script>
+<script src="../assets/app.js?v=8"></script>
+<script src="../assets/visual-labs.js?v=8"></script>
+</body>
+</html>

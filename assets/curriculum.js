@@ -53,7 +53,8 @@ window.CURRICULUM = {
         { n: "3.7", title: "Grounding & citations", file: "track3/07-grounding-citations.html", built: true },
         { n: "3.8", title: "Evaluating retrieval quality", file: "track3/08-evaluating-retrieval.html", built: true },
         { n: "3.9", title: "Interview check: RAG", file: "track3/09-interview.html", built: true },
-        { n: "3.10", title: "Lab: Build a tiny RAG pipeline", file: "track3/lab.html", built: true }
+        { n: "3.10", title: "Lab: Build a tiny RAG pipeline", file: "track3/lab.html", built: true },
+        { n: "3.11", title: "Visual Lab: A question's journey through RAG", file: "track3/visual-lab.html", built: true }
       ]
     },
     {
@@ -69,7 +70,8 @@ window.CURRICULUM = {
         { n: "4.7", title: "Multi-agent & orchestration", file: "track4/07-multi-agent.html", built: true },
         { n: "4.8", title: "Failure modes & guards", file: "track4/08-failure-modes.html", built: true },
         { n: "4.9", title: "Interview check: Agents", file: "track4/09-interview.html", built: true },
-        { n: "4.10", title: "Lab: Build an agent loop", file: "track4/lab.html", built: true }
+        { n: "4.10", title: "Lab: Build an agent loop", file: "track4/lab.html", built: true },
+        { n: "4.11", title: "Visual Lab: The agent loop, and how it runs away", file: "track4/visual-lab.html", built: true }
       ]
     },
     {
@@ -83,7 +85,8 @@ window.CURRICULUM = {
         { n: "5.5", title: "Instruction tuning", file: "track5/05-instruction-tuning.html", built: true },
         { n: "5.6", title: "Evaluating a fine-tune", file: "track5/06-evaluating-finetune.html", built: true },
         { n: "5.7", title: "Interview check: Fine-tuning", file: "track5/07-interview.html", built: true },
-        { n: "5.8", title: "Lab: Prepare data & size a LoRA", file: "track5/lab.html", built: true }
+        { n: "5.8", title: "Lab: Prepare data & size a LoRA", file: "track5/lab.html", built: true },
+        { n: "5.9", title: "Visual Lab: What fine-tuning actually changes", file: "track5/visual-lab.html", built: true }
       ]
     },
     {
@@ -112,7 +115,8 @@ window.CURRICULUM = {
         { n: "7.6", title: "Output validation", file: "track7/06-output-validation.html", built: true },
         { n: "7.7", title: "Defense in depth", file: "track7/07-defense-in-depth.html", built: true },
         { n: "7.8", title: "Interview check: Safety", file: "track7/08-interview.html", built: true },
-        { n: "7.9", title: "Lab: Break a bot, then build the guard", file: "track7/lab.html", built: true }
+        { n: "7.9", title: "Lab: Break a bot, then build the guard", file: "track7/lab.html", built: true },
+        { n: "7.10", title: "Visual Lab: Watch an attack meet your defences", file: "track7/visual-lab.html", built: true }
       ]
     },
     {

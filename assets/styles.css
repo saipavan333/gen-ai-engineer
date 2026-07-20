@@ -1020,3 +1020,39 @@ body{ background: transparent; }
   background:color-mix(in srgb, #2dd4bf 16%, transparent);
   border-color:color-mix(in srgb, #2dd4bf 40%, transparent);
 }
+/* visual-lab svg text variants */
+.vl-doc{ font-family:var(--font-body); font-size:13.5px; fill:var(--ink-soft); }
+.vl-mono{ font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12.5px; fill:var(--ink-soft); }
+.vl-sys{ font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12.5px; fill:var(--muted); }
+.vl-cite{ font-family:var(--font-body); font-size:11.5px; fill:#34d399; }
+.vl-qlabel{ font-family:var(--font-body); font-size:13px; font-weight:650; fill:#f59e0b; }
+.vl-role{ font-family:var(--font-body); font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; }
+.vl-sel{
+  font-family:var(--font-body); font-size:12.5px; padding:5px 8px; border-radius:7px;
+  background:var(--surface-2, #0b0f17); color:var(--ink); border:1px solid var(--line);
+}
+.vl-frozen{ font-family:var(--font-body); font-size:11.5px; font-weight:700; fill:#94a3b8; letter-spacing:.05em; }
+.vl-hot{ font-family:var(--font-body); font-size:11.5px; font-weight:800; fill:#fbbf24; letter-spacing:.05em; }
+.vl-warn{ font-family:var(--font-body); font-size:12.5px; font-weight:650; fill:#fb7185; }
+.vl-toggles{ display:flex; flex-wrap:wrap; gap:.4rem; margin-bottom:.9rem; }
+.vl-tog{
+  font-family:var(--font-body); font-size:12px; font-weight:600; cursor:pointer;
+  padding:6px 12px; border-radius:999px; color:var(--muted);
+  background:color-mix(in srgb, var(--fg) 7%, transparent);
+  border:1px solid color-mix(in srgb, var(--fg) 16%, transparent);
+  transition:all .15s ease;
+}
+.vl-tog.on{
+  color:#0e1117; background:var(--accent); border-color:var(--accent); font-weight:700;
+}
+.lc-tag{
+  font-size:.6rem; font-weight:800; letter-spacing:.09em; padding:.12em .42em;
+  border-radius:4px; margin-left:.35rem; vertical-align:middle;
+  color:#5eead4; background:color-mix(in srgb, #2dd4bf 18%, transparent);
+}
+.lc-tag.py{ color:var(--accent-deep); background:color-mix(in srgb, var(--accent) 18%, transparent); }
+.lab-card2.visual:hover{
+  border-color:color-mix(in srgb, #2dd4bf 55%, var(--line));
+  background:color-mix(in srgb, #2dd4bf 7%, var(--surface));
+}
+.lab-card2.visual .lc-go{ color:#5eead4; }

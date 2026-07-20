@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visual Lab: Watch an attack meet your defences — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css?v=8">
+</head>
+<body data-base="../" data-lesson="7.10">
+<main class="lesson">
+
+  <span class="eyebrow">Track 7 · Visual Lab</span>
+  <h1>Watch an attack meet your defences</h1>
+  <p class="lead">There is no prompt that makes a system safe. There are only layers, each one imperfect. Watch a real injection payload travel through five of them — then switch layers off and find out which ones were actually doing the work.</p>
+
+  <div class="box note">
+    <div class="box-label">How to use this lab</div>
+    <p>Play it with everything on. Then turn layers off with the buttons and run it again. The question to hold in mind is not “is it blocked?” but <strong>“what survives, and can I live with it?”</strong></p>
+  </div>
+
+  <div class="vlab" data-vlab="defense"></div>
+
+  <div class="box practice">
+    <div class="box-label">Make it yours</div>
+    <p><strong>1.</strong> Turn off everything except <em>Least privilege</em>. Is the system still safe? Now turn off everything except <em>Input filter</em>. Compare.<br>
+    <strong>2.</strong> Which layers depend on the model behaving, and which hold regardless of what the model does? Which kind would you rather bet a refund budget on?</p>
+    <details class="sol">
+      <summary><span class="chev">&#9656; </span>Show reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> Least privilege alone still contains the damage, because a capped tool cannot be talked into exceeding its cap. Input filtering alone fails — it only catches phrasings someone already thought of, and an attacker just rewrites the sentence. Same number of layers, completely different worst case.</p>
+        <p><strong>2.</strong> Input filtering and instruction hierarchy are <em>persuasion-based</em>: they work by convincing the model, and anything that convinces can be out-convinced. Least privilege, output validation and human approval are <em>structural</em>: they hold even when the model is fully compromised. Bet the money on the structural ones and treat the rest as friction that buys you time.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">What you just saw</div>
+    <ul>
+      <li>An injection arriving as ordinary <strong>retrieved data</strong>.</li>
+      <li>Layers that work by <strong>persuading the model</strong> — and their limits.</li>
+      <li>Layers that hold <strong>structurally</strong>, whatever the model decides.</li>
+      <li>The real security question: <strong>what survives everything</strong>.</li>
+    </ul>
+  </div>
+
+  <p>Now build the guard in code: <strong>Lesson&nbsp;7.9, break a bot then build the guard.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js?v=8"></script>
+<script src="../assets/app.js?v=8"></script>
+<script src="../assets/visual-labs.js?v=8"></script>
+</body>
+</html>

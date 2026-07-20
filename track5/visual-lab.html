@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visual Lab: What fine-tuning actually changes — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css?v=8">
+</head>
+<body data-base="../" data-lesson="5.9">
+<main class="lesson">
+
+  <span class="eyebrow">Track 5 · Visual Lab</span>
+  <h1>What fine-tuning actually changes</h1>
+  <p class="lead">“Fine-tuning” sounds like retraining the model. It isn’t — and LoRA barely touches it at all. Watch which weights move, which stay frozen, and why that difference is what put fine-tuning on a free GPU.</p>
+
+  <div class="box note">
+    <div class="box-label">How to use this lab</div>
+    <p>Step through it once to see full fine-tuning versus LoRA side by side. Then drag the <strong>rank</strong> slider and watch the trainable count move — that one number decides your memory, your file size, and your cost.</p>
+  </div>
+
+  <div class="vlab" data-vlab="lora"></div>
+
+  <div class="box practice">
+    <div class="box-label">Make it yours</div>
+    <p><strong>1.</strong> Push the rank to 64. Is it still meaningfully cheaper than a full fine-tune, and would a small dataset even use that capacity?<br>
+    <strong>2.</strong> The base model is frozen. So where does the new behaviour actually live — and what does that mean for rolling a bad fine-tune back?</p>
+    <details class="sol">
+      <summary><span class="chev">&#9656; </span>Show reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> Still far cheaper, but the return flattens fast. Rank sets how much <em>new</em> behaviour the adapter can express, and a few hundred examples cannot fill rank 64 — you would be paying for capacity you have no data to teach. Most tasks are done by rank 8 to 32.</p>
+        <p><strong>2.</strong> Entirely in the adapter, which is a separate file of a few megabytes. Rolling back is deleting it. Serving two customers with different behaviour is loading two adapters over one base model. That operational simplicity is the real reason LoRA won, not just the memory saving.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">What you just saw</div>
+    <ul>
+      <li>Full fine-tuning touching <strong>every weight</strong> — and what that costs.</li>
+      <li>The base model <strong>frozen</strong>, so pretrained knowledge cannot be damaged.</li>
+      <li>Small <strong>adapter matrices</strong> added beside each layer, sized by rank.</li>
+      <li>Gradients flowing into <strong>under 1%</strong> of the parameters.</li>
+      <li>A deployable artefact measured in <strong>megabytes</strong>.</li>
+    </ul>
+  </div>
+
+  <p>Now size one for a real dataset: <strong>Lesson&nbsp;5.8, prepare data and size a LoRA.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js?v=8"></script>
+<script src="../assets/app.js?v=8"></script>
+<script src="../assets/visual-labs.js?v=8"></script>
+</body>
+</html>

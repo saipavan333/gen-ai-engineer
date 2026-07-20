@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Hands-on Labs — Applied GenAI Engineer</title>
-  <meta name="description" content="Fourteen hands-on labs that run real Python in your browser — build a language model, a RAG pipeline, an agent loop, an eval harness, and more.">
+  <meta name="description" content="Nineteen hands-on labs — build in Python, or watch the mechanism run — build a language model, a RAG pipeline, an agent loop, an eval harness, and more.">
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;450;500;600;700&display=swap">
-  <link rel="stylesheet" href="assets/styles.css?v=7">
+  <link rel="stylesheet" href="assets/styles.css?v=8">
   <script>try{var t=localStorage.getItem("age_theme");if(t&&t!=="graphite")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
 </head>
 <body data-page="labs">
@@ -21,18 +21,23 @@
   <main class="labs-wrap">
     <div class="labs-head">
       <span class="eyebrow">Hands-on</span>
-      <h1>Build it yourself</h1>
-      <p>Every lab below is a small, real project you build step by step — and the Python runs <strong>right in this browser</strong>. Nothing to install, no account, no API key, nothing to pay. Press <strong>&#9654; Run</strong> on each cell in order; they share memory like a notebook, so later steps use what earlier ones defined.</p>
-      <p>Labs sit at the end of their track, but you can jump straight in from here.</p>
+      <h1>Build it, and watch it</h1>
+      <p>Two kinds of lab, and they do different jobs. <b class="lc-tag py">PYTHON</b> labs are small real projects you build step by step, with the code running <strong>right in this browser</strong> — press <strong>&#9654; Run</strong> on each cell in order. <b class="lc-tag">VISUAL</b> labs let you <em>watch</em> a mechanism run: play it, pause it, step through one stage at a time, and change the inputs.</p>
+      <p>Nothing to install, no account, no API key, nothing to pay. Labs sit at the end of their track, but you can jump straight in from here.</p>
     </div>
     <div class="labs-grid" id="labsgrid"></div>
-    <p class="pg-note" style="margin-top:2rem">Tracks 9 (Interview Bank) and 10 (Capstones) have no lab — they're already hands-on by design.</p>
+    <p class="pg-note" style="margin-top:2rem">Interview Bank and Capstones have no lab — they're already hands-on by design.</p>
   </main>
 
-  <script src="assets/curriculum.js?v=7"></script>
+  <script src="assets/curriculum.js?v=8"></script>
   <script>
   (function () {
     var BUILDS = {
+      "1.9":  "Six animated stages over live numbers — tokenize, embed, attend, score, sample, append. Watch temperature change the draw without changing the belief.",
+      "3.11": "A question becomes a point in space, finds its nearest documents, and comes back with an answer it can cite. Retrieval as geometry, not keywords.",
+      "4.11": "Thought, action, observation — then the same loop with a failing tool, running away until the step budget stops it.",
+      "5.9":  "Which weights a fine-tune touches. Full training versus a frozen base with small adapters, and the rank slider that sets your whole cost.",
+      "7.10": "An injection payload travelling through five defences. Switch layers off and find out which ones were actually doing the work.",
       "1.8":  "A tokenizer, a next-token probability table, a softmax sampler with temperature, and the autoregressive loop — the engine behind every LLM.",
       "2.7":  "A reusable prompt engine: templates, few-shot examples, structured output, and a check that the model actually followed the format.",
       "3.10": "A working RAG pipeline end to end — chunking, embeddings, cosine similarity, top-k retrieval, grounded answers, and a refusal when nothing matches.",
@@ -41,25 +46,27 @@
       "6.8":  "A golden set, an eval harness, and a quality gate — then you watch it catch a regression that a human spot-check would have missed.",
       "7.9":  "A prompt-injection attack that works, then the layered guard that stops it — input filtering, instruction hierarchy, and output validation.",
       "8.9":  "A cost and latency model: prefill versus decode, tokens to dollars, caching, and the trade-off curve you'll defend in a design review.",
-      "11.5": "A portfolio README in the shape hiring managers respond to, plus a scorer that shows why a typical README fails the ninety-second test.",
-      "12.4": "Query expansion, reciprocal rank fusion, and a reranking stage — then recall@k proving the lift over a plain cosine baseline.",
-      "13.6": "A text-to-SQL runner against real SQLite: schema grounding, a read-only allowlist, query validation, and the blocked-write test.",
-      "14.6": "A production monitor — p50/p95 latency, error rate, cost per day, alert rules — then a simulated bad day the averages would have hidden.",
-      "15.6": "Field extraction from messy OCR text, validation and date normalisation, an independent cross-check, and risk-based human routing.",
-      "16.6": "Matched-pair test cases, disaggregated accuracy, and a disparity gate that blocks a model the aggregate score called healthy."
+      "16.5": "A portfolio README in the shape hiring managers respond to, plus a scorer that shows why a typical README fails the ninety-second test.",
+      "11.4": "Query expansion, reciprocal rank fusion, and a reranking stage — then recall@k proving the lift over a plain cosine baseline.",
+      "9.6": "A text-to-SQL runner against real SQLite: schema grounding, a read-only allowlist, query validation, and the blocked-write test.",
+      "12.6": "A production monitor — p50/p95 latency, error rate, cost per day, alert rules — then a simulated bad day the averages would have hidden.",
+      "10.6": "Field extraction from messy OCR text, validation and date normalisation, an independent cross-check, and risk-based human routing.",
+      "13.6": "Matched-pair test cases, disaggregated accuracy, and a disparity gate that blocks a model the aggregate score called healthy."
     };
     var C = window.CURRICULUM, grid = document.getElementById("labsgrid"), html = "";
     if (!C || !C.sections) { grid.innerHTML = "<p>Could not load the curriculum.</p>"; return; }
     C.sections.forEach(function (s) {
       s.lessons.forEach(function (l) {
         if (!l.built || !/lab\.html$/.test(l.file || "")) return;
-        var title = String(l.title).replace(/^Lab:\s*/, "");
+        var visual = /visual-lab\.html$/.test(l.file);
+        var title = String(l.title).replace(/^(Visual )?Lab:\s*/, "");
         var desc = BUILDS[l.n] || "";
         var a = document.createElement("a");
-        a.className = "lab-card2";
+        a.className = "lab-card2" + (visual ? " visual" : "");
         a.href = l.file;
         a.innerHTML =
-          '<span class="lc-track">Track ' + s.num + ' &middot; ' + s.title + '</span>' +
+          '<span class="lc-track">Track ' + s.num + ' &middot; ' + s.title +
+            (visual ? ' <b class="lc-tag">VISUAL</b>' : ' <b class="lc-tag py">PYTHON</b>') + '</span>' +
           '<h3>' + title + '</h3>' +
           '<p>' + desc + '</p>' +
           '<span class="lc-go">Open lab &rarr;</span>';

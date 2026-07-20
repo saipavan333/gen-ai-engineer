@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visual Lab: The agent loop, and how it runs away — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css?v=8">
+</head>
+<body data-base="../" data-lesson="4.11">
+<main class="lesson">
+
+  <span class="eyebrow">Track 4 · Visual Lab</span>
+  <h1>The agent loop, and how it runs away</h1>
+  <p class="lead">An agent is a loop with a budget. Watch a healthy one reason, call tools and stop — then run the same loop with a failing tool and see exactly where the money goes.</p>
+
+  <div class="box note">
+    <div class="box-label">How to use this lab</div>
+    <p>Play the <strong>healthy loop</strong> first. Then switch to the <strong>runaway loop</strong> and watch the same agent, with the same prompt, behave completely differently because one tool started failing.</p>
+  </div>
+
+  <div class="vlab" data-vlab="agent"></div>
+
+  <div class="box practice">
+    <div class="box-label">Make it yours</div>
+    <p><strong>1.</strong> In the healthy run, which facts in the final answer came from the model, and which came from an observation?<br>
+    <strong>2.</strong> In the runaway run, the agent is not broken — it is doing exactly what it was designed to do. What is the actual bug, and where does it live?</p>
+    <details class="sol">
+      <summary><span class="chev">&#9656; </span>Show reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> Every fact — the delivery date and the 30-day window — came from an observation. The model supplied only the reasoning that connected them. That is the property you want: a grounded agent should be unable to state a fact it did not fetch.</p>
+        <p><strong>2.</strong> The bug is not in the model. It is the missing guard in <em>your</em> code: no step budget, no repeat detection, no handling for a tool that fails the same way twice. The model will keep trying forever because trying again is a locally sensible move. Bounded loops are not a safety extra, they are the thing that makes an agent shippable.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">What you just saw</div>
+    <ul>
+      <li><strong>Thought → action → observation</strong>, the cycle underneath every agent framework.</li>
+      <li>The model <strong>requesting</strong> a tool rather than running one — your code stays in control.</li>
+      <li>Every fact in the answer <strong>traceable to an observation</strong>.</li>
+      <li>A <strong>runaway loop</strong>, and the budget that stops it.</li>
+    </ul>
+  </div>
+
+  <p>Now build the loop yourself, guards included: <strong>Lesson&nbsp;4.10, the agent loop lab.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js?v=8"></script>
+<script src="../assets/app.js?v=8"></script>
+<script src="../assets/visual-labs.js?v=8"></script>
+</body>
+</html>

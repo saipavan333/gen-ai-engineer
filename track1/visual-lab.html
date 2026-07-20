@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Visual Lab: Watch a prediction happen — Applied GenAI Engineer</title>
-  <link rel="stylesheet" href="../assets/styles.css?v=7">
+  <link rel="stylesheet" href="../assets/styles.css?v=8">
 </head>
 <body data-base="../" data-lesson="1.9">
 <main class="lesson">
@@ -18,39 +18,7 @@
     <p>Press <strong>▶ Play</strong> to watch the full cycle, or <strong>Step</strong> to move one stage at a time and read what each one does. Change the sentence, change the temperature, and run it again.</p>
   </div>
 
-  <div class="vlab" id="vlab">
-    <div class="vl-bar">
-      <button class="vl-btn primary" id="vl-play">▶ Play</button>
-      <button class="vl-btn" id="vl-step">Step ⏭</button>
-      <button class="vl-btn" id="vl-reset">↺ Reset</button>
-      <label class="vl-speed">speed
-        <input type="range" id="vl-speed" min="1" max="5" step="1" value="3">
-      </label>
-      <label class="vl-speed">temperature <b id="vl-tval">0.8</b>
-        <input type="range" id="vl-temp" min="1" max="25" step="1" value="8">
-      </label>
-    </div>
-
-    <div class="vl-input-row">
-      <label for="vl-text">the sentence so far</label>
-      <input type="text" id="vl-text" value="the model reads the" spellcheck="false">
-    </div>
-
-    <ol class="vl-stages" id="vl-stages">
-      <li data-s="0"><span>1</span> Tokenize</li>
-      <li data-s="1"><span>2</span> Embed</li>
-      <li data-s="2"><span>3</span> Attend</li>
-      <li data-s="3"><span>4</span> Score</li>
-      <li data-s="4"><span>5</span> Sample</li>
-      <li data-s="5"><span>6</span> Append</li>
-    </ol>
-
-    <div class="vl-stage-wrap">
-      <svg id="vl-svg" viewBox="0 0 900 380" role="img" aria-label="Animated view of one prediction step"></svg>
-    </div>
-
-    <div class="vl-caption" id="vl-caption">Press play. The model is about to choose the next word — you'll see exactly how.</div>
-  </div>
+  <div class="vlab" data-vlab="predict"></div>
 
   <div class="box practice">
     <div class="box-label">Make it yours</div>
@@ -82,8 +50,8 @@
   <p>Now build it yourself in code: <strong>Lesson&nbsp;1.8, the mini language model lab.</strong></p>
 
 </main>
-<script src="../assets/curriculum.js?v=7"></script>
-<script src="../assets/app.js?v=7"></script>
-<script src="../assets/visual-labs.js?v=7"></script>
+<script src="../assets/curriculum.js?v=8"></script>
+<script src="../assets/app.js?v=8"></script>
+<script src="../assets/visual-labs.js?v=8"></script>
 </body>
 </html>
