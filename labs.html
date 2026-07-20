@@ -7,7 +7,7 @@
   <meta name="description" content="Nineteen hands-on labs — build in Python, or watch the mechanism run — build a language model, a RAG pipeline, an agent loop, an eval harness, and more.">
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;450;500;600;700&display=swap">
-  <link rel="stylesheet" href="assets/styles.css?v=8">
+  <link rel="stylesheet" href="assets/styles.css?v=9">
   <script>try{var t=localStorage.getItem("age_theme");if(t&&t!=="graphite")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
 </head>
 <body data-page="labs">
@@ -22,14 +22,28 @@
     <div class="labs-head">
       <span class="eyebrow">Hands-on</span>
       <h1>Build it, and watch it</h1>
-      <p>Two kinds of lab, and they do different jobs. <b class="lc-tag py">PYTHON</b> labs are small real projects you build step by step, with the code running <strong>right in this browser</strong> — press <strong>&#9654; Run</strong> on each cell in order. <b class="lc-tag">VISUAL</b> labs let you <em>watch</em> a mechanism run: play it, pause it, step through one stage at a time, and change the inputs.</p>
-      <p>Nothing to install, no account, no API key, nothing to pay. Labs sit at the end of their track, but you can jump straight in from here.</p>
+      <p>Two kinds of lab, and they do different jobs — <b class="lc-tag">VISUAL</b> labs to <em>see</em> a mechanism run, <b class="lc-tag py">PYTHON</b> labs to <em>build</em> one. Nothing to install, no account, no API key, nothing to pay. Each sits at the end of its track, but you can jump straight in from here.</p>
     </div>
-    <div class="labs-grid" id="labsgrid"></div>
+    <section class="labs-section" id="sec-visual">
+      <div class="labs-sec-head">
+        <h2><b class="lc-tag">VISUAL</b> Watch the mechanism</h2>
+        <p>Press play and see the idea run — token prediction, retrieval, the agent loop, fine-tuning, layered defence. Best when a concept is easier to grasp by watching than by reading.</p>
+      </div>
+      <div class="labs-grid" id="grid-visual"></div>
+    </section>
+
+    <section class="labs-section" id="sec-python">
+      <div class="labs-sec-head">
+        <h2><b class="lc-tag py">PYTHON</b> Build it yourself</h2>
+        <p>Small real projects you build step by step, with the code running right in this browser. Press <strong>&#9654; Run</strong> on each cell in order — they share memory like a notebook.</p>
+      </div>
+      <div class="labs-grid" id="grid-python"></div>
+    </section>
+
     <p class="pg-note" style="margin-top:2rem">Interview Bank and Capstones have no lab — they're already hands-on by design.</p>
   </main>
 
-  <script src="assets/curriculum.js?v=8"></script>
+  <script src="assets/curriculum.js?v=9"></script>
   <script>
   (function () {
     var BUILDS = {
@@ -53,8 +67,10 @@
       "10.6": "Field extraction from messy OCR text, validation and date normalisation, an independent cross-check, and risk-based human routing.",
       "13.6": "Matched-pair test cases, disaggregated accuracy, and a disparity gate that blocks a model the aggregate score called healthy."
     };
-    var C = window.CURRICULUM, grid = document.getElementById("labsgrid"), html = "";
-    if (!C || !C.sections) { grid.innerHTML = "<p>Could not load the curriculum.</p>"; return; }
+    var C = window.CURRICULUM;
+    var gVis = document.getElementById("grid-visual"), gPy = document.getElementById("grid-python");
+    if (!C || !C.sections) { gPy.innerHTML = "<p>Could not load the curriculum.</p>"; return; }
+    var nVis = 0, nPy = 0;
     C.sections.forEach(function (s) {
       s.lessons.forEach(function (l) {
         if (!l.built || !/lab\.html$/.test(l.file || "")) return;
@@ -65,15 +81,15 @@
         a.className = "lab-card2" + (visual ? " visual" : "");
         a.href = l.file;
         a.innerHTML =
-          '<span class="lc-track">Track ' + s.num + ' &middot; ' + s.title +
-            (visual ? ' <b class="lc-tag">VISUAL</b>' : ' <b class="lc-tag py">PYTHON</b>') + '</span>' +
+          '<span class="lc-track">Track ' + s.num + ' &middot; ' + s.title + '</span>' +
           '<h3>' + title + '</h3>' +
           '<p>' + desc + '</p>' +
-          '<span class="lc-go">Open lab &rarr;</span>';
-        grid.appendChild(a);
+          '<span class="lc-go">' + (visual ? 'Watch it &rarr;' : 'Open lab &rarr;') + '</span>';
+        if (visual) { gVis.appendChild(a); nVis++; } else { gPy.appendChild(a); nPy++; }
       });
     });
-    if (!grid.children.length) grid.innerHTML = "<p>No labs found.</p>";
+    if (!nVis) gVis.innerHTML = "<p>No visual labs found.</p>";
+    if (!nPy) gPy.innerHTML = "<p>No Python labs found.</p>";
   })();
   </script>
 </body>

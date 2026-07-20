@@ -1056,3 +1056,14 @@ body{ background: transparent; }
   background:color-mix(in srgb, #2dd4bf 7%, var(--surface));
 }
 .lab-card2.visual .lc-go{ color:#5eead4; }
+
+/* ============ labs index: separate Visual / Python sections ============ */
+.labs-section{ margin-top:2.4rem; }
+.labs-section:first-of-type{ margin-top:1.4rem; }
+.labs-sec-head{ margin-bottom:1rem; }
+.labs-sec-head h2{
+  display:flex; align-items:center; gap:.55rem; margin:0 0 .35rem;
+  font-size:1.28rem; letter-spacing:-.01em;
+}
+.labs-sec-head h2 .lc-tag{ font-size:.66rem; vertical-align:middle; margin-left:0; }
+.labs-sec-head p{ margin:0; color:var(--muted); max-width:64ch; line-height:1.6; font-size:.92rem; }

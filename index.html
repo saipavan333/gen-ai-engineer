@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Applied GenAI Engineer — learn how intelligence is built, then build it</title>
   <meta name="description" content="A free, self-paced masterclass that takes you from zero to a job-ready applied generative-AI / LLM engineer. 16 tracks, 123 lessons, 19 hands-on labs — build in Python or watch the mechanism run.">
-  <link rel="stylesheet" href="assets/styles.css?v=8">
+  <link rel="stylesheet" href="assets/styles.css?v=9">
 </head>
 <body data-page="home" data-base="">
 
@@ -75,49 +75,78 @@
 
   <script>
   (function(){
-    var out=document.getElementById('gout'), cands=document.getElementById('cands'),
-        temp=document.getElementById('temp'), tval=document.getElementById('tval'),
-        caret=document.getElementById('caret'), live=document.getElementById('live');
-    if(!out||!cands||!temp) return;
-    var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var sentences=[
-      ["A","language","model","predicts","the","next","token."],
-      ["Retrieval","grounds","the","model","in","your","documents."],
-      ["You","will","build,","evaluate,","and","ship","real","systems."],
-      ["Attention","lets","each","token","weigh","every","other."]
-    ];
-    var pool=["vector","gradient","prompt","neuron","banana","dragon","waffle","nebula","llama","entropy","syntax","spice","quantum","pixel","comet","velvet"];
-    var T=0.7, si=0, ti=0, built=[];
-    function softmax(l,t){var m=Math.max.apply(null,l),e=l.map(function(x){return Math.exp((x-m)/Math.max(0.05,t));}),s=e.reduce(function(a,b){return a+b;},0);return e.map(function(x){return x/s;});}
-    function pick(p){var r=Math.random(),a=0;for(var i=0;i<p.length;i++){a+=p[i];if(r<=a)return i;}return p.length-1;}
-    function rnd(ex){var w;do{w=pool[Math.floor(Math.random()*pool.length)];}while(w===ex);return w;}
-    function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
-    function renderCands(items,chosen){
-      cands.innerHTML=items.map(function(it,i){var on=i===chosen;
-        return '<div class="gc"><span class="gc-tok'+(on?' on':'')+'">'+esc(it.tok)+'</span>'
-          +'<span class="gc-bar"><span class="gc-fill'+(on?' on':'')+'" style="width:'+(it.p*100).toFixed(0)+'%"></span></span>'
-          +'<span class="gc-pct'+(on?' on':'')+'">'+(it.p*100).toFixed(0)+'%</span>'
-          +(on?'<span class="gc-pick">picked</span>':'<span class="gc-pad"></span>')+'</div>';
-      }).join('');
+    var started=false;
+    function initHero(){
+      var out=document.getElementById('gout'), cands=document.getElementById('cands'),
+          temp=document.getElementById('temp'), tval=document.getElementById('tval'),
+          caret=document.getElementById('caret'), live=document.getElementById('live');
+      if(!out||!cands||!temp) return false;
+      if(out.getAttribute('data-hero')==='on') return true;   /* run once */
+      out.setAttribute('data-hero','on');
+      var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var sentences=[
+        ["A","language","model","predicts","the","next","token."],
+        ["Retrieval","grounds","the","model","in","your","documents."],
+        ["You","will","build,","evaluate,","and","ship","real","systems."],
+        ["Attention","lets","each","token","weigh","every","other."]
+      ];
+      var pool=["vector","gradient","prompt","neuron","banana","dragon","waffle","nebula","llama","entropy","syntax","spice","quantum","pixel","comet","velvet"];
+      var T=(parseFloat(temp.value)/100)||0.7, si=0, ti=0, built=[], timer=null, lastToken=0;
+      function softmax(l,t){var m=Math.max.apply(null,l),e=l.map(function(x){return Math.exp((x-m)/Math.max(0.05,t));}),s=e.reduce(function(a,b){return a+b;},0);return e.map(function(x){return x/s;});}
+      function pick(p){var r=Math.random(),a=0;for(var i=0;i<p.length;i++){a+=p[i];if(r<=a)return i;}return p.length-1;}
+      function rnd(ex){var w,g=0;do{w=pool[Math.floor(Math.random()*pool.length)];}while(w===ex&&++g<8);return w;}
+      function esc(x){return x.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+      function renderCands(items,chosen){
+        cands.innerHTML=items.map(function(it,i){var on=i===chosen;
+          return '<div class="gc"><span class="gc-tok'+(on?' on':'')+'">'+esc(it.tok)+'</span>'
+            +'<span class="gc-bar"><span class="gc-fill'+(on?' on':'')+'" style="width:'+(it.p*100).toFixed(0)+'%"></span></span>'
+            +'<span class="gc-pct'+(on?' on':'')+'">'+(it.p*100).toFixed(0)+'%</span>'
+            +(on?'<span class="gc-pick">picked</span>':'<span class="gc-pad"></span>')+'</div>';
+        }).join('');
+      }
+      function emit(intended){
+        var items=[{tok:intended,l:2.3},{tok:rnd(intended),l:0.8},{tok:rnd(intended),l:0.25}];
+        var probs=softmax(items.map(function(x){return x.l;}),T);
+        var order=items.map(function(it,i){return {tok:it.tok,p:probs[i]};}).sort(function(a,b){return b.p-a.p;});
+        var chosen=pick(order.map(function(o){return o.p;}));
+        renderCands(order,chosen);
+        built.push(order[chosen].tok); out.textContent=built.join(' ')+' '; lastToken=Date.now();
+      }
+      function step(){
+        var s=sentences[si];
+        if(ti>=s.length){                    /* hold finished line, then swap with no blank frame */
+          ti=0; si=(si+1)%sentences.length;
+          timer=setTimeout(function(){ built=[]; emit(sentences[si][0]); ti=1; timer=setTimeout(step,340); },1100);
+          return;
+        }
+        emit(s[ti]); ti++; timer=setTimeout(step,340);
+      }
+      function start(){
+        if(timer){ clearTimeout(timer); timer=null; }
+        if(reduce){
+          out.textContent="A language model predicts the next token.";
+          renderCands([{tok:'token.',p:.82},{tok:'word.',p:.12},{tok:'symbol.',p:.06}],0);
+          if(live)live.textContent='● paused'; if(caret)caret.style.display='none'; lastToken=Date.now(); return;
+        }
+        built=["A","language","model"]; si=0; ti=3;    /* visible baseline: never blank on load */
+        out.textContent=built.join(' ')+' ';
+        renderCands([{tok:'model',p:.85},{tok:'system',p:.10},{tok:'llama',p:.05}],0);
+        if(live)live.textContent='● generating'; lastToken=Date.now();
+        timer=setTimeout(step,650);
+      }
+      temp.addEventListener('input',function(){ T=temp.value/100; tval.textContent=T.toFixed(2); });
+      if(caret&&!caret.getAttribute('data-blink')){ caret.setAttribute('data-blink','1'); setInterval(function(){caret.style.opacity=caret.style.opacity==='0'?'1':'0';},520); }
+      window.addEventListener('pageshow',function(e){ if(e.persisted) start(); });   /* bfcache / Back */
+      document.addEventListener('visibilitychange',function(){ if(!document.hidden && Date.now()-lastToken>1800) start(); });
+      setInterval(function(){ if(!reduce && !document.hidden && Date.now()-lastToken>2400) start(); },1600);  /* self-heal watchdog */
+      start(); return true;
     }
-    function step(){
-      var s=sentences[si];
-      if(ti>=s.length){ ti=0; si=(si+1)%sentences.length; built=[]; setTimeout(function(){out.textContent='';},60); return setTimeout(step,900); }
-      var intended=s[ti];
-      var items=[{tok:intended,l:2.3},{tok:rnd(intended),l:0.8},{tok:rnd(intended),l:0.25}];
-      var probs=softmax(items.map(function(x){return x.l;}),T);
-      var order=items.map(function(it,i){return {tok:it.tok,p:probs[i]};}).sort(function(a,b){return b.p-a.p;});
-      var chosen=pick(order.map(function(o){return o.p;}));
-      renderCands(order,chosen);
-      built.push(order[chosen].tok); out.textContent=built.join(' ')+' '; ti++;
-      setTimeout(step,340);
-    }
-    temp.addEventListener('input',function(){ T=temp.value/100; tval.textContent=T.toFixed(2); });
-    if(reduce){ out.textContent="A language model predicts the next token."; renderCands([{tok:'token.',p:.82},{tok:'word.',p:.12},{tok:'symbol.',p:.06}],0); if(live)live.textContent='● paused'; if(caret)caret.style.display='none'; }
-    else { if(caret)setInterval(function(){caret.style.opacity=caret.style.opacity==='0'?'1':'0';},520); setTimeout(step,500); }
+    function boot(){ if(!started) started=initHero(); }
+    if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+    window.addEventListener('load',function(){ setTimeout(boot,80); });   /* last-resort net */
   })();
   </script>
-  <script src="assets/curriculum.js?v=8"></script>
-  <script src="assets/app.js?v=8"></script>
+  <script src="assets/curriculum.js?v=9"></script>
+  <script src="assets/app.js?v=9"></script>
 </body>
 </html>
