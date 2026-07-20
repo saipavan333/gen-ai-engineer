@@ -627,3 +627,216 @@
     }
   };
 })();
+
+/* ============ visual labs: prompting, evals, serving ============ */
+(function () {
+  "use strict";
+  var VL = window.AGE_VLABS, H = window.AGE_VL_HELPERS;
+  var e = H.e, h = H.h, esc = H.esc, PALETTE = H.PALETTE, buildLab = H.buildLab;
+
+  /* =====================================================================
+     2.8  PROMPT — watch a prompt get reliable
+     Each stage adds one component and shows three sample runs stabilising.
+     ===================================================================== */
+  VL.prompt = function (root) {
+    var LINES = [
+      ["task", "Classify this support message."],
+      ["role", "You are a triage bot for an electronics store."],
+      ["context", "Message: “my charger arrived bent and won’t plug in”"],
+      ["format", "Reply as JSON: {\"intent\": string, \"urgent\": boolean}"],
+      ["guardrail", "If unsure, set intent to \"other\". Never invent fields."]
+    ];
+    /* what three runs look like at each stage of completeness (0..5 lines present) */
+    var RUNS = [
+      ["Sure! It sounds like a hardware issue — probably a defective charger?",
+       "This is a complaint about a bent charger.",
+       "Damaged item. Intent: warranty/return maybe."],
+      ["Damaged-goods complaint about a charger.",
+       "Intent: hardware problem (bent charger).",
+       "Looks like a defective-product report."],
+      ["The charger is bent, so this is a damaged-item report.",
+       "Intent seems to be a damaged/defective charger.",
+       "Damaged item — charger won’t plug in."],
+      ["{\"intent\": \"damaged_item\", \"urgent\": true}",
+       "{\"intent\": \"damaged item\", \"urgent\": true}",
+       "{ intent: 'damaged_item', urgent: true }"],
+      ["{\"intent\": \"damaged_item\", \"urgent\": true}",
+       "{\"intent\": \"damaged_item\", \"urgent\": true}",
+       "{\"intent\": \"damaged_item\", \"urgent\": true}"]
+    ];
+    var api = buildLab(root, {
+      title: "Watch a prompt get reliable",
+      viewBox: "0 0 900 400",
+      intro: "Press play. A bare instruction becomes a production prompt one component at a time — watch the three sample runs stop disagreeing.",
+      stages: [
+        { label: "Task", caption: "<b>Just the task.</b> The model will do <em>something</em> reasonable, but nothing pins down the wording, the shape, or the edge cases. Three runs, three different answers." },
+        { label: "+ Role", caption: "<b>Add a role.</b> Cheap, and it narrows the model’s guesses to your domain. The answers get closer, but they’re still prose in three different shapes." },
+        { label: "+ Context", caption: "<b>Add the context.</b> Now the model judges the actual message instead of a hypothetical one. Accuracy improves — but the <em>format</em> is still whatever it feels like." },
+        { label: "+ Format", caption: "<b>Add the format.</b> Now they’re JSON — but look closely: a space in a value, single quotes, a stray key. Almost parseable is not parseable." },
+        { label: "+ Guardrail", caption: "<b>Add the guardrail.</b> One distinct output across three runs, valid and bounded. This is the difference between a demo and something you can build on." }
+      ],
+      onReset: function (a) { a.clear(); },
+      onStage: function (i, a) { draw(a, i); }
+    });
+    function draw(a, stage) {
+      a.clear();
+      /* left: the assembling prompt */
+      a.svg.appendChild(e("text", { x: 24, y: 26, class: "vl-lbl" }, "the prompt"));
+      LINES.forEach(function (ln, i) {
+        var on = i <= stage, y = 52 + i * 34;
+        a.svg.appendChild(e("rect", { x: 24, y: y, width: 430, height: 28, rx: 6,
+          fill: on ? PALETTE[i % 8] + "1e" : "#ffffff08", stroke: on ? PALETTE[i % 8] : "#ffffff14",
+          "stroke-width": 1.3, "stroke-dasharray": on ? "" : "4 3",
+          class: on ? "vl-tok" : "", style: on ? "animation-delay:" + i * 40 + "ms" : "" }));
+        a.svg.appendChild(e("text", { x: 36, y: y + 18, class: "vl-role", fill: on ? PALETTE[i % 8] : "#64748b" }, ln[0]));
+        if (on) a.svg.appendChild(e("text", { x: 92, y: y + 18, class: "vl-mono" }, ln[1].length > 46 ? ln[1].slice(0, 44) + "…" : ln[1]));
+      });
+      /* right: three sample runs */
+      a.svg.appendChild(e("text", { x: 486, y: 26, class: "vl-lbl" }, "same prompt, three runs"));
+      var runs = RUNS[stage], distinct = {};
+      runs.forEach(function (r) { distinct[r.replace(/\s+/g, " ").trim()] = 1; });
+      var nDistinct = Object.keys(distinct).length;
+      runs.forEach(function (r, i) {
+        var y = 52 + i * 58, ok = stage >= 4;
+        a.svg.appendChild(e("rect", { x: 486, y: y, width: 390, height: 48, rx: 8,
+          fill: ok ? "#34d39914" : "#f59e0b12", stroke: ok ? "#34d399" : "#f59e0b", "stroke-width": 1.3,
+          class: "vl-tok", style: "animation-delay:" + i * 70 + "ms" }));
+        a.svg.appendChild(e("text", { x: 500, y: y + 20, class: "vl-mono" }, r.length > 44 ? r.slice(0, 42) + "…" : r));
+        a.svg.appendChild(e("text", { x: 500, y: y + 38, class: "vl-wgt" }, "run " + (i + 1)));
+      });
+      var vy = 246;
+      a.svg.appendChild(e("rect", { x: 486, y: vy, width: 390, height: 60, rx: 9,
+        fill: nDistinct === 1 ? "#34d39918" : "#f59e0b18", stroke: nDistinct === 1 ? "#34d399" : "#f59e0b", "stroke-width": 1.5 }));
+      a.svg.appendChild(e("text", { x: 502, y: vy + 26, class: nDistinct === 1 ? "vl-cite" : "vl-warn" },
+        nDistinct === 1 ? "1 distinct output — parseable and safe to build on"
+                        : nDistinct + " different outputs — a parser downstream breaks"));
+      a.svg.appendChild(e("text", { x: 502, y: vy + 46, class: "vl-wgt" },
+        stage >= 3 && stage < 4 ? "looks like JSON, but not valid JSON" : (stage < 3 ? "free text — no structure to rely on" : "identical every time")));
+    }
+  };
+
+  /* =====================================================================
+     6.9  EVALGATE — watch an eval gate catch a regression
+     ===================================================================== */
+  VL.evalgate = function (root) {
+    var CASES = [
+      ["refund timing", true, true], ["shipping cost", true, true],
+      ["gift-card refund", true, false], ["password reset", true, true],
+      ["out-of-scope (must refuse)", true, false], ["order lookup", true, true],
+      ["warranty length", true, true], ["damaged item", true, true]
+    ];
+    var api = buildLab(root, {
+      title: "Watch an eval gate catch a regression",
+      viewBox: "0 0 900 400",
+      intro: "Press play. A prompt change looks harmless on the average — watch the per-case gate find what the average hides.",
+      stages: [
+        { label: "Golden set", caption: "<b>A golden set.</b> Eight questions you chose, each with a known-good answer. This is the fixed yardstick every change is measured against." },
+        { label: "Run v1", caption: "<b>Run prompt v1.</b> All eight pass. This is your baseline — green across the board, safe to ship." },
+        { label: "Change it", caption: "<b>Someone edits the prompt</b> to fix a tone complaint. Reasonable change. Nobody re-reads all eight answers by hand — that’s what the eval is for." },
+        { label: "Run v2", caption: "<b>Run prompt v2.</b> The overall score barely moved — but two specific cases just flipped to fail, and one of them is the <em>refusal</em>. An average would have shipped this." },
+        { label: "The gate", caption: "<b>The gate blocks the merge.</b> Not because the average dropped — because a previously-passing case now fails. Per-case gating catches exactly the failures you care about most." }
+      ],
+      onReset: function (a) { a.clear(); },
+      onStage: function (i, a) { draw(a, i); }
+    });
+    function draw(a, stage) {
+      a.clear();
+      var showV1 = stage >= 1, showV2 = stage >= 3;
+      var x = 40, top = 40, rowH = 34;
+      a.svg.appendChild(e("text", { x: x, y: top - 12, class: "vl-lbl" }, "golden set"));
+      a.svg.appendChild(e("text", { x: 590, y: top - 12, class: "vl-lbl" }, "v1"));
+      a.svg.appendChild(e("text", { x: 680, y: top - 12, class: "vl-lbl" }, "v2"));
+      CASES.forEach(function (c, i) {
+        var y = top + i * rowH, broke = showV2 && c[1] && !c[2];
+        a.svg.appendChild(e("rect", { x: x, y: y, width: 520, height: rowH - 6, rx: 6,
+          fill: broke ? "#fb718518" : "#ffffff08", stroke: broke ? "#fb7185" : "#ffffff14", "stroke-width": broke ? 1.6 : 1,
+          class: "vl-tok", style: "animation-delay:" + i * 35 + "ms" }));
+        a.svg.appendChild(e("text", { x: x + 14, y: y + 18, class: "vl-doc" }, c[0]));
+        if (showV1) a.svg.appendChild(e("text", { x: 592, y: y + 18, class: c[1] ? "vl-cite" : "vl-warn" }, c[1] ? "✓" : "✗"));
+        if (showV2) a.svg.appendChild(e("text", { x: 682, y: y + 18, class: c[2] ? "vl-cite" : "vl-warn" }, c[2] ? "✓" : "✗"));
+      });
+      var v1 = CASES.filter(function (c) { return c[1]; }).length / CASES.length;
+      var v2 = CASES.filter(function (c) { return c[2]; }).length / CASES.length;
+      if (showV1) {
+        var gy = top + CASES.length * rowH + 10;
+        a.svg.appendChild(e("text", { x: x, y: gy, class: "vl-doc" }, "v1 pass rate " + Math.round(v1 * 100) + "%" + (showV2 ? "     v2 pass rate " + Math.round(v2 * 100) + "%  (only " + Math.round((v1 - v2) * 100) + " pts — looks fine)" : "")));
+      }
+      if (stage >= 4) {
+        a.svg.appendChild(e("rect", { x: x, y: 356, width: 820, height: 34, rx: 9,
+          fill: "#fb718522", stroke: "#fb7185", "stroke-width": 1.6 }));
+        a.svg.appendChild(e("text", { x: x + 16, y: 378, class: "vl-warn" },
+          "MERGE BLOCKED — 2 previously-passing cases regressed, including a refusal. Fix them, add to the golden set, then ship."));
+      }
+    }
+  };
+
+  /* =====================================================================
+     8.10  SERVING — watch tokens become time and money
+     ===================================================================== */
+  VL.serving = function (root) {
+    var inTok = h("label", "vl-speed", 'input tokens <b>2000</b> <input type="range" min="200" max="6000" step="200" value="2000">');
+    var outTok = h("label", "vl-speed", 'output tokens <b>300</b> <input type="range" min="50" max="1200" step="50" value="300">');
+    var api = buildLab(root, {
+      title: "Watch tokens become time and money",
+      viewBox: "0 0 900 400",
+      extras: [inTok, outTok],
+      intro: "Press play. Follow one request from prompt to reply and watch where the time and the money actually go.",
+      stages: [
+        { label: "Request", caption: "<b>A request arrives.</b> A prompt of input tokens, and a reply of output tokens still to be written. Drag the sliders to change either." },
+        { label: "Prefill", caption: "<b>Prefill.</b> The whole input is read in one parallel pass — fast, and cheap per token. This is why a long prompt costs less than it feels like it should." },
+        { label: "Decode", caption: "<b>Decode.</b> The reply is generated one token at a time, each depending on the last. Serial, slower, and billed at several times the input rate." },
+        { label: "Cost & time", caption: "<b>The tally.</b> Output usually dominates both the bill and the latency, even when there are far fewer output tokens. Capping reply length is the biggest lever you have." },
+        { label: "Streaming", caption: "<b>Streaming.</b> Same total time — but the first token appears almost immediately, so it <em>feels</em> fast. Perceived latency is a product decision, not just an engineering one." }
+      ],
+      onReset: function (a) { a.clear(); },
+      onStage: function (i, a) { draw(a, i); }
+    });
+    [inTok, outTok].forEach(function (w) {
+      w.querySelector("input").addEventListener("input", function () {
+        w.querySelector("b").textContent = this.value;
+        if (api.stage >= 0) draw(api, api.stage);
+      });
+    });
+    function draw(a, stage) {
+      a.clear();
+      var IN = +inTok.querySelector("input").value, OUT = +outTok.querySelector("input").value;
+      var cin = IN * 0.15 / 1e6, cout = OUT * 0.60 / 1e6, total = cin + cout;
+      var ttft = 0.20 + IN / 1000 * 0.06, full = ttft + OUT * 0.012;
+      /* input block (prefill) */
+      a.svg.appendChild(e("text", { x: 30, y: 40, class: "vl-lbl" }, "input — prefill (parallel)"));
+      var iw = Math.max(40, Math.min(500, IN / 12));
+      a.svg.appendChild(e("rect", { x: 30, y: 52, width: iw, height: 40, rx: 8,
+        fill: stage >= 1 ? "#22d3ee33" : "#22d3ee14", stroke: "#22d3ee", "stroke-width": 1.5,
+        class: stage >= 1 ? "vl-bar" : "" }));
+      a.svg.appendChild(e("text", { x: 30 + iw / 2, y: 77, "text-anchor": "middle", class: "vl-mono" }, IN + " tok"));
+      /* output tokens (decode) appearing one by one */
+      a.svg.appendChild(e("text", { x: 30, y: 132, class: "vl-lbl" }, "output — decode (one at a time)"));
+      if (stage >= 2) {
+        var n = Math.min(40, Math.round(OUT / 30)), bw = 15;
+        for (var k = 0; k < n; k++) {
+          a.svg.appendChild(e("rect", { x: 30 + k * (bw + 3), y: 144, width: bw, height: 26, rx: 3,
+            fill: "#f59e0b", "fill-opacity": .8, class: "vl-cell", style: "animation-delay:" + k * 40 + "ms" }));
+        }
+        a.svg.appendChild(e("text", { x: 30, y: 196, class: "vl-mono" }, OUT + " tokens, generated serially"));
+      }
+      /* readouts */
+      if (stage >= 3) {
+        a.svg.appendChild(e("text", { x: 30, y: 240, class: "vl-lbl" }, "where it goes"));
+        var barY = 252, bwid = 500;
+        var shareIn = cin / total;
+        a.svg.appendChild(e("text", { x: 30, y: barY + 13, class: "vl-doc" }, "cost"));
+        a.svg.appendChild(e("rect", { x: 90, y: barY, width: bwid, height: 16, rx: 8, fill: "#22d3ee", "fill-opacity": .5 }));
+        a.svg.appendChild(e("rect", { x: 90, y: barY, width: bwid * shareIn, height: 16, rx: 8, fill: "#22d3ee" }));
+        a.svg.appendChild(e("text", { x: 90 + bwid + 12, y: barY + 13, class: "vl-bpct" }, "$" + total.toFixed(5) + "/call"));
+        a.svg.appendChild(e("text", { x: 90, y: barY + 34, class: "vl-wgt" }, "cyan = input share (" + Math.round(shareIn * 100) + "%) · rest is output"));
+      }
+      if (stage >= 4) {
+        a.svg.appendChild(e("rect", { x: 30, y: 320, width: 400, height: 60, rx: 9, fill: "#818cf818", stroke: "#818cf8", "stroke-width": 1.4 }));
+        a.svg.appendChild(e("text", { x: 46, y: 344, class: "vl-doc" }, "no streaming: user waits " + full.toFixed(2) + "s for anything"));
+        a.svg.appendChild(e("text", { x: 46, y: 366, class: "vl-cite" }, "streaming: first token in " + ttft.toFixed(2) + "s — feels instant"));
+      } else if (stage >= 3) {
+        a.svg.appendChild(e("text", { x: 30, y: 344, class: "vl-doc" }, "full response ≈ " + full.toFixed(2) + "s  (time to first token " + ttft.toFixed(2) + "s)"));
+      }
+    }
+  };
+})();

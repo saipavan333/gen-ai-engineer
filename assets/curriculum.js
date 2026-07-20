@@ -37,7 +37,8 @@ window.CURRICULUM = {
         { n: "2.4", title: "Structured output & JSON", file: "track2/04-structured-output.html", built: true },
         { n: "2.5", title: "Patterns & anti-patterns", file: "track2/05-patterns.html", built: true },
         { n: "2.6", title: "Interview check: Prompting", file: "track2/06-interview.html", built: true },
-        { n: "2.7", title: "Lab: Build a prompt engine", file: "track2/lab.html", built: true }
+        { n: "2.7", title: "Lab: Build a prompt engine", file: "track2/lab.html", built: true },
+        { n: "2.8", title: "Visual Lab: Watch a prompt get reliable", file: "track2/visual-lab.html", built: true }
       ]
     },
     {
@@ -100,7 +101,8 @@ window.CURRICULUM = {
         { n: "6.5", title: "Tracing & observability", file: "track6/05-tracing-observability.html", built: true },
         { n: "6.6", title: "Regression-testing prompts", file: "track6/06-regression-testing.html", built: true },
         { n: "6.7", title: "Interview check: Evals", file: "track6/07-interview.html", built: true },
-        { n: "6.8", title: "Lab: Build an eval harness", file: "track6/lab.html", built: true }
+        { n: "6.8", title: "Lab: Build an eval harness", file: "track6/lab.html", built: true },
+        { n: "6.9", title: "Visual Lab: Watch an eval gate catch a regression", file: "track6/visual-lab.html", built: true }
       ]
     },
     {
@@ -131,7 +133,8 @@ window.CURRICULUM = {
         { n: "8.6", title: "Batching & throughput", file: "track8/06-batching-throughput.html", built: true },
         { n: "8.7", title: "Budgeting tokens", file: "track8/07-budgeting-tokens.html", built: true },
         { n: "8.8", title: "Interview check: Serving", file: "track8/08-interview.html", built: true },
-        { n: "8.9", title: "Lab: Build a cost & latency calculator", file: "track8/lab.html", built: true }
+        { n: "8.9", title: "Lab: Build a cost & latency calculator", file: "track8/lab.html", built: true },
+        { n: "8.10", title: "Visual Lab: Watch tokens become time and money", file: "track8/visual-lab.html", built: true }
       ]
     },
     {

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visual Lab: Watch a prompt get reliable — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css?v=11">
+</head>
+<body data-base="../" data-lesson="2.8">
+<main class="lesson">
+
+  <span class="eyebrow">Track 2 · Visual Lab</span>
+  <h1>Watch a prompt get reliable</h1>
+  <p class="lead">A prompt isn't magic words — it's a set of components, each removing a specific way the model can disappoint you. Watch a bare instruction become a production prompt, and watch three sample runs stop disagreeing.</p>
+
+  <div class="box note">
+    <div class="box-label">How to use this lab</div>
+    <p>Press <strong>▶ Play</strong> to add the components one at a time, or <strong>Step</strong> to pause and read what each one does. Watch the right-hand panel: the three runs start as different prose and end as one identical, parseable answer.</p>
+  </div>
+
+  <div class="vlab" data-vlab="prompt"></div>
+
+  <div class="box practice">
+    <div class="box-label">Make it yours</div>
+    <p><strong>1.</strong> At the <em>+ Format</em> stage the outputs look like JSON but the verdict still says they'll break a parser. Look closely at the three — what's different between them?<br>
+    <strong>2.</strong> Which single component moved the runs from 'three different answers' to 'accurate but unstructured'? Which one made them <em>identical</em>?</p>
+    <details class="sol">
+      <summary><span class="chev">&#9656; </span>Show reasoning</summary>
+      <div class="sol-body">
+        <p>The three JSON-ish outputs differ in tiny ways — a space inside a value, single quotes instead of double, an extra key. Each is 'almost JSON', and almost-JSON throws an exception the moment you call a strict parser on it. That's why format alone isn't enough: the guardrail ("never invent fields", "if unsure use other") is what finally pins every run to the same valid shape. Context fixed the accuracy; the guardrail fixed the reliability.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">What you just saw</div>
+    <ul>
+      <li>A prompt as <strong>components</strong>, not a magic sentence.</li>
+      <li>Each component removing one <strong>specific class of failure</strong>.</li>
+      <li>The difference between <strong>almost-parseable</strong> and <strong>parseable</strong>.</li>
+    </ul>
+  </div>
+
+  <p>Now build a reusable one in code: <strong>Lesson&nbsp;2.7, the prompt engine lab.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js?v=11"></script>
+<script src="../assets/app.js?v=11"></script>
+<script src="../assets/visual-labs.js?v=11"></script>
+</body>
+</html>

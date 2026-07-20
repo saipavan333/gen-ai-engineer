@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visual Lab: Watch an eval gate catch a regression — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css?v=11">
+</head>
+<body data-base="../" data-lesson="6.9">
+<main class="lesson">
+
+  <span class="eyebrow">Track 6 · Visual Lab</span>
+  <h1>Watch an eval gate catch a regression</h1>
+  <p class="lead">The scariest bug in an LLM product is the one that passes review. Watch a harmless-looking prompt change sail past the average score — and get caught by a per-case gate that's watching the two things that actually broke.</p>
+
+  <div class="box note">
+    <div class="box-label">How to use this lab</div>
+    <p>Press <strong>▶ Play</strong> to run the golden set against two prompt versions, or <strong>Step</strong> through each stage. Watch the v2 column: the overall pass rate barely moves, but two specific cases flip to fail.</p>
+  </div>
+
+  <div class="vlab" data-vlab="evalgate"></div>
+
+  <div class="box practice">
+    <div class="box-label">Make it yours</div>
+    <p><strong>1.</strong> The overall score only drops a few points from v1 to v2. Why is that <em>more</em> dangerous than a big drop, not less?<br>
+    <strong>2.</strong> One of the two regressions is the out-of-scope refusal. Why does a broken refusal matter more than a broken answer?</p>
+    <details class="sol">
+      <summary><span class="chev">&#9656; </span>Show reasoning</summary>
+      <div class="sol-body">
+        <p>A small average drop is dangerous precisely because it's easy to wave through — 'we're still at 75%, ship it.' But averages are made of individual cases, and a change that fixes tone while quietly breaking the refusal has the same average as one that's genuinely fine. The gate blocks on <em>any</em> previously-passing case that now fails, so it catches the regression the average buried. A broken refusal is worse than a broken answer because it means the system now confidently handles things it was specifically built to decline — that's how an assistant ends up giving advice, or an action, it should have refused.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">What you just saw</div>
+    <ul>
+      <li>A <strong>golden set</strong> as the fixed yardstick for every change.</li>
+      <li>An average that <strong>looks fine</strong> while specific cases regress.</li>
+      <li>A <strong>per-case gate</strong> blocking the merge, refusal included.</li>
+    </ul>
+  </div>
+
+  <p>Now build the harness in code: <strong>Lesson&nbsp;6.8, the eval harness lab.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js?v=11"></script>
+<script src="../assets/app.js?v=11"></script>
+<script src="../assets/visual-labs.js?v=11"></script>
+</body>
+</html>

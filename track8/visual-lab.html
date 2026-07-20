@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visual Lab: Watch tokens become time and money — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css?v=11">
+</head>
+<body data-base="../" data-lesson="8.10">
+<main class="lesson">
+
+  <span class="eyebrow">Track 8 · Visual Lab</span>
+  <h1>Watch tokens become time and money</h1>
+  <p class="lead">Every architecture argument about cost and latency comes down to one asymmetry: input is read all at once, output is written one token at a time. Watch a single request move through both, and see where the seconds and the cents actually go.</p>
+
+  <div class="box note">
+    <div class="box-label">How to use this lab</div>
+    <p>Press <strong>▶ Play</strong> to follow one request from prompt to reply, or <strong>Step</strong> through each stage. Drag the input and output token sliders and watch the cost and latency respond.</p>
+  </div>
+
+  <div class="vlab" data-vlab="serving"></div>
+
+  <div class="box practice">
+    <div class="box-label">Make it yours</div>
+    <p><strong>1.</strong> Set output tokens to their maximum and input to its minimum. Which dominates the cost now — and why, when there are far fewer output tokens than input?<br>
+    <strong>2.</strong> Streaming doesn't change the total time at all. So why does it make the product feel dramatically faster?</p>
+    <details class="sol">
+      <summary><span class="chev">&#9656; </span>Show reasoning</summary>
+      <div class="sol-body">
+        <p>Output dominates because each output token costs several times an input token <em>and</em> is generated serially — one forward pass per token — while the entire input is processed in a single parallel prefill pass. So a short reply can still cost and take more than a long prompt. That's why the biggest, cheapest lever is usually capping reply length, not shortening the prompt. Streaming feels faster because perceived latency is dominated by time-to-first-token: the user sees words appear almost immediately and starts reading, even though the full response finishes at the same moment. Speed the user feels is a product decision layered on top of the engineering one.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">What you just saw</div>
+    <ul>
+      <li><strong>Prefill</strong> — the whole input read in one parallel pass.</li>
+      <li><strong>Decode</strong> — the reply generated one serial token at a time.</li>
+      <li>Why <strong>output dominates</strong> cost and latency, and how streaming hides it.</li>
+    </ul>
+  </div>
+
+  <p>Now build the calculator in code: <strong>Lesson&nbsp;8.9, the cost &amp; latency lab.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js?v=11"></script>
+<script src="../assets/app.js?v=11"></script>
+<script src="../assets/visual-labs.js?v=11"></script>
+</body>
+</html>
