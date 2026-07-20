@@ -36,9 +36,9 @@
   }
   /* ---- interactive labs (mounted per data-lab attribute) ---- */
   if (!document.getElementById("age-labs")) {
-    var ls = document.createElement("script"); ls.id = "age-labs"; ls.src = link("assets/labs.js?v=14");
+    var ls = document.createElement("script"); ls.id = "age-labs"; ls.src = link("assets/labs.js?v=15");
     document.head.appendChild(ls);
-    var ws = document.createElement("script"); ws.id = "age-widgets"; ws.src = link("assets/widgets.js?v=14");
+    var ws = document.createElement("script"); ws.id = "age-widgets"; ws.src = link("assets/widgets.js?v=15");
     document.head.appendChild(ws);
   }
 
@@ -79,6 +79,9 @@
   var lbl = el("a", "hdr-link hdr-labs", "⚙ Labs");
   lbl.href = link("labs.html");
   header.appendChild(lbl);
+  var msl = el("a", "hdr-link hdr-mastery", "★ Mastery");
+  msl.href = link("mastery.html");
+  header.appendChild(msl);
   var rvl = el("a", "hdr-link hdr-review");
   rvl.href = link("review.html");
   var _dc = dueCount();

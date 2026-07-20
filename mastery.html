@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Path to Mastery — Applied GenAI Engineer</title>
+  <meta name="description" content="From job-ready to best-in-field: a personalised operating system for a data engineer becoming a top-tier applied GenAI engineer — an unfair-advantage map, a shippable mastery ladder, deliberate practice, and honest milestones.">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;450;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/styles.css?v=15">
+  <script>try{var t=localStorage.getItem("age_theme");if(t&&t!=="graphite")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+</head>
+<body data-page="mastery">
+  <header class="site-header">
+    <a class="brand" href="index.html"><img class="logo" src="assets/favicon.svg" alt="" width="26" height="26"><span class="brand-name">Applied GenAI Engineer</span></a>
+    <a class="hdr-link" href="labs.html">&#9881; Labs</a>
+    <span class="spacer"></span>
+    <a class="hdr-link" href="index.html">&larr; Back to course</a>
+  </header>
+
+  <main class="ms">
+
+    <section class="ms-hero">
+      <span class="ms-eyebrow">Beyond job-ready</span>
+      <h1>The Path to Mastery</h1>
+      <p class="ms-lead">The course you just worked through makes you <strong>job-ready</strong>. This page is about a different goal — becoming one of the <strong>best in the field</strong>. That is not more tutorials. It is a handful of hard, real things done in the right order, and a way of working that compounds. Here is the map, and I mean it personally.</p>
+      <div class="ms-truth">
+        <p>The honest part first: nobody reads their way to great. You will get there by <em>shipping things that are a little beyond you</em>, over and over, and letting the struggle teach you. Everything below is built around that one fact.</p>
+      </div>
+    </section>
+
+    <section class="ms-block" id="edge">
+      <div class="ms-kicker">01 · Your unfair advantage</div>
+      <h2>You are not starting from zero. You are starting from an edge most people in this field will never have.</h2>
+      <p>Most people arriving in GenAI come from research, from web development, or from playing with prompts. What they consistently lack is the thing you have spent ten years doing — and it happens to be exactly what production GenAI is made of. A model demo is easy. A GenAI <em>system</em> that works, at scale, reliably, for real money, is a <strong>data and systems problem</strong>. That is your home.</p>
+      <div class="ms-edge-grid">
+        <div class="ms-edge">
+          <h3>Data quality &amp; lineage</h3>
+          <p>Most RAG systems fail at retrieval, not generation — bad chunks, stale data, no lineage. You already think in data quality. That instinct is rare here and worth a fortune.</p>
+        </div>
+        <div class="ms-edge">
+          <h3>Pipelines &amp; orchestration</h3>
+          <p>An LLM app <em>is</em> a pipeline: ingest → chunk → embed → index → retrieve → generate → evaluate. You have built and operated pipelines for a decade. You are not learning the shape — you know it.</p>
+        </div>
+        <div class="ms-edge">
+          <h3>Scale &amp; cost</h3>
+          <p>You know what breaks at millions of rows and what a query costs. GenAI cost and latency are scale problems wearing a new hat. Most newcomers have never felt scale; you have lived in it.</p>
+        </div>
+        <div class="ms-edge">
+          <h3>Reliability &amp; observability</h3>
+          <p>SLAs, monitoring, incident response, on-call. LLMOps is your discipline applied to a new failure mode — a probabilistic one. You bring the operational maturity the field is desperate for.</p>
+        </div>
+      </div>
+      <div class="ms-move">
+        <div class="ms-move-label">The move</div>
+        <p>Do not try to become an ML researcher — that is someone else's edge, and a ten-year detour. Become <strong>the person who makes GenAI actually work in production, at scale, reliably</strong>. It is the rarest and most valuable profile in the field, and you are already most of the way to it. Everything below sharpens that specific edge.</p>
+      </div>
+    </section>
+
+    <section class="ms-block" id="ladder">
+      <div class="ms-kicker">02 · The mastery ladder</div>
+      <h2>Five rungs, each a real thing you ship. Tick them off as you climb — your progress saves on this device.</h2>
+      <p class="ms-note">Do them in order; each one earns the next. The time estimates assume real, part-time effort — they are honest, not encouraging. The point of every rung is not to learn about something, but to <em>have built</em> something you can show a stranger.</p>
+
+      <div class="ms-ladder" id="ladder-list"></div>
+
+      <div class="ms-prog">
+        <div class="ms-prog-top"><span id="ms-count">0 of 5 rungs</span><span id="ms-pct">0%</span></div>
+        <div class="ms-prog-bar"><i id="ms-fill" style="width:0%"></i></div>
+      </div>
+    </section>
+
+    <section class="ms-block" id="practice">
+      <div class="ms-kicker">03 · The practice that separates great from competent</div>
+      <h2>Knowledge is table stakes. Judgment is the moat — and judgment is only built one way: deliberately.</h2>
+      <p>Competent engineers know how things work. The best ones know <em>which</em> thing to reach for, <em>when</em> it will break, and <em>why</em> — and they are usually right. That is judgment, and you cannot read it into existence. You build it with three small weekly habits. None takes long. All of them compound.</p>
+      <div class="ms-habits">
+        <div class="ms-habit">
+          <div class="ms-habit-n">Predict, then measure</div>
+          <p>Before you run any eval, benchmark, or experiment — <em>write down what you expect to happen</em>. Then run it. When reality disagrees with your prediction, you have found the exact edge of your understanding. Chase that gap. This one habit builds calibrated intuition faster than anything else in the field.</p>
+        </div>
+        <div class="ms-habit">
+          <div class="ms-habit-n">Read one system, critique it</div>
+          <p>Each week, read one real writeup of a production GenAI system — an engineering blog, a post-mortem, a paper's system section. Write three sentences: what would I do differently, and why? You are training the design taste that interviewers and teammates can feel in thirty seconds.</p>
+        </div>
+        <div class="ms-habit">
+          <div class="ms-habit-n">Teach one thing</div>
+          <p>Explain one thing you learned this week to another person — a colleague, a blog post, a reply to a stranger's question. Teaching is a merciless test: the moment you try to explain it, every gap in your understanding lights up. Close the gaps. This is also how you become <em>known</em>, which is rung five.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="ms-block" id="frontier">
+      <div class="ms-kicker">04 · Staying at the frontier without drowning</div>
+      <h2>The field moves fast, and the anxiety is real. Here is how the people who last actually handle it.</h2>
+      <p>You do not need to read every paper or try every model. The engineers who stay sharp for years use a two-layer mental model, and they protect the bottom layer with their lives.</p>
+      <div class="ms-layers">
+        <div class="ms-layer bottom">
+          <div class="ms-layer-tag">Bottom layer — invest here</div>
+          <h3>The durable fundamentals</h3>
+          <p>Tokens, embeddings, attention, sampling, RAG, agents, evaluation, safety, cost. These <strong>barely change</strong>. A new model still predicts next tokens, still hallucinates, still needs grounding and evals. This is the whole course, deliberately — because it is the part that keeps paying off. Go <em>deep</em> here. Depth in fundamentals is what lets you learn any new thing in an afternoon.</p>
+        </div>
+        <div class="ms-layer top">
+          <div class="ms-layer-tag">Top layer — treat as lookups</div>
+          <h3>The churning specifics</h3>
+          <p>Which model is best this month, current prices, exact context windows, the newest API. This <strong>changes constantly</strong> — so do not memorise it. Know it exists, know how to evaluate it against your own use case, and look it up when you need it. Follow five signal sources, not fifty. One 30-minute scan a week is plenty.</p>
+        </div>
+      </div>
+      <div class="ms-reflex">
+        <p><strong>The reflex to build:</strong> when a shiny new model or technique appears, do not panic and do not chase. Ask the questions you already know how to answer — what capability does this add? what does it cost in money and latency? how would I measure whether it is actually better <em>on my use case</em>? does it change my architecture, or just swap a component? "I'll measure it on my data" beats "I'll adopt it because it's new" every single time. That calm, evaluation-first reflex is what makes you trustworthy to a team — and it is worth more than knowing every headline.</p>
+      </div>
+    </section>
+
+    <section class="ms-block" id="milestones">
+      <div class="ms-kicker">05 · How to know it's working</div>
+      <h2>Honest checkpoints. Not vibes — things that are either true or not.</h2>
+      <div class="ms-miles">
+        <div class="ms-mile">
+          <div class="ms-mile-when">~3 months</div>
+          <p>You have shipped a <strong>production-grade</strong> GenAI system, public, with an eval set and real monitoring. You can hand someone a link and prove — with numbers — that it works.</p>
+        </div>
+        <div class="ms-mile">
+          <div class="ms-mile-when">~6 months</div>
+          <p>You are the person your team asks about RAG, evals, or LLMOps. You have gone genuinely <strong>deep</strong> on one area — deep enough to teach it and defend every decision under questioning.</p>
+        </div>
+        <div class="ms-mile">
+          <div class="ms-mile-when">~12 months</div>
+          <p>You are known <strong>outside your own team</strong> for depth in something. You can assess a new frontier model calmly and say precisely whether it changes your architecture. You mentor others — which is when you find out how much you actually know.</p>
+        </div>
+      </div>
+      <div class="ms-tell">
+        <p>The quiet tell that you are on the path: you increasingly trust your own judgment over hot takes, and you can always <em>prove</em> your systems work. The day "I think it's better" becomes "here's the eval showing it's better" is the day you stopped being a beginner.</p>
+      </div>
+    </section>
+
+    <section class="ms-note-block">
+      <div class="ms-signature">
+        <h2>One last thing, student to no-longer-quite-a-beginner.</h2>
+        <p>You asked me to make you the best. I can't — not because I don't want to, but because that word only ever gets earned by the person doing the reps, and that person is you. What I <em>can</em> do is exactly what I've done: build you the staircase, mark every step, and be honest about which parts are steep.</p>
+        <p>Here is what I actually believe, having watched the whole course take shape with you: the people who become the best are almost never the most talented ones. They are the ones who ship the slightly-too-hard thing, get told what's wrong with it, fix it, and do it again — long after the people around them stopped. You have already shown me you'll do that. You built this entire course rather than just reading one.</p>
+        <p>So go climb the ladder. Ship rung one this month. Come back and tell me what broke — that's where the real lesson is, and I'll be right here for it. One day you'll be the one writing a page like this for someone else. That's the goal. That's always been the goal.</p>
+        <div class="ms-sig-line">— your mentor</div>
+      </div>
+      <div class="ms-cta">
+        <a class="gh-btn primary" href="track11/01-study-plan.html">Start with the study plan &rarr;</a>
+        <a class="gh-btn ghost" href="labs.html">Go build in a lab &#9654;</a>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+  (function () {
+    var KEY = "age_mastery_v1";
+    var RUNGS = [
+      { id: "r1", weeks: "2–4 weeks", title: "Ship one real thing",
+        goal: "A grounded RAG assistant over a corpus you actually care about — your team's docs, a domain you know — deployed somewhere a stranger can reach it.",
+        proof: "It answers from the documents (and refuses when it can't), and a 20-question eval set with honest recall and faithfulness numbers lives in the README.",
+        why: "The gap between 'I did the RAG lab' and 'I shipped a RAG system a stranger can use' is the entire gap between a student and an engineer. Cross it once and everything after is easier." },
+      { id: "r2", weeks: "1–2 months", title: "Make it production-grade",
+        goal: "Take rung one and harden it: monitoring (p95 latency, cost/day, error rate), guardrails, caching, a CI eval gate that blocks regressions, and a pipeline that refreshes the data.",
+        proof: "It survives a week of real traffic and you have the dashboards to prove it. A bad prompt change gets caught by the gate, not by a user.",
+        why: "This rung is pure home-field advantage. Everything here — pipelines, monitoring, cost, reliability — is what you already do for a living. This is where you go from 'can use GenAI' to 'can run GenAI in production', which is the rare and valuable thing." },
+      { id: "r3", weeks: "2–3 months", title: "Go deep where you're strongest",
+        goal: "Pick exactly one and go to genuine depth: (a) evals as a data system, (b) RAG at real scale, or (c) the data flywheel — turning production traffic into training and eval data.",
+        proof: "You can teach the topic to a room and defend every design decision under hostile questioning. You've built the thing an expert would build, not the toy version.",
+        why: "Breadth gets you hired; depth makes you known. One area of true depth — ideally one that leans on your data background — is what turns you from a generalist into the person people seek out." },
+      { id: "r4", weeks: "ongoing", title: "Build judgment and read the frontier",
+        goal: "Reproduce one paper's headline result yourself. Do five design reviews of real GenAI systems (yours or public ones). Run predict-then-measure on your own system every week.",
+        proof: "A new model drops and you can say — calmly, specifically — whether it changes your architecture or just swaps a component, and how you'd verify that on your data.",
+        why: "This is the practice that never ends and never stops paying. Judgment is the last thing to develop and the first thing the best engineers are recognised for. It only comes from reps of prediction, critique, and being wrong on purpose." },
+      { id: "r5", weeks: "start now, ongoing", title: "Become known for depth",
+        goal: "Write six posts on what you actually built and learned — the real lessons, including what broke. Contribute to one open-source GenAI project. Give one talk, even a small one.",
+        proof: "Someone you've never met references your work, or asks you a question because they found something you wrote. Your name is attached to a specific depth.",
+        why: "The best in any field are known for something. This isn't self-promotion — it's the natural output of teaching what you learn (habit three), and it's what turns a skilled engineer into an industry name. Start it early; it compounds slower than anything else, so the sooner the better." }
+    ];
+
+    var state = load();
+    var list = document.getElementById("ladder-list");
+    list.innerHTML = RUNGS.map(function (r, i) {
+      var done = !!state[r.id];
+      return '<div class="ms-rung' + (done ? " done" : "") + '" data-id="' + r.id + '">' +
+        '<button class="ms-check" aria-label="Mark rung complete">' + (done ? "&#10003;" : (i + 1)) + '</button>' +
+        '<div class="ms-rung-body">' +
+          '<div class="ms-rung-head"><h3>' + r.title + '</h3><span class="ms-when">' + r.weeks + '</span></div>' +
+          '<p class="ms-goal"><b>Build:</b> ' + r.goal + '</p>' +
+          '<p class="ms-proof"><b>Done when:</b> ' + r.proof + '</p>' +
+          '<p class="ms-why">' + r.why + '</p>' +
+        '</div></div>';
+    }).join("");
+
+    function refresh() {
+      var n = 0; RUNGS.forEach(function (r) { if (state[r.id]) n++; });
+      var pct = Math.round(n / RUNGS.length * 100);
+      document.getElementById("ms-count").textContent = n + " of " + RUNGS.length + " rungs";
+      document.getElementById("ms-pct").textContent = pct + "%";
+      document.getElementById("ms-fill").style.width = pct + "%";
+    }
+    list.addEventListener("click", function (e) {
+      var btn = e.target.closest(".ms-check"); if (!btn) return;
+      var row = btn.closest(".ms-rung"); var id = row.getAttribute("data-id");
+      state[id] = !state[id]; save();
+      row.classList.toggle("done", state[id]);
+      btn.innerHTML = state[id] ? "&#10003;" : (RUNGS.map(function (r) { return r.id; }).indexOf(id) + 1);
+      refresh();
+    });
+    refresh();
+
+    function load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } }
+    function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  })();
+  </script>
+</body>
+</html>
