@@ -931,3 +931,81 @@
     }
   };
 })();
+
+/* ============ visual lab: multimodal document extraction ============ */
+(function () {
+  "use strict";
+  var VL = window.AGE_VLABS, H = window.AGE_VL_HELPERS;
+  var e = H.e, h = H.h, esc = H.esc, PALETTE = H.PALETTE, buildLab = H.buildLab;
+
+  /* =====================================================================
+     10.7  MULTIMODAL — watch a document become trustworthy data
+     ===================================================================== */
+  VL.multimodal = function (root) {
+    var api = buildLab(root, {
+      title: "Watch a document become data",
+      viewBox: "0 0 900 400",
+      intro: "Press play. A scanned invoice becomes structured data — and every stage after the read exists to stop a confident wrong number reaching your database.",
+      stages: [
+        { label: "Scan", caption: "<b>A scanned invoice.</b> To a computer this is just pixels. Turning it into rows in a database is the highest-value multimodal task in business, and the easiest to get dangerously wrong." },
+        { label: "Read", caption: "<b>Vision / OCR.</b> A model reads the pixels into text — roughly structured, inconsistently spaced, no schema. This is where the <em>engineering</em> begins, not where it ends." },
+        { label: "Extract", caption: "<b>Extract fields.</b> Pull the vendor, invoice number, date and total into structured JSON. A vision model will return this confidently whether or not it read the numbers correctly." },
+        { label: "Validate", caption: "<b>Validate & normalise.</b> Is the total a plausible number? Is the date real — and is 03/04 March or April? A silently mis-parsed date can shift a payment by months." },
+        { label: "Cross-check", caption: "<b>Cross-check.</b> Sum the line items independently and compare to the stated total. This second, independent calculation is the strongest defence against a confident wrong number." },
+        { label: "Route", caption: "<b>Route by risk.</b> Numbers agree and it’s under the auto-pay limit → approve. Anything mismatched or large → a human. Paying the wrong invoice is not reversible, so the handoff is the feature." }
+      ],
+      onReset: function (a) { a.clear(); },
+      onStage: function (i, a) { draw(a, i); }
+    });
+    function draw(a, stage) {
+      a.clear();
+      /* left: the document */
+      a.svg.appendChild(e("text", { x: 24, y: 26, class: "vl-lbl" }, "document"));
+      a.svg.appendChild(e("rect", { x: 24, y: 38, width: 250, height: 300, rx: 8,
+        fill: "#ffffff10", stroke: "#64748b", "stroke-width": 1.4, class: "vl-tok" }));
+      if (stage === 0) {
+        /* pixel-ish blur: grey bars */
+        for (var r = 0; r < 9; r++) {
+          a.svg.appendChild(e("rect", { x: 40, y: 60 + r * 30, width: 40 + (r * 53 % 200), height: 12, rx: 3,
+            fill: "#64748b", "fill-opacity": 0.35, class: "vl-cell", style: "animation-delay:" + r * 40 + "ms" }));
+        }
+        a.svg.appendChild(e("text", { x: 149, y: 356, "text-anchor": "middle", class: "vl-wgt" }, "just pixels"));
+      } else {
+        var lines = ["ACME SUPPLIES LTD", "Invoice #  INV-2025-0473", "Date: 14/03/2025", "", "Widget A     3    40.00",
+          "Cable pack   2    15.50", "Shipping          9.99", "", "TOTAL DUE  $ 160.99"];
+        lines.forEach(function (ln, i) {
+          a.svg.appendChild(e("text", { x: 40, y: 64 + i * 30, class: "vl-mono", style: "animation-delay:" + i * 30 + "ms" }, ln));
+        });
+      }
+      /* right column pipeline */
+      var rx = 300;
+      if (stage >= 2) {
+        a.svg.appendChild(e("text", { x: rx, y: 26, class: "vl-lbl" }, "extracted fields"));
+        var fields = ['{ "vendor": "ACME SUPPLIES LTD",', '  "invoice_no": "INV-2025-0473",', '  "date": "14/03/2025",', '  "total": 160.99 }'];
+        fields.forEach(function (f, i) {
+          a.svg.appendChild(e("text", { x: rx, y: 48 + i * 20, class: "vl-mono", style: "animation-delay:" + i * 50 + "ms" }, f));
+        });
+      }
+      if (stage >= 3) {
+        var vy = 140;
+        a.svg.appendChild(e("rect", { x: rx, y: vy, width: 576, height: 40, rx: 8, fill: "#34d39912", stroke: "#34d399", "stroke-width": 1.3 }));
+        a.svg.appendChild(e("text", { x: rx + 12, y: vy + 17, class: "vl-lbl" }, "validate & normalise"));
+        a.svg.appendChild(e("text", { x: rx + 12, y: vy + 33, class: "vl-cite" }, "date 14/03/2025 → 2025-03-14 (unambiguous) · total in plausible range ✓"));
+      }
+      if (stage >= 4) {
+        var cy = 194;
+        a.svg.appendChild(e("rect", { x: rx, y: cy, width: 576, height: 58, rx: 8, fill: "#34d39912", stroke: "#34d399", "stroke-width": 1.3 }));
+        a.svg.appendChild(e("text", { x: rx + 12, y: cy + 18, class: "vl-lbl" }, "independent cross-check"));
+        a.svg.appendChild(e("text", { x: rx + 12, y: cy + 36, class: "vl-mono" }, "3×40.00 + 2×15.50 + 9.99 = 160.99"));
+        a.svg.appendChild(e("text", { x: rx + 12, y: cy + 52, class: "vl-cite" }, "line items match the stated total ✓"));
+      }
+      if (stage >= 5) {
+        var ry = 268;
+        a.svg.appendChild(e("rect", { x: rx, y: ry, width: 576, height: 66, rx: 9, fill: "#818cf818", stroke: "#818cf8", "stroke-width": 1.5 }));
+        a.svg.appendChild(e("text", { x: rx + 14, y: ry + 24, class: "vl-lbl" }, "risk-based routing"));
+        a.svg.appendChild(e("text", { x: rx + 14, y: ry + 44, class: "vl-cite" }, "validated · matches · under the auto-pay limit → AUTO-APPROVED"));
+        a.svg.appendChild(e("text", { x: rx + 14, y: ry + 60, class: "vl-wgt" }, "a mismatch, a bad date, or a large amount would route to a human instead"));
+      }
+    }
+  };
+})();

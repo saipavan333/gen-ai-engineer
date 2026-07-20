@@ -159,7 +159,8 @@ window.CURRICULUM = {
         { n: "10.3", title: "Audio: speech-to-text & TTS", file: "track15/03-audio.html", built: true },
         { n: "10.4", title: "Multimodal RAG", file: "track15/04-multimodal-rag.html", built: true },
         { n: "10.5", title: "Interview check: Multimodal", file: "track15/05-interview.html", built: true },
-        { n: "10.6", title: "Lab: Document extraction you can trust", file: "track15/lab.html", built: true }
+        { n: "10.6", title: "Lab: Document extraction you can trust", file: "track15/lab.html", built: true },
+        { n: "10.7", title: "Visual Lab: Watch a document become data", file: "track15/visual-lab.html", built: true }
       ]
     },
     {

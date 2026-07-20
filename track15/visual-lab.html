@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visual Lab: Watch a document become data — Applied GenAI Engineer</title>
+  <link rel="stylesheet" href="../assets/styles.css?v=13">
+</head>
+<body data-base="../" data-lesson="10.7">
+<main class="lesson">
+
+  <span class="eyebrow">Track 10 · Visual Lab</span>
+  <h1>Watch a document become data</h1>
+  <p class="lead">Turning a scanned invoice into database rows is the highest-value multimodal task in business — and the easiest to get dangerously wrong. Watch the read, and then watch the four stages that exist only to stop a confident wrong number reaching your accounts.</p>
+
+  <div class="box note">
+    <div class="box-label">How to use this lab</div>
+    <p>Press <strong>▶ Play</strong> for the whole pipeline, or <strong>Step</strong> through it. The lesson is in the stages <em>after</em> the read: validate, cross-check, and route — accuracy alone doesn't make extraction shippable.</p>
+  </div>
+
+  <div class="vlab" data-vlab="multimodal"></div>
+
+  <div class="box practice">
+    <div class="box-label">Make it yours</div>
+    <p><strong>1.</strong> Imagine the invoice total read as <code>1600.99</code> instead of <code>160.99</code>. Which stage catches it — and would a vision model reading the document alone have noticed?<br>
+    <strong>2.</strong> The date <code>14/03/2025</code> is unambiguous, but <code>03/04/2025</code> is not. What should the system do when both day-first and month-first parse to valid dates?</p>
+    <details class="sol">
+      <summary><span class="chev">&#9656; </span>Show reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> The independent cross-check catches it — the line items sum to 160.99 and no longer match the stated total, so it routes to a human. A vision model reading the document alone would report 1600.99 with complete confidence, because it has nothing to compare against. A second, independent calculation beats a better reader.</p>
+        <p><strong>2.</strong> Don't guess. Either apply a locale or vendor convention you can justify and record, or flag it for review. A silently mis-parsed date shifts a payment by months and nothing in the output looks wrong — the most dangerous kind of error is the one that produces a clean, confident, incorrect result.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">What you just saw</div>
+    <ul>
+      <li>A document as <strong>pixels</strong>, then read into messy text.</li>
+      <li>Structured <strong>field extraction</strong> the model returns confidently, right or wrong.</li>
+      <li><strong>Validation</strong> — the date trap and plausible-range checks.</li>
+      <li>An <strong>independent cross-check</strong> and <strong>risk-based routing</strong> to a human.</li>
+    </ul>
+  </div>
+
+  <p>Now build the validator in code: <strong>Lesson&nbsp;10.6, the document-extraction lab.</strong></p>
+
+</main>
+<script src="../assets/curriculum.js?v=13"></script>
+<script src="../assets/app.js?v=13"></script>
+<script src="../assets/visual-labs.js?v=13"></script>
+</body>
+</html>
