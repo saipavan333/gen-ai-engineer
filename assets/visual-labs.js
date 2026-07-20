@@ -406,7 +406,7 @@
       ]
     };
     var sel = h("label", "vl-speed", 'run <select class="vl-sel"><option value="good">a healthy loop</option><option value="loop">a runaway loop</option></select>');
-    var mode = "good";
+    var mode = root.getAttribute("data-scenario") || "good";   /* survives rebuild */
     var stages = [];
     function rebuild() {
       stages = SCEN[mode].map(function (s, i) {
@@ -431,14 +431,13 @@
       onReset: function (a) { a.clear(); },
       onStage: function (i, a) { draw(a, i); }
     });
-    sel.querySelector("select").addEventListener("vl-restore", function () { mode = this.value; });
+    sel.querySelector("select").value = mode;   /* reflect the persisted scenario */
     sel.querySelector("select").addEventListener("change", function () {
       var picked = this.value;
       api.stop();
-      root.innerHTML = "";                      /* the two runs differ in length: rebuild */
+      root.setAttribute("data-scenario", picked); /* so the rebuilt lab reads the right one */
+      root.innerHTML = "";                        /* the two runs differ in length: full rebuild */
       VL.agent(root);
-      root.querySelector("select").value = picked;
-      root.querySelector("select").dispatchEvent(new Event("vl-restore"));
     });
     function draw(a, stage) {
       a.clear();
