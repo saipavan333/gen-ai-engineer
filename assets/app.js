@@ -36,12 +36,14 @@
   }
   /* ---- interactive labs (mounted per data-lab attribute) ---- */
   if (!document.getElementById("age-labs")) {
-    var ls = document.createElement("script"); ls.id = "age-labs"; ls.src = link("assets/labs.js?v=16");
+    var ls = document.createElement("script"); ls.id = "age-labs"; ls.src = link("assets/labs.js?v=17");
     document.head.appendChild(ls);
-    var ws = document.createElement("script"); ws.id = "age-widgets"; ws.src = link("assets/widgets.js?v=16");
+    var ws = document.createElement("script"); ws.id = "age-widgets"; ws.src = link("assets/widgets.js?v=17");
     document.head.appendChild(ws);
-    var gs = document.createElement("script"); gs.id = "age-glossary"; gs.src = link("assets/glossary.js?v=16");
+    var gs = document.createElement("script"); gs.id = "age-glossary"; gs.src = link("assets/glossary.js?v=17");
     document.head.appendChild(gs);
+    var rs = document.createElement("script"); rs.id = "age-refs-js"; rs.src = link("assets/references.js?v=17");
+    document.head.appendChild(rs);
   }
 
   /* ---- progress (saved on this device) ---- */
@@ -370,4 +372,27 @@
     window.addEventListener("scroll", function () { if (open) hide(); }, { passive: true });
   }
   setupGlossary();
+
+  /* ---- "Go deeper" references, appended to a lesson that has them ---- */
+  function renderRefs() {
+    if (isHome) return;
+    var mainEl = document.querySelector("main.lesson"); if (!mainEl) return;
+    if (mainEl.querySelector(".lesson-refs")) return;
+    var R = window.AGE_REFERENCES;
+    if (!R) { setTimeout(renderRefs, 150); return; }
+    var refs = R[curN]; if (!refs || !refs.length) return;
+    var KIND = { paper: "Paper", guide: "Guide", docs: "Docs", tool: "Tool", video: "Video" };
+    var sec = el("section", "lesson-refs");
+    var items = refs.map(function (r) {
+      return '<li><a href="' + r.u + '" target="_blank" rel="noopener">' +
+        '<span class="ref-kind ref-' + (r.k || "guide") + '">' + (KIND[r.k] || "Link") + "</span>" +
+        '<span class="ref-title">' + r.t + '</span>' +
+        '<span class="ref-ext" aria-hidden="true">&#8599;</span></a></li>';
+    }).join("");
+    sec.innerHTML = '<div class="refs-head"><span class="refs-eyebrow">Go deeper</span>' +
+      '<p>Primary sources and canonical guides for this topic — open in a new tab.</p></div>' +
+      '<ul class="refs-list">' + items + "</ul>";
+    mainEl.appendChild(sec);
+  }
+  renderRefs();
 })();
