@@ -36,13 +36,13 @@
   }
   /* ---- interactive labs (mounted per data-lab attribute) ---- */
   if (!document.getElementById("age-labs")) {
-    var ls = document.createElement("script"); ls.id = "age-labs"; ls.src = link("assets/labs.js?v=17");
+    var ls = document.createElement("script"); ls.id = "age-labs"; ls.src = link("assets/labs.js?v=18");
     document.head.appendChild(ls);
-    var ws = document.createElement("script"); ws.id = "age-widgets"; ws.src = link("assets/widgets.js?v=17");
+    var ws = document.createElement("script"); ws.id = "age-widgets"; ws.src = link("assets/widgets.js?v=18");
     document.head.appendChild(ws);
-    var gs = document.createElement("script"); gs.id = "age-glossary"; gs.src = link("assets/glossary.js?v=17");
+    var gs = document.createElement("script"); gs.id = "age-glossary"; gs.src = link("assets/glossary.js?v=18");
     document.head.appendChild(gs);
-    var rs = document.createElement("script"); rs.id = "age-refs-js"; rs.src = link("assets/references.js?v=17");
+    var rs = document.createElement("script"); rs.id = "age-refs-js"; rs.src = link("assets/references.js?v=18");
     document.head.appendChild(rs);
   }
 
@@ -86,6 +86,9 @@
   var msl = el("a", "hdr-link hdr-mastery", "★ Mastery");
   msl.href = link("mastery.html");
   header.appendChild(msl);
+  var csl = el("a", "hdr-link hdr-cheats", "⚡ Cheat sheets");
+  csl.href = link("cheatsheets.html");
+  header.appendChild(csl);
   var rvl = el("a", "hdr-link hdr-review");
   rvl.href = link("review.html");
   var _dc = dueCount();
@@ -96,7 +99,14 @@
   tdots.addEventListener("click", function (e) { var b = e.target.closest(".tdot"); if (!b) return; var t = b.getAttribute("data-theme"); if (t === "graphite") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", t); try { localStorage.setItem("age_theme", t); } catch (_e) {} });
   header.appendChild(tdots);
   if (!isHome && cur) {
-    header.appendChild(el("span", "crumb", "Track " + cur.section.num + " · " + cur.section.title));
+    var hasCheat = /^(1|2|3|4|5|6|7|8|9|10|11|12|13)$/.test(cur.section.num);
+    if (hasCheat) {
+      var crumb = el("a", "crumb crumb-link", "Track " + cur.section.num + " · " + cur.section.title + " · cheat sheet");
+      crumb.href = link("cheatsheets.html#t" + cur.section.num);
+      header.appendChild(crumb);
+    } else {
+      header.appendChild(el("span", "crumb", "Track " + cur.section.num + " · " + cur.section.title));
+    }
   }
   header.appendChild(el("span", "spacer"));
   if (!isHome && cur) {

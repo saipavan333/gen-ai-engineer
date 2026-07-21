@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cheat sheets — Applied GenAI Engineer</title>
+  <meta name="description" content="Dense one-page reference cards for every technical track — the key ideas, decision rules, and gotchas, each linked to its lessons.">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;450;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/styles.css?v=18">
+  <script>try{var t=localStorage.getItem("age_theme");if(t&&t!=="graphite")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+</head>
+<body data-page="cheatsheets">
+  <header class="site-header">
+    <a class="brand" href="index.html"><img class="logo" src="assets/favicon.svg" alt="" width="26" height="26"><span class="brand-name">Applied GenAI Engineer</span></a>
+    <a class="hdr-link" href="labs.html">&#9881; Labs</a>
+    <span class="spacer"></span>
+    <a class="hdr-link" href="index.html">&larr; Back to course</a>
+  </header>
+
+  <main class="cs">
+    <div class="cs-head">
+      <span class="eyebrow">Reference</span>
+      <h1>Cheat sheets</h1>
+      <p>One dense card per technical track — the ideas worth memorising, the decision rules, and the gotchas. Each card links to its lessons, and every track links back here.</p>
+    </div>
+    <nav class="cs-index" id="cs-index" aria-label="Jump to a track"></nav>
+    <div id="cs-body"></div>
+  </main>
+
+  <script src="assets/curriculum.js?v=18"></script>
+  <script src="assets/cheatsheets.js?v=18"></script>
+  <script>
+  (function () {
+    var C = window.CURRICULUM, CS = window.AGE_CHEATSHEETS;
+    var body = document.getElementById("cs-body"), index = document.getElementById("cs-index");
+    if (!C || !CS) { body.innerHTML = "<p>Could not load the cheat sheets.</p>"; return; }
+    var idx = [];
+    C.sections.forEach(function (s) {
+      var cheat = CS[s.num]; if (!cheat) return;
+      idx.push('<a href="#t' + s.num + '"><b>' + s.num + '</b> ' + s.title + '</a>');
+      var cards = cheat.map(function (sec) {
+        return '<div class="cs-card"><h3>' + sec.h + '</h3><ul>' +
+          sec.items.map(function (it) { return "<li>" + it + "</li>"; }).join("") + "</ul></div>";
+      }).join("");
+      var lessons = s.lessons.filter(function (l) { return l.built; }).map(function (l) {
+        return '<a href="' + l.file + '"><span class="csl-n">' + l.n + '</span>' + l.title + "</a>";
+      }).join("");
+      body.insertAdjacentHTML("beforeend",
+        '<section class="cs-track" id="t' + s.num + '">' +
+          '<div class="cs-track-head"><h2><span class="cs-num">' + s.num + '</span>' + s.title + '</h2>' +
+          '<a class="cs-top" href="#cs-index">&uarr; all tracks</a></div>' +
+          '<div class="cs-cards">' + cards + '</div>' +
+          '<div class="cs-lessons"><span class="cs-lessons-label">Lessons in this track</span>' +
+          '<div class="cs-lessons-list">' + lessons + "</div></div>" +
+        "</section>");
+    });
+    index.innerHTML = idx.join("");
+  })();
+  </script>
+</body>
+</html>

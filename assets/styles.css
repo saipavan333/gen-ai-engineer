@@ -1233,3 +1233,44 @@ body{ background: transparent; }
 .ref-video{ color:#fca5a5; background:color-mix(in srgb, #ef4444 18%, transparent); }
 .ref-title{ flex:1; font-size:.92rem; font-weight:550; line-height:1.4; }
 .ref-ext{ flex:none; color:var(--muted); font-size:1rem; }
+
+/* ==================== CHEAT SHEETS ==================== */
+.cs{ max-width:1000px; margin:0 auto; padding:2.4rem 1.4rem 5rem; }
+.cs-head{ margin-bottom:1.6rem; }
+.cs-head h1{ font-size:2.3rem; letter-spacing:-.02em; margin:.4rem 0 .7rem; }
+.cs-head p{ font-size:1.05rem; line-height:1.6; color:var(--ink-soft); max-width:70ch; }
+.cs-index{ display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:2.4rem; padding-bottom:1.4rem; border-bottom:1px solid var(--line); scroll-margin-top:70px; }
+.cs-index a{
+  text-decoration:none; font-size:.86rem; color:var(--ink-soft);
+  padding:.4rem .7rem; border-radius:9px; border:1px solid var(--line); background:var(--surface);
+  transition:border-color .15s, background .15s, color .15s;
+}
+.cs-index a:hover{ border-color:color-mix(in srgb, var(--accent, #818cf8) 50%, var(--line)); background:color-mix(in srgb, var(--accent, #818cf8) 8%, var(--surface)); color:var(--ink); }
+.cs-index a b{ color:var(--accent, #818cf8); }
+.cs-track{ margin-bottom:3rem; scroll-margin-top:70px; }
+.cs-track-head{ display:flex; align-items:baseline; justify-content:space-between; gap:1rem; margin-bottom:1.1rem; border-bottom:2px solid color-mix(in srgb, var(--accent, #818cf8) 30%, var(--line)); padding-bottom:.5rem; }
+.cs-track-head h2{ display:flex; align-items:center; gap:.6rem; margin:0; font-size:1.5rem; letter-spacing:-.01em; }
+.cs-num{ display:grid; place-items:center; width:30px; height:30px; border-radius:8px; font-size:.9rem; font-weight:800; color:#0e1117; background:var(--accent, #818cf8); }
+.cs-top{ flex:none; font-size:.78rem; color:var(--muted); text-decoration:none; }
+.cs-top:hover{ color:var(--accent, #818cf8); }
+.cs-cards{ display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:1rem; }
+.cs-card{ padding:1.1rem 1.25rem; border-radius:14px; border:1px solid var(--line); background:var(--surface); }
+.cs-card h3{ margin:0 0 .6rem; font-size:1rem; color:var(--accent-deep, #a5b4fc); letter-spacing:-.01em; }
+.cs-card ul{ margin:0; padding-left:1.05rem; display:flex; flex-direction:column; gap:.45rem; }
+.cs-card li{ font-size:.9rem; line-height:1.55; color:var(--ink-soft); }
+.cs-card li b{ color:var(--ink); font-weight:650; }
+.cs-lessons{ margin-top:1.1rem; padding:.9rem 1.1rem; border-radius:12px; background:color-mix(in srgb, var(--fg) 4%, transparent); }
+.cs-lessons-label{ font-size:.7rem; font-weight:800; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); }
+.cs-lessons-list{ display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.55rem; }
+.cs-lessons-list a{
+  display:inline-flex; align-items:center; gap:.35rem; text-decoration:none;
+  font-size:.82rem; color:var(--ink-soft); padding:.32rem .6rem; border-radius:8px;
+  border:1px solid var(--line); background:var(--surface); transition:all .14s ease;
+}
+.cs-lessons-list a:hover{ border-color:color-mix(in srgb, var(--accent, #818cf8) 50%, var(--line)); color:var(--ink); }
+.csl-n{ font-size:.72rem; font-weight:700; color:var(--accent, #818cf8); }
+/* crumb as a link back to the cheat sheet */
+.crumb-link{ text-decoration:none; transition:color .14s; }
+.crumb-link:hover{ color:var(--accent, #818cf8); }
+.hdr-cheats{ white-space:nowrap; }
+@media (max-width:560px){ .cs-head h1{ font-size:1.9rem; } }
