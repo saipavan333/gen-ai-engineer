@@ -118,6 +118,35 @@
     </ul>
   </div>
 
+
+  <div class="quiz">
+    <p class="quiz-q">An agent loops forever calling a tool that keeps timing out. What fixes it, and where does the fix live?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A step budget and repeat detection in your code — not in the prompt.</span>
+        <div class="why">Correct. The loop is locally sensible to the model; only a hard, code-level bound stops it. Guards are the feature, not an extra.</div></li>
+      <li data-correct="false"><span class="opt">A sterner system prompt telling it not to loop.</span>
+        <div class="why">A prompt is a suggestion the model can ignore; it can’t guarantee termination.</div></li>
+      <li data-correct="false"><span class="opt">A larger model.</span>
+        <div class="why">A bigger model can still loop on a genuinely failing tool.</div></li>
+      <li data-correct="false"><span class="opt">Higher temperature for variety.</span>
+        <div class="why">Randomness doesn’t impose a stopping condition.</div></li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">The model emits a tool call to issue a $500 refund. What actually spends the money?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Your code decides whether to execute the call — the model only requests it.</span>
+        <div class="why">Correct. The model returns JSON naming a function; every guard (limits, permissions, human approval) lives in the code that chooses to honour it.</div></li>
+      <li data-correct="false"><span class="opt">The model runs the refund itself.</span>
+        <div class="why">Models never execute anything; they only produce text/JSON.</div></li>
+      <li data-correct="false"><span class="opt">The tool schema runs it automatically.</span>
+        <div class="why">A schema describes a tool; it doesn’t auto-execute.</div></li>
+      <li data-correct="false"><span class="opt">The user’s browser.</span>
+        <div class="why">Execution is your server-side code’s decision.</div></li>
+    </ul>
+  </div>
+
   <div class="box key">
     <div class="box-label">Can you explain each of these?</div>
     <ul>

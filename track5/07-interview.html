@@ -104,6 +104,35 @@
     </ul>
   </div>
 
+
+  <div class="quiz">
+    <p class="quiz-q">Your assistant needs to know today’s prices, which change weekly. Fine-tune or RAG?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">RAG — changing facts are a retrieval problem; fine-tuning teaches form, not fresh facts.</span>
+        <div class="why">Correct. Fine-tuning would bake in stale prices and need retraining constantly. Retrieval serves the current value at query time.</div></li>
+      <li data-correct="false"><span class="opt">Fine-tune on the price list.</span>
+        <div class="why">It would memorise a snapshot and go stale immediately.</div></li>
+      <li data-correct="false"><span class="opt">Neither — just raise temperature.</span>
+        <div class="why">Unrelated to supplying current facts.</div></li>
+      <li data-correct="false"><span class="opt">Quantize the model.</span>
+        <div class="why">Quantization changes size/speed, not knowledge freshness.</div></li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">During fine-tuning, training loss keeps dropping but validation loss starts rising. What is happening?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Overfitting — stop earlier, use less repetition, or add regularization.</span>
+        <div class="why">Correct. Falling train loss with rising validation loss is the textbook overfitting signature; the model is memorising the training set.</div></li>
+      <li data-correct="false"><span class="opt">Underfitting — train longer.</span>
+        <div class="why">Training longer makes overfitting worse here.</div></li>
+      <li data-correct="false"><span class="opt">The learning rate is too low.</span>
+        <div class="why">That would slow training, not cause validation loss to rise.</div></li>
+      <li data-correct="false"><span class="opt">The data is too diverse.</span>
+        <div class="why">More diverse data usually reduces overfitting.</div></li>
+    </ul>
+  </div>
+
   <div class="box key">
     <div class="box-label">Can you explain each of these?</div>
     <ul>

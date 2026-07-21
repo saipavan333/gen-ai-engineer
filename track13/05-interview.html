@@ -140,6 +140,35 @@
     </ul>
   </div>
 
+
+  <div class="quiz">
+    <p class="quiz-q">How do you stop a text-to-SQL agent from ever running a destructive statement like DELETE?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Parse the SQL and allowlist statement types (SELECT only) in code, rejecting everything else.</span>
+        <div class="why">Correct. An allowlist on the parsed statement type fails closed and can’t be talked around, unlike blocklisting dangerous words or trusting the prompt.</div></li>
+      <li data-correct="false"><span class="opt">Tell the model in the prompt never to write DELETE.</span>
+        <div class="why">A prompt is manipulable; the guarantee must be in code.</div></li>
+      <li data-correct="false"><span class="opt">Scan the output text for the word ‘delete’.</span>
+        <div class="why">Blocklists are endless to maintain and trivially evaded (comments, casing, second statements).</div></li>
+      <li data-correct="false"><span class="opt">Use a larger model.</span>
+        <div class="why">Capability doesn’t enforce a safety boundary.</div></li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">The generated SQL passes your safety gate and ‘looks right’. What can still be wrong that the gate won’t catch?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Correctness — a wrong join, date window, or status value; safety and correctness are different problems.</span>
+        <div class="why">Correct. The gate proves the query is safe to run, not that it answers the question. Correctness needs evals and, sometimes, a human.</div></li>
+      <li data-correct="false"><span class="opt">Nothing — passing the gate means it’s correct.</span>
+        <div class="why">Safe ≠ correct; the gate only checks it’s read-only and allowlisted.</div></li>
+      <li data-correct="false"><span class="opt">It will always delete data.</span>
+        <div class="why">A SELECT-only gate prevents writes entirely.</div></li>
+      <li data-correct="false"><span class="opt">It will crash the database.</span>
+        <div class="why">A validated read-only query with a row limit won’t.</div></li>
+    </ul>
+  </div>
+
   <div class="box key">
     <div class="box-label">Can you explain each of these? (the real test)</div>
     <ul>

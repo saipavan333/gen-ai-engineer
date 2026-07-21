@@ -127,6 +127,35 @@
     </ul>
   </div>
 
+
+  <div class="quiz">
+    <p class="quiz-q">A vision model reads an invoice total as 1600.99 instead of 160.99, with full confidence. What catches the error?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">An independent cross-check — summing the line items and comparing to the stated total.</span>
+        <div class="why">Correct. A second, independent calculation beats a better reader; the model alone has nothing to compare against and reports its misread confidently.</div></li>
+      <li data-correct="false"><span class="opt">A larger vision model.</span>
+        <div class="why">It would also report the misread confidently — no comparison happens.</div></li>
+      <li data-correct="false"><span class="opt">Raising the temperature.</span>
+        <div class="why">Irrelevant to extraction accuracy.</div></li>
+      <li data-correct="false"><span class="opt">A longer prompt.</span>
+        <div class="why">Doesn’t provide an independent check on the number.</div></li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Why is CLIP useful for image search?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">It places images and text in one shared embedding space, so you can match pictures to captions by similarity.</span>
+        <div class="why">Correct. A shared space lets a text query retrieve relevant images (and vice versa) via the same vector geometry as text retrieval.</div></li>
+      <li data-correct="false"><span class="opt">It generates images from text.</span>
+        <div class="why">That’s a different class of model; CLIP embeds and matches.</div></li>
+      <li data-correct="false"><span class="opt">It transcribes speech.</span>
+        <div class="why">That’s Whisper’s job, not CLIP’s.</div></li>
+      <li data-correct="false"><span class="opt">It compresses images.</span>
+        <div class="why">CLIP is about aligned embeddings, not compression.</div></li>
+    </ul>
+  </div>
+
   <div class="box key">
     <div class="box-label">Can you explain each of these? (the real test)</div>
     <ul>

@@ -175,6 +175,35 @@
     </ul>
   </div>
 
+
+  <div class="quiz">
+    <p class="quiz-q">You ask the same question three times at temperature 0.8 and get three different answers. What single change makes it deterministic?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Set the temperature to 0 (greedy decoding), so it always picks the highest-probability token.</span>
+        <div class="why">Correct. At temperature 0 the softmax collapses onto the single most likely token every time, so the output is reproducible — which is exactly why extraction and classification use it.</div></li>
+      <li data-correct="false"><span class="opt">Use a larger model.</span>
+        <div class="why">Bigger models still sample randomly above temperature 0. Size doesn't remove the randomness.</div></li>
+      <li data-correct="false"><span class="opt">Add more context to the prompt.</span>
+        <div class="why">More context can change the answer but not its randomness; sampling is still stochastic unless temperature is 0.</div></li>
+      <li data-correct="false"><span class="opt">Give it more few-shot examples.</span>
+        <div class="why">Examples shape the format, not the sampling randomness.</div></li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Why can a language model state a confident, fluent fact that is simply false?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">It predicts likely next tokens, not truth — a fluent, wrong sentence can be a high-probability sequence.</span>
+        <div class="why">Correct. The model optimises for plausible continuations, and plausibility is not accuracy. This is why grounding (RAG) and evals exist.</div></li>
+      <li data-correct="false"><span class="opt">There is a bug in the model weights.</span>
+        <div class="why">Hallucination is inherent to next-token prediction, not a bug to be patched.</div></li>
+      <li data-correct="false"><span class="opt">It is deliberately lying.</span>
+        <div class="why">There is no intent; it has no notion of truth, only token likelihood.</div></li>
+      <li data-correct="false"><span class="opt">It ran out of memory.</span>
+        <div class="why">Unrelated — confident wrong answers happen with plenty of resources.</div></li>
+    </ul>
+  </div>
+
   <div class="box key">
     <div class="box-label">Can you explain each of these? (the real test)</div>
     <ul>

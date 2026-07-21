@@ -151,6 +151,35 @@
     </ul>
   </div>
 
+
+  <div class="quiz">
+    <p class="quiz-q">Your prompt usually returns valid JSON, but sometimes with a chatty preamble like “Sure! Here it is:”. What is the most robust fix?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">State the format explicitly, then in code extract the JSON substring, parse it, and retry once on failure.</span>
+        <div class="why">Correct. ‘Almost JSON’ breaks a strict parser, so you engineer around it: constrain the output and validate/repair it. A better prompt alone won’t guarantee it.</div></li>
+      <li data-correct="false"><span class="opt">Raise the temperature so it varies more.</span>
+        <div class="why">That makes format less consistent, not more.</div></li>
+      <li data-correct="false"><span class="opt">Ask the model more politely.</span>
+        <div class="why">Politeness doesn’t enforce structure; validation does.</div></li>
+      <li data-correct="false"><span class="opt">Switch to a bigger model and trust it.</span>
+        <div class="why">Bigger models still occasionally add preamble; you must validate.</div></li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">When does adding few-shot examples help the most?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">When you need a consistent output format or style that the model keeps varying.</span>
+        <div class="why">Correct. Examples teach form and consistency. Most of the win arrives with the first example.</div></li>
+      <li data-correct="false"><span class="opt">When you need the model to know new facts it wasn’t trained on.</span>
+        <div class="why">That’s a retrieval (RAG) problem; examples don’t add knowledge.</div></li>
+      <li data-correct="false"><span class="opt">Always — more examples are always better.</span>
+        <div class="why">Beyond a few, you mostly pay tokens for little gain.</div></li>
+      <li data-correct="false"><span class="opt">Never — few-shot is obsolete.</span>
+        <div class="why">It remains one of the cheapest reliability wins.</div></li>
+    </ul>
+  </div>
+
   <div class="box key">
     <div class="box-label">Can you explain each of these?</div>
     <ul>

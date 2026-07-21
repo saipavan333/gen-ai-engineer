@@ -136,6 +136,35 @@
     </ul>
   </div>
 
+
+  <div class="quiz">
+    <p class="quiz-q">Your recall@5 is 0.95, but users still get wrong answers. Where is the problem almost certainly NOT?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Retrieval — it is finding the right documents; the issue is generation or grounding.</span>
+        <div class="why">Correct. High recall means the right context reached the model, so a wrong answer points to the generation step (ignoring or misusing the context), not retrieval.</div></li>
+      <li data-correct="false"><span class="opt">The generation/grounding step.</span>
+        <div class="why">This is exactly where to look — the model isn’t using the retrieved context faithfully.</div></li>
+      <li data-correct="false"><span class="opt">The prompt that assembles the context.</span>
+        <div class="why">A plausible culprit — how context is presented affects grounding.</div></li>
+      <li data-correct="false"><span class="opt">Faithfulness of the answer.</span>
+        <div class="why">Low faithfulness with high recall is the classic signature here.</div></li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">A query for the exact product code “SKU-4471X” fails with pure vector search. Best fix?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Add keyword/BM25 retrieval alongside dense search (hybrid search).</span>
+        <div class="why">Correct. Embeddings blur exact strings; BM25 nails literal tokens. Fusing them is the cheapest large win for this failure.</div></li>
+      <li data-correct="false"><span class="opt">Increase the embedding dimension.</span>
+        <div class="why">Won’t fix exact-string matching; it’s a different retrieval mode.</div></li>
+      <li data-correct="false"><span class="opt">Raise the temperature.</span>
+        <div class="why">Temperature affects generation, not retrieval.</div></li>
+      <li data-correct="false"><span class="opt">Use a bigger LLM.</span>
+        <div class="why">The failure is in finding the document, not generating from it.</div></li>
+    </ul>
+  </div>
+
   <div class="box key">
     <div class="box-label">Can you explain each of these?</div>
     <ul>

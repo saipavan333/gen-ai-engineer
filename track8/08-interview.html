@@ -97,6 +97,35 @@
     </ul>
   </div>
 
+
+  <div class="quiz">
+    <p class="quiz-q">You add streaming and the total response time is unchanged, yet users say it feels much faster. Why?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Time-to-first-token drops — perceived latency is driven by when words start appearing.</span>
+        <div class="why">Correct. Users start reading immediately, so the experience feels fast even though the full response finishes at the same moment.</div></li>
+      <li data-correct="false"><span class="opt">Streaming reduces the total tokens generated.</span>
+        <div class="why">It doesn’t change how many tokens are produced.</div></li>
+      <li data-correct="false"><span class="opt">Streaming lowers the price per token.</span>
+        <div class="why">Cost per token is unchanged by streaming.</div></li>
+      <li data-correct="false"><span class="opt">The model thinks less.</span>
+        <div class="why">The same computation happens; only delivery changes.</div></li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Output tokens cost several times more than input and are generated one at a time. What is usually the biggest lever on cost and latency?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Cap or shorten the output length.</span>
+        <div class="why">Correct. Output dominates both bill and latency because it’s pricier per token and serial, so limiting reply length is the highest-leverage move.</div></li>
+      <li data-correct="false"><span class="opt">Shorten the input prompt.</span>
+        <div class="why">Input is cheaper and processed in parallel; trimming it helps less.</div></li>
+      <li data-correct="false"><span class="opt">Raise the temperature.</span>
+        <div class="why">Unrelated to cost or latency.</div></li>
+      <li data-correct="false"><span class="opt">Add more few-shot examples.</span>
+        <div class="why">That increases input tokens, the opposite of helping.</div></li>
+    </ul>
+  </div>
+
   <div class="box key">
     <div class="box-label">Can you explain each of these?</div>
     <ul>

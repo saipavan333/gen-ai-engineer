@@ -104,6 +104,35 @@
     </ul>
   </div>
 
+
+  <div class="quiz">
+    <p class="quiz-q">Prompt v2 scores 75% on your golden set versus v1’s 78%, yet you block the merge. Why?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A previously-passing case regressed — including a refusal — and you gate per-case, not on the average.</span>
+        <div class="why">Correct. Averages hide the specific failures you care about most. A per-case gate catches a broken refusal even when the overall number barely moves.</div></li>
+      <li data-correct="false"><span class="opt">75% is below a hard 80% bar.</span>
+        <div class="why">The point is the per-case regression, not the absolute number.</div></li>
+      <li data-correct="false"><span class="opt">v2 is slower.</span>
+        <div class="why">Speed isn’t what the eval gate is checking.</div></li>
+      <li data-correct="false"><span class="opt">The golden set shrank.</span>
+        <div class="why">The set is fixed; the issue is a regressed case.</div></li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your LLM-as-judge agrees with human labels 75% of the time. Is that trustworthy?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Check the chance-corrected agreement (Cohen’s κ) — two labels agree ~50% by chance, so 75% raw may be weak.</span>
+        <div class="why">Correct. Raw agreement ignores the chance floor. κ removes it, which is why it’s the number to report before trusting a judge.</div></li>
+      <li data-correct="false"><span class="opt">Yes — 75% is clearly good enough.</span>
+        <div class="why">Not without correcting for chance agreement.</div></li>
+      <li data-correct="false"><span class="opt">No — any judge under 100% is useless.</span>
+        <div class="why">Perfect agreement isn’t required; calibrated, chance-corrected agreement is.</div></li>
+      <li data-correct="false"><span class="opt">It depends on the model’s size.</span>
+        <div class="why">It depends on measured agreement, not model size.</div></li>
+    </ul>
+  </div>
+
   <div class="box key">
     <div class="box-label">Can you explain each of these?</div>
     <ul>
