@@ -3,22 +3,23 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Python Playground — Applied GenAI Engineer</title>
+  <title>Python Scratchpad — Applied GenAI Engineer</title>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;450;500;600;700&display=swap">
-  <link rel="stylesheet" href="assets/styles.css?v=19">
+  <link rel="stylesheet" href="assets/styles.css?v=20">
   <script>try{var t=localStorage.getItem("age_theme");if(t&&t!=="graphite")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
 </head>
 <body data-page="playground">
   <header class="site-header">
     <a class="brand" href="index.html"><img class="logo" src="assets/favicon.svg" alt="" width="26" height="26"><span class="brand-name">Applied GenAI Engineer</span></a>
+    <a class="hdr-link" href="labs.html">&#9881; Labs</a>
     <span class="spacer"></span>
     <a class="hdr-link" href="index.html">&larr; Back to course</a>
   </header>
 
   <main class="pg">
-    <h1 class="pg-title">Python Playground</h1>
-    <p class="pg-lead">Real Python, running entirely in your browser — no install, no account, nothing to pay. Perfect for trying the course’s logic, string, and data examples. The first run loads Python (a few seconds); after that it’s instant.</p>
+    <h1 class="pg-title">Python Scratchpad</h1>
+    <p class="pg-lead">A free-form scratchpad: no steps, no grading — the freeform half of <a href="labs.html">Labs</a>. Real Python, running entirely in your browser — no install, no account, nothing to pay. Perfect for trying the course’s logic, string, and data examples. The first run loads Python (a few seconds); after that it’s instant.</p>
 
     <div class="pg-ex" id="pgex"></div>
     <div class="pg-card">
@@ -37,7 +38,9 @@
       ["Tokens: split & count", `text = "Retrieval-augmented generation grounds the model"\ntokens = text.replace("-", " ").split()\nprint("tokens:", tokens)\nprint("count:", len(tokens))\nprint("avg word length:", round(sum(len(w) for w in tokens)/len(tokens), 2))`],
       ["List comprehension", `docs = ["  Refunds  ", "Shipping", "  Returns"]\nclean = [d.strip().lower() for d in docs]\nprint(clean)\nprint("long:", [w for w in clean if len(w) > 6])`],
       ["A function", `def build_prompt(topic, n=3):\n    return f"Explain {topic} in {n} sentences."\n\nfor t in ["tokens", "embeddings", "RAG"]:\n    print(build_prompt(t))`],
-      ["Safe JSON parse", `import json\nraw = '{"intent": "refund"}'\ntry:\n    data = json.loads(raw)\n    print("intent:", data.get("intent", "unknown"))\nexcept json.JSONDecodeError:\n    print("bad JSON")`]
+      ["Safe JSON parse", `import json\nraw = '{"intent": "refund"}'\ntry:\n    data = json.loads(raw)\n    print("intent:", data.get("intent", "unknown"))\nexcept json.JSONDecodeError:\n    print("bad JSON")`],
+      ["Count words with a dict", `text = "the cat sat on the mat the cat ran"\ncounts = {}\nfor w in text.split():\n    counts[w] = counts.get(w, 0) + 1\nfor w, c in sorted(counts.items(), key=lambda kv: -kv[1]):\n    print(f"{w:>5} : {c}")`],
+      ["f-strings & format", `name, score = "RAG", 0.8123\nprint(f"{name} scored {score:.1%}")\nprint(f"{name:>10} | {score:6.3f}")\nfor i in range(1, 4):\n    print(f"top-{i}: doc_{i:02d}")`]
     ];
     document.getElementById('pgex').innerHTML = EX.map((e,i)=>`<button class="lab-ex-btn" data-i="${i}">${e[0]}</button>`).join('');
     ta.value = EX[0][1];

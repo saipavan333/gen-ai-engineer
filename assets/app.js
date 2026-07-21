@@ -36,13 +36,13 @@
   }
   /* ---- interactive labs (mounted per data-lab attribute) ---- */
   if (!document.getElementById("age-labs")) {
-    var ls = document.createElement("script"); ls.id = "age-labs"; ls.src = link("assets/labs.js?v=19");
+    var ls = document.createElement("script"); ls.id = "age-labs"; ls.src = link("assets/labs.js?v=20");
     document.head.appendChild(ls);
-    var ws = document.createElement("script"); ws.id = "age-widgets"; ws.src = link("assets/widgets.js?v=19");
+    var ws = document.createElement("script"); ws.id = "age-widgets"; ws.src = link("assets/widgets.js?v=20");
     document.head.appendChild(ws);
-    var gs = document.createElement("script"); gs.id = "age-glossary"; gs.src = link("assets/glossary.js?v=19");
+    var gs = document.createElement("script"); gs.id = "age-glossary"; gs.src = link("assets/glossary.js?v=20");
     document.head.appendChild(gs);
-    var rs = document.createElement("script"); rs.id = "age-refs-js"; rs.src = link("assets/references.js?v=19");
+    var rs = document.createElement("script"); rs.id = "age-refs-js"; rs.src = link("assets/references.js?v=20");
     document.head.appendChild(rs);
   }
 
@@ -77,9 +77,6 @@
   brand.href = link("index.html");
   brand.innerHTML = '<img class="logo" src="' + link("assets/favicon.svg") + '" alt="" width="26" height="26"><span class="brand-name">Applied GenAI Engineer</span>';
   header.appendChild(brand);
-  var pgl = el("a", "hdr-link hdr-play", "▶ Playground");
-  pgl.href = link("playground.html");
-  header.appendChild(pgl);
   var lbl = el("a", "hdr-link hdr-labs", "⚙ Labs");
   lbl.href = link("labs.html");
   header.appendChild(lbl);

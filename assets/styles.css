@@ -694,7 +694,6 @@ body::after{
 /* header playground link + playground page */
 .hdr-link{ font-size:14px; font-weight:600; color:var(--accent-deep); text-decoration:none; white-space:nowrap; }
 .hdr-link:hover{ color:var(--accent); }
-.hdr-play{ margin-left:6px; }
 .pg{ max-width:860px; margin:0 auto; padding:34px 24px 80px; position:relative; }
 .pg-title{ font-family:var(--font-display); font-size:34px; letter-spacing:-.02em; margin:0 0 8px; }
 .pg-lead{ color:var(--ink-soft); font-size:16.5px; line-height:1.6; margin:0 0 20px; max-width:64ch; }
@@ -1057,6 +1056,11 @@ body{ background: transparent; }
   background:color-mix(in srgb, #2dd4bf 7%, var(--surface));
 }
 .lab-card2.visual .lc-go{ color:#5eead4; }
+.lc-tag.scr{ color:#fbbf24; background:color-mix(in srgb, #fbbf24 18%, transparent); }
+.lab-card2.scratch{ border-color:color-mix(in srgb, #fbbf24 32%, var(--line)); }
+.lab-card2.scratch:hover{ border-color:color-mix(in srgb, #fbbf24 55%, var(--line)); background:color-mix(in srgb, #fbbf24 7%, var(--surface)); }
+.lab-card2.scratch .lc-track{ color:#fbbf24; }
+.lab-card2.scratch .lc-go{ color:#fbbf24; }
 
 /* ============ labs index: separate Visual / Python sections ============ */
 .labs-section{ margin-top:2.4rem; }
