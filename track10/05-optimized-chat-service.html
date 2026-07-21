@@ -116,6 +116,20 @@ metrics <span class="o">=</span> {<span class="s">"requests"</span>: <span class
         <div class="why">Metrics measure those levers; they don’t replace them. You need both the optimizations and the measurement that validates them.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">In a cost/latency-optimized chat capstone, what proves the optimization worked?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Before/after numbers on p95 latency and cost per call, with the trade-offs you chose.</span>
+        <div class="why">Correct. Measured improvements and defended trade-offs are the evidence.</div></li>
+      <li data-correct="false"><span class="opt">That it uses streaming and nothing else.</span>
+        <div class="why">Streaming helps perception; you still show measured gains.</div></li>
+      <li data-correct="false"><span class="opt">That it never caches.</span>
+        <div class="why">Caching is a key lever; measured results are what matter.</div></li>
+      <li data-correct="false"><span class="opt">That it uses the biggest model.</span>
+        <div class="why">Optimization usually means right-sizing, shown with numbers.</div></li>
+    </ul>
+  </div>
+
 
   <hr class="sep">
 

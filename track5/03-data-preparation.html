@@ -91,6 +91,20 @@ train, val <span class="o">=</span> data[:split], data[split:]      <span class=
         <div class="why">Learning rate affects how training proceeds, not whether your validation set is contaminated. The 98%-then-fails pattern points squarely at leakage between train and validation.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">For a fine-tune, why do data quality and dedup matter more than raw quantity?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">The model learns the patterns in your data — duplicates and noise get memorized and amplified.</span>
+        <div class="why">Correct. Clean, representative examples beat a large noisy pile.</div></li>
+      <li data-correct="false"><span class="opt">More data always overfits.</span>
+        <div class="why">Quantity isn't the enemy; low quality is.</div></li>
+      <li data-correct="false"><span class="opt">Dedup speeds up inference.</span>
+        <div class="why">It affects training quality, not inference speed.</div></li>
+      <li data-correct="false"><span class="opt">Quality doesn't matter if the model is big.</span>
+        <div class="why">Bad data harms even large models.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

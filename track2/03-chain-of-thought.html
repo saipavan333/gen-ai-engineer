@@ -99,6 +99,20 @@ final <span class="o">=</span> out.<span class="f">strip</span>().<span class="f
         <div class="why">There’s nothing to reason through (and the model shouldn’t guess the date anyway — that’s a tool’s job). CoT offers no benefit on trivial or non-reasoning tasks.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">When is chain-of-thought most worth the extra tokens?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Multi-step arithmetic or logic, where intermediate results prevent a wrong one-shot guess.</span>
+        <div class="why">Correct. Reasoning steps give the model the intermediate values it needs for multi-step problems.</div></li>
+      <li data-correct="false"><span class="opt">Simple classification or extraction.</span>
+        <div class="why">There it just adds cost and latency for no gain.</div></li>
+      <li data-correct="false"><span class="opt">Whenever you want a shorter answer.</span>
+        <div class="why">CoT makes responses longer, not shorter.</div></li>
+      <li data-correct="false"><span class="opt">Only when temperature is high.</span>
+        <div class="why">CoT helps regardless of temperature; it's about task type.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

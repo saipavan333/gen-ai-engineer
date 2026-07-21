@@ -87,6 +87,20 @@ index <span class="o">=</span> bi.<span class="f">encode</span>(chunks, normaliz
         <div class="why">Temperature affects generation randomness, not which chunks are selected for the prompt. It has no bearing on a ranking problem.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">What does a reranker add after initial retrieval?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A precise second-stage relevance score (often a cross-encoder) that reorders the top candidates.</span>
+        <div class="why">Correct. Retrieve broadly and fast, then rerank the top few precisely.</div></li>
+      <li data-correct="false"><span class="opt">It fetches more documents.</span>
+        <div class="why">Reranking reorders existing candidates; it doesn't fetch more.</div></li>
+      <li data-correct="false"><span class="opt">It generates the final answer.</span>
+        <div class="why">That's the LLM's job; reranking just orders results.</div></li>
+      <li data-correct="false"><span class="opt">It replaces the embedding step.</span>
+        <div class="why">It runs after embedding-based retrieval, not instead of it.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

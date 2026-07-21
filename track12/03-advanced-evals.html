@@ -77,6 +77,20 @@
         <div class="why">Absolute scores are <em>less</em> stable than pairwise judgments and carry their own biases (like verbosity). The fix for position bias is to swap and average, not to abandon the more reliable comparison method.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">Comparing prompt A vs B, why fix the seed and run the whole golden set?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">LLM outputs vary run-to-run; you must confirm the gap beats random noise before declaring a winner.</span>
+        <div class="why">Correct. A small score difference can be pure randomness without controlling for it.</div></li>
+      <li data-correct="false"><span class="opt">To make the eval faster.</span>
+        <div class="why">It's about validity, not speed.</div></li>
+      <li data-correct="false"><span class="opt">Because the seed changes the model's weights.</span>
+        <div class="why">The seed controls sampling randomness, not weights.</div></li>
+      <li data-correct="false"><span class="opt">To avoid needing a golden set.</span>
+        <div class="why">You run the whole golden set precisely to be rigorous.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box deep">
     <div class="box-label">Deep dive: evaluation is the moat</div>

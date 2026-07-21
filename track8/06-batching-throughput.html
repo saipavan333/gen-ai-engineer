@@ -60,6 +60,20 @@
         <div class="why">Prompt content doesn’t affect GPU utilization or how many requests run concurrently. The fix for low throughput is batching.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">What does increasing batch size trade off?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Higher throughput (better GPU use) against higher per-request latency.</span>
+        <div class="why">Correct. Batching amortizes weight loading but makes each user wait longer.</div></li>
+      <li data-correct="false"><span class="opt">Lower latency and lower throughput at once.</span>
+        <div class="why">It raises throughput but also per-request latency.</div></li>
+      <li data-correct="false"><span class="opt">Nothing — it only helps.</span>
+        <div class="why">There's a real latency cost past a point.</div></li>
+      <li data-correct="false"><span class="opt">It reduces accuracy.</span>
+        <div class="why">Batching doesn't change output quality.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

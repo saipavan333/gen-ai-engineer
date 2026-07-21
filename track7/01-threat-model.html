@@ -82,6 +82,20 @@
         <div class="why">Mis-ranking is a retrieval-quality issue (Track 3), not the security problem here. The threat is that the article’s <em>content</em> can carry injected instructions once retrieved.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">In the LLM threat model, what should you treat as untrusted?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Both the input AND the output — anything crossing the trust boundary can be hostile.</span>
+        <div class="why">Correct. Retrieved content and model output are both untrusted.</div></li>
+      <li data-correct="false"><span class="opt">Only the user's typed input.</span>
+        <div class="why">Retrieved content and outputs are equally suspect.</div></li>
+      <li data-correct="false"><span class="opt">Nothing, if you have a good prompt.</span>
+        <div class="why">A prompt can't make untrusted data safe.</div></li>
+      <li data-correct="false"><span class="opt">Only the model weights.</span>
+        <div class="why">The risk is untrusted data and outputs, not the weights.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

@@ -73,6 +73,20 @@
         <div class="why">The opposite — spending more compute at answer time makes responses slower and more expensive. The point is that it buys accuracy on hard tasks, so you use it selectively.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">What do reasoning models spend to get better answers on hard problems?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Test-time compute — sampling more, thinking longer, and checking their own work at inference.</span>
+        <div class="why">Correct. They trade extra inference-time computation for accuracy, with diminishing returns.</div></li>
+      <li data-correct="false"><span class="opt">More training data, live.</span>
+        <div class="why">The shift is at inference time, not retraining.</div></li>
+      <li data-correct="false"><span class="opt">A bigger context window only.</span>
+        <div class="why">It's about extra reasoning compute, not just window size.</div></li>
+      <li data-correct="false"><span class="opt">Nothing — they're just larger.</span>
+        <div class="why">The key is spending compute to think, not raw size.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box deep">
     <div class="box-label">Deep dive: why this changes how you build, not just what you buy</div>

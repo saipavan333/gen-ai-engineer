@@ -83,6 +83,20 @@ trainer.<span class="f">train</span>()
         <div class="why">Preference tuning aligns tone/helpfulness; it wouldn’t fix a basic format mismatch. The fix is to serve with the same chat template you trained on.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">Instruction tuning (SFT) turns a base model into…</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">An assistant that follows instructions, by training on instruction→response pairs.</span>
+        <div class="why">Correct. SFT teaches the base next-token predictor to behave like a helpful assistant.</div></li>
+      <li data-correct="false"><span class="opt">A retrieval system.</span>
+        <div class="why">That's RAG; SFT changes the model's behavior.</div></li>
+      <li data-correct="false"><span class="opt">A smaller model.</span>
+        <div class="why">It changes behavior, not size.</div></li>
+      <li data-correct="false"><span class="opt">A search engine.</span>
+        <div class="why">Unrelated — SFT is behavior alignment.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

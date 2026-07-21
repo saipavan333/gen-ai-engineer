@@ -75,6 +75,20 @@
         <div class="why">Prompt tweaks don’t change which (expensive) model runs. The savings come from routing easy traffic to a cheaper model, not from prompt wording.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">What's the idea behind model routing?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Send each task to the cheapest model that can handle it, escalating to a bigger one only when needed.</span>
+        <div class="why">Correct. Most requests don't need your best model; route by task, escalate on low confidence.</div></li>
+      <li data-correct="false"><span class="opt">Always use the biggest model for safety.</span>
+        <div class="why">That pays premium prices for tasks a small model handles.</div></li>
+      <li data-correct="false"><span class="opt">Pick a model at random.</span>
+        <div class="why">Routing is deliberate, by task type/confidence.</div></li>
+      <li data-correct="false"><span class="opt">Use one model for everything forever.</span>
+        <div class="why">That misses the cost savings routing provides.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

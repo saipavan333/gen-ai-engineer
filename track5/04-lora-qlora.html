@@ -82,6 +82,20 @@ trainer.<span class="f">save_model</span>(<span class="s">"my-adapter"</span>)  
         <div class="why">No method learns facts without data, and fresh facts belong in RAG anyway. LoRA’s benefit is parameter-efficient behavior training plus tiny, swappable adapters.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">Why does LoRA make fine-tuning runnable on a free GPU?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">It freezes the base model and trains two small matrices — under 1% of parameters.</span>
+        <div class="why">Correct. Training a tiny fraction of weights slashes memory and cost.</div></li>
+      <li data-correct="false"><span class="opt">It deletes most of the model.</span>
+        <div class="why">The base is frozen and intact, not deleted.</div></li>
+      <li data-correct="false"><span class="opt">It uses no gradients.</span>
+        <div class="why">Gradients flow into the small adapter matrices.</div></li>
+      <li data-correct="false"><span class="opt">It shrinks the training data.</span>
+        <div class="why">LoRA is about which weights train, not data size.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

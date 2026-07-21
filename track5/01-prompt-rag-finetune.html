@@ -73,6 +73,20 @@
         <div class="why">RAG supplies knowledge, not behavior — it won’t reliably enforce a strict output format/tone. The format is a behavior to fine-tune; only the policies belong in RAG.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">Your model needs your company's current prices, which change weekly. Best approach?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">RAG — changing facts are a retrieval problem; fine-tuning bakes in a stale snapshot.</span>
+        <div class="why">Correct. Retrieval serves the current value; fine-tuning teaches form, not fresh facts.</div></li>
+      <li data-correct="false"><span class="opt">Fine-tune nightly on the price list.</span>
+        <div class="why">Costly and still stale between runs; retrieval is the right tool.</div></li>
+      <li data-correct="false"><span class="opt">Raise the temperature.</span>
+        <div class="why">Unrelated to supplying current facts.</div></li>
+      <li data-correct="false"><span class="opt">Use a bigger model.</span>
+        <div class="why">Size doesn't give it facts it never saw.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

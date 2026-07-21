@@ -85,6 +85,20 @@ sem_q, sem_v, sem_a <span class="o">=</span> [], <span class="kc">None</span>, [
         <div class="why">Model size is irrelevant — the wrong answers come from the cache returning a mismatched stored answer, not from generation. Fix the threshold.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">What's the cheapest possible LLM call?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">The one you never make — a cache hit returns a stored answer instantly and for free.</span>
+        <div class="why">Correct. Caching repetitive requests saves both cost and latency.</div></li>
+      <li data-correct="false"><span class="opt">A call to the smallest model.</span>
+        <div class="why">Still costs something; a cache hit costs nothing.</div></li>
+      <li data-correct="false"><span class="opt">A call with temperature 0.</span>
+        <div class="why">Temperature doesn't make a call free.</div></li>
+      <li data-correct="false"><span class="opt">A streamed call.</span>
+        <div class="why">Streaming changes delivery, not whether you pay.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

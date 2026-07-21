@@ -68,6 +68,20 @@ result <span class="o">=</span> model.<span class="f">transcribe</span>(<span cl
         <div class="why">The LLM can’t reliably recover information that was mistranscribed — it has no access to the original audio. It may even lend false confidence to the error by summarizing it fluently. STT quality genuinely caps the pipeline.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">In a speech-to-text pipeline, why does a transcription error matter downstream?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Errors propagate — a misheard word can flip a summary or trigger the wrong action.</span>
+        <div class="why">Correct. Everything after the transcript inherits its mistakes.</div></li>
+      <li data-correct="false"><span class="opt">It only affects the audio file.</span>
+        <div class="why">The error flows into every downstream step.</div></li>
+      <li data-correct="false"><span class="opt">Transcripts are never wrong.</span>
+        <div class="why">They degrade on accents, noise, and jargon.</div></li>
+      <li data-correct="false"><span class="opt">It makes the model faster.</span>
+        <div class="why">Errors don't speed anything up.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box deep">
     <div class="box-label">Deep dive: pipelines vs end-to-end, and the latency budget</div>

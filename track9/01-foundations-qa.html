@@ -71,6 +71,20 @@
         <div class="why">False — it optimizes for plausible, not provably correct, output. This is the opposite of the truth and signals a shaky mental model.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">An interviewer asks why an LLM hallucinates. Best answer?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">It predicts likely next tokens, not truth — a fluent wrong sequence can be high-probability.</span>
+        <div class="why">Correct. Hallucination is inherent to next-token prediction, which is why grounding and evals exist.</div></li>
+      <li data-correct="false"><span class="opt">Because of a bug that will be patched.</span>
+        <div class="why">It's inherent to the mechanism, not a fixable bug.</div></li>
+      <li data-correct="false"><span class="opt">Because the model is too small.</span>
+        <div class="why">Even large models hallucinate.</div></li>
+      <li data-correct="false"><span class="opt">Because the temperature is always high.</span>
+        <div class="why">It happens at any temperature.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box key">
     <div class="box-label">Delivery tips</div>

@@ -98,6 +98,20 @@ out <span class="o">=</span> <span class="f">grounded_answer</span>(<span class=
         <div class="why">Temperature doesn’t create missing information. If the answer isn’t in the retrieved context, no decoding setting will produce a grounded answer — the right move is to abstain (or improve retrieval).</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">Why attach citations to a grounded answer?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">They let a user (or you) verify each claim against the exact retrieved source.</span>
+        <div class="why">Correct. Citations make answers auditable and expose ungrounded claims.</div></li>
+      <li data-correct="false"><span class="opt">They make the model faster.</span>
+        <div class="why">Citations are about trust and verifiability, not speed.</div></li>
+      <li data-correct="false"><span class="opt">They replace the need for evals.</span>
+        <div class="why">You still evaluate faithfulness; citations aid it.</div></li>
+      <li data-correct="false"><span class="opt">They increase the context window.</span>
+        <div class="why">They're references in the output, unrelated to window size.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

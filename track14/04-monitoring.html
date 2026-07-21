@@ -80,6 +80,20 @@
         <div class="why">User complaints are the slowest, most expensive signal. You keep the golden set (it prevents known regressions) <em>and</em> add monitoring/online evals to catch the unknown — you don’t trade one for the other.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">Your mean latency looks fine but users complain. What do you check?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">The tail — p95 and p99 — because the mean hides a slow minority.</span>
+        <div class="why">Correct. Most incidents are a slow tail, not a uniform slowdown.</div></li>
+      <li data-correct="false"><span class="opt">The mean again, more carefully.</span>
+        <div class="why">The mean is exactly what's hiding it.</div></li>
+      <li data-correct="false"><span class="opt">The total token count.</span>
+        <div class="why">That doesn't reveal the latency distribution.</div></li>
+      <li data-correct="false"><span class="opt">The model's temperature.</span>
+        <div class="why">Unrelated to latency tails.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box deep">
     <div class="box-label">Deep dive: offline and online evals are two halves of one system</div>

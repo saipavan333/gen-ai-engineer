@@ -96,6 +96,20 @@ If a field is unclear, use "unknown". Do not add any text outside the JSON.'''</
         <div class="why">Examples pin output format but don’t stop the model from obeying an embedded instruction. The structural fix is fencing the data with delimiters (and never echoing secrets, per Track 7).</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">Which is a prompt ANTI-pattern that quietly hurts accuracy?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A vague quality word like 'make it good' that the model can't measure.</span>
+        <div class="why">Correct. 'Good' is unmeasurable; say specifically what good means here.</div></li>
+      <li data-correct="false"><span class="opt">Giving an exact word count.</span>
+        <div class="why">That's a good practice — specific and measurable.</div></li>
+      <li data-correct="false"><span class="opt">Providing a worked example.</span>
+        <div class="why">Examples help; they're a recommended pattern.</div></li>
+      <li data-correct="false"><span class="opt">Stating the output format explicitly.</span>
+        <div class="why">That's exactly what you should do.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

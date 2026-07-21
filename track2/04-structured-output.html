@@ -112,6 +112,20 @@ t <span class="o">=</span> <span class="f">extract</span>(<span class="s">"My ca
         <div class="why">Higher temperature adds variability — the opposite of what you want for consistent structured output. For extraction you want temperature 0 plus validation.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">The model returns JSON with a chatty preamble. What's the robust production fix?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Extract the JSON substring, parse it, validate the schema, and retry once on failure.</span>
+        <div class="why">Correct. You engineer around imperfect output: extract, parse, validate, retry — not just reword the prompt.</div></li>
+      <li data-correct="false"><span class="opt">Trust the string and call json.loads directly.</span>
+        <div class="why">A preamble makes a strict parse throw; you must extract first.</div></li>
+      <li data-correct="false"><span class="opt">Raise the temperature.</span>
+        <div class="why">That makes format less consistent.</div></li>
+      <li data-correct="false"><span class="opt">Ask again more politely.</span>
+        <div class="why">Politeness doesn't guarantee structure; validation does.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

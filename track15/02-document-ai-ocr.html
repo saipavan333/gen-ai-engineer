@@ -78,6 +78,20 @@ data <span class="o">=</span> Invoice(<span class="o">**</span>json.<span class=
         <div class="why">OCR has excellent free options (Tesseract). Cost isn’t the reason; the reason is that VLMs handle varied layouts and meaning without brittle per-format rules.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">A vision model reads an invoice total as 1600.99 instead of 160.99, confidently. What catches it?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">An independent cross-check — summing the line items and comparing to the stated total.</span>
+        <div class="why">Correct. A second, independent calculation beats a better reader.</div></li>
+      <li data-correct="false"><span class="opt">A larger vision model.</span>
+        <div class="why">It would also report the misread confidently.</div></li>
+      <li data-correct="false"><span class="opt">Raising the temperature.</span>
+        <div class="why">Irrelevant to extraction accuracy.</div></li>
+      <li data-correct="false"><span class="opt">A longer prompt.</span>
+        <div class="why">Doesn't provide an independent check.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box deep">
     <div class="box-label">Deep dive: how you evaluate an extraction system</div>

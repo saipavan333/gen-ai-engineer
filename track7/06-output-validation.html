@@ -76,6 +76,20 @@
         <div class="why">Model size doesn’t prevent XSS — any model’s output, if injected, can contain a script. The defense is treating output as untrusted and escaping it before rendering.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">Why validate the model's output against a schema before acting on it?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Outputs can be malformed or manipulated; validation catches anomalies even when earlier layers were fooled.</span>
+        <div class="why">Correct. It's the last structural check before you trust or execute the output.</div></li>
+      <li data-correct="false"><span class="opt">It makes the model faster.</span>
+        <div class="why">Validation is about safety/correctness, not speed.</div></li>
+      <li data-correct="false"><span class="opt">It removes the need for a prompt.</span>
+        <div class="why">You still prompt; validation checks the result.</div></li>
+      <li data-correct="false"><span class="opt">It increases the context window.</span>
+        <div class="why">Unrelated.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

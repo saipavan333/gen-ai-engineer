@@ -89,6 +89,20 @@ TOOLS <span class="o">=</span> {<span class="s">"calculator"</span>: calculator,
         <div class="why">Steps can reuse the same tool freely. The max-steps guard is about bounding total iterations, unrelated to which tools are used.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">In a ReAct loop, where do the facts in the final answer come from?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">The observations returned by tools — not the model's own memory.</span>
+        <div class="why">Correct. A grounded agent answers from observations it fetched, not recalled facts.</div></li>
+      <li data-correct="false"><span class="opt">The system prompt.</span>
+        <div class="why">The prompt sets behavior; facts come from tool observations.</div></li>
+      <li data-correct="false"><span class="opt">The model's training data alone.</span>
+        <div class="why">The loop's point is to fetch fresh facts via tools.</div></li>
+      <li data-correct="false"><span class="opt">The temperature setting.</span>
+        <div class="why">Temperature affects sampling, not where facts originate.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

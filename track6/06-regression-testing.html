@@ -86,6 +86,20 @@ GOLDEN <span class="o">=</span> [
         <div class="why">Deleting tests hides regressions — the opposite of the goal. Fix the flakiness (determinism + robust assertions) so the tests are trustworthy, don’t remove your safety net.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">Prompt v2 scores 75% vs v1's 78% overall, yet you block the merge. Why?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A previously-passing case regressed (e.g. a refusal); the gate is per-case, not on the average.</span>
+        <div class="why">Correct. Averages hide the specific failures you most care about.</div></li>
+      <li data-correct="false"><span class="opt">75% is below an 80% bar.</span>
+        <div class="why">It's the per-case regression that matters here.</div></li>
+      <li data-correct="false"><span class="opt">v2 is slower.</span>
+        <div class="why">Speed isn't what the gate checks.</div></li>
+      <li data-correct="false"><span class="opt">The golden set shrank.</span>
+        <div class="why">It's fixed; a case regressed.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

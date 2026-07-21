@@ -72,6 +72,20 @@ hits <span class="o">=</span> util.<span class="f">cos_sim</span>(q_vec, img_vec
         <div class="why">Images aren’t already meaningful vectors — CLIP is exactly what turns an image into a semantic embedding. You still embed everything; CLIP just makes image and text embeddings comparable.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">What makes multimodal RAG possible?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Embedding different modalities into a shared space so a query can retrieve across text, images, and more.</span>
+        <div class="why">Correct. A shared embedding space lets you retrieve relevant content regardless of modality.</div></li>
+      <li data-correct="false"><span class="opt">Converting everything to text first, always.</span>
+        <div class="why">Shared-space retrieval avoids lossy text-only conversion.</div></li>
+      <li data-correct="false"><span class="opt">Using a bigger context window only.</span>
+        <div class="why">The window helps but retrieval across modalities is the key.</div></li>
+      <li data-correct="false"><span class="opt">Higher temperature.</span>
+        <div class="why">Unrelated to multimodal retrieval.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box deep">
     <div class="box-label">Deep dive: choosing your approach, and evaluating it</div>

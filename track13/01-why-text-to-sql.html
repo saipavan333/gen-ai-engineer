@@ -92,6 +92,20 @@
         <div class="why">They’re not equally catchable — that’s the whole point. An error is caught immediately; a plausible wrong number can go unnoticed indefinitely, which makes it the more dangerous outcome.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">Where does text-to-SQL most often break?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">When the model guesses table/column names it wasn't given — schema grounding prevents it.</span>
+        <div class="why">Correct. Without the real schema, generated SQL references columns that don't exist.</div></li>
+      <li data-correct="false"><span class="opt">When the database is too fast.</span>
+        <div class="why">Speed isn't the failure mode.</div></li>
+      <li data-correct="false"><span class="opt">When temperature is 0.</span>
+        <div class="why">Deterministic output helps, not hurts.</div></li>
+      <li data-correct="false"><span class="opt">When the question is in English.</span>
+        <div class="why">Plain-English questions are exactly the use case.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box deep">
     <div class="box-label">Deep dive: why this is your unfair advantage</div>

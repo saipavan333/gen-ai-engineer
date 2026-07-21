@@ -78,6 +78,20 @@ reply <span class="o">=</span> ollama.<span class="f">chat</span>(
         <div class="why">Nothing looks at your screen — you explicitly pass an image into the prompt, and it’s encoded into tokens. There’s no live vision.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">Why is CLIP useful for image search?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">It places images and text in one shared embedding space, so a text query can retrieve images by similarity.</span>
+        <div class="why">Correct. A shared space lets the same vector geometry match captions to pictures.</div></li>
+      <li data-correct="false"><span class="opt">It generates images from text.</span>
+        <div class="why">That's a different class of model.</div></li>
+      <li data-correct="false"><span class="opt">It transcribes audio.</span>
+        <div class="why">That's Whisper's job.</div></li>
+      <li data-correct="false"><span class="opt">It compresses files.</span>
+        <div class="why">CLIP is about aligned embeddings, not compression.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box deep">
     <div class="box-label">Deep dive: why “multimodal” is a product unlock, not just a feature</div>

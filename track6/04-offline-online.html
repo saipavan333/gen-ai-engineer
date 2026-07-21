@@ -83,6 +83,20 @@
         <div class="why">Skipping offline would expose users to untested changes — the opposite of safe. Offline gates first, then online validates; you want both in sequence, not online alone.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">Offline evals pass in CI but production quality dropped. Most likely cause?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Drift — the golden set is frozen, so only online evals on live traffic catch new failure modes.</span>
+        <div class="why">Correct. Offline proves no regression on known cases; online reveals the unknown ones.</div></li>
+      <li data-correct="false"><span class="opt">The CI server is down.</span>
+        <div class="why">Passing offline evals with degraded prod is the drift signature.</div></li>
+      <li data-correct="false"><span class="opt">The model got smaller.</span>
+        <div class="why">Nothing implies a model change.</div></li>
+      <li data-correct="false"><span class="opt">Too many golden cases.</span>
+        <div class="why">Set size isn't the issue; coverage of new cases is.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

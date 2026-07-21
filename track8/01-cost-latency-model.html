@@ -88,6 +88,20 @@ cost <span class="o">=</span> (in_tokens <span class="o">*</span> PRICE_IN <span
         <div class="why">A bigger model is typically slower and pricier per token — worsening both problems. The issue is prompt size, not model capability.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">In the cost model, why does output usually dominate the bill and the latency?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Output tokens cost several times more than input AND are generated one at a time (serial).</span>
+        <div class="why">Correct. Input is parallel and cheap; output is serial and pricier, so it dominates.</div></li>
+      <li data-correct="false"><span class="opt">Input tokens are free.</span>
+        <div class="why">Input costs too, just less; output still dominates.</div></li>
+      <li data-correct="false"><span class="opt">Output is processed in parallel.</span>
+        <div class="why">Output is serial (decode); input is the parallel part.</div></li>
+      <li data-correct="false"><span class="opt">Latency has nothing to do with tokens.</span>
+        <div class="why">Latency scales with tokens, especially output.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

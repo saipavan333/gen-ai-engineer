@@ -111,6 +111,20 @@ prompt <span class="o">=</span> <span class="s">"The best way to learn programmi
         <div class="why">Top-p near 1.0 barely trims anything and still samples randomly, so outputs stay variable. It’s a tweak to the tail, not a fix for needing one consistent answer — temperature 0 is the direct lever.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">You need the same answer every time for a data-extraction task. What temperature?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">0 — greedy decoding always picks the top token, making output deterministic.</span>
+        <div class="why">Correct. Temperature 0 removes randomness, which is what extraction and classification want.</div></li>
+      <li data-correct="false"><span class="opt">1.0, the default.</span>
+        <div class="why">That still samples randomly and varies between runs.</div></li>
+      <li data-correct="false"><span class="opt">The highest possible, for confidence.</span>
+        <div class="why">High temperature increases randomness — the opposite of what you want.</div></li>
+      <li data-correct="false"><span class="opt">It doesn't depend on temperature.</span>
+        <div class="why">Determinism depends directly on temperature being 0.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

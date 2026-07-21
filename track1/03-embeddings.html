@@ -115,6 +115,20 @@ emb <span class="o">=</span> model.<span class="f">encode</span>(sentences)
         <div class="why">Plausible-looking because both are short answers, but they’re semantic opposites in context. They won’t score as high as a true paraphrase — and can even score low. Shared category ≠ shared meaning.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">Two sentences with no shared words can still score as similar. Why?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Embeddings capture meaning, so similar meanings land close in vector space regardless of exact words.</span>
+        <div class="why">Correct. Similarity is measured on meaning-vectors (cosine), not on word overlap.</div></li>
+      <li data-correct="false"><span class="opt">Because the tokenizer merges them.</span>
+        <div class="why">Tokenization is unrelated to semantic similarity.</div></li>
+      <li data-correct="false"><span class="opt">Because cosine similarity ignores meaning.</span>
+        <div class="why">Cosine on embeddings is precisely how meaning is compared.</div></li>
+      <li data-correct="false"><span class="opt">It must be a bug.</span>
+        <div class="why">It's the intended behavior — the point of embeddings.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

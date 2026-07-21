@@ -82,6 +82,20 @@ lr <span class="o">=</span> <span class="n">0.1</span>            <span class="c
         <div class="why">More epochs would make it worse — it would memorize the training set even harder. The fix is to stop sooner (or improve data), not train longer.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">What is 'loss' during training?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A number measuring how wrong the model's predictions are; training adjusts weights to reduce it.</span>
+        <div class="why">Correct. Training is gradient descent on the loss.</div></li>
+      <li data-correct="false"><span class="opt">The model's response time.</span>
+        <div class="why">That's latency, not loss.</div></li>
+      <li data-correct="false"><span class="opt">How many parameters were dropped.</span>
+        <div class="why">Loss measures prediction error, not parameter count.</div></li>
+      <li data-correct="false"><span class="opt">The cost in dollars.</span>
+        <div class="why">Loss is a training error metric, unrelated to billing.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

@@ -94,6 +94,20 @@ golden <span class="o">=</span> {
         <div class="why">More retrieved chunks won’t make the model use them faithfully — and can worsen “lost in the middle.” The diagnostic clearly points at generation; the fix lives there.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">Recall@5 is 0.95 but users get wrong answers. Where's the fault most likely?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Generation/grounding — the right context reached the model but it wasn't used faithfully.</span>
+        <div class="why">Correct. High recall means retrieval worked, so look at how the model uses the context.</div></li>
+      <li data-correct="false"><span class="opt">Retrieval — it clearly failed.</span>
+        <div class="why">0.95 recall means retrieval is doing its job.</div></li>
+      <li data-correct="false"><span class="opt">The embedding dimension is too small.</span>
+        <div class="why">Recall is already high; embeddings are finding the docs.</div></li>
+      <li data-correct="false"><span class="opt">The vector database is broken.</span>
+        <div class="why">It's returning the right docs, so it's working.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

@@ -89,6 +89,20 @@ memory, mem_vecs <span class="o">=</span> [], <span class="kc">None</span>
         <div class="why">Fine-tuning per user is wildly impractical and is for behavior, not fast-changing personal facts. Storing the preference as retrievable memory is immediate, cheap, and updatable.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">Why does an agent 'forget' earlier turns in a long chat?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Nothing persists between calls; when history no longer fits the context window, old turns get dropped.</span>
+        <div class="why">Correct. Each call resends history, and when it exceeds the window, something must go.</div></li>
+      <li data-correct="false"><span class="opt">The model deletes memories to save money.</span>
+        <div class="why">It's a context-window limit, not a cost decision.</div></li>
+      <li data-correct="false"><span class="opt">Memory is stored on the server forever.</span>
+        <div class="why">Nothing is remembered between calls unless you store it yourself.</div></li>
+      <li data-correct="false"><span class="opt">Higher temperature erases memory.</span>
+        <div class="why">Temperature is unrelated to context retention.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

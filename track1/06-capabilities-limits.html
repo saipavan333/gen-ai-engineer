@@ -95,6 +95,20 @@ prompt <span class="o">=</span> <span class="s">f"Context: </span>{context}<span
         <div class="why">Bigger models hallucinate less in general, but they still confidently invent citations for things outside their knowledge. Capability reduces the rate; it doesn’t remove the root cause the way grounding in real documents does.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">Which task is an LLM LEAST reliable at without extra help?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Stating a current fact that changed after its knowledge cutoff.</span>
+        <div class="why">Correct. Fresh, changing facts are outside its training — that's a retrieval (RAG) job.</div></li>
+      <li data-correct="false"><span class="opt">Rewriting a paragraph in a different tone.</span>
+        <div class="why">Transforming provided text is a core strength.</div></li>
+      <li data-correct="false"><span class="opt">Summarizing a document you paste in.</span>
+        <div class="why">Summarizing given text is reliable.</div></li>
+      <li data-correct="false"><span class="opt">Translating a sentence.</span>
+        <div class="why">Translation of provided text is well within its abilities.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

@@ -94,6 +94,20 @@
         <div class="why">The cutoff is about world knowledge frozen at training time. Your name from “yesterday” was never in training at all — the real reason is simply that it isn’t in the current input.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">At its core, what is a large language model doing when it 'writes'?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Predicting the next token repeatedly, feeding each choice back in (autoregression).</span>
+        <div class="why">Correct. Generation is next-token prediction in a loop — the same step over and over.</div></li>
+      <li data-correct="false"><span class="opt">Looking up sentences in a giant database.</span>
+        <div class="why">It generates token by token from learned patterns, not by retrieving stored sentences.</div></li>
+      <li data-correct="false"><span class="opt">Reasoning symbolically like a logic engine.</span>
+        <div class="why">It predicts likely tokens; any 'reasoning' emerges from that, and isn't guaranteed correct.</div></li>
+      <li data-correct="false"><span class="opt">Searching the live web.</span>
+        <div class="why">A base model only uses its trained weights unless you add tools/retrieval.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

@@ -99,6 +99,20 @@ Sentiment:"""</span>
         <div class="why">That’s zero-shot. It can work, but it leaves format and boundary decisions unspecified. For reliable classification, a few well-chosen examples consistently outperform a bare label list.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">Few-shot examples are best at fixing which problem?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Inconsistent output format or style across runs.</span>
+        <div class="why">Correct. Examples teach form; one good example usually locks the format.</div></li>
+      <li data-correct="false"><span class="opt">Missing facts the model was never trained on.</span>
+        <div class="why">That's a retrieval problem; examples don't add knowledge.</div></li>
+      <li data-correct="false"><span class="opt">Slow response time.</span>
+        <div class="why">Examples add tokens; they don't speed things up.</div></li>
+      <li data-correct="false"><span class="opt">High API cost.</span>
+        <div class="why">They increase input tokens rather than reduce cost.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

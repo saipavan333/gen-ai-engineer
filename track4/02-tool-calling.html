@@ -101,6 +101,20 @@ final <span class="o">=</span> ollama.<span class="f">chat</span>(model<span cla
         <div class="why">Abandoning structured tool calling for brittle text parsing throws away reliability. The issue is tool <em>descriptions</em>, not the mechanism; fix the descriptions.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">The model emits a tool call to delete a record. What actually deletes it?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Your code decides whether to run the call — the model only requests it.</span>
+        <div class="why">Correct. The model returns JSON naming a function; your code is where every guard lives.</div></li>
+      <li data-correct="false"><span class="opt">The model executes it directly.</span>
+        <div class="why">Models never execute; they only produce text/JSON.</div></li>
+      <li data-correct="false"><span class="opt">The tool schema runs it automatically.</span>
+        <div class="why">A schema describes the tool; it doesn't auto-run.</div></li>
+      <li data-correct="false"><span class="opt">The database runs it on its own.</span>
+        <div class="why">Only your code, if it chooses to honor the call.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

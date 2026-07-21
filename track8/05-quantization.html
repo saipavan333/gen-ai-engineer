@@ -68,6 +68,20 @@
         <div class="why">Prompt length affects the context/KV memory a bit, but it doesn’t shrink the <em>model weights</em>, which are what don’t fit here. Quantizing the weights is the right fix.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">What does quantization trade, and why is it worth it?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A little accuracy for a large drop in memory — letting a big model run on modest hardware.</span>
+        <div class="why">Correct. Lower-precision weights shrink memory; int8 is near-lossless, int4 a small dip.</div></li>
+      <li data-correct="false"><span class="opt">Speed for accuracy, with no memory change.</span>
+        <div class="why">The main win is memory (and often speed), by lowering precision.</div></li>
+      <li data-correct="false"><span class="opt">Nothing — it's free with no downside.</span>
+        <div class="why">There's a small, measurable quality cost you should check.</div></li>
+      <li data-correct="false"><span class="opt">It makes the model larger.</span>
+        <div class="why">It makes it smaller.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

@@ -80,6 +80,20 @@ API_KEY <span class="o">=</span> os.<span class="f">environ</span>.<span class="
         <div class="why">The opposite — a pinned <code>requirements.txt</code> is what makes the image reproducible. The Dockerfile installs from it during the build.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">Why package an LLM app in a container for deployment?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">It bundles the app with its exact dependencies so it runs the same everywhere.</span>
+        <div class="why">Correct. Containers give reproducible, portable runtimes.</div></li>
+      <li data-correct="false"><span class="opt">It makes the model smarter.</span>
+        <div class="why">Packaging is about deployment, not capability.</div></li>
+      <li data-correct="false"><span class="opt">It removes the need for monitoring.</span>
+        <div class="why">You still monitor in production.</div></li>
+      <li data-correct="false"><span class="opt">It quantizes the model.</span>
+        <div class="why">Unrelated — that's a separate technique.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box deep">
     <div class="box-label">Deep dive: the twelve-factor habits that make services deployable</div>

@@ -84,6 +84,20 @@ jobs:
         <div class="why">Relying on users to find regressions is exactly what the eval gate exists to avoid. You want to catch drops in CI, before shipping — not after complaints.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">Why run evals in CI on every change?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">To block a prompt or code change that regresses a known case before it reaches users.</span>
+        <div class="why">Correct. CI evals are the gate that catches regressions automatically.</div></li>
+      <li data-correct="false"><span class="opt">To make the build slower on purpose.</span>
+        <div class="why">The point is protection, not delay.</div></li>
+      <li data-correct="false"><span class="opt">To replace production monitoring.</span>
+        <div class="why">CI catches known regressions; monitoring catches unknown ones — you need both.</div></li>
+      <li data-correct="false"><span class="opt">To increase the context window.</span>
+        <div class="why">Unrelated.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box deep">
     <div class="box-label">Deep dive: the regression set is a living asset</div>

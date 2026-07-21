@@ -125,6 +125,20 @@ Answer with exactly one word: high, medium, or low. If unclear, answer medium.""
         <div class="why">Where the document lives doesn’t determine output length or shape. The system message is for durable behavior; the missing piece here is an explicit format instruction wherever you put it.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">Which prompt component is what stops the model from inventing an answer when it shouldn't?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">The guardrail — an explicit refusal/uncertainty path (e.g. 'if not in the context, say you don't know').</span>
+        <div class="why">Correct. The guardrail is the refusal path; without it the model fills gaps with invention.</div></li>
+      <li data-correct="false"><span class="opt">The role.</span>
+        <div class="why">The role sets voice/domain but doesn't create a refusal path.</div></li>
+      <li data-correct="false"><span class="opt">The format.</span>
+        <div class="why">Format makes output parseable but doesn't govern when to decline.</div></li>
+      <li data-correct="false"><span class="opt">A higher temperature.</span>
+        <div class="why">That makes invention more likely, not less.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

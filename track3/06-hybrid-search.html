@@ -93,6 +93,20 @@ bm25 <span class="o">=</span> <span class="f">BM25Okapi</span>([c.<span class="f
         <div class="why">Temperature is a generation setting and has nothing to do with which documents the retriever finds. This is a retrieval-method problem.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">A query with an exact product code fails on pure vector search. Why does hybrid fix it?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Adding BM25 (keyword) catches exact tokens that embeddings blur; fusing dense+sparse gets both strengths.</span>
+        <div class="why">Correct. Dense understands meaning but smears exact strings; BM25 nails literal tokens.</div></li>
+      <li data-correct="false"><span class="opt">Hybrid uses a bigger embedding model.</span>
+        <div class="why">It's about combining retrieval modes, not model size.</div></li>
+      <li data-correct="false"><span class="opt">Hybrid raises the temperature.</span>
+        <div class="why">Temperature is unrelated to retrieval.</div></li>
+      <li data-correct="false"><span class="opt">Vector search can't return anything.</span>
+        <div class="why">It returns results — just poor ones for exact codes.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

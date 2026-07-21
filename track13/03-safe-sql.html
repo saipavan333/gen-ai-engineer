@@ -91,6 +91,20 @@
         <div class="why">Logging is valuable for auditing, but it’s after-the-fact — it tells you data was deleted, it doesn’t stop it. Prevention (read-only permissions) beats detection here.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">Why check the parsed statement type instead of scanning for the word 'delete'?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">An allowlist of statement types (SELECT only) fails closed; a word blocklist is endless and easy to evade.</span>
+        <div class="why">Correct. Allowlists reject everything not explicitly permitted, including forms you never anticipated.</div></li>
+      <li data-correct="false"><span class="opt">String matching is faster.</span>
+        <div class="why">Speed isn't the point; enforceability is.</div></li>
+      <li data-correct="false"><span class="opt">The word 'delete' never appears in attacks.</span>
+        <div class="why">It can appear in many disguised forms, which is why blocklists fail.</div></li>
+      <li data-correct="false"><span class="opt">Parsing SQL is impossible.</span>
+        <div class="why">Parsing is standard and reliable.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box deep">
     <div class="box-label">Deep dive: correctness is a kind of safety too</div>

@@ -91,6 +91,20 @@
         <div class="why">Temperature affects randomness, not whether a dangerous action is allowed. It does nothing to stop an injected instruction from triggering an unauthorized refund.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">An agent loops forever on a failing tool. The real bug is…</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Missing guards in your code — no step budget or repeat detection — not the model.</span>
+        <div class="why">Correct. The model retries sensibly; only a code-level bound stops the loop.</div></li>
+      <li data-correct="false"><span class="opt">The model is broken.</span>
+        <div class="why">It's doing what it's designed to; the guard is missing.</div></li>
+      <li data-correct="false"><span class="opt">The tool is too fast.</span>
+        <div class="why">The tool is failing, and there's no stopping condition.</div></li>
+      <li data-correct="false"><span class="opt">The temperature is too low.</span>
+        <div class="why">Randomness wouldn't impose a stop.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

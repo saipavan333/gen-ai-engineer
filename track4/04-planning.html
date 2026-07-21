@@ -86,6 +86,20 @@
         <div class="why">Pure reaction can work here, but you lose the structure planning gives for multi-step goals. The best answer keeps a plan <em>and</em> adds reflection — adaptivity on top of structure, not instead of it.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">Why have an agent plan before acting?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Fewer wasted tool calls and a readable trace you can debug.</span>
+        <div class="why">Correct. Planning first reduces flailing and makes the trajectory inspectable.</div></li>
+      <li data-correct="false"><span class="opt">It removes the need for a step budget.</span>
+        <div class="why">You still bound the loop; planning doesn't guarantee termination.</div></li>
+      <li data-correct="false"><span class="opt">It makes the model bigger.</span>
+        <div class="why">Planning is a technique, not a model change.</div></li>
+      <li data-correct="false"><span class="opt">It eliminates all failures.</span>
+        <div class="why">It reduces some, but guards are still needed.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

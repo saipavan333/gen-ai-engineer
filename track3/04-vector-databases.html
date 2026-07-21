@@ -106,6 +106,20 @@ res <span class="o">=</span> col.<span class="f">query</span>(
         <div class="why">Exact vs approximate changes accuracy/speed, not who is allowed to see what. Even perfectly exact search would return B’s chunk without a permission filter.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">At millions of vectors, why switch from flat (exact) search to an index like HNSW?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Flat search scans everything and gets slow; HNSW finds near-neighbors in roughly log time for a small recall trade-off.</span>
+        <div class="why">Correct. HNSW trades a few points of recall for a large speedup at scale.</div></li>
+      <li data-correct="false"><span class="opt">HNSW is always more accurate than flat.</span>
+        <div class="why">Flat is exact; HNSW is approximate — you trade a little recall for speed.</div></li>
+      <li data-correct="false"><span class="opt">Flat search returns wrong results.</span>
+        <div class="why">Flat is exact and correct; it's just slow at scale.</div></li>
+      <li data-correct="false"><span class="opt">HNSW removes the need for embeddings.</span>
+        <div class="why">It still searches embedding vectors.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

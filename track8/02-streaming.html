@@ -83,6 +83,20 @@ stream <span class="o">=</span> ollama.<span class="f">chat</span>(
         <div class="why">Longer answers take <em>more</em> decode time, increasing the wait. The fix is to surface output sooner (stream) and/or shorten it, not lengthen it.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">Streaming doesn't change total time, so why does it feel faster?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Time-to-first-token drops — users see words appear and start reading immediately.</span>
+        <div class="why">Correct. Perceived latency is driven by when output starts, not when it finishes.</div></li>
+      <li data-correct="false"><span class="opt">It generates fewer tokens.</span>
+        <div class="why">Token count is unchanged.</div></li>
+      <li data-correct="false"><span class="opt">It lowers the price per token.</span>
+        <div class="why">Cost per token is unchanged.</div></li>
+      <li data-correct="false"><span class="opt">The model thinks less.</span>
+        <div class="why">Same computation; only delivery changes.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

@@ -78,6 +78,20 @@
         <div class="why">Running the same deterministic query twice yields the same result; it catches nothing and doubles cost. The valuable feedback isn’t repetition — it’s the <em>error message</em> from a failure driving a revision.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">How does a self-correcting SQL agent recover from a bad query?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">It feeds the database's error message back to the model so it can fix the query and retry.</span>
+        <div class="why">Correct. The error is a signal the model uses to repair its SQL.</div></li>
+      <li data-correct="false"><span class="opt">It deletes the database and starts over.</span>
+        <div class="why">It repairs the query; it doesn't destroy data.</div></li>
+      <li data-correct="false"><span class="opt">It raises the temperature until it works.</span>
+        <div class="why">That adds randomness, not correctness.</div></li>
+      <li data-correct="false"><span class="opt">It gives up immediately.</span>
+        <div class="why">The whole point is bounded retry with the error as feedback.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box deep">
     <div class="box-label">Deep dive: this is the general pattern for “LLM + any tool”</div>

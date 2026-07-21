@@ -65,6 +65,20 @@
         <div class="why">Chunking affects retrieval, which is already strong. The fix lives in the generation/grounding stage, which separating the metrics reveals.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">Interviewer: 'Recall@10 is 0.97 but users still get wrong answers.' Senior response?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Retrieval is healthy, so the problem is generation/grounding — check faithfulness.</span>
+        <div class="why">Correct. High recall means the right context arrived; the model isn't using it faithfully.</div></li>
+      <li data-correct="false"><span class="opt">Increase the embedding dimension.</span>
+        <div class="why">Retrieval already works; the issue is generation.</div></li>
+      <li data-correct="false"><span class="opt">Add more documents.</span>
+        <div class="why">More docs won't fix a grounding problem.</div></li>
+      <li data-correct="false"><span class="opt">Raise the temperature.</span>
+        <div class="why">That won't improve faithfulness.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box key">
     <div class="box-label">Delivery tips</div>

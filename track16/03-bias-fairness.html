@@ -78,6 +78,20 @@
         <div class="why">They’re different: a model can be accurate on average yet unfair across groups. Conflating them is exactly the mistake disaggregated evaluation exists to catch.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">A screening model reports 83% overall accuracy. Why isn't that enough to ship?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Disaggregate by group — a healthy average can hide one group being failed on matched inputs.</span>
+        <div class="why">Correct. Gate on the disparity, not the aggregate, using matched pairs.</div></li>
+      <li data-correct="false"><span class="opt">83% is below a 90% bar.</span>
+        <div class="why">The issue is disaggregation, not the absolute number.</div></li>
+      <li data-correct="false"><span class="opt">Accuracy is the wrong metric entirely.</span>
+        <div class="why">Accuracy is fine; you also need it split by group.</div></li>
+      <li data-correct="false"><span class="opt">It needs a bigger training set.</span>
+        <div class="why">More data doesn't reveal a hidden disparity; disaggregated evaluation does.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box deep">
     <div class="box-label">Deep dive: fairness is contextual, and it’s a sociotechnical problem</div>

@@ -82,6 +82,20 @@ log(<span class="f">redact</span>(raw))                 <span class="c"># "Email
         <div class="why">That addresses only the echo-back path, unreliably, and does nothing about logging or the outbound API call. Privacy is handled by deterministic controls at the data boundaries, not by asking the model nicely.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">Best defense against PII leaking to a third-party model API?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Minimize what you send and redact PII before the request — don't rely on the model.</span>
+        <div class="why">Correct. A prompt is a data transfer; send less and mask sensitive fields.</div></li>
+      <li data-correct="false"><span class="opt">Ask the provider nicely not to store it.</span>
+        <div class="why">You can't enforce a third party's handling with a prompt.</div></li>
+      <li data-correct="false"><span class="opt">Encrypt the prompt inline.</span>
+        <div class="why">The provider still receives readable content to process.</div></li>
+      <li data-correct="false"><span class="opt">Use a longer context window.</span>
+        <div class="why">Unrelated to privacy exposure.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

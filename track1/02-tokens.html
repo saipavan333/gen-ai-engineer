@@ -96,6 +96,20 @@ ids <span class="o">=</span> enc.<span class="f">encode</span>(text)
         <div class="why">Tokenizers don’t delete letters — encoding is reversible (you can decode tokens right back to the exact text). Nothing is thrown away; the letters are just bundled inside tokens.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">Why does 'strawberry' sometimes cost several tokens while 'the' costs one?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Tokens are sub-word pieces; common words are single tokens, rarer/longer words split into several.</span>
+        <div class="why">Correct. A sub-word tokenizer keeps frequent words whole and breaks up rarer ones.</div></li>
+      <li data-correct="false"><span class="opt">Longer words always cost exactly one token.</span>
+        <div class="why">Length varies; rarer or longer words often split into multiple tokens.</div></li>
+      <li data-correct="false"><span class="opt">Tokenization is random per request.</span>
+        <div class="why">It's deterministic given the tokenizer.</div></li>
+      <li data-correct="false"><span class="opt">Every character is its own token.</span>
+        <div class="why">Most tokenizers use sub-word units, not single characters.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

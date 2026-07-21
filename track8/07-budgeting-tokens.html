@@ -74,6 +74,20 @@ parts <span class="o">=</span> {
         <div class="why">That increases cost and latency. The problem is too many <em>input</em> tokens (context + history); lengthening output makes things worse.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">You must cut cost on a chat feature. What's usually the biggest lever?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Cap or reduce the output length — output tokens are the pricier, serial part.</span>
+        <div class="why">Correct. Output dominates cost and latency, so limiting it helps most.</div></li>
+      <li data-correct="false"><span class="opt">Add more few-shot examples.</span>
+        <div class="why">That increases input tokens — the opposite of saving.</div></li>
+      <li data-correct="false"><span class="opt">Raise the temperature.</span>
+        <div class="why">Unrelated to cost.</div></li>
+      <li data-correct="false"><span class="opt">Use a longer system prompt.</span>
+        <div class="why">More input tokens, not fewer.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

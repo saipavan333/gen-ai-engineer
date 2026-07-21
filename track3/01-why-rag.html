@@ -111,6 +111,20 @@ D <span class="o">=</span> embed.<span class="f">encode</span>(docs, normalize_e
         <div class="why">The base model has a training cutoff and never saw your private catalog — it would hallucinate. This is exactly the limitation RAG exists to remove.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">What core problem does RAG solve that a bigger model alone doesn't?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Giving the model current, private, or changing facts it was never trained on — grounded in real sources.</span>
+        <div class="why">Correct. RAG supplies knowledge the weights lack, with provenance you can cite.</div></li>
+      <li data-correct="false"><span class="opt">Making the model reason better.</span>
+        <div class="why">RAG adds knowledge, not reasoning ability.</div></li>
+      <li data-correct="false"><span class="opt">Reducing the token cost of every call.</span>
+        <div class="why">RAG usually adds context tokens; it's about grounding, not cost.</div></li>
+      <li data-correct="false"><span class="opt">Removing the need for prompts.</span>
+        <div class="why">You still prompt; RAG just adds retrieved context.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

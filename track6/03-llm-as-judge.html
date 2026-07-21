@@ -93,6 +93,20 @@ v <span class="o">=</span> <span class="f">judge</span>(<span class="s">"What's 
         <div class="why">More randomness makes the judge less consistent, not less biased. You want a deterministic, rubric-anchored judge (low temperature) with explicit instructions about what to ignore.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">Your LLM judge agrees with humans 75% of the time. What should you check before trusting it?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Chance-corrected agreement (Cohen's κ) — two labels agree ~50% by chance.</span>
+        <div class="why">Correct. Raw agreement ignores the chance floor; κ removes it.</div></li>
+      <li data-correct="false"><span class="opt">Nothing — 75% is fine.</span>
+        <div class="why">Not without correcting for chance.</div></li>
+      <li data-correct="false"><span class="opt">The model's size.</span>
+        <div class="why">Trust depends on measured agreement, not size.</div></li>
+      <li data-correct="false"><span class="opt">Its response speed.</span>
+        <div class="why">Speed is irrelevant to judge validity.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>

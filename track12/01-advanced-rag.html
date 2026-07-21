@@ -87,6 +87,20 @@ top <span class="o">=</span> <span class="f">sorted</span>(scores, key<span clas
         <div class="why">They’re not equally accurate — the cross-encoder’s joint reading of query and document is the whole point. It’s an accuracy-for-speed trade, managed by applying the slow-but-accurate step only to a shortlist.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">What separates 'advanced' RAG from the basic embed→top-k pipeline?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">Each stage — query transform, hybrid retrieve, rerank, compress — is a knob you measure and tune.</span>
+        <div class="why">Correct. Improving RAG means measuring and tuning each stage, not one magic change.</div></li>
+      <li data-correct="false"><span class="opt">Using a bigger LLM at the end.</span>
+        <div class="why">The gains come from the retrieval pipeline, not just the generator.</div></li>
+      <li data-correct="false"><span class="opt">Removing evaluation.</span>
+        <div class="why">Advanced RAG leans more on measurement, not less.</div></li>
+      <li data-correct="false"><span class="opt">Raising the temperature.</span>
+        <div class="why">Unrelated to retrieval quality.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box deep">
     <div class="box-label">Deep dive: scaling retrieval to millions of documents</div>

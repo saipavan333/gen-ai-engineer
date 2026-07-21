@@ -95,6 +95,20 @@ index <span class="o">=</span> model.<span class="f">encode</span>(chunks, norma
         <div class="why">Chunk length didn’t change — only the query-side model did. The issue is that documents and queries are no longer embedded by the same model.</div></li>
     </ul>
   </div>
+  <div class="quiz">
+    <p class="quiz-q">You must pick an embedding model for retrieval. What's the most useful reference?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A benchmark like MTEB, which ranks models on real retrieval tasks.</span>
+        <div class="why">Correct. MTEB compares embedding models on retrieval and related tasks so you choose on evidence.</div></li>
+      <li data-correct="false"><span class="opt">Whichever model has the most parameters.</span>
+        <div class="why">Bigger isn't automatically better for retrieval; measure it.</div></li>
+      <li data-correct="false"><span class="opt">The one with the longest context window.</span>
+        <div class="why">Context length is about generation, not embedding quality.</div></li>
+      <li data-correct="false"><span class="opt">Any model — they're all equivalent.</span>
+        <div class="why">Retrieval quality varies a lot between embedding models.</div></li>
+    </ul>
+  </div>
+
 
   <div class="box practice">
     <div class="box-label">Practice</div>
