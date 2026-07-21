@@ -176,11 +176,12 @@ pre .n  { color: #fcd34d; }                        /* number/const */
 pre .f  { color: #7dd3fc; }                        /* function */
 pre .o  { color: #f0abfc; }                        /* operator/punct accent */
 .code-label {
-  display: flex; align-items: center; gap: 8px; margin: 18px 0 -6px;
+  display: flex; align-items: center; gap: 8px; margin: 20px 0 10px;
   font-size: 12.5px; font-weight: 600; color: var(--muted);
 }
 .code-label .dot { width: 8px; height: 8px; border-radius: 50%; background: #34d399; }
 .code-label .fname { font-family: var(--mono); color: var(--ink-soft); }
+.code-label + pre { margin-top: 0; }
 
 /* ---------- Callouts ---------- */
 .box {
@@ -305,14 +306,14 @@ details .sol-body, details .dd-body { padding: 2px 16px 16px; border-top: 1px so
   border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface);
   padding: 18px; margin: 22px 0; box-shadow: var(--shadow);
 }
-.demo .demo-head { display: flex; align-items: center; gap: 9px; margin-bottom: 4px; }
-.demo .demo-head .tag {
+.demo .demo-head, figure.diagram .demo-head { display: flex; align-items: center; gap: 9px; margin-bottom: 10px; }
+.demo .demo-head .tag, figure.diagram .demo-head .tag {
   font-size: 11.5px; font-weight: 750; text-transform: uppercase; letter-spacing: .05em;
   color: #fff; background: var(--accent); padding: 3px 9px; border-radius: 999px;
 }
-.demo .demo-head h4 { margin: 0; font-size: 16px; font-weight: 700; }
-.demo .demo-hint { font-size: 14px; color: var(--muted); margin: 4px 0 14px; }
-.demo label { font-size: 13.5px; font-weight: 600; color: var(--ink-soft); display: block; margin: 10px 0 5px; }
+.demo .demo-head h4, figure.diagram .demo-head h4 { margin: 0; font-size: 16px; font-weight: 700; }
+.demo .demo-hint, figure.diagram .demo-hint { font-size: 14px; color: var(--muted); margin: 6px 0 16px; }
+.demo label { font-size: 13.5px; font-weight: 600; color: var(--ink-soft); display: block; margin: 14px 0 8px; }
 .demo input[type=text], .demo textarea, .demo select {
   width: 100%; font-family: var(--sans); font-size: 15px; color: var(--ink);
   border: 1.5px solid var(--line); border-radius: 9px; padding: 9px 11px; background: #fff;
@@ -846,7 +847,7 @@ body{ background: transparent; }
 
 .wg-lbl{
   font-size:.7rem; font-weight:800; letter-spacing:.09em; text-transform:uppercase;
-  color:var(--muted); margin-top:.15rem;
+  color:var(--muted); margin:.15rem 0 .5rem;
 }
 .wg-note{ font-size:.85rem; line-height:1.6; color:var(--muted); margin:.25rem 0 0; }
 .wg-out{ display:flex; flex-direction:column; gap:.7rem; }
@@ -952,7 +953,7 @@ body{ background: transparent; }
 .vl-speed b{ color:var(--accent); font-variant-numeric:tabular-nums; }
 .vl-speed input[type=range]{ width:104px; accent-color:var(--accent); }
 
-.vl-input-row{ display:flex; flex-direction:column; gap:.32rem; margin-bottom:.9rem; }
+.vl-input-row{ display:flex; flex-direction:column; gap:.5rem; margin-bottom:1rem; }
 .vl-input-row label{ font-size:.7rem; font-weight:800; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); }
 .vl-input-row input{
   width:100%; box-sizing:border-box; font-family:var(--font-body); font-size:15px;

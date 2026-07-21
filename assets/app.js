@@ -36,13 +36,13 @@
   }
   /* ---- interactive labs (mounted per data-lab attribute) ---- */
   if (!document.getElementById("age-labs")) {
-    var ls = document.createElement("script"); ls.id = "age-labs"; ls.src = link("assets/labs.js?v=18");
+    var ls = document.createElement("script"); ls.id = "age-labs"; ls.src = link("assets/labs.js?v=19");
     document.head.appendChild(ls);
-    var ws = document.createElement("script"); ws.id = "age-widgets"; ws.src = link("assets/widgets.js?v=18");
+    var ws = document.createElement("script"); ws.id = "age-widgets"; ws.src = link("assets/widgets.js?v=19");
     document.head.appendChild(ws);
-    var gs = document.createElement("script"); gs.id = "age-glossary"; gs.src = link("assets/glossary.js?v=18");
+    var gs = document.createElement("script"); gs.id = "age-glossary"; gs.src = link("assets/glossary.js?v=19");
     document.head.appendChild(gs);
-    var rs = document.createElement("script"); rs.id = "age-refs-js"; rs.src = link("assets/references.js?v=18");
+    var rs = document.createElement("script"); rs.id = "age-refs-js"; rs.src = link("assets/references.js?v=19");
     document.head.appendChild(rs);
   }
 
