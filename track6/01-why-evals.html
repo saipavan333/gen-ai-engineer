@@ -17,7 +17,7 @@
   <p>LLM outputs are non-deterministic and open-ended, so “does it work?” has no obvious answer. Without a way to measure quality, every change — a new prompt, a different model, a tweaked RAG setting — is a guess. You change something, eyeball a few outputs, decide it “seems better,” and ship. Then it silently regresses on cases you didn’t check. <span class="term">Evals</span> replace that vibe-driven loop with a measured one: define what “good” means, score it on a fixed set of examples, and only keep changes that move the number.</p>
 
   <figure class="diagram">
-    <img src="../assets/diagrams/t6-why-evals.svg" alt="Evals turn 'I think it's better' into 'it is better'. Loop: Change something (prompt, model, RAG) → Run evals (score on golden set) → Better? (compare to baseline) → yes: Ship it; no: Revert (loops back). Without evals, every change is a guess; with them, improvement becomes a measurable loop.">
+    <img src="../assets/diagrams/t6-why-evals.svg?v=2" alt="Evals turn 'I think it's better' into 'it is better'. Loop: Change something (prompt, model, RAG) → Run evals (score on golden set) → Better? (compare to baseline) → yes: Ship it; no: Revert (loops back). Without evals, every change is a guess; with them, improvement becomes a measurable loop.">
     <figcaption>The eval-driven loop. Every change is scored against a baseline; you ship only what measurably improves, and revert what doesn’t. This is the difference between engineering and guessing.</figcaption>
   </figure>
 

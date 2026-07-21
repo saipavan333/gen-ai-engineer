@@ -17,7 +17,7 @@
   <p>A complete RAG system: ingest your documents, answer questions grounded in them with citations, abstain when the answer isn’t there, and <em>measure</em> retrieval and answer quality. Everything uses the free stack from this course — <strong>Ollama</strong> (local LLM), <strong>sentence-transformers / Chroma</strong> (embeddings + vector DB) — so it costs $0 and runs on your machine or free Colab.</p>
 
   <figure class="diagram">
-    <img src="../assets/diagrams/t3-recap.svg" alt="Production RAG end to end: Knowledge base (documents chunked, embedded, vector index, built offline once); per query: Query → Embed + retrieve → Rerank → Grounded prompt → LLM → Cited answer. Index once; per query embed, retrieve, rerank, ground, generate with citations.">
+    <img src="../assets/diagrams/t3-recap.svg?v=2" alt="Production RAG end to end: Knowledge base (documents chunked, embedded, vector index, built offline once); per query: Query → Embed + retrieve → Rerank → Grounded prompt → LLM → Cited answer. Index once; per query embed, retrieve, rerank, ground, generate with citations.">
     <figcaption>The architecture you’re implementing. You built up every box across Track 3; now you assemble them into one running system.</figcaption>
   </figure>
 

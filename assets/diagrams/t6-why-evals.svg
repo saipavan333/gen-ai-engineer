@@ -42,7 +42,7 @@
 <polygon points="498.0,142.0 486.0,146.8 486.0,137.2" fill="#475569"/>
 <line x1="650" y1="128" x2="709.6778971137276" y2="103.42674824728866" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/>
 <polygon points="718.0,100.0 711.0,106.8 708.3,100.1" fill="#16a34a"/>
-<text x="688" y="110" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#15803d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">yes</text>
+<text x="688" y="96" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#15803d" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">yes</text>
 <line x1="650" y1="156" x2="709.2996529492464" y2="171.69696695715345" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
 <polygon points="718.0,174.0 708.4,175.2 710.2,168.2" fill="#dc2626"/>
 <text x="688" y="184" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="10.5" fill="#b91c1c" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">no</text>

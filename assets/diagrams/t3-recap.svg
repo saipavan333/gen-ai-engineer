@@ -45,6 +45,6 @@
 <polygon points="738.0,228.0 750.0,223.2 750.0,232.8" fill="#475569"/>
 <line x1="230" y1="196" x2="294.0734585291833" y2="122.7731902523619" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
 <polygon points="300.0,116.0 296.8,125.1 291.4,120.4" fill="#2563eb"/>
-<text x="250" y="160" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#2563eb" text-anchor="start" font-weight="bold" dominant-baseline="middle" xml:space="preserve">read</text>
+<text x="248" y="150" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#2563eb" text-anchor="end" font-weight="bold" dominant-baseline="middle" xml:space="preserve">read</text>
 <text x="450" y="286" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold" dominant-baseline="middle" xml:space="preserve">Index once; per query: embed → retrieve → rerank → ground → generate with citations.</text>
 </svg>

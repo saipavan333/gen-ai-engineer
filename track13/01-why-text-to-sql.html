@@ -18,7 +18,7 @@
   <p>This is enormous because it applies almost everywhere: analytics assistants, internal “chat with your database” tools, customer-facing reporting, and BI copilots are among the most-funded, most-built GenAI products right now. And — importantly for you — it’s a problem where <strong>knowing databases is the hard part</strong>, not knowing the LLM. That’s your home field.</p>
 
   <figure class="diagram">
-    <img src="../assets/diagrams/t13-textsql-flow.svg" alt="Text-to-SQL flow: a plain-English question goes to an LLM that has the schema, which writes SQL; the SQL runs read-only on the database; results are turned into a worded answer. On an error, the database's error message is sent back so the model self-corrects.">
+    <img src="../assets/diagrams/t13-textsql-flow.svg?v=2" alt="Text-to-SQL flow: a plain-English question goes to an LLM that has the schema, which writes SQL; the SQL runs read-only on the database; results are turned into a worded answer. On an error, the database's error message is sent back so the model self-corrects.">
     <figcaption>The core loop: question → SQL (using the schema) → safe run → answer, with errors looping back for a self-correction.</figcaption>
   </figure>
 

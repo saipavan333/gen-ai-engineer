@@ -18,7 +18,7 @@
   <p>This is precisely the <span class="term">agent loop</span> (ReAct) from Track&nbsp;4: act (run the SQL), observe (the result or the error), and decide (answer, or revise and retry). The tool here is your safe read-only query runner; the observation is either rows or an error string.</p>
 
   <figure class="diagram">
-    <img src="../assets/diagrams/t13-textsql-flow.svg" alt="The text-to-SQL loop with self-correction: question plus schema to the LLM, which writes SQL that runs read-only on the database; on an error, the database's error message is sent back to the model so it revises the query and retries, before producing the worded answer.">
+    <img src="../assets/diagrams/t13-textsql-flow.svg?v=2" alt="The text-to-SQL loop with self-correction: question plus schema to the LLM, which writes SQL that runs read-only on the database; on an error, the database's error message is sent back to the model so it revises the query and retries, before producing the worded answer.">
     <figcaption>The self-correction loop: a failed run feeds its error back so the model revises — bounded by a small retry limit.</figcaption>
   </figure>
 
