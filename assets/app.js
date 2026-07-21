@@ -36,10 +36,12 @@
   }
   /* ---- interactive labs (mounted per data-lab attribute) ---- */
   if (!document.getElementById("age-labs")) {
-    var ls = document.createElement("script"); ls.id = "age-labs"; ls.src = link("assets/labs.js?v=15");
+    var ls = document.createElement("script"); ls.id = "age-labs"; ls.src = link("assets/labs.js?v=16");
     document.head.appendChild(ls);
-    var ws = document.createElement("script"); ws.id = "age-widgets"; ws.src = link("assets/widgets.js?v=15");
+    var ws = document.createElement("script"); ws.id = "age-widgets"; ws.src = link("assets/widgets.js?v=16");
     document.head.appendChild(ws);
+    var gs = document.createElement("script"); gs.id = "age-glossary"; gs.src = link("assets/glossary.js?v=16");
+    document.head.appendChild(gs);
   }
 
   /* ---- progress (saved on this device) ---- */
@@ -323,4 +325,49 @@
   }
 
   function scrollTopOnLoad() { if (!window.location.hash) window.scrollTo(0, 0); }
+
+  /* ---- glossary: click any .term to see its definition ---- */
+  function normTerm(s) {
+    return s.toLowerCase()
+      .replace(/&amp;/g, "&").replace(/&#39;|&rsquo;|&lsquo;/g, "'").replace(/&quot;|&ldquo;|&rdquo;/g, '"')
+      .replace(/[‘’]/g, "'").replace(/[“”]/g, '"')
+      .replace(/^["']+|["']+$/g, "").replace(/\s+/g, " ").trim();
+  }
+  function defFor(text) {
+    var G = window.AGE_GLOSSARY; if (!G) return null;
+    var k = normTerm(text);
+    if (G[k]) return G[k];
+    if (k.charAt(k.length - 1) === "s" && G[k.slice(0, -1)]) return G[k.slice(0, -1)];
+    if (G[k + "s"]) return G[k + "s"];
+    return null;
+  }
+  function setupGlossary() {
+    if (document.getElementById("age-termpop")) return;
+    var pop = el("div", "term-pop"); pop.id = "age-termpop"; pop.style.display = "none";
+    pop.innerHTML = '<span class="tp-term"></span><span class="tp-def"></span><button class="tp-x" aria-label="close">&times;</button>';
+    document.body.appendChild(pop);
+    var open = false;
+    function hide() { pop.style.display = "none"; open = false; }
+    function show(term) {
+      var def = defFor(term.textContent);
+      if (!def) return;
+      pop.querySelector(".tp-term").textContent = term.textContent;
+      pop.querySelector(".tp-def").textContent = def;
+      pop.style.display = "block"; pop.style.visibility = "hidden";
+      var r = term.getBoundingClientRect(), pw = pop.offsetWidth, ph = pop.offsetHeight;
+      var left = Math.min(Math.max(8, r.left + r.width / 2 - pw / 2), window.innerWidth - pw - 8);
+      var top = r.bottom + 8; if (top + ph > window.innerHeight - 8 && r.top - ph - 8 > 0) top = r.top - ph - 8;
+      pop.style.left = (left + window.scrollX) + "px"; pop.style.top = (top + window.scrollY) + "px";
+      pop.style.visibility = "visible"; open = true;
+    }
+    document.addEventListener("click", function (e) {
+      var t = e.target.closest && e.target.closest(".term");
+      if (t) { e.preventDefault(); if (open && pop._for === t) { hide(); } else { show(t); pop._for = t; } return; }
+      if (open && !e.target.closest("#age-termpop")) hide();
+    });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && open) hide(); });
+    pop.querySelector(".tp-x").addEventListener("click", hide);
+    window.addEventListener("scroll", function () { if (open) hide(); }, { passive: true });
+  }
+  setupGlossary();
 })();

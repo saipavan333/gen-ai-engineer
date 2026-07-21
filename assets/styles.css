@@ -154,7 +154,7 @@ main.lesson { max-width: var(--maxw); margin: 0 auto; padding: 40px 0 24px; }
 hr.sep { border: none; border-top: 1px solid var(--line); margin: 40px 0; }
 
 /* term: first-use definitions */
-.term { font-weight: 700; color: var(--accent-deep); border-bottom: 1.5px dotted var(--accent); cursor: help; }
+.term { font-weight: 700; color: var(--accent-deep); border-bottom: 1.5px dotted var(--accent); cursor: pointer; }
 
 /* ---------- Code ---------- */
 code {
@@ -1178,3 +1178,25 @@ body{ background: transparent; }
   .ms-rung-head{ flex-direction:column; gap:.2rem; }
 }
 .hdr-mastery{ white-space:nowrap; }
+
+/* ==================== GLOSSARY POPOVER ==================== */
+.term-pop{
+  position:absolute; z-index:200; max-width:320px; width:max-content;
+  padding:12px 14px 12px 15px; border-radius:12px;
+  background:var(--surface-2, #1c2230); color:var(--ink);
+  border:1px solid color-mix(in srgb, var(--accent, #818cf8) 40%, var(--line));
+  box-shadow:0 12px 34px rgba(0,0,0,.4);
+  font-family:var(--font-body); animation:tpIn .13s ease both;
+}
+@keyframes tpIn{ from{ opacity:0; transform:translateY(-4px); } to{ opacity:1; transform:none; } }
+.term-pop .tp-term{
+  display:block; font-family:var(--font-display, var(--font-body)); font-weight:700;
+  font-size:.92rem; color:var(--accent-deep, #a5b4fc); margin-bottom:.3rem; padding-right:16px; letter-spacing:-.01em;
+}
+.term-pop .tp-def{ display:block; font-size:.86rem; line-height:1.55; color:var(--ink-soft); }
+.term-pop .tp-x{
+  position:absolute; top:6px; right:8px; border:none; background:none; cursor:pointer;
+  color:var(--muted); font-size:17px; line-height:1; padding:2px; border-radius:4px;
+}
+.term-pop .tp-x:hover{ color:var(--ink); background:color-mix(in srgb, var(--fg) 10%, transparent); }
+@media (max-width:560px){ .term-pop{ max-width:min(320px, calc(100vw - 24px)); } }
