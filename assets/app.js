@@ -44,6 +44,8 @@
     document.head.appendChild(gs);
     var rs = document.createElement("script"); rs.id = "age-refs-js"; rs.src = link("assets/references.js?v=20");
     document.head.appendChild(rs);
+    var acss = document.createElement("link"); acss.rel = "stylesheet"; acss.href = link("assets/gd-assistant.css?v=20"); document.head.appendChild(acss);
+    var ajs = document.createElement("script"); ajs.id = "age-assistant"; ajs.defer = true; ajs.src = link("assets/gd-assistant.js?v=20"); document.head.appendChild(ajs);
   }
 
   /* ---- progress (saved on this device) ---- */
