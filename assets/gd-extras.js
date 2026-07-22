@@ -99,6 +99,21 @@ function injectByline(){
   var f=document.createElement("footer"); f.className="gdx-credit";
   f.innerHTML='<span class="gdx-sig">Built by <b>U E Sai Pavan Vamshi Krishna</b></span>';
   document.body.appendChild(f);
+  alignFooterToContent(f);   /* on sidebar layouts, keep the centered credit under the content column, not the whole viewport */
+}
+/* The footer sits at body level (full viewport width). When a fixed side-nav pushes the
+   content into a right-hand column, pad the footer so its centered text lines up with that
+   column instead of the whole page. Self-correcting: no side-nav offset => no padding.
+   Recomputes on resize so it collapses cleanly to full width on mobile. */
+function alignFooterToContent(f){
+  function apply(){
+    f.style.paddingLeft="";
+    var col=document.querySelector(".main"); if(!col)return;
+    var delta=Math.round(col.getBoundingClientRect().left - f.getBoundingClientRect().left);
+    if(delta>24) f.style.paddingLeft=delta+"px";
+  }
+  apply();
+  var t; window.addEventListener("resize",function(){clearTimeout(t);t=setTimeout(apply,150);});
 }
 
 /* ---------- tasteful page effects (only when motion is allowed; content stays visible otherwise) ---------- */
@@ -135,6 +150,10 @@ function injectResume(){
   var a=document.createElement("a"); a.className="gdx-resume"; a.href=d.u;
   a.innerHTML='<span class="gdx-resume-ic">▸</span><span class="gdx-resume-tx"><b>Resume where you left off</b><span>'+esc(d.t||"Continue the course")+'</span></span><span class="gdx-resume-go">Continue →</span>';
   main.insertBefore(a, main.firstChild);
+  /* If the top bar is taken out of normal flow (position:absolute/fixed, e.g. a transparent
+     overlay bar), it renders on top of this card. Drop the card below it so they don't collide. */
+  var bar=document.querySelector(".topbar, header.site-header, .site-header, header.masthead");
+  if(bar){ var p=getComputedStyle(bar).position; if(p==="absolute"||p==="fixed") a.style.marginTop=((bar.getBoundingClientRect().height||56)+10)+"px"; }
 }
 
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot);else boot();
