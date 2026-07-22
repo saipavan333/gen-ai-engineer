@@ -36,18 +36,18 @@
   }
   /* ---- interactive labs (mounted per data-lab attribute) ---- */
   if (!document.getElementById("age-labs")) {
-    var ls = document.createElement("script"); ls.id = "age-labs"; ls.src = link("assets/labs.js?v=21");
+    var ls = document.createElement("script"); ls.id = "age-labs"; ls.src = link("assets/labs.js?v=22");
     document.head.appendChild(ls);
-    var ws = document.createElement("script"); ws.id = "age-widgets"; ws.src = link("assets/widgets.js?v=21");
+    var ws = document.createElement("script"); ws.id = "age-widgets"; ws.src = link("assets/widgets.js?v=22");
     document.head.appendChild(ws);
-    var gs = document.createElement("script"); gs.id = "age-glossary"; gs.src = link("assets/glossary.js?v=21");
+    var gs = document.createElement("script"); gs.id = "age-glossary"; gs.src = link("assets/glossary.js?v=22");
     document.head.appendChild(gs);
-    var rs = document.createElement("script"); rs.id = "age-refs-js"; rs.src = link("assets/references.js?v=21");
+    var rs = document.createElement("script"); rs.id = "age-refs-js"; rs.src = link("assets/references.js?v=22");
     document.head.appendChild(rs);
-    var acss = document.createElement("link"); acss.rel = "stylesheet"; acss.href = link("assets/gd-assistant.css?v=21"); document.head.appendChild(acss);
-    var ajs = document.createElement("script"); ajs.id = "age-assistant"; ajs.defer = true; ajs.src = link("assets/gd-assistant.js?v=21"); document.head.appendChild(ajs);
-    var xcss = document.createElement("link"); xcss.rel = "stylesheet"; xcss.href = link("assets/gd-extras.css?v=21"); document.head.appendChild(xcss);
-    var xjs = document.createElement("script"); xjs.id = "age-extras"; xjs.defer = true; xjs.src = link("assets/gd-extras.js?v=21"); document.head.appendChild(xjs);
+    var acss = document.createElement("link"); acss.rel = "stylesheet"; acss.href = link("assets/gd-assistant.css?v=22"); document.head.appendChild(acss);
+    var ajs = document.createElement("script"); ajs.id = "age-assistant"; ajs.defer = true; ajs.src = link("assets/gd-assistant.js?v=22"); document.head.appendChild(ajs);
+    var xcss = document.createElement("link"); xcss.rel = "stylesheet"; xcss.href = link("assets/gd-extras.css?v=22"); document.head.appendChild(xcss);
+    var xjs = document.createElement("script"); xjs.id = "age-extras"; xjs.defer = true; xjs.src = link("assets/gd-extras.js?v=22"); document.head.appendChild(xjs);
   }
 
   /* ---- progress (saved on this device) ---- */

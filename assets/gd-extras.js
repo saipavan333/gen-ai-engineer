@@ -22,10 +22,19 @@ function isLesson(){return !!document.querySelector("article.content, main.lesso
 function boot(){
   injectA11y();
   recordNav();
+  injectTopByline();
   injectByline();
   runEffects();
   injectBack();
   if(isHome) injectResume();
+}
+
+/* ---------- creator byline at the top (slim ribbon, every page) ---------- */
+function injectTopByline(){
+  if(document.querySelector(".gdx-topcredit"))return;
+  var b=document.createElement("div"); b.className="gdx-topcredit";
+  b.innerHTML='<span class="gdx-sig">Built by <b>U E Sai Pavan Vamshi Krishna</b></span>';
+  document.body.insertBefore(b, document.body.firstChild);
 }
 
 /* ---------- accessibility: skip link, main landmark, labelled diagrams ---------- */
