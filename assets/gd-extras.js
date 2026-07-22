@@ -11,27 +11,53 @@ function reduce(){return !!(window.matchMedia&&window.matchMedia("(prefers-reduc
 function esc(s){var d=document.createElement("div");d.textContent=(s==null?"":String(s));return d.innerHTML;}
 function sameOrigin(u){try{return new URL(u,location.href).origin===location.origin}catch(e){return false}}
 var inLessons=/\/lessons\//.test(location.pathname);
-var isHome=/(^|\/)(index\.html)?$/.test(location.pathname) || document.body.getAttribute("data-page")==="home";
+var isHome=/(^|\/)(index\.html)?$/.test(location.pathname) || document.body.getAttribute("data-page")==="home" || /(^|\s)home(\s|$)/.test(document.body.className||"");
 
 function pageTitle(){
-  var h=document.querySelector("main.lesson h1, article.content h1, .lesson-head h1, main h1, h1");
+  var h=document.querySelector("main.content h1, main.lesson h1, article.content h1, .lesson-title, .lesson-head h1, main h1, h1");
   return ((h&&h.textContent)||document.title||"").replace(/\s*·.*$/,"").replace(/\s+/g," ").trim();
 }
-function isLesson(){return !!document.querySelector("article.content, main.lesson");}   /* real lesson on any course */
+function isLesson(){return !isHome && !!document.querySelector("article.content, main.lesson, main.content");}   /* real lesson on any course */
 
 function boot(){
   injectA11y();
   recordNav();
-  injectTopByline();
+  mountTopCredit();
   injectByline();
   runEffects();
   injectBack();
   if(isHome) injectResume();
 }
 
-/* ---------- creator byline at the top (slim ribbon, every page) ---------- */
+/* ---------- creator byline at the top ----------
+   Blend the credit INTO the course's own header/top bar (so it reads as part of
+   the banner, adapting to each course's UI) rather than a separate strip above it.
+   Headers are often built by the course's own JS, so we wait for one to appear;
+   only if a page truly has no top bar do we fall back to the slim ribbon. */
+var HEADER_SEL="header.site-header, .site-header, .topbar, header.masthead, .masthead, header.site-head, header.app-header";
+function headerEl(){
+  var list=document.querySelectorAll(HEADER_SEL);
+  for(var i=0;i<list.length;i++){ var h=list[i]; if(h.offsetParent!==null || h.getClientRects().length) return h; }
+  return list[0]||null;
+}
+function mountTopCredit(){
+  var h=headerEl(); if(h){ injectHeaderCredit(h); return; }
+  var done=false;
+  function finish(hdr){ if(done)return; done=true; try{mo.disconnect()}catch(e){} if(hdr)injectHeaderCredit(hdr); else injectTopByline(); }
+  var mo=new MutationObserver(function(){ var hh=headerEl(); if(hh)finish(hh); });
+  try{ mo.observe(document.documentElement,{childList:true,subtree:true}); }catch(e){ injectTopByline(); return; }
+  setTimeout(function(){ finish(headerEl()); }, 4000);   /* no header ever appeared → ribbon fallback */
+}
+/* credit that lives inside the existing header bar (right-aligned via CSS margin) */
+function injectHeaderCredit(h){
+  if(!h || document.querySelector(".gdx-headcredit, .gdx-topcredit"))return;
+  var s=document.createElement("span"); s.className="gdx-headcredit";
+  s.innerHTML='<span class="gdx-sig">Built by <b>U E Sai Pavan Vamshi Krishna</b></span>';
+  h.appendChild(s);
+}
+/* fallback only: a slim ribbon for pages with no top bar at all */
 function injectTopByline(){
-  if(document.querySelector(".gdx-topcredit"))return;
+  if(document.querySelector(".gdx-topcredit, .gdx-headcredit"))return;
   var b=document.createElement("div"); b.className="gdx-topcredit";
   b.innerHTML='<span class="gdx-sig">Built by <b>U E Sai Pavan Vamshi Krishna</b></span>';
   document.body.insertBefore(b, document.body.firstChild);
@@ -39,7 +65,7 @@ function injectTopByline(){
 
 /* ---------- accessibility: skip link, main landmark, labelled diagrams ---------- */
 function injectA11y(){
-  var main=document.querySelector("article.content")||document.querySelector("main.lesson")||document.querySelector(".main")||document.querySelector(".home-wrap")||document.querySelector("main")||document.querySelector(".wrap");
+  var main=document.querySelector("article.content")||document.querySelector("main.lesson")||document.querySelector("main.content")||document.querySelector(".main")||document.querySelector(".home-wrap")||document.querySelector("main")||document.querySelector(".wrap");
   if(main){
     if(!main.id) main.id="gdx-main";
     if(!document.querySelector("main, [role=main]")) main.setAttribute("role","main");
@@ -80,7 +106,7 @@ function runEffects(){
   if(reduce())return;
   document.documentElement.classList.add("gdx-anim");   /* entrance = CSS opacity keyframe (always ends visible) */
   if(!("IntersectionObserver" in window))return;
-  var sel="article.content > h2, article.content > figure, article.content > .keypoints, article.content > .quiz, article.content > details, main.lesson > h2, main.lesson > figure, main.lesson > .box, .track-card, .lab-card, .p-item, .home-wrap section";
+  var sel="article.content > h2, article.content > figure, article.content > .keypoints, article.content > .quiz, article.content > details, main.lesson > h2, main.lesson > figure, main.lesson > .box, main.content > h2, main.content > figure, main.content > p.lesson-lede, .track-card, .lab-card, .p-item, .home-wrap section";
   var els=[].slice.call(document.querySelectorAll(sel));
   if(!els.length)return;
   els.forEach(function(el){el.classList.add("gdx-reveal");});
