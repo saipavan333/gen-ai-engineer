@@ -4,7 +4,8 @@
 "use strict";
 if(window.__gdxLoaded)return; window.__gdxLoaded=true;
 
-var LAST="gdx_last_v1", TRAIL="gdx_trail_v1";
+var NS=(location.pathname.split("/").filter(Boolean)[0]||"root");
+var LAST="gdx_last_v1_"+NS, TRAIL="gdx_trail_v1_"+NS;
 function jget(store,k,d){try{return JSON.parse(store.getItem(k))||d}catch(e){return d}}
 function jset(store,k,v){try{store.setItem(k,JSON.stringify(v))}catch(e){}}
 function reduce(){return !!(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches);}
