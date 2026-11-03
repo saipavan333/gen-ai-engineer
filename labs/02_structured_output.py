@@ -14,7 +14,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, ValidationError
 
-from common import chat, check_ollama, header
+from common import chat, check_ollama, header, rate
 
 check_ollama()
 
@@ -134,8 +134,12 @@ for i, (t, g) in enumerate(zip(parsed, GOLD)):
 print(f"  category accuracy: {right}/{len(GOLD)}")
 
 header("Summary")
-print(f"  vague-prompt valid:       {ok_a2}/4")
-print(f"  prompt-only valid:        {ok_a}/{len(EMAILS)}")
-print(f"  schema-constrained valid: {ok_b}/{len(EMAILS)}")
+print(f"  vague-prompt valid:       {rate(ok_a2, 4)}")
+print(f"  prompt-only valid:        {rate(ok_a, len(EMAILS))}")
+print(f"  schema-constrained valid: {rate(ok_b, len(EMAILS))}")
+print(f"  category accuracy (gold): {rate(right, len(GOLD))}")
+if ok_a == ok_b:
+    print("  On this model and these 8 emails a clear prompt already gives valid JSON every time, so the schema shows")
+    print("  NO measurable advantage here. Its value is the guarantee on the inputs you have not tested yet.")
 print("  Look: constrained decoding guarantees the SHAPE. It does not guarantee the CONTENT is right;")
 print("  that is what the business-rule check + retry (and your eval set) are for.")

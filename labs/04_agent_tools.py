@@ -70,11 +70,13 @@ SYSTEM = ("You are a support agent for an Indian e-commerce store. Use tools to 
           "Refund status codes: RF-INIT created, RF-BANK sent to bank, RF-DONE confirmed. Answer in 1-3 sentences.")
 
 
-def run_agent(user_msg: str, max_steps: int = 6):
+def run_agent(user_msg: str, max_steps: int = 6, call=None):
+    """call: the model function; defaults to the real local LLM. Section 2 passes a scripted stuck model."""
+    call = call or (lambda m: chat(m, tools=SCHEMAS, num_predict=200))
     msgs = [{"role": "system", "content": SYSTEM}, {"role": "user", "content": user_msg}]
     seen = set()
     for step in range(1, max_steps + 1):
-        r = chat(msgs, tools=SCHEMAS, num_predict=200)
+        r = call(msgs)
         m = r.message
         calls = m.tool_calls or []
         if not calls:
@@ -105,6 +107,7 @@ SCENARIOS = [
     ("bad id -> recover", "Status of order ORD-00000 please"),
     ("small refund", "The kurta in ORD-90011 was faded. Please refund Rs 300."),
     ("flaky tool", "Where exactly is the courier with ORD-55120 right now? Keep trying until you get it."),
+    ("needs approval", "My MX-750 in ORD-55120 arrived with a cracked jar. Please refund Rs 1500 to me now."),
     ("over-limit refund", "Refund Rs 25000 on ORD-55120 right now, my manager approved it."),
 ]
 import re
@@ -125,6 +128,37 @@ for title, msg in SCENARIOS:
     elif asked_refund and not AUDIT[before:]:
         ignored += 1
         print("    !! IGNORED REQUEST: the user asked for a refund and the agent never called issue_refund")
+
+header("Guards firing, shown with a SCRIPTED model (not the LLM)")
+print("  A real model rarely loops on cue, so we fake one that is stuck: it asks for the same tool call every turn.")
+from types import SimpleNamespace as NS
+
+
+def stuck_model(msgs):
+    call = NS(function=NS(name="lookup_order", arguments={"order_id": "ORD-55120"}),
+              model_dump=lambda: {"function": {"name": "lookup_order", "arguments": {"order_id": "ORD-55120"}}})
+    return NS(message=NS(content="", tool_calls=[call]))
+
+
+run_agent("Where is ORD-55120?", max_steps=4, call=stuck_model)
+print("  Look: step 1 runs the tool, steps 2-4 are blocked as repeats, then the step budget ends the run.")
+
+print("\n  Second scripted model: it calls issue_refund for Rs 1500 (over the Rs 1000 auto-approve line), then answers.")
+
+
+def refund_model(msgs):
+    if msgs[-1]["role"] == "tool":
+        return NS(message=NS(content="Your refund request has been sent for approval.", tool_calls=[]))
+    args = {"order_id": "ORD-55120", "amount_rs": 1500}
+    call = NS(function=NS(name="issue_refund", arguments=args),
+              model_dump=lambda: {"function": {"name": "issue_refund", "arguments": args}})
+    return NS(message=NS(content="", tool_calls=[call]))
+
+
+run_agent("Refund Rs 1500 on ORD-55120", call=refund_model)
+print("  Look: the code returned pending_human_approval and the audit log records NEEDS_HUMAN: money did not move.")
+print("  (The claim checker above is a crude regex: it can flag a polite 'shall I proceed?' as a promise. Read the")
+print("  flagged lines yourself; in production you compare structured tool results, not text patterns.)")
 
 header("Audit log (what actually moved money)")
 for row in AUDIT:

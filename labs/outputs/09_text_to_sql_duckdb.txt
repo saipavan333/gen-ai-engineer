@@ -2,6 +2,7 @@
 ======================================================================
 1) The safety gate on hostile or sloppy SQL (no LLM involved)
 ======================================================================
+  row cap survives a trailing comment: 1000 rows (cap 1000)
   SELECT 1                                             -> (True, 'ok')
   DELETE FROM orders                                   -> (False, 'DELETE is not allowed (SELECT only)')
   SELECT 1; DROP TABLE orders                          -> (False, '2 statements; exactly one is allowed')

@@ -3,7 +3,7 @@
 A) Prompt-only JSON (no schema enforcement)
 ======================================================================
   #0: valid  '{"category":"delivery", "order_id":"ORD-55120", "urgency":"high", "summary":"Order not rec'
-  #1: valid  '{"category":"billing", "order_id":"ORD-77301", "urgency":"high", "summary":"Charged twice,'
+  #1: valid  '{"category": "billing", "order_id": "ORD-77301", "urgency": "high", "summary": "Charged tw'
   #2: valid  '{"category":"technical", "order_id":null, "urgency":"high", "summary":"App crashes on paym'
   #3: valid  '{"category":"refund", "order_id":"ORD-10442", "urgency":"high", "summary":"Refund request '
   #4: valid  '{"category":"delivery", "order_id":null, "urgency":"low", "summary":"Delivery guy polite."'
@@ -45,8 +45,11 @@ D) Content check against gold labels (shape-valid does not mean right)
 ======================================================================
 Summary
 ======================================================================
-  vague-prompt valid:       0/4
-  prompt-only valid:        8/8
-  schema-constrained valid: 8/8
+  vague-prompt valid:       0/4 = 0% (95% CI 0%-49%)
+  prompt-only valid:        8/8 = 100% (95% CI 68%-100%)
+  schema-constrained valid: 8/8 = 100% (95% CI 68%-100%)
+  category accuracy (gold): 7/8 = 88% (95% CI 53%-98%)
+  On this model and these 8 emails a clear prompt already gives valid JSON every time, so the schema shows
+  NO measurable advantage here. Its value is the guarantee on the inputs you have not tested yet.
   Look: constrained decoding guarantees the SHAPE. It does not guarantee the CONTENT is right;
   that is what the business-rule check + retry (and your eval set) are for.

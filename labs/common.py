@@ -67,6 +67,23 @@ def embed(texts):
     return np.asarray(v, dtype="float32")
 
 
+def wilson(k: int, n: int, z: float = 1.96):
+    """95% Wilson score interval for k successes out of n. Small samples give wide intervals; print them."""
+    if n == 0:
+        return (0.0, 1.0)
+    p = k / n
+    d = 1 + z * z / n
+    c = (p + z * z / (2 * n)) / d
+    h = z * ((p * (1 - p) / n + z * z / (4 * n * n)) ** 0.5) / d
+    return (max(0.0, c - h), min(1.0, c + h))
+
+
+def rate(k: int, n: int) -> str:
+    """'4/5 = 80% (95% CI 38%-96%)' - always show n and the interval next to a rate."""
+    lo, hi = wilson(k, n)
+    return f"{k}/{n} = {k / n:.0%} (95% CI {lo:.0%}-{hi:.0%})" if n else "0/0"
+
+
 class Timer:
     def __enter__(self):
         self.t0 = time.perf_counter()

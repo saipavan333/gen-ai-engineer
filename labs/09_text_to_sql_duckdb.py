@@ -64,7 +64,9 @@ def run_sql(sql: str, limit: int = 1000):
     ok, why = gate(sql)
     if not ok:
         raise PermissionError(why)
-    return ro.execute(f"SELECT * FROM ({sql.rstrip(';')}) AS q LIMIT {limit}").fetchall()
+    body = sql.strip().rstrip(";")
+    # newlines matter: a trailing "-- comment" in model SQL would otherwise swallow ") AS q LIMIT ..."
+    return ro.execute(f"SELECT * FROM (\n{body}\n) AS q LIMIT {limit}").fetchall()
 
 
 def clean(sql: str) -> str:
@@ -110,6 +112,7 @@ def same(a, b):
 
 
 header("1) The safety gate on hostile or sloppy SQL (no LLM involved)")
+print(f"  row cap survives a trailing comment: {len(run_sql('SELECT * FROM orders -- all of them'))} rows (cap 1000)")
 for sql in ["SELECT 1", "DELETE FROM orders", "SELECT 1; DROP TABLE orders",
             "WITH x AS (SELECT * FROM orders) SELECT COUNT(*) FROM x", "UPDATE customers SET is_plus = true"]:
     print(f"  {sql[:50]:52s} -> {gate(sql)}")

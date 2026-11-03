@@ -10,7 +10,7 @@ this lab makes the trade - accuracy vs tokens - visible on a model you can run y
 import re
 from collections import Counter
 
-from common import chat, check_ollama, header
+from common import chat, check_ollama, header, rate
 
 check_ollama()
 
@@ -50,7 +50,9 @@ for n in (1, 3, 5, 7):
         top = votes.most_common(1)[0][0] if votes else None
         correct += top is not None and abs(top - gold) < 1e-6
     avg_tokens = sum(tokens.values()) / len(PROBLEMS) / N_MAX * n
-    print(f"  N={n}: accuracy {correct}/{len(PROBLEMS)}   ~{avg_tokens:,.0f} output tokens per problem")
+    print(f"  N={n}: accuracy {rate(correct, len(PROBLEMS))}   ~{avg_tokens:,.0f} output tokens per problem")
+print("  With n=5 problems these intervals are far too wide to compare N values: treat this as a demo of the")
+print("  mechanism (and of a vote going wrong), not a measured accuracy curve. Real curves need hundreds of problems.")
 print("  Look: more samples cost tokens linearly; accuracy gains are bumpy and flatten out. A vote only helps")
 print("  when the model is right more often than any single wrong answer. Measure the curve on YOUR task before")
 print("  paying for N=7 (or for a reasoning model's long thinking) in production.")

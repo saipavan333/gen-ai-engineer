@@ -12,7 +12,7 @@ import re
 
 from pydantic import BaseModel
 
-from common import ask, chat, check_ollama, header
+from common import ask, chat, check_ollama, header, rate
 from raglib import GROUNDED_SYSTEM, Index, build_chunks, grounded_prompt, load_kb
 
 check_ollama()
@@ -143,13 +143,14 @@ for q, good, bad in PAIRS:
     consistent += good_first == good_second
     correct_both += good_first and good_second
     print(f"  {q:35s} order1 picked {picks[0]}, order2 picked {picks[1]}  -> {'consistent' if good_first == good_second else 'FLIPPED'}")
-print(f"  consistent verdicts: {consistent}/{len(PAIRS)}   correct in both orders: {correct_both}/{len(PAIRS)}")
+print(f"  consistent verdicts: {rate(consistent, len(PAIRS))}   correct in both orders: {rate(correct_both, len(PAIRS))}")
+print("  n=5 pairs is a demo, not a measurement of this judge's bias: the intervals span most of 0-100%.")
 print("  Look: with no reference passage in the judge prompt, the judge has to guess which number is right.")
 print("  Always judge both orders and count a win only when both agree; give the judge the reference.")
 
 header("6) How wide is the error bar on 12 cases?")
 p = sum(c["correct"] for c in per["v1"]) / len(GOLD)
-half = 1.96 * math.sqrt(p * (1 - p) / len(GOLD)) if 0 < p < 1 else float("nan")
-print(f"  v1 accuracy {p:.0%}, 95% normal-approx interval +/- {half:.0%}  (n={len(GOLD)})")
+k1 = sum(c["correct"] for c in per["v1"])
+print(f"  v1 accuracy {rate(k1, len(GOLD))}  (Wilson interval)")
 print("  At n=400 the same accuracy would be roughly +/- " + (f"{1.96 * math.sqrt(p * (1 - p) / 400):.1%}" if 0 < p < 1 else "n/a"))
 print(json.dumps({"v1_correct": round(p, 3), "regressions": len(regressions), "judge_consistent": consistent}))

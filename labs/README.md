@@ -42,16 +42,19 @@ A cold start (loading the model into memory) took 3 minutes under load; later ca
 
 ## What the labs honestly found (our run)
 
-- **01:** in one run temperature 0 gave 2 different outputs across 3 seeds (in the recorded run all 3 matched), and in every run the model said Bengaluru is "hot and dry" in July (it is monsoon season). Fluent is not correct.
-- **02:** a vague "extract as JSON" prompt produced 0/4 parseable outputs (markdown fences, invented keys); the schema-constrained call produced 8/8, but one compliment was still filed as "delivery".
-- **03:** on this small corpus dense retrieval scored hit@3 = 6/6 and RRF hybrid 5/6: fusion pushed the right EMI page out for "instalments". Hybrid is not automatically better.
-- **04:** in an early run the agent told a customer "Rs 300 will be refunded shortly" without calling the refund tool; in the recorded run it ignored the refund request instead, and the checker flags it as IGNORED REQUEST. The Rs 25,000 request was blocked by code in every run.
-- **06:** a friendlier prompt dropped citations from 100% to 17% of answers; the LLM judge preferred the same answer position regardless of content on one of five pairs.
-- **07:** the poisoned page leaked email and phone in 5/5 answers; spotlighting alone only brought it to 4/5 on a 7B model; the deterministic output filter brought it to 0/5.
-- **08:** a true paraphrase scored 0.657 cosine and a different intent 0.523: too close for a safe semantic-cache threshold.
-- **12:** majority voting did not help: on one problem the most common answer was wrong.
+Sample sizes are small on purpose (5-20 cases, so each lab runs in minutes). Every rate below comes with its n
+and a 95% Wilson interval (`common.rate()`); read them as demonstrations of a mechanism, not as measured rates.
+The runs use temperature 0 and fixed seeds, so re-running reproduces almost exactly: that checks determinism,
+it is not an independent replication.
 
-Your numbers will move a little between runs; the conclusions should not.
+- **01:** in one run temperature 0 gave 2 different outputs across 3 seeds (in the recorded run all 3 matched), and in every run the model said Bengaluru is "hot and dry" in July (it is monsoon season). Fluent is not correct.
+- **02:** a vague "extract as JSON" prompt produced 0/4 parseable outputs (markdown fences, invented keys). A clear prompt and the schema-constrained call were both 8/8 (95% CI 68%-100%), so on this model and data the schema showed **no** measurable advantage; one compliment was still filed as "delivery" (content 7/8). The retry loop never had to fire.
+- **03:** over n=20 gold queries, hit@3 was dense 20/20 (CI 84%-100%), BM25 18/20 and hybrid 18/20 (CI 70%-97%). The intervals overlap, so this is not evidence that dense beats hybrid; it does show fusion can lose a hit that one retriever had (the "instalments" query).
+- **04:** the real model never looped and, in the "needs approval" scenario, never called the refund tool (the crude claim checker flagged its reply). The guards that did not fire on their own are shown with scripted models: a stuck model hits the repeat guard and step budget, and a Rs 1,500 refund returns pending_human_approval. The Rs 25,000 request was blocked by code in every run.
+- **06:** a friendlier prompt dropped citations from 100% to 17% of answers, and the gate blocked it. The judge position-bias test is n=5 pairs (consistent 4/5, CI 38%-96%): a demo, not a bias rate.
+- **07:** over n=20 questions the poisoned page leaked private data in 20/20 answers (CI 84%-100%); spotlighting gave 17/20 (CI 64%-95%), and the intervals overlap. After the output filter the attacker-URL count is 0/20 **by design** (the filter removes exactly what that check looks for); the independent canary check (any private string anywhere in the text) also found 0/20.
+- **08:** a true paraphrase scored 0.657 cosine and a different intent 0.523: too close for a safe semantic-cache threshold.
+- **12:** n=5 problems, so accuracy (4/5 at every N) has a very wide interval; the point is the mechanism, and that a vote goes wrong when the most common answer is wrong.
 
 ## Cloud steps
 

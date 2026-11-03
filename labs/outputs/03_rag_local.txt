@@ -17,7 +17,7 @@
 ======================================================================
 2) Index: MiniLM embeddings stored in DuckDB and FAISS
 ======================================================================
-  14 docs -> 14 chunks, dim=384, built in 151.8s
+  14 docs -> 14 chunks, dim=384, built in 61.3s
 
 ======================================================================
 3) Dense retrieval: DuckDB SQL and FAISS must agree (same cosine, two engines)
@@ -36,7 +36,26 @@
   'my parcel came broken, what do I do'         gold=ret-02   dense=#1  bm25=#1  hybrid=#1
   'is there a fee if my cart is small'          gold=ship-01  dense=#1  bm25=#1  hybrid=#1
   'someone on the phone asked for my OTP'       gold=acc-01   dense=#1  bm25=#1  hybrid=#1
-  hit@3 over 6 queries: dense=6/6, bm25=5/6, hybrid=5/6
+  'how fast is express delivery to Pune'        gold=ship-02  dense=#1  bm25=#1  hybrid=#1
+  'I want to change where my parcel goes'       gold=ship-03  dense=#1  bm25=#1  hybrid=#1
+  'can I send back innerwear'                   gold=ret-01   dense=#1  bm25=#1  hybrid=#1
+  'my card refund is taking long'               gold=ref-01   dense=#1  bm25=#2  hybrid=#1
+  'what is RF-DONE'                             gold=ref-02   dense=#1  bm25=#1  hybrid=#1
+  'double payment on one order'                 gold=pay-01   dense=#1  bm25=#1  hybrid=#1
+  'how much does Plus cost per year'            gold=sub-01   dense=#1  bm25=#1  hybrid=#1
+  'how do I close my account'                   gold=acc-02   dense=#1  bm25=#1  hybrid=#1
+  'where do I download my invoice for a warranty claim' gold=sell-01  dense=#2  bm25=#1  hybrid=#1
+  'app keeps crashing on payment page'          gold=app-01   dense=#1  bm25=#1  hybrid=#1
+  'does express shipping work for a sofa'       gold=ship-02  dense=#1  bm25=#1  hybrid=#1
+  'refund for cash on delivery order'           gold=ref-01   dense=#1  bm25=miss  hybrid=miss
+  'cancel my membership and get money back'     gold=sub-01   dense=#1  bm25=#1  hybrid=#1
+  'photos needed for a broken item'             gold=ret-02   dense=#1  bm25=#1  hybrid=#1
+  hit@3 over n=20 queries (95% Wilson intervals):
+    dense   20/20 = 100% (95% CI 84%-100%)
+    bm25    18/20 = 90% (95% CI 70%-97%)
+    hybrid  18/20 = 90% (95% CI 70%-97%)
+  With n=20 the intervals overlap heavily: a difference of one or two queries is NOT evidence that one
+  method is better. You need hundreds of labelled queries for that (lab 06 shows how the interval shrinks).
   Look: BM25 misses the paraphrase ('instalments' never appears; the doc says 'EMI'). Fusion is not free:
   RRF gives a noisy BM25 list the same vote as a good dense list, so it can push a right answer
   out of the top 3. On this tiny corpus dense already wins; hybrid earns its keep on big corpora full of
@@ -59,3 +78,4 @@
 
   Look: every factual sentence carries an id you can check; the off-topic question is refused
   cheaply by the retrieval threshold, so the model never gets a chance to make something up.
+

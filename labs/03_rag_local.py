@@ -9,7 +9,7 @@ what changes at scale is the index type (HNSW/IVF instead of exact search) and t
 """
 import re
 
-from common import Timer, ask, check_ollama, header
+from common import Timer, ask, check_ollama, header, rate
 from raglib import GROUNDED_SYSTEM, Index, build_chunks, chunk_fixed, chunk_sentences, grounded_prompt, load_kb
 
 check_ollama()
@@ -40,7 +40,14 @@ print(f"  same top-3: {[a for a, _ in d1] == [b for b, _ in d2]}")
 header("4) Dense vs BM25 vs hybrid (RRF), scored against the doc a human says is right")
 CASES = [("what does RF-BANK mean", "ref-02"), ("warranty on MX-750", "sell-01"),
          ("can I pay in instalments", "pay-02"), ("my parcel came broken, what do I do", "ret-02"),
-         ("is there a fee if my cart is small", "ship-01"), ("someone on the phone asked for my OTP", "acc-01")]
+         ("is there a fee if my cart is small", "ship-01"), ("someone on the phone asked for my OTP", "acc-01"),
+         ("how fast is express delivery to Pune", "ship-02"), ("I want to change where my parcel goes", "ship-03"),
+         ("can I send back innerwear", "ret-01"), ("my card refund is taking long", "ref-01"),
+         ("what is RF-DONE", "ref-02"), ("double payment on one order", "pay-01"),
+         ("how much does Plus cost per year", "sub-01"), ("how do I close my account", "acc-02"),
+         ("where do I download my invoice for a warranty claim", "sell-01"), ("app keeps crashing on payment page", "app-01"),
+         ("does express shipping work for a sofa", "ship-02"), ("refund for cash on delivery order", "ref-01"),
+         ("cancel my membership and get money back", "sub-01"), ("photos needed for a broken item", "ret-02")]
 tally = {"dense": 0, "bm25": 0, "hybrid": 0}
 for q, gold in CASES:
     row = {"dense": idx.dense_faiss(q, 3), "bm25": idx.lexical(q, 3), "hybrid": idx.hybrid(q, 3)}
@@ -51,7 +58,11 @@ for q, gold in CASES:
         tally[name] += hit
         marks.append(f"{name}={'#' + str(docs.index(gold) + 1) if hit else 'miss'}")
     print(f"  {q!r:45s} gold={gold:8s} " + "  ".join(marks))
-print(f"  hit@3 over {len(CASES)} queries: " + ", ".join(f"{k}={v}/{len(CASES)}" for k, v in tally.items()))
+print(f"  hit@3 over n={len(CASES)} queries (95% Wilson intervals):")
+for k, v in tally.items():
+    print(f"    {k:7s} {rate(v, len(CASES))}")
+print("  With n=20 the intervals overlap heavily: a difference of one or two queries is NOT evidence that one")
+print("  method is better. You need hundreds of labelled queries for that (lab 06 shows how the interval shrinks).")
 print("  Look: BM25 misses the paraphrase ('instalments' never appears; the doc says 'EMI'). Fusion is not free:")
 print("  RRF gives a noisy BM25 list the same vote as a good dense list, so it can push a right answer")
 print("  out of the top 3. On this tiny corpus dense already wins; hybrid earns its keep on big corpora full of")
