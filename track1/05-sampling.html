@@ -88,6 +88,12 @@ prompt <span class="o">=</span> <span class="s">"The best way to learn programmi
     <p><strong>Don’t fight on two fronts:</strong> people often crank temperature <em>and</em> tighten top-p at once and get confused. Start by tuning temperature alone; reach for top-p/top-k only when you specifically want to cap the weird tail while keeping some randomness.</p>
   </div>
 
+  <div class="box warn">
+    <div class="box-label">2026 reality check: some hosted APIs took the knobs away</div>
+    <p>Everything above is how decoding works, and you still control it fully on <strong>local models</strong> (Ollama, Hugging Face <code>transformers</code>). Some hosted APIs no longer let you turn these dials. On the Anthropic API, version <code>2026-10-21</code> returns a <strong>400 error</strong> if a request sends <code>temperature</code>, <code>top_p</code> or <code>top_k</code>, even at the default value, and Claude 4.7 and later models already accept only the defaults (<a href="https://platform.claude.com/docs/en/api/migration-2026-10-21">Anthropic API migration guide, 2026-10-21</a>).</p>
+    <p>So on hosted reasoning models, “set temperature 0” is not your consistency tool. You get reliable output from <strong>structured outputs</strong> (a schema the reply must match, Lesson 2.4), <strong>evals</strong> that catch drift (Track 6), and <strong>prompt design</strong> that leaves little room to wander. The table above still holds for local models and for hosted models that still expose the knobs.</p>
+  </div>
+
   <div class="box key">
     <div class="box-label">Key points</div>
     <ul>

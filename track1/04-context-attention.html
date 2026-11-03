@@ -23,7 +23,7 @@
   </div>
 
   <figure class="diagram">
-    <img src="../assets/diagrams/t1-context-window.svg" alt="The context window shown as a frame over the most recent tokens in a stream. Earlier tokens to the left are dimmed and labeled 'no longer visible'. The window is labeled 'context window (today: ~8K to 200K+ tokens)'. Caption: your prompt, the whole conversation, and the model's own reply all share this one budget.">
+    <img src="../assets/diagrams/t1-context-window.svg" alt="The context window shown as a frame over the most recent tokens in a stream. Earlier tokens to the left are dimmed and labeled 'no longer visible'. The window is labeled 'context window (today: ~8K up to 1M tokens)'. Caption: your prompt, the whole conversation, and the model's own reply all share this one budget.">
     <figcaption>The window slides over the token stream. Anything that doesn’t fit is invisible to the model — it cannot use what it cannot see.</figcaption>
   </figure>
 
@@ -33,7 +33,7 @@
   </div>
 
   <h2>The catch with “just use a huge window”</h2>
-  <p>Windows have grown enormously (some models reach hundreds of thousands of tokens). That’s great, but bigger isn’t free:</p>
+  <p>Windows have grown enormously: current frontier models offer a 1M-token window (<a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic models overview, Nov 2026</a>). That’s great, but bigger isn’t free:</p>
   <ul>
     <li><strong>Cost.</strong> You pay per token. Stuffing 100K tokens of documents into every request is expensive — often needlessly, when only a paragraph was relevant.</li>
     <li><strong>Latency.</strong> More tokens to process means slower responses (we’ll quantify this in Track 8).</li>

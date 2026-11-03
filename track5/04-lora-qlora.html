@@ -50,7 +50,7 @@ trainer <span class="o">=</span> <span class="f">SFTTrainer</span>(model<span cl
         args<span class="o">=</span><span class="f">SFTConfig</span>(output_dir<span class="o">=</span><span class="s">"out"</span>, num_train_epochs<span class="o">=</span><span class="n">2</span>,
               per_device_train_batch_size<span class="o">=</span><span class="n">2</span>, learning_rate<span class="o">=</span><span class="n">2e-4</span>))
 trainer.<span class="f">train</span>()
-trainer.<span class="f">save_model</span>(<span class="s">"my-adapter"</span>)               <span class="c"># a few MB — the whole "fine-tune"</span></code></pre>
+trainer.<span class="f">save_model</span>(<span class="s">"my-adapter"</span>)               <span class="c"># tens of MB (~8.8M LoRA params for 0.5B at r=16, per its <a href="https://huggingface.co/Qwen/Qwen2.5-0.5B/blob/main/config.json">config</a>), not GB — the whole "fine-tune"</span></code></pre>
     <p>The output isn’t a new multi-gigabyte model — it’s a tiny adapter you load on top of the base at inference. That’s why teams can serve many fine-tunes cheaply: one base model, many small adapters swapped in as needed.</p>
   </div>
 

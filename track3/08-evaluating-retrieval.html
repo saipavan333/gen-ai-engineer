@@ -24,7 +24,7 @@
 
   <div class="box concept">
     <div class="box-label">Concept</div>
-    <p>A <span class="term">golden set</span> is a small labeled dataset of queries paired with the chunk(s) that should be retrieved (and ideally a correct answer). On it you compute <span class="term">retrieval metrics</span>: <span class="term">recall@k</span> (did the relevant chunk appear in the top k?), <span class="term">precision@k</span> (what fraction of the top k were relevant?), and <span class="term">MRR</span> (mean reciprocal rank — how high up the first relevant chunk was, rewarding good ordering). For the answer you add <span class="term">end-to-end metrics</span>: faithfulness (supported by context?) and answer correctness/relevance.</p>
+    <p>A <span class="term">golden set</span> is a small labeled dataset of queries paired with the chunk(s) that should be retrieved (and ideally a correct answer). On it you compute <span class="term">retrieval metrics</span>: <span class="term">recall@k</span> (what fraction of the relevant chunks appeared in the top k? when each query has one relevant chunk this is the same as hit rate@k, "did it appear at all", which is what the harness below computes), <span class="term">precision@k</span> (what fraction of the top k were relevant?), and <span class="term">MRR</span> (mean reciprocal rank — how high up the first relevant chunk was, rewarding good ordering). For the answer you add <span class="term">end-to-end metrics</span>: faithfulness (supported by context?) and answer correctness/relevance.</p>
   </div>
 
   <h2>Play with the metrics</h2>

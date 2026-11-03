@@ -60,7 +60,7 @@ GOLDEN <span class="o">=</span> [
 
 <span class="c"># For fuzzy quality, assert on an LLM-judge score threshold instead of a keyword:</span>
 <span class="c">#   assert judge(query, reference, out)["score"] &gt;= 4</span></code></pre>
-    <p>Now a prompt change that breaks the “abstain” case turns the build red with “Regressed on: Do you ship to Antarctica?” — caught in CI, before any user sees it. Two tricks keep LLM tests stable: use <strong>temperature 0</strong> and assert on <strong>structure/keywords or judge thresholds</strong>, not exact wording.</p>
+    <p>Now a prompt change that breaks the “abstain” case turns the build red with “Regressed on: Do you ship to Antarctica?” — caught in CI, before any user sees it. Two tricks keep LLM tests stable: use <strong>temperature 0</strong> where the API still accepts it (Anthropic’s <a href="https://platform.claude.com/docs/en/api/migration-2026-10-21">API version 2026-10-21</a> rejects temperature with a 400, so there you rely on robust assertions and repeated runs) and assert on <strong>structure/keywords or judge thresholds</strong>, not exact wording.</p>
   </div>
 
   <div class="box key">

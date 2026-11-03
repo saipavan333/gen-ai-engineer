@@ -24,7 +24,7 @@
   </figure>
 
   <h2>What runs in CI</h2>
-  <p>Two kinds of checks. <strong>Deterministic tests</strong> — fast, exact assertions run at temperature&nbsp;0: does the endpoint return valid JSON with the required fields? does a known question retrieve the known-correct chunk? does the SQL agent produce a runnable query for a fixed question? These behave like normal unit tests. <strong>The eval</strong> — your golden set of question→expected pairs scored for quality (exact match, or LLM-as-judge for open-ended answers), producing a single number you can gate on. You wire both into a CI workflow that fails if either the tests fail or the eval score falls below your bar.</p>
+  <p>Two kinds of checks. <strong>Deterministic tests</strong> — fast, exact assertions on structure, run at temperature&nbsp;0 where your model still allows it (Claude 4.7+ models accept only default sampling, and API version 2026-10-21 rejects <code>temperature</code> with a 400, <a href="https://platform.claude.com/docs/en/api/migration-2026-10-21" target="_blank" rel="noopener">Anthropic</a>; there you pin the model ID and assert on shape, not exact wording): does the endpoint return valid JSON with the required fields? does a known question retrieve the known-correct chunk? does the SQL agent produce a runnable query for a fixed question? These behave like normal unit tests. <strong>The eval</strong> — your golden set of question→expected pairs scored for quality (exact match, or LLM-as-judge for open-ended answers), producing a single number you can gate on. You wire both into a CI workflow that fails if either the tests fail or the eval score falls below your bar.</p>
   <div class="code-label"><span class="dot"></span><span class="fname">.github/workflows/ci.yml</span></div>
 <pre><code>name: ci
 on: [push, pull_request]
@@ -54,7 +54,7 @@ jobs:
     <ul>
       <li>LLM regressions are <strong>silent</strong> — no error, just worse output — so ordinary tests miss them.</li>
       <li>Add an <strong>eval gate</strong>: CI runs your golden set and <strong>blocks the change if the score drops below a threshold</strong>.</li>
-      <li>Run <strong>deterministic tests</strong> (temp 0: valid JSON, right retrieval) <em>and</em> the <strong>quality eval</strong>.</li>
+      <li>Run <strong>deterministic tests</strong> (temp 0 where allowed, else pinned model + structural asserts: valid JSON, right retrieval) <em>and</em> the <strong>quality eval</strong>.</li>
       <li>The mechanism is a <strong>non-zero exit code</strong> on a failing eval — that’s what fails the build.</li>
       <li><strong>Prompts live in version control</strong>, so every prompt change is reviewed and eval-gated like code.</li>
     </ul>

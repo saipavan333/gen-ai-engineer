@@ -45,7 +45,8 @@
     <span class="c"># open the DB in read-only mode — a second, hard guarantee</span>
     con <span class="o">=</span> sqlite3.<span class="f">connect</span>(<span class="s">f"file:</span>{db_path}<span class="s">?mode=ro"</span>, uri<span class="o">=</span><span class="k">True</span>)
     <span class="k">try</span>:
-        rows <span class="o">=</span> con.<span class="f">execute</span>(q <span class="o">+</span> <span class="s">" LIMIT 1000"</span>).<span class="f">fetchall</span>()   <span class="c"># bound the result</span>
+        <span class="c"># wrap, don't append: "... LIMIT 3" + " LIMIT 1000" is a syntax error</span>
+        rows <span class="o">=</span> con.<span class="f">execute</span>(<span class="s">f"SELECT * FROM (</span>{q}<span class="s">) LIMIT 1000"</span>).<span class="f">fetchall</span>()   <span class="c"># bound the result</span>
     <span class="k">finally</span>:
         con.<span class="f">close</span>()
     <span class="k">return</span> rows</code></pre>

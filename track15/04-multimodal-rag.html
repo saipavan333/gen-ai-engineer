@@ -26,7 +26,8 @@
   <p>The only genuinely new question is: how do you retrieve images by a text query? Two approaches, both free.</p>
   <p><strong>1 · Shared-space embeddings (CLIP).</strong> A model like <span class="term">CLIP</span> embeds images <em>and</em> text into the <em>same</em> vector space, so a text query and a matching image land near each other. You embed all your images once, then embed the query text and do the same cosine-similarity search as always — the image whose vector is closest wins. This is true image search: “a red running shoe” finds the photo even if no caption says those words.</p>
   <div class="code-label"><span class="dot"></span><span class="fname">clip_search.py</span></div>
-<pre><code><span class="k">from</span> sentence_transformers <span class="k">import</span> SentenceTransformer, util
+<pre><code><span class="k">from</span> PIL <span class="k">import</span> Image
+<span class="k">from</span> sentence_transformers <span class="k">import</span> SentenceTransformer, util
 model <span class="o">=</span> SentenceTransformer(<span class="s">"clip-ViT-B-32"</span>)     <span class="c"># open CLIP, free</span>
 
 img_vecs <span class="o">=</span> model.<span class="f">encode</span>([Image.<span class="f">open</span>(p) <span class="k">for</span> p <span class="k">in</span> image_paths])  <span class="c"># index images</span>

@@ -39,7 +39,7 @@
     <span class="k">return</span> <span class="s">"tie"</span>                            <span class="c"># disagreement = position bias, call it a tie</span></code></pre>
 
   <h2>3 · Respect the noise</h2>
-  <p>LLM outputs vary run to run, so a small score difference can be pure randomness. Before declaring a winner, take three precautions. <strong>Reduce noise</strong> where you can: fix the seed and use temperature&nbsp;0 for eval runs so results are reproducible. <strong>Use enough examples</strong>: a 2-point move on 50 questions is one or two answers flipping — well within noise — whereas the same gap over 500 questions is far more credible. And <strong>quantify uncertainty</strong>: report a confidence interval or run a simple significance check, and only call a change a win when the gap clearly exceeds run-to-run variation. “The number went up” is the beginning of an investigation, not the end of one.</p>
+  <p>LLM outputs vary run to run, so a small score difference can be pure randomness. Before declaring a winner, take three precautions. <strong>Reduce noise</strong> where you can: fix the seed and use temperature&nbsp;0 for eval runs so results are reproducible, on models that still let you (local Ollama does, through its <a href="https://docs.ollama.com/modelfile">seed and temperature options</a>). Hosted APIs are dropping this knob: Claude 4.7 and later accept only the default sampling, and Anthropic API version 2026-10-21 returns a 400 if you send temperature at all (<a href="https://platform.claude.com/docs/en/api/migration-2026-10-21">migration guide</a>). There you cut noise by running each case several times and averaging instead. <strong>Use enough examples</strong>: a 2-point move on 50 questions is one or two answers flipping — well within noise — whereas the same gap over 500 questions is far more credible. And <strong>quantify uncertainty</strong>: report a confidence interval or run a simple significance check, and only call a change a win when the gap clearly exceeds run-to-run variation. “The number went up” is the beginning of an investigation, not the end of one.</p>
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -47,7 +47,7 @@
       <li>An <strong>unvalidated judge is an unvalidated model</strong> — calibrate it against human labels (Cohen’s κ) before trusting it at scale.</li>
       <li>Judges have <strong>systematic biases</strong> (position, verbosity, self-preference); design around them.</li>
       <li><strong>Swap positions and average</strong>, and prefer <strong>pairwise</strong> over absolute scores, to get stable comparisons.</li>
-      <li>Respect <strong>run-to-run noise</strong>: fix the seed/temp&nbsp;0, use enough examples, and check the gap beats variation before declaring a winner.</li>
+      <li>Respect <strong>run-to-run noise</strong>: fix the seed/temp&nbsp;0 where the API allows it (else repeat runs), use enough examples, and check the gap beats variation before declaring a winner.</li>
       <li>Rigor in the measurement is what lets evals safely <strong>drive decisions</strong>.</li>
     </ul>
   </div>
