@@ -6,3 +6,7 @@ Thumbs.db
 # local backups and scratch copies
 *.backup.js
 *.bak
+
+# generated
+__pycache__/
+tools/check-report.json

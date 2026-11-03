@@ -1,0 +1,20 @@
+
+======================================================================
+1) Sample 7 chains per problem at temperature 0.8 (different seeds)
+======================================================================
+  P1 gold=348    answers=[348.0, None, 348.0, 348.0, 348.0, 348.0, None]
+  P2 gold=215    answers=[265.0, None, 215.0, 195.0, 195.0, 215.0, 195.0]
+  P3 gold=17     answers=[17.0, 17.0, 17.0, 17.0, 17.0, 17.0, 17.0]
+  P4 gold=540    answers=[540.0, 5.0, 540.0, 540.0, 540.0, 540.0, 540.0]
+  P5 gold=676.5  answers=[676.5, 676.5, 676.5, 676.5, 676.5, 676.5, 676.5]
+
+======================================================================
+2) Accuracy vs number of samples (majority vote over the first N)
+======================================================================
+  N=1: accuracy 4/5   ~200 output tokens per problem
+  N=3: accuracy 4/5   ~601 output tokens per problem
+  N=5: accuracy 4/5   ~1,002 output tokens per problem
+  N=7: accuracy 4/5   ~1,403 output tokens per problem
+  Look: more samples cost tokens linearly; accuracy gains are bumpy and flatten out. A vote only helps
+  when the model is right more often than any single wrong answer. Measure the curve on YOUR task before
+  paying for N=7 (or for a reasoning model's long thinking) in production.

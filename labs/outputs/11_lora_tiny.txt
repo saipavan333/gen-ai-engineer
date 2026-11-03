@@ -1,0 +1,28 @@
+
+======================================================================
+1) LoRA parameter math on the real Qwen2.5-7B config (from its config.json on Hugging Face)
+======================================================================
+  r=  8:   20,185,088 trainable params = 0.27% of 7.61B; adapter ~40 MB in bf16
+  r= 16:   40,370,176 trainable params = 0.53% of 7.61B; adapter ~81 MB in bf16
+  r= 64:  161,480,704 trainable params = 2.12% of 7.61B; adapter ~323 MB in bf16
+  Each adapted matrix W (d_in x d_out) gets A (d_in x r) and B (r x d_out): r*(d_in+d_out) new params.
+  Memory rule of thumb: full fine-tune in mixed precision with Adam needs weights+grads+optimizer state
+  (many bytes per parameter); LoRA needs those only for the adapter. QLoRA also stores the frozen base in 4-bit.
+
+======================================================================
+2) A real LoRA fine-tune on a tiny model (toy on purpose)
+======================================================================
+  base model: 798,848 params. Pre-training it on 'count UP' sequences (0123456789012...)
+  base loss  count-up=0.097   count-down=10.885  <- it never saw 'down'
+  LoRA r=8 on attention + MLP: trainable=65,536 of 864,384 (7.6%)
+    after   0 LoRA steps: count-down loss=10.878  count-up loss=0.098
+    after 100 LoRA steps: count-down loss=0.100  count-up loss=9.747
+    after 200 LoRA steps: count-down loss=0.098  count-up loss=10.912
+    after 300 LoRA steps: count-down loss=0.097  count-up loss=10.695
+  frozen base tensors changed during LoRA training: 0  (expect 0)
+  adapter switched OFF: count-up loss=0.098  count-down loss=10.882  <- the old skill is back: forgetting lived in the adapter, not the base
+  saved adapter: 266 KB  vs base model ~3120 KB in fp32
+  merge_and_unload: max logit difference after merging = 2.86e-06  (merged = same model, no adapter overhead)
+  Look: count-down loss falls while the base stays byte-identical. But count-up loss rose: with the adapter
+  on, the model forgot the old skill. That is why you eval BOTH the new task and the old ones (Lesson 5.6),
+  and why keeping adapters separate (swap or disable per task) is a real advantage of LoRA.
