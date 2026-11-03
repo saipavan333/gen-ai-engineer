@@ -57,7 +57,7 @@
       (<span class="k">SELECT</span> <span class="s">'How long do card refunds take?'</span> <span class="k">AS</span> content))),
   top_k =&gt; <span class="n">3</span>, distance_type =&gt; <span class="s">'COSINE'</span>);</code></pre>
     <p><strong>Step 4: generate a grounded answer.</strong> Concatenate the retrieved <code>content</code> into the prompt with an instruction to answer only from it and cite <code>chunk_id</code> (exactly the grounded prompt from Lesson 3.7), and pass it to <code>AI.GENERATE</code>. Use <code>output_schema</code> when you want typed fields back instead of prose.</p>
-    <p>Whether non-<code>content</code> columns such as <code>chunk_id</code> pass through the embedding function unchanged is worth confirming on your own data before you depend on it; it is the usual behaviour of BigQuery ML table functions.</p>
+    <p>Your other columns, such as <code>chunk_id</code>, come through: the docs say the function "returns the input table and the following columns" (<code>embedding</code>, plus <code>statistics</code> and <code>status</code> for text models), per the <a href="https://docs.cloud.google.com/bigquery/docs/reference/standard-sql/bigqueryml-syntax-ai-generate-embedding">AI.GENERATE_EMBEDDING reference</a>.</p>
   </div>
 <!-- shape:scale:start -->
   <div class="box example shape-scale">
@@ -150,6 +150,7 @@
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/10_ai_sql_udf.py</code></pre>
     <p><strong>What to look for:</strong> Section 3 embeds a column once and ranks rows with array_cosine_similarity in SQL: the same shape as AI.GENERATE_EMBEDDING into a stored column followed by VECTOR_SEARCH. Section 4 prints the BigQuery AI.GENERATE query to run on your own project. The lab does not exercise a real vector index; on 6 rows a scan is the right choice anyway.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>   (2, Decimal(&#x27;0.380&#x27;), &#x27;Jar lid cracked in a week, customer care never called back.&#x27;)

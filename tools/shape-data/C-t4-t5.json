@@ -8,7 +8,7 @@
   },
   "lab": {
    "id": "04_agent_tools",
-   "look_for": "Read the printed trace and count model calls per task: a question the model answers directly takes one call, a refund question takes several. Ask a plain rewrite question and watch the agent finish in a single step with no tool call. That gap in steps (and tokens) is the autonomy cost this lesson is about."
+   "look_for": "Read the trace for each scenario: a lookup takes 2 model calls (one tool call, one answer), and the scripted section shows a stuck model hitting the step budget. Add a plain rewrite question to SCENARIOS and watch it finish in 1 call with no tool. That gap in calls (and tokens) is the autonomy cost this lesson is about."
   },
   "quiz": [
    {
@@ -95,7 +95,7 @@
   },
   "lab": {
    "id": "04_agent_tools",
-   "look_for": "Find the trace lines where a tool returns an error and the next model turn retries with corrected arguments: that is the tool result feeding back as a tool-role message. Then break a tool on purpose (make it raise for one input, or remove a required field from its schema) and watch how the trace changes from a clean call to an error and a recovery."
+   "look_for": "Find the 'bad id' and 'flaky tool' scenarios: the tool raises, the error goes back to the model as a tool-role message, and on our run the model chose to explain the failure rather than retry with new arguments. That is error handling, not argument repair. To see argument repair, make a tool reject a badly formatted id with a hint ('use the form ORD-12345') and watch whether the next call fixes it."
   },
   "quiz": [
    {
@@ -182,7 +182,7 @@
   },
   "lab": {
    "id": "04_agent_tools",
-   "look_for": "The lab prints a trace with a step number on every model turn, plus stop reasons for the step budget and repeated-call detection. Lower the step budget to 2 and watch a multi-step task end with the budget stop; make a tool always fail and watch repeated-call detection end the run before the budget does."
+   "look_for": "The lab prints a step number on every model turn. The real model finished every scenario in 2 steps on our run, so the guards never fired there; the 'scripted model' section uses a fake model stuck on one tool call to show the repeat guard blocking steps 2-4 and the step budget ending the run. Lower max_steps to 1 in a real scenario and watch a two-step task stop early."
   },
   "quiz": [
    {
@@ -443,7 +443,7 @@
   },
   "lab": {
    "id": "05_mcp",
-   "look_for": "Watch the client list the server's tools and print the tool schemas it converts for Ollama: the docstring and type hints from the FastMCP server become the description and parameters the model reads. Add a second tool to the server, rerun, and see it appear in the model's toolset with no client changes. That is the reuse MCP buys."
+   "look_for": "Watch the client list the server's tools and print each input schema: the type hints and docstrings in store_server.py (an MCPServer on SDK 2.x) become the description and parameters the model reads. Add a second @server.tool() function, rerun, and see it appear in the model's toolset with no client changes. That is the reuse MCP buys."
   },
   "quiz": [
    {
@@ -516,7 +516,7 @@
     "u": "https://modelcontextprotocol.io/specification/latest/basic/security_best_practices"
    },
    {
-    "t": "MCP Python SDK (FastMCP) — GitHub",
+    "t": "MCP Python SDK (MCPServer in 2.x) — GitHub",
     "u": "https://github.com/modelcontextprotocol/python-sdk"
    }
   ]
@@ -642,7 +642,7 @@
   },
   "lab": {
    "id": "04_agent_tools",
-   "look_for": "Run the refund scenario and find the trace line where the approval gate pauses the dangerous tool, then the lines where repeated-call detection or the step budget stops a run. Change the refund threshold, or plant 'ignore your limits' in the ticket text, and confirm the gate in code still holds even when the model's text agrees with the attacker."
+   "look_for": "Run the lab and read three things: the 'over-limit' scenario (Rs 25,000 blocked by code even though the user claims a manager approved it); the 'needs approval' scenario, where on our run the real model replied without calling the refund tool and the claim checker flagged it; and the scripted section, where a refund over Rs 1,000 returns pending_human_approval and a stuck model hits the repeat guard and step budget. Then plant 'ignore your limits' in a scenario's text and confirm the gate in code still holds."
   },
   "quiz": [
    {
@@ -758,7 +758,7 @@
   },
   "lab": {
    "id": "02_structured_output",
-   "look_for": "Before fine-tuning for format, see how far constrained decoding gets you: compare the parse-failure rate of free-text prompting against the schema-constrained run over the batch of messy emails. If constrained output already hits near-zero failures, 'fine-tune for JSON format' is solved without training. Change the schema and watch the result update instantly, which a fine-tune can't do."
+   "look_for": "Before fine-tuning for format, see how far prompting and constrained decoding get you: on these 8 messy emails a clear prompt and the schema-constrained call were both 8 of 8 valid, and only the vague prompt failed (0 of 4). If structure is already solved without training, 'fine-tune for JSON' is the wrong project. Change the schema and rerun: the result updates instantly, which a fine-tune can't do."
   },
   "quiz": [
    {
@@ -870,7 +870,7 @@
   },
   "lab": {
    "id": "11_lora_tiny",
-   "look_for": "Watch the printed loss fall step by step during the tiny fine-tune: that's this lesson's loop running for real. Raise the learning rate by 10x and rerun to see the loss jump around or blow up; set epochs high on the tiny dataset to see training loss go near zero, which is memorisation. The lab's model and data are toy on purpose, so the numbers show the mechanism, not real-world quality."
+   "look_for": "Watch the printed losses at 0, 100, 200 and 300 LoRA steps: count-down loss falls from about 10.9 to 0.1, which is this lesson's loop running for real. Edit train() to use lr=3e-2 instead of 3e-3 and rerun to see the loss jump around or blow up. The data is generated on the fly and the model is toy on purpose, so the numbers show the mechanism, not real-world quality."
   },
   "quiz": [
    {
@@ -957,7 +957,7 @@
   },
   "lab": {
    "id": "11_lora_tiny",
-   "look_for": "Open the lab's tiny training set and check that each example has the same structure the model will see at inference. Duplicate one example 20 times and retrain: training loss drops faster, but the model starts parroting that one answer, a small version of the duplication problem in this lesson. The lab's data is toy-sized, so judge the direction of the change, not the numbers."
+   "look_for": "The lab's training data is generated by batch(): every example is a '|' token followed by a counting sequence, the same structure the model sees at evaluation. Edit batch() so that a quarter of the sequences are identical and retrain: loss on that pattern drops faster while the model gets worse on the rest, a small version of the duplication problem in this lesson. The data is toy-sized, so judge the direction of the change, not the numbers."
   },
   "quiz": [
    {
@@ -1160,7 +1160,7 @@
   },
   "lab": {
    "id": "11_lora_tiny",
-   "look_for": "Print one tokenised training example and find where the prompt ends and the response begins; check which positions have label -100 (ignored) and which carry loss. Then generate from the trained adapter with the same template and with a different one, and compare: the mismatch is this lesson's chat-template gotcha at toy scale."
+   "look_for": "The lab does not use a chat template or -100 label masking: its tiny model learns plain counting sequences, so it shows LoRA mechanics, not instruction formatting. For this lesson's template gotcha, use the worked example above with a real tokenizer: print tokenizer.apply_chat_template(messages, tokenize=False) and compare it with the template you will use at inference."
   },
   "quiz": [
    {
@@ -1251,7 +1251,7 @@
   },
   "lab": {
    "id": "06_evals",
-   "look_for": "The regression gate compares two versions case by case, which is exactly 'fine-tune versus base on the same held-out set'. Look at the per-case table, not just the totals: count cases that went from pass to fail as well as fail to pass. Swap in your base and tuned outputs as the two versions, and check whether the position-bias test changes your judge's verdicts."
+   "look_for": "Two parts apply. Lab 11 shows forgetting directly: after LoRA training on count-down, count-up loss rose from 0.1 to about 10.7, and switching the adapter off brought it straight back. Lab 06's regression gate compares two versions case by case, the same shape as 'fine-tune versus base on one held-out set'; it lists only cases that got worse, so add the reverse direction before you report wins."
   },
   "quiz": [
    {

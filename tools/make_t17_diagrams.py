@@ -72,5 +72,5 @@ flow("t17-snowflake.svg", "Snowflake Cortex: Cortex Search + AI_COMPLETE",
       ("Cortex Search service", ["CREATE ... ON text_col", "TARGET_LAG = '1 day'", "EMBEDDING_MODEL"], "concept"),
       ("Hybrid retrieval", ["vector + keyword", "+ semantic rerank", "filters on attributes"], "deep"),
       ("AI_COMPLETE", ["model, prompt", "response_format", "for structured output"], "key"),
-      ("Result", ["grounded answer", "role CORTEX_USER", "governs access"], "example")],
+      ("Result", ["grounded answer", "USE AI FUNCTIONS", "+ CORTEX_USER role"], "example")],
      "Needs your account: a Snowflake trial or paid account with Cortex available in your region. Model list changes; check the docs.")

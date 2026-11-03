@@ -99,7 +99,7 @@
   },
   "lab": {
    "id": "03_rag_local",
-   "look_for": "The lab chunks the same corpus two ways, fixed-size and sentence-aware with overlap, and prints the chunk counts. Pick one question whose answer sits across a sentence boundary and compare which chunking strategy retrieves it in the top-k. Then set overlap to 0 and rerun: watch the chunk count drop and, on boundary questions, the right chunk fall out of the results."
+   "look_for": "Section 1 chunks one refund policy two ways and prints both: fixed 12-word chunks split 'Card refunds take 5 to 7 business days' across two chunks, while sentence-aware chunks with one sentence of overlap keep it whole. The index in section 2 uses only the sentence-aware chunker. To compare retrieval, edit build_chunks in raglib.py (or set overlap_sentences=0 in chunk_sentences) and rerun section 4's gold queries."
   },
   "quiz": [
    {
@@ -186,7 +186,7 @@
   },
   "lab": {
    "id": "03_rag_local",
-   "look_for": "The lab embeds every chunk with all-MiniLM-L6-v2 and searches by cosine similarity in both DuckDB (array_cosine_similarity) and FAISS, and the two result lists should match. Look at the printed scores for a paraphrased question that shares no words with the answer: it should still rank first. Then, as an experiment, embed the queries with a different model while keeping the stored vectors: the rankings turn to noise, which is the number-one retrieval bug from this lesson."
+   "look_for": "Section 3 embeds a question with all-MiniLM-L6-v2 and prints the top-3 cosine scores from DuckDB (array_cosine_similarity) and FAISS side by side: identical, because cosine on unit vectors is a dot product. Section 4 scores 20 gold queries, several paraphrased with no shared words ('instalments' for EMI). As an experiment, embed the queries with a different model while keeping the stored vectors: the rankings turn to noise, which is the number-one retrieval bug from this lesson."
   },
   "quiz": [
    {
@@ -451,7 +451,7 @@
   },
   "lab": {
    "id": "03_rag_local",
-   "look_for": "The lab runs a hand-rolled BM25 and a dense search on the same chunks, then fuses them with RRF and prints all three rankings. Find a query with an exact token (a code, a product name) and note where the right chunk sits in dense, BM25 and fused lists. Then try a paraphrased question with no shared words: dense should win and BM25 miss. Change RRF's k from 60 to 5 and see how much the fused order shifts toward each list's top results."
+   "look_for": "Section 4 runs dense, hand-rolled BM25 and RRF hybrid on 20 gold queries and prints where the right document lands in each top 3, plus hit@3 with 95% intervals. On our run with n=20: dense 20/20, BM25 18/20 and hybrid 18/20. The 95% intervals overlap heavily (84-100% vs 70-97%), so this is not evidence that dense beats hybrid in general; it shows that fusion can lose a hit a good single retriever had. Change rrf_k in raglib.Index.hybrid from 60 to 5 and see how much the fused order shifts toward each list's top results."
   },
   "quiz": [
    {
@@ -629,7 +629,7 @@
   },
   "lab": {
    "id": "06_evals",
-   "look_for": "The lab computes recall@k, MRR and nDCG@k over a golden set and an LLM-as-judge faithfulness score, then runs a regression gate between two prompt versions. Check one query's metrics by hand against the printout using the formulas above. Then shrink k from 5 to 1 and watch recall@k fall while MRR stays the same (MRR only cares about the first hit). Finally, remove one label from the golden set: a correct chunk now counts as a miss, which shows how incomplete labels pull every metric down."
+   "look_for": "The lab computes recall@3, MRR and nDCG@3 on 10 answerable golden questions, an LLM-judge agreement count, and a per-case regression gate between two prompts. Check one query by hand with the formulas above. Then change k from 3 to 1 in metrics() and watch recall@k fall while MRR stays the same (MRR only cares about the first hit). Finally, remove one gold doc id: a correct chunk now counts as a miss, which shows how incomplete labels pull every metric down. With 12 cases, every number has a wide interval (section 6 prints it)."
   },
   "quiz": [
    {
@@ -836,7 +836,7 @@
   },
   "lab": {
    "id": "04_agent_tools",
-   "look_for": "The lab's agent loop has a step budget, repeated-call detection, tool-error recovery and a human-approval gate on the refund tool, and it prints a trace. Read the trace for one task and count steps, tool calls and errors: that is a trajectory. Then make a tool always fail and watch the recovery path and the step budget end the run gracefully. Lower the budget to 2 and see which tasks now escalate instead of finishing."
+   "look_for": "The lab's agent loop has a step budget, repeated-call detection, tool-error recovery, a code-enforced refund limit and a human-approval threshold (refunds over Rs 1,000 go to a queue), and it prints a trace. Read the flaky-courier scenario for error handling. On our run the real model never called the refund tool in the 'needs approval' scenario, so the 'scripted model' section shows the parts that did not fire on their own: a stuck model hitting the repeat guard and the step budget, and a model that requests a Rs 1,500 refund and gets pending_human_approval."
   },
   "quiz": [
    {
@@ -923,7 +923,7 @@
   },
   "lab": {
    "id": "06_evals",
-   "look_for": "The lab's position-bias test swaps the A/B order and counts how many verdicts flip; that flip rate is your judge's position bias in one number. The regression gate compares two prompt versions per case, so list the cases that flipped in each direction and run the McNemar arithmetic above on them. Also look at the LLM-as-judge faithfulness score: hand-label 20 of its verdicts yourself and compute kappa before you trust it."
+   "look_for": "The position-bias test judges 5 answer pairs in both orders and counts how often the verdict depends on order; with n=5 the printed 95% interval covers most of 0-100%, so treat it as a demo, not your judge's bias rate. The regression gate lists cases where v2 lost something v1 had (one direction only); add the reverse loop to get both directions and run the McNemar arithmetic above. The judge faithfulness check covers 12 answers: hand-label them yourself and compute kappa before you trust it."
   },
   "quiz": [
    {
@@ -1126,7 +1126,7 @@
   },
   "lab": {
    "id": "09_text_to_sql_duckdb",
-   "look_for": "Find where the lab builds the schema context for the prompt (schema grounding). Run the question set once as-is, then remove the column descriptions or sample values from the context and run again: execution accuracy should drop, typically on questions that depend on value formats or which column holds what. Put them back and add one few-shot example matching a failing question's pattern to see it recover."
+   "look_for": "Find SCHEMA in the lab: the tables, a comment on what is_plus means, the allowed status values, and a definition of revenue. Remove the status values and the revenue definition, rerun, and watch execution accuracy on the revenue questions. Put them back and add one few-shot example matching a failing question's pattern to see it recover. With 6 questions, one change is one question: read the cases, not the score."
   },
   "quiz": [
    {
@@ -1304,7 +1304,7 @@
   },
   "lab": {
    "id": "09_text_to_sql_duckdb",
-   "look_for": "The lab's self-correction loop feeds the SQL error back to the model and retries. Count, from its output, how many questions succeeded on the first try, how many needed a retry, and how many gave up. Then compare \"ran without error\" with the execution-accuracy score: the gap between them is the wrong-but-runs share that error feedback cannot fix. Try setting the retry cap to 1 to see the first-try rate on its own."
+   "look_for": "The lab's self-correction loop feeds the SQL error back to the model once (max_fixes=1). On our run one question needed a fix. Compare 'ran without error' with execution accuracy (5 of 6): the failing question ran fine but returned a different shape, so error feedback cannot catch it. Set max_fixes=0 to see the first-try rate on its own."
   },
   "quiz": [
    {

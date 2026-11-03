@@ -103,7 +103,10 @@ def render(e, n):
                 f'    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in '
                 f'<a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>\n'
                 f'<pre><code>python {path}</code></pre>\n'
-                f'    <p><strong>What to look for:</strong> {lab["look_for"]}</p>\n')
+                f'    <p><strong>What to look for:</strong> {lab["look_for"]}</p>\n'
+                f'    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes '
+                f'on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration '
+                f'of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>\n')
     if exc:
         lab_html += (f'    <details class="sol">\n      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>\n'
                      f'      <div class="sol-body"><pre><code>{exc}</code></pre>\n'

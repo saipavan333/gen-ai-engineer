@@ -91,7 +91,7 @@
   },
   "lab": {
    "id": "06_evals",
-   "look_for": "Open the golden set file the lab loads and see how each case carries its expected document IDs or answer. Add one edge case (an out-of-scope question with an 'abstain' expectation), rerun, and check that it shows up as its own line in the per-case results."
+   "look_for": "The golden set is the GOLD list at the top of labs/06_evals.py: 12 cases, each with expected doc ids and a must-contain fact, and 2 unanswerable cases that must be refused. Add one edge case of your own, rerun, and check it shows up in the per-case results. With 12 cases section 6 prints how wide the error bar is; that is the argument for growing the set."
   },
   "quiz": [
    {
@@ -427,7 +427,7 @@
   },
   "lab": {
    "id": "08_llmops",
-   "look_for": "Open the JSONL file of spans the lab writes. Each line has a trace ID, span name, start and end time, token counts and cost. Find the slowest span in a request and compare the semantic-cache hit and miss cases: the hit should show no LLM span and a much shorter total duration."
+   "look_for": "Open labs/outputs/traces.jsonl. Each line is one request: trace id, span name, model, prompt version and hash, token counts, cache status, semantic similarity, guard verdicts and latency in ms (no start/end timestamps or child spans). Compare a cache miss (about 6 s) with an exact-match hit (about 0.1 ms). On our run the semantic cache never hit at threshold 0.90; lower SemanticCache's threshold and check whether the new hits are the same intent."
   },
   "quiz": [
    {
@@ -514,7 +514,7 @@
   },
   "lab": {
    "id": "06_evals",
-   "look_for": "The last part of the lab is a regression gate: it runs two prompt versions over the same cases and reports, per case, pass to fail and fail to pass. Make the candidate prompt break one case on purpose and confirm the gate fails even though the average score barely moves."
+   "look_for": "The last part of the gate compares two prompt versions per case and prints every case where v2 lost correctness or citations. On our run v2 lost citations on almost every case while correctness barely moved, and the gate blocked it. Make the candidate prompt break one more case on purpose and confirm the gate fails even though the average barely moves."
   },
   "quiz": [
    {
@@ -601,7 +601,7 @@
   },
   "lab": {
    "id": "07_injection_exfiltration",
-   "look_for": "The lab plants an instruction inside a retrieved document, not in the user's message. Look at the first run with no defence: the attack enters through retrieval, which is the 'untrusted input' box in this lesson's diagram. Change which document is retrieved and see that the attack only works when the poisoned document reaches the prompt."
+   "look_for": "The lab passes a product page the attacker can edit straight into the prompt (standing in for a retrieved document); the attack is in the page, not in the user's message. Look at the no-defence row: the instruction arrives through untrusted content, the box in this lesson's diagram. Set the page to the clean version (page(False)) and confirm the attack disappears."
   },
   "quiz": [
    {
@@ -713,7 +713,7 @@
   },
   "lab": {
    "id": "07_injection_exfiltration",
-   "look_for": "Compare the three attack-success-rate numbers the lab prints: no defence, spotlighting or delimiting, then output URL allowlist plus tool permission check. Prompt-level defences should lower the rate but not to zero with qwen2.5:7b; the allowlist run should block the exfiltration URL even when the model still obeys the injection. Edit the poisoned document's wording to see how much the prompt-only number moves."
+   "look_for": "Compare the rows the lab prints over 20 questions, each with a 95% Wilson interval: no defence, spotlighting, and the output filter. The filter's URL-leak count is zero by design (it removes exactly what that check looks for), so read the independent canary column for whether private data still reached the user in another form. There is no tool or permission layer in this lab. Edit the poisoned text to see how much the prompt-only number moves."
   },
   "quiz": [
    {
@@ -945,7 +945,7 @@
   },
   "lab": {
    "id": "08_llmops",
-   "look_for": "The lab's input and output guardrails include a simple redaction step before text is logged to the JSONL traces. Send a request containing an email address and a card-like number and check what lands in the trace file. Then try a name: a regex-based guard will usually miss it, which is exactly the gap this lesson describes."
+   "look_for": "Two things to look at. Section 2 masks a PAN number before the prompt reaches the model (input_guard), and the spans in traces.jsonl store no prompt text at all, so nothing personal is logged. Then add a request containing a person's name: the regex guards do not catch names, which is exactly the gap this lesson describes."
   },
   "quiz": [
    {
@@ -1057,7 +1057,7 @@
   },
   "lab": {
    "id": "08_llmops",
-   "look_for": "The lab wraps the model with input and output guardrails and logs each decision. Send one clearly unsafe request and one edgy-but-fine one (for example a biology homework question about how viruses spread) and check both decisions. If the second is blocked, you are looking at a false positive, which is the cost side of this lesson's threshold trade-off."
+   "look_for": "The lab's guards are narrow: input_guard blocks a few injection phrases, masks PII and caps length; output_guard replaces any answer containing a link. There is no safety classifier, so an unsafe request that avoids those phrases passes. Send one clearly unsafe request and one edgy-but-fine one (a biology homework question) and see that neither guard reacts: a concrete picture of why this lesson's moderation layer is a separate component."
   },
   "quiz": [
    {
@@ -1256,7 +1256,7 @@
   },
   "lab": {
    "id": "07_injection_exfiltration",
-   "look_for": "The lab measures attack success rate three times, adding a layer each run: no defence, spotlighting or delimiting, then output URL allowlist plus tool permission check. Read it as a defence-in-depth table: the prompt-level layer reduces the rate, and the code-level layer is what drives it to zero. Turn off only the spotlighting and keep the allowlist to see which layer is carrying the load."
+   "look_for": "Read the results table as defence in depth, over 20 questions with 95% intervals: no defence, spotlighting (prompt layer), then the deterministic output filter (code layer). The filter's URL-leak zero is true by design, not a measured rate; the canary column is the independent check. There is no tool or permission layer here. Turn off spotlighting but keep the filter to see which layer carries the load, and check whether the intervals of the first two rows overlap before you claim the prompt layer helped."
   },
   "quiz": [
    {

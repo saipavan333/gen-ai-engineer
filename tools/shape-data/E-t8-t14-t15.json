@@ -207,7 +207,7 @@
   },
   "lab": {
    "id": "08_llmops",
-   "look_for": "The lab runs exact-match and semantic caching over a batch of queries and prints hit rate and latency saved. Lower the semantic threshold and watch the hit rate rise, then read the matched pairs to spot the wrong hits. It does not show provider prompt caching: there is no cache_read_input_tokens field locally, so price that part with the Anthropic table instead."
+   "look_for": "Section 2 runs exact-match and semantic caching over 7 requests and prints the cache result and latency per request: exact hits take about 0.1 ms against about 6 s for a model call. Section 3 prints the paraphrase similarity (0.657) next to a different-intent question (0.523) and the semantic hit count at threshold 0.90 (0 on our run). Lower the threshold and check each new hit is the same intent. Provider prompt caching is not shown locally; price it with the Anthropic table instead."
   },
   "quiz": [
    {
@@ -584,7 +584,7 @@
   },
   "lab": {
    "id": "08_llmops",
-   "look_for": "The lab's per-request cost accounting prints tokens and cost for each call. Run it once as is, then shorten the system prompt or retrieved context and run again: the per-request line should fall by exactly the removed tokens x price. The lab prices with configurable numbers; plug in the Claude list prices to see real dollars. It does not simulate a multi-step agent's growing history, so use the arithmetic in the worked example for that."
+   "look_for": "Section 3 sums tokens and hosted-equivalent cost across the requests that reached the model (prices set at the top of the file from Claude Haiku 5.5 list prices) and scales it to 2 M requests a day; each span in traces.jsonl also carries its own token counts and cost. Shorten the prompt template and rerun: the cost falls by exactly the removed tokens times the price. The lab does not simulate an agent's growing history; use the worked example's arithmetic for that."
   },
   "quiz": [
    {
@@ -965,7 +965,7 @@
   },
   "lab": {
    "id": "08_llmops",
-   "look_for": "Open the lab's JSONL trace file. Each line is one span with OpenTelemetry-style fields: span and parent IDs, timing, model, prompt version, token counts and cost. Find the slowest request and walk its parent-child spans to see whether retrieval or generation took the time. Compare field names with the gen_ai.* attributes above; the lab writes local JSONL instead of exporting over OTLP to a collector, so there is no dashboard or alerting."
+   "look_for": "Open labs/outputs/traces.jsonl. Each line is one span per request (no parent or child spans) with gen_ai.* style fields: operation, provider, request model, prompt name and version, usage tokens, plus latency, cache status and guard verdicts. Compare the names with the gen_ai.* attributes above. The lab writes local JSONL instead of exporting over OTLP to a collector, so there is no dashboard or alerting, and no parent-child timing to walk."
   },
   "quiz": [
    {
@@ -1077,7 +1077,7 @@
   },
   "lab": {
    "id": "02_structured_output",
-   "look_for": "No local vision model is installed for this course, so no lab sends an image. The closest lab is the structured-output one, because the production use of a VLM is usually 'image in, validated JSON out'. Watch the parse-failure rate for free-text prompting versus schema-constrained decoding, and the retry-with-error-feedback loop; the same schema and retry would wrap a VLM call. What it does not show: image tokens, resizing, or visual hallucination. To see those, pull a small vision model (the Ollama vision docs use gemma4) if you have the disk, and pass an images list."
+   "look_for": "No local vision model is installed for this course, so no lab sends an image. The closest lab is the structured-output one, because the production use of a VLM is usually 'image in, validated JSON out': the same Pydantic schema passed as format, validation, and the business-rule check would wrap a VLM call. What it does not show: image tokens, resizing, or visual hallucination. To see those you would pull a small vision model (several GB) and pass an images list."
   },
   "quiz": [
    {
@@ -1193,7 +1193,7 @@
   },
   "lab": {
    "id": "02_structured_output",
-   "look_for": "No local vision model is installed for this course, so no lab sends an image. This lab is the second half of document AI: messy text in, a Pydantic schema passed to Ollama as format, validation, and retry with the validation error fed back. Compare the parse-failure rate of free-text prompting against constrained decoding over the batch of messy emails; invoice extraction fails in the same ways. It does not do OCR or read images. To try OCR locally, Tesseract is free, and its output text can be fed into this lab's pipeline as the 'email'."
+   "look_for": "No local vision model is installed for this course, so no lab sends an image. This lab is the second half of document AI: messy text in, a Pydantic schema passed to Ollama as format, validation, and a business-rule check with retry (which did not need to fire on our 8 emails). Invoice extraction fails in the same ways. It does not do OCR or read images. To try OCR locally, Tesseract is free, and its output text can be fed into this lab's pipeline as the 'email'."
   },
   "quiz": [
    {

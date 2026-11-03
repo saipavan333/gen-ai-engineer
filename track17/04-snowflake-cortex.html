@@ -16,7 +16,7 @@
 
   <div class="box warn">
     <div class="box-label">Needs your account (free trial / free tier)</div>
-    <p>You need a Snowflake account in a region where Cortex features are available, a role with the <code>SNOWFLAKE.CORTEX_USER</code> database role, and a warehouse. Trial accounts come with credits; check that Cortex is enabled for your region and edition (⚠ unverified for your account). Local stand-in: <a href="../labs/10_ai_sql_udf.py">labs/10_ai_sql_udf.py</a>. We did not run the SQL below against a live account.</p>
+    <p>You need a Snowflake account in a region where Cortex features are available, a role that has the <strong>USE AI FUNCTIONS</strong> account-level privilege <em>and</em> one of the <code>CORTEX_USER</code> or <code>AI_FUNCTIONS_USER</code> database roles (<a href="https://docs.snowflake.com/en/user-guide/snowflake-cortex/aisql">Snowflake Cortex AI Functions docs</a>), and a warehouse. Trial accounts come with credits; check that Cortex is enabled for your region and edition (⚠ unverified for your account). Local stand-in: <a href="../labs/10_ai_sql_udf.py">labs/10_ai_sql_udf.py</a>. We did not run the SQL below against a live account.</p>
   </div>
 
   <div class="box concept">
@@ -71,8 +71,8 @@
       <li>Cortex Search = managed hybrid retrieval (vector + keyword + semantic rerank), refreshed within <code>TARGET_LAG</code>.</li>
       <li>Filter on <code>ATTRIBUTES</code> columns (region, product, tenant) at query time to scope results.</li>
       <li><code>AI_COMPLETE(model, prompt [, model_parameters, response_format, show_details])</code> generates in SQL; <code>response_format</code> for structured output.</li>
-      <li>By default one failing row stops an AI_COMPLETE statement; enable session error handling or <code>return_error_details</code> for batch jobs.</li>
-      <li>Access is governed by the <code>SNOWFLAKE.CORTEX_USER</code> database role.</li>
+      <li>Today one failing row stops an AI_COMPLETE statement by default; enable session error handling or <code>return_error_details</code> for batch jobs. A pending behaviour change (BCR-2184, bundle 2026_02) makes most AI functions return NULL on failure instead (<a href="https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_02/bcr-2184">release note</a>), so check which behaviour your account has.</li>
+      <li>Access needs the <strong>USE AI FUNCTIONS</strong> account privilege plus the <code>CORTEX_USER</code> or <code>AI_FUNCTIONS_USER</code> database role (<a href="https://docs.snowflake.com/en/user-guide/snowflake-cortex/aisql">docs</a>).</li>
     </ul>
   </div>
 
@@ -148,6 +148,7 @@
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/10_ai_sql_udf.py</code></pre>
     <p><strong>What to look for:</strong> Section 3 is a tiny Cortex Search stand-in: embeddings in a column and a cosine ranking in SQL (no keyword leg or reranker, which Cortex adds). Section 4 prints the AI_COMPLETE query to run in your account. Add a region column to the reviews table and a WHERE region = ... filter to see attribute scoping.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>   (2, Decimal(&#x27;0.380&#x27;), &#x27;Jar lid cracked in a week, customer care never called back.&#x27;)
@@ -190,7 +191,7 @@
     <p><span class="shape-lvl">Junior</span> What is AI_COMPLETE?</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Model answer</summary>
-      <div class="sol-body"><p>A Snowflake SQL function that generates a completion from a prompt (text or images) using a model hosted in Snowflake. You pass a model name and a prompt, and optionally model parameters, a response_format for structured output and a flag for details. It is the newer form of SNOWFLAKE.CORTEX.COMPLETE, and callers need the SNOWFLAKE.CORTEX_USER database role.</p></div>
+      <div class="sol-body"><p>A Snowflake SQL function that generates a completion from a prompt (text or images) using a model hosted in Snowflake. You pass a model name and a prompt, and optionally model parameters, a response_format for structured output and a flag for details. It is the newer form of SNOWFLAKE.CORTEX.COMPLETE, and callers need the USE AI FUNCTIONS account privilege plus the CORTEX_USER or AI_FUNCTIONS_USER database role.</p></div>
     </details>
     <p><span class="shape-lvl">Mid</span> How do you choose TARGET_LAG for a Cortex Search service?</p>
     <details class="sol">

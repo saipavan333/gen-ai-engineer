@@ -319,7 +319,7 @@
    {
     "level": "Junior",
     "q": "What is AI_COMPLETE?",
-    "a": "A Snowflake SQL function that generates a completion from a prompt (text or images) using a model hosted in Snowflake. You pass a model name and a prompt, and optionally model parameters, a response_format for structured output and a flag for details. It is the newer form of SNOWFLAKE.CORTEX.COMPLETE, and callers need the SNOWFLAKE.CORTEX_USER database role."
+    "a": "A Snowflake SQL function that generates a completion from a prompt (text or images) using a model hosted in Snowflake. You pass a model name and a prompt, and optionally model parameters, a response_format for structured output and a flag for details. It is the newer form of SNOWFLAKE.CORTEX.COMPLETE, and callers need the USE AI FUNCTIONS account privilege plus the CORTEX_USER or AI_FUNCTIONS_USER database role."
    },
    {
     "level": "Mid",

@@ -8,7 +8,7 @@
   },
   "lab": {
    "id": "01_generate_and_sample",
-   "look_for": "Look at the streamed output: tokens arrive one by one, which is autoregression you can watch. Compare prompt_eval_count (input tokens, processed in one go) with eval_count (output tokens, generated one at a time) and the tokens/sec figure. Ask for a reply twice as long and watch total time roughly double while time-to-first-token barely moves."
+   "look_for": "Section 5 streams a reply and prints time-to-first-token, total time, the number of streamed chunks and decode tokens/s; section 4 prints prompt_eval_count (input tokens, read in one pass) and eval_count (output tokens, generated one at a time). To feel autoregression, edit the streaming prompt to ask for a reply twice as long: total time grows roughly with eval_count while time-to-first-token barely moves."
   },
   "quiz": [
    {
@@ -273,7 +273,7 @@
   },
   "lab": {
    "id": "01_generate_and_sample",
-   "look_for": "The lab prints prompt_eval_count and time-to-first-token. Paste a long block of text into the prompt and watch both grow: more input tokens means a longer prefill before the first output token. Then shorten the prompt to only the relevant paragraph and compare. The 03_rag_local lab shows the retrieve-instead side of the same trade."
+   "look_for": "Section 4 sends the same question with a short prompt and with about 640 tokens of padding, and prints prompt_eval_count and prefill seconds for each (36 vs 639 tokens and 0.55 s vs 1.49 s on our run) for the same one-word answer. That is the cost of context in one line. Lab 03 shows the other side of the trade: retrieve the relevant paragraph instead of pasting everything."
   },
   "quiz": [
    {
@@ -360,7 +360,7 @@
   },
   "lab": {
    "id": "01_generate_and_sample",
-   "look_for": "Compare the temperature 0 runs (identical text across seeds) with the temperature 1.0 runs (different text per seed). Change the seed with temperature 0 and confirm nothing changes; raise temperature to 1.5 and watch the outputs drift further from the prompt. This is the local, knobs-still-exposed side of the 2026 reality check box."
+   "look_for": "Sections 1-3 run the same prompt at temperature 0 and 1.0 with three seeds, then the same seed twice. On our runs temperature 0 gave identical text in one run and 2 different outputs out of 3 in another, while temperature 1.0 gave 3 different outputs and the same seed reproduced exactly. With n=3 seeds this is a demo, not a rate. Edit the temperatures in the lab to see the spread change. This is the local, knobs-still-exposed side of the 2026 reality check box."
   },
   "quiz": [
    {
@@ -563,7 +563,7 @@
   },
   "lab": {
    "id": "02_structured_output",
-   "look_for": "The free-text run is a prompt without a pinned format, and the constrained run is the same task with an exact output shape. Compare the parse-failure rates the lab prints across the batch of messy emails. Delete the format instructions from the prompt and rerun to see the failure count rise."
+   "look_for": "Section A2 uses a vague 'extract as JSON' prompt and got 0 of 4 parseable outputs on our run (markdown fences, invented keys). Section A pins the exact keys in the prompt and section B passes the schema as Ollama's format: both got 8 of 8 valid on qwen2.5:7b. So the big win here came from a clear prompt; on these 8 emails the schema showed no extra advantage (95% intervals are printed). Its value is the guarantee on inputs you have not tested."
   },
   "quiz": [
    {
@@ -650,7 +650,7 @@
   },
   "lab": {
    "id": "02_structured_output",
-   "look_for": "The lab's prompts for the messy support emails are where you can add or remove example pairs. Add two worked examples to the free-text prompt and rerun the batch: watch the parse-failure rate change without touching the schema. The lab does not test label bias; to see it, make all your examples share one label and count how the outputs shift."
+   "look_for": "The lab's SYSTEM prompt has no examples. Add two example email-to-ticket pairs to it and rerun: with 8 of 8 already valid you will not see a parse-rate change, but watch section D's category accuracy against the gold labels (7 of 8 on our run; the compliment was filed as delivery). The lab does not test label bias; to see it, make all your examples share one label and count how the outputs shift."
   },
   "quiz": [
    {
@@ -741,7 +741,7 @@
   },
   "lab": {
    "id": "12_self_consistency",
-   "look_for": "The lab samples N reasoning chains from qwen2.5:7b on arithmetic word problems and takes a majority vote. Look at the accuracy-vs-N table next to tokens spent: accuracy should rise and then flatten while tokens grow linearly. Read a few individual chains that reached a wrong answer with neat-looking steps, which is the faithfulness warning from the lesson."
+   "look_for": "The lab samples 7 reasoning chains per problem from qwen2.5:7b on 5 word problems and majority-votes the first N. On our run accuracy was 4 of 5 at every N while tokens grew linearly, and on the clock-arithmetic problem the most common answer was wrong. With n=5 problems that is a demo of the mechanism, not an accuracy curve. Read the individual answers for that problem: neat-looking steps that reach a wrong number are the faithfulness warning from this lesson."
   },
   "quiz": [
    {
@@ -832,7 +832,7 @@
   },
   "lab": {
    "id": "02_structured_output",
-   "look_for": "This lab is this lesson. Compare the parse-failure rate for free-text prompting against the Pydantic schema passed as Ollama's format, then watch the retry-with-error-feedback loop recover the cases that parse but fail validation. Tighten a field (for example make a field an enum) and see how many outputs now need a retry."
+   "look_for": "This lab is this lesson. Compare section A2 (vague prompt: 0 of 4 parseable), section A (keys pinned in the prompt: 8 of 8) and section B (schema passed as format: 8 of 8). Section C runs a business-rule check with retry-with-error-feedback; on our run no rule was broken, so it printed 0 repairs: the loop is there, but this data never triggered it. To see it fire, add an email whose order id the model is likely to mangle, or tighten a rule in business_rules()."
   },
   "quiz": [
    {
@@ -923,7 +923,7 @@
   },
   "lab": {
    "id": "07_injection_exfiltration",
-   "look_for": "The lab measures attack success rate with no defence, then with spotlighting/delimiting, then with an output URL allowlist plus tool permission checks. Note how far delimiters alone cut the rate and that they do not reach zero; that gap is why the delimiter pattern in this lesson is a first defence, not the whole answer."
+   "look_for": "The lab measures attack success over 20 questions with no defence, with spotlighting (datamarking the untrusted page), and with a deterministic output filter that strips non-allowlisted links. There is no tool or permission layer in this lab. Note how far the prompt-level delimiter moves the rate and whether its 95% interval overlaps the undefended one: that gap is why delimiting is a first defence, not the whole answer."
   },
   "quiz": [
    {
@@ -1006,11 +1006,11 @@
   "analogy": "A standard model is a quiz contestant who must hit the buzzer immediately. A reasoning model is allowed to scribble on a notepad for a minute before answering. On a hard maths question the notepad wins; on 'what colour is the sky' it just wastes a minute. And you pay for every page of scribbling. The analogy breaks because the model's scribbling is not always shown to you, but you are still billed for it.",
   "scale": {
    "title": "Routing 1 million requests a day between a fast model and a reasoning model",
-   "html": "<p>Assume an assistant gets <strong>1,000,000 requests a day</strong>, of which <strong>5%</strong> are genuinely hard (multi-step debugging, calculations). A hard request uses about <strong>4,000 thinking tokens</strong> when extended thinking is on. All numbers except prices are assumptions.</p>\n<ol>\n<li><strong>Thinking is billed as output.</strong> Anthropic reports thinking as part of billed output tokens, visible in <code>usage.output_tokens_details.thinking_tokens</code> (<a href=\"https://platform.claude.com/docs/en/build-with-claude/extended-thinking\">extended thinking docs</a>).</li>\n<li><strong>Think on everything.</strong> On Claude Sonnet 5.5 at $10 per million output tokens (<a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\">Anthropic models overview</a>): 1,000,000 x 4,000 = 4 billion tokens = <strong>$40,000/day</strong> just for thinking.</li>\n<li><strong>Think only on hard requests.</strong> 50,000 x 4,000 = 200M tokens = <strong>$2,000/day</strong>. Routing cuts the thinking bill by 95%.</li>\n<li><strong>Price the router.</strong> A small classifier, or a cheap model call of about 200 input tokens, decides \"hard or not\". On a model priced from $0.10 per million input tokens, 1M x 200 = 200M tokens = about $20/day.</li>\n<li><strong>Measure the misroutes.</strong> On a labelled set of 1,000 requests, suppose the router sends 15% of hard requests to the fast model. Those 7,500 a day get weaker answers. Add an escalation rule: if the fast model's answer fails a check (tests fail, numbers disagree), retry on the reasoning model.</li>\n<li><strong>Latency.</strong> 4,000 thinking tokens at an assumed 80 tokens/second is about 50 seconds. Show progress, or move hard jobs to an async queue.</li>\n</ol>"
+   "html": "<p>Assume an assistant gets <strong>1,000,000 requests a day</strong>, of which <strong>5%</strong> are genuinely hard (multi-step debugging, calculations), and a hard request uses about <strong>4,000 thinking tokens</strong> when the model thinks hard. All numbers except prices and API behaviour are assumptions.</p>\n<ol>\n<li><strong>How you control thinking now.</strong> On current Claude models you no longer set a token budget: <code>thinking: {type: \"enabled\", budget_tokens: N}</code> returns a 400 error on Claude 4.7 and later. You use adaptive thinking (the model decides whether and how much to think) and steer it with <code>output_config.effort</code>: <code>low</code>, <code>medium</code>, <code>high</code>, <code>xhigh</code> or <code>max</code>. The default is <code>high</code> on Claude Sonnet 5.5 and <code>medium</code> on Claude Opus 5.5 and Haiku 5.5 (<a href=\"https://platform.claude.com/docs/en/build-with-claude/effort\">effort docs</a>; <a href=\"https://platform.claude.com/docs/en/build-with-claude/extended-thinking\">extended thinking, now legacy</a>). Effort is a behavioural signal, not a hard cap; <code>max_tokens</code> is the hard limit on thinking plus answer.</li>\n<li><strong>Thinking is billed as output.</strong> Thinking tokens count as billed output tokens, visible in <code>usage.output_tokens_details.thinking_tokens</code>.</li>\n<li><strong>High effort on everything.</strong> On Claude Sonnet 5.5 at $10 per million output tokens (<a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\">Anthropic models overview</a>): 1,000,000 x 4,000 = 4 billion tokens = <strong>$40,000/day</strong> if every request thought that hard.</li>\n<li><strong>Route by difficulty.</strong> Send easy requests at <code>low</code> effort (where the model may skip thinking on easy inputs) and hard ones at <code>high</code>. If only the 50,000 hard requests think at about 4,000 tokens: 200M tokens = <strong>$2,000/day</strong>. Measure the real thinking tokens per effort level on your traffic; do not assume.</li>\n<li><strong>Price the router.</strong> A small classifier, or a cheap model call of about 200 input tokens, decides 'hard or not'. On a model priced from $0.10 per million input tokens, 1M x 200 = 200M tokens = about $20/day.</li>\n<li><strong>Measure the misroutes and the latency.</strong> On a labelled set of 1,000 requests, suppose the router sends 15% of hard requests to low effort: add an escalation rule (retry at higher effort if a check fails). And 4,000 thinking tokens at an assumed 80 tokens/second is about 50 seconds, so show progress or move hard jobs to an async queue.</li>\n</ol>\n<p><strong>History note:</strong> earlier Claude models used manual extended thinking with a <code>budget_tokens</code> number; it still works on some older models (for example Claude Sonnet 4.5 and Haiku 4.5) and is deprecated on the 4.6 models. Code written that way must migrate to adaptive thinking plus effort when it moves to a current model.</p>"
   },
   "lab": {
    "id": "12_self_consistency",
-   "look_for": "Self-consistency is test-time compute you can control by hand: more samples, more tokens, better accuracy up to a point. Read the accuracy-vs-N table next to tokens spent and find where the curve flattens. That knee is the same trade a reasoning model makes internally. The lab does not run a trained reasoning model; qwen2.5:7b is a standard model."
+   "look_for": "Self-consistency is test-time compute you control by hand: N samples and a vote. On our run accuracy stayed at 4 of 5 for every N while tokens grew linearly, and one vote went wrong because the most common answer was wrong. With n=5 problems this shows the mechanism and its failure, not a curve. The lab does not run a trained reasoning model or Claude's effort setting; qwen2.5:7b is a standard model."
   },
   "quiz": [
    {
@@ -1027,9 +1027,9 @@
       "why": "It may have followed it; it just did not help. That is a result, not a fault."
      },
      {
-      "t": "Double the thinking budget again until accuracy improves.",
+      "t": "Raise the effort level again until accuracy improves.",
       "correct": false,
-      "why": "If accuracy is flat, more tokens is likely to keep spending without gain. Find where the curve flattens first."
+      "why": "If accuracy is flat, more thinking is likely to keep spending without gain. Find where the curve flattens on an eval first."
      },
      {
       "t": "Reasoning models cannot follow instructions.",
@@ -1065,12 +1065,12 @@
    {
     "level": "Mid",
     "q": "How do you decide whether a feature should use a reasoning model?",
-    "a": "Run an eval on representative cases with both options and compare accuracy, cost per request including thinking tokens, and latency. Reasoning tends to pay off on multi-step tasks with a clear right answer and low to moderate volume. For high-volume simple tasks, use a fast model. Often the answer is both: route by difficulty, or try the fast model first and escalate when a check fails. Set thinking budgets and watch the usage field so cost does not surprise you."
+    "a": "Run an eval on representative cases with both options and compare accuracy, cost per request including thinking tokens, and latency. Reasoning tends to pay off on multi-step tasks with a clear right answer and low to moderate volume. For high-volume simple tasks, use a fast model or a low effort level. Often the answer is both: route by difficulty, or try low effort first and escalate when a check fails. On current Claude models you steer thinking with output_config.effort rather than a token budget, and you watch usage.output_tokens_details.thinking_tokens so cost does not surprise you."
    },
    {
     "level": "Senior",
     "q": "How does test-time compute change system design compared with the 'just pick a bigger model' era?",
-    "a": "Compute becomes a per-request decision, not a fixed property of the deployed model. So you design routing, budgets and verification: a difficulty classifier or cascade, thinking budgets per feature, verifiers such as tests or rule checks to decide when more compute is worth it, and async flows for long jobs. Observability must track thinking tokens and latency separately. Some agent scaffolding gets simpler because the model plans more by itself, but tools, grounding, bounded loops and evals stay essential."
+    "a": "Compute becomes a per-request decision, not a fixed property of the deployed model. So you design routing, effort levels and verification: a difficulty classifier or cascade, an effort level per feature (low, medium, high and up, with max_tokens as the hard cap on thinking plus answer), verifiers such as tests or rule checks to decide when more compute is worth it, and async flows for long jobs. Run an effort sweep on your evals instead of carrying settings over between model versions, because levels are recalibrated. Observability must track thinking tokens and latency separately. Tools, grounding, bounded loops and evals stay essential."
    }
   ],
   "sources": [
@@ -1083,12 +1083,24 @@
     "u": "https://arxiv.org/abs/2501.12948"
    },
    {
-    "t": "Extended thinking — Anthropic docs",
-    "u": "https://platform.claude.com/docs/en/build-with-claude/extended-thinking"
+    "t": "Effort parameter (adaptive thinking) - Anthropic docs",
+    "u": "https://platform.claude.com/docs/en/build-with-claude/effort"
    },
    {
     "t": "Self-Consistency Improves Chain of Thought Reasoning (Wang et al., 2022) — arXiv",
     "u": "https://arxiv.org/abs/2203.11171"
+   },
+   {
+    "t": "Effort parameter (adaptive thinking) - Anthropic docs",
+    "u": "https://platform.claude.com/docs/en/build-with-claude/effort"
+   },
+   {
+    "t": "Effort parameter (adaptive thinking) - Anthropic docs",
+    "u": "https://platform.claude.com/docs/en/build-with-claude/effort"
+   },
+   {
+    "t": "Extended thinking (legacy budget_tokens) - Anthropic docs",
+    "u": "https://platform.claude.com/docs/en/build-with-claude/extended-thinking"
    }
   ]
  },
@@ -1101,7 +1113,7 @@
   },
   "lab": {
    "id": "03_rag_local",
-   "look_for": "The whole RAG lab runs on an open-weight model (qwen2.5:7b) and an open embedding model on your own machine, so no document leaves it. That is the open/local side of this lesson's trade-off. Watch how few tokens the grounded answer needs compared with pasting every document; the lab does not benchmark a closed API, so the quality comparison is yours to run."
+   "look_for": "The whole RAG lab runs on an open-weight model (qwen2.5:7b) and an open embedding model on your own machine, so no document leaves it. That is the open/local side of this lesson's trade-off. Each grounded answer is built from 3 retrieved chunks instead of the whole corpus. The lab prints no token counts and does not benchmark a closed API, so add up the chunk sizes yourself and run the quality comparison on your own data."
   },
   "quiz": [
    {
@@ -1279,7 +1291,7 @@
   },
   "lab": {
    "id": "08_llmops",
-   "look_for": "The lab writes tracing spans to JSONL with OpenTelemetry-style fields and keeps a versioned prompt registry with content hashes. Those two outputs are the raw material of record-keeping: open the JSONL and check you could rebuild one decision from it (which prompt version, which inputs, what output). The lab does not produce compliance documents; it shows the logging those documents depend on."
+   "look_for": "The lab writes one JSONL span per request with OpenTelemetry-style fields (model, prompt name, version and content hash, token counts, cache status, guard verdicts, latency) and keeps a versioned prompt registry. That is the raw material of record-keeping. Note what is missing: the spans do not store the prompt or answer text, so you could tell which prompt version and model produced a decision, but not rebuild the exact output. Decide deliberately what to log, given PII. The lab does not produce compliance documents."
   },
   "quiz": [
    {

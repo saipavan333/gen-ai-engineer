@@ -142,6 +142,7 @@
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/10_ai_sql_udf.py</code></pre>
     <p><strong>What to look for:</strong> Section 1 shows the ai_query pattern locally: a SQL function that calls a model per row, with ai_classify mapping free text onto allowed labels so nothing unexpected lands in the column. Section 4 prints the ai_query query to run in your workspace. The lab has no failOnError equivalent; add a try/except in ai_generate that returns NULL and count NULLs to feel it.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>   (2, Decimal(&#x27;0.380&#x27;), &#x27;Jar lid cracked in a week, customer care never called back.&#x27;)
