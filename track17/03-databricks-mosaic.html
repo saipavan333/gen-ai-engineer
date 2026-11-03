@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Databricks Mosaic AI — Applied GenAI Engineer</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="stylesheet" href="../assets/styles.css?v=25">
+</head>
+<body data-base="../" data-lesson="17.3">
+<main class="lesson">
+
+  <span class="eyebrow">Track 17 · Lesson 17.3</span>
+  <h1>Databricks Mosaic AI: ai_query and Vector Search</h1>
+  <p class="lead">On Databricks the same RAG path runs on Delta tables governed by Unity Catalog: a Vector Search index built from a table, the <code>vector_search()</code> SQL function to retrieve, and <code>ai_query()</code> to call a model endpoint from SQL or a pipeline.</p>
+
+  <div class="box warn">
+    <div class="box-label">Needs your account (free trial / free tier)</div>
+    <p>You need a workspace with model serving (Foundation Model APIs or an external-model endpoint) and, for <code>vector_search()</code>, a SQL warehouse that is not a classic warehouse (the docs say the function is not available on classic SQL warehouses). Whether a free edition or trial includes these is something to check on your account (⚠ unverified). Local stand-in: <a href="../labs/10_ai_sql_udf.py">labs/10_ai_sql_udf.py</a>. We did not run the SQL below against a live workspace.</p>
+  </div>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p><code>ai_query(endpoint, request)</code> calls a model serving endpoint once per row. The endpoint can be a Databricks-hosted foundation model (names like <code>system.ai.meta-llama-3-3-70b-instruct</code> in the docs), an external model you registered, or your own fine-tuned model. Optional arguments add a return type, <code>failOnError</code>, <code>modelParameters</code> and <code>responseFormat</code> for structured output. <code>vector_search(index, query_text | query_vector, num_results)</code> queries a Mosaic AI Vector Search index and can run hybrid (vector plus keyword) search.</p>
+  </div>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>Databricks is like a school where the library, the teachers and the rule book are all run by the same office. The library (Delta tables and the Vector Search index), the helper who writes answers (a model endpoint called by ai_query) and the rules about who may read what (Unity Catalog) live together. The analogy breaks because in a school the office notices a rule being broken; here the rules only apply if you actually put the tables, index and endpoints under them.</p>
+  </div>
+<!-- shape:analogy:end -->
+
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t17-databricks.svg" alt="Five boxes: Delta table governed by Unity Catalog; Vector Search index built from the table with embeddings kept in sync; vector_search() with query_text, query_type HYBRID and num_results 3; ai_query() with endpoint, request, responseFormat and failOnError false; Result: answer plus sources, traced and evaluated with MLflow. Footer: needs a workspace with Foundation Model APIs and a non-classic SQL warehouse.">
+    <figcaption>Retrieval and generation as two SQL functions over governed tables.</figcaption>
+  </figure>
+
+  <div class="box example">
+    <div class="box-label">Worked example: hybrid retrieval, then a typed answer (needs your account)</div>
+    <p><strong>Retrieve.</strong> The docs' hybrid example searches a support-docs index for an error code, which is exactly the case where keyword matching helps (Lesson 3.6):</p>
+<pre><code><span class="k">SELECT</span> * <span class="k">FROM</span> vector_search(
+  index =&gt; <span class="s">'main.support_docs.index'</span>,
+  query_text =&gt; <span class="s">'Wi-Fi issues LMP-9R2'</span>,
+  query_type =&gt; <span class="s">'HYBRID'</span>,
+  num_results =&gt; <span class="n">3</span>)</code></pre>
+    <p><strong>Generate.</strong> The simplest call to a hosted model, in the shape the docs use:</p>
+<pre><code><span class="k">SELECT</span> ai_query(
+  <span class="s">'system.ai.meta-llama-3-3-70b-instruct'</span>,
+  <span class="s">'Describe Databricks SQL in 30 words.'</span>
+) <span class="k">AS</span> summary;</code></pre>
+    <p><strong>Make it batch-safe.</strong> For a table of tickets, build the prompt from columns, pass <code>failOnError =&gt; false</code> so one bad row returns an error struct instead of failing the job, and use <code>responseFormat</code> (Databricks Runtime 15.4 LTS or above, per the docs) to get JSON with a fixed schema. Then validate the JSON in SQL before it lands in the gold table, exactly as in 17.1.</p>
+  </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Classifying 800 K support tickets a night on Databricks</div>
+    <p>Assumptions (scenario): 800,000 tickets a day, average 180 tokens of text, a 60-token instruction, and a JSON answer of about 25 tokens. For a price we use <a href="https://platform.claude.com/docs/en/about-claude/models/overview">Claude Haiku 5.5 list price, checked 2026-11-03</a> so the numbers are concrete; Databricks endpoint pricing is different and set by your contract.</p><ol><li><strong>Calls.</strong> One ai_query call per ticket: 800,000 calls a night.</li><li><strong>Tokens.</strong> Input 800,000 x 240 = 192 M tokens; output 800,000 x 25 = 20 M tokens. At the reference price: 192 x $0.10 + 20 x $0.50 = $19.20 + $10 = about $29 a night.</li><li><strong>Failures.</strong> If 0.1% of calls time out, that is 800 rows. With the default failOnError true, one of them fails the whole statement and you lose the night's work. With failOnError => false each row returns a struct with the response and an error; you write all 800,000, then retry the 800.</li><li><strong>Structured output.</strong> responseFormat (Databricks Runtime 15.4 LTS or above, per the docs) asks for JSON with your schema; you still validate it in SQL and map invalid rows to 'unparsed' so they show up in a count, not as broken dashboards.</li><li><strong>Hybrid retrieval for the agent.</strong> Agents answering about part codes use vector_search with query_type => 'HYBRID'; check recall@k on a golden set of code-heavy questions before and after switching.</li></ol><p>The operational rule: at 800,000 rows, rare failures are certain. Design every batch AI job so one bad row costs one row, not the night.</p>
+  </div>
+<!-- shape:scale:end -->
+
+
+  <h2>Where the rest of the platform fits</h2>
+  <p>Unity Catalog governs the tables, the index and the model endpoints, so the same grants that protect your data protect your AI pipeline. Model Serving hosts the endpoints <code>ai_query</code> calls. MLflow is where you trace requests and run evaluations for an agent or RAG app built on top. You already know the ideas from Tracks 6 and 12; on Databricks they are managed services with the same names for the same jobs.</p>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li><code>ai_query(endpoint, request [, returnType, failOnError, modelParameters, responseFormat])</code>: one endpoint call per row.</li>
+      <li><code>vector_search(index, query_text | query_vector, num_results)</code>, with <code>query_type =&gt; 'HYBRID'</code> for vector plus keyword.</li>
+      <li><code>vector_search</code> is not available on classic SQL warehouses; the definer needs SELECT on the index.</li>
+      <li>Set <code>failOnError =&gt; false</code> for batch jobs and handle the error struct.</li>
+      <li>Endpoint names change: read the current list in the docs or your workspace before hard-coding one.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">A nightly ai_query job over 800 K tickets fails at row 612,004 with a timeout and nothing is written. What should you change?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Pass failOnError => false, write the response and error per row, and re-run only rows that errored.</span>
+        <div class="why">Correct. With failOnError false, ai_query returns a struct with the response and an error message, so one transient failure no longer throws away 612 K good results.</div></li>
+      <li data-correct="false"><span class="opt">B) Retry the whole job until it succeeds.</span>
+        <div class="why">You pay again for 612 K rows each attempt, and at this scale some row will always fail.</div></li>
+      <li data-correct="false"><span class="opt">C) Switch to a bigger model.</span>
+        <div class="why">Timeouts are operational, not a capability problem; a bigger model is usually slower.</div></li>
+      <li data-correct="false"><span class="opt">D) Remove the WHERE clause so the job is simpler.</span>
+        <div class="why">More rows means more calls and more chances to fail. Filter more, not less.</div></li>
+    </ul>
+  </div>
+  <div class="quiz">
+    <p class="quiz-q">Users search for part codes like "LMP-9R2" and pure vector search returns loosely related pages. Which vector_search option helps most?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) query_type => 'HYBRID', so keyword matching on the exact code is combined with vector similarity.</span>
+        <div class="why">Correct. Exact identifiers are where lexical search shines and embeddings blur (Lesson 3.6). Check the gain with recall@k on queries that contain codes.</div></li>
+      <li data-correct="false"><span class="opt">B) A larger num_results.</span>
+        <div class="why">More results of the same ranking do not fix the ranking.</div></li>
+      <li data-correct="false"><span class="opt">C) query_vector instead of query_text.</span>
+        <div class="why">That just means you embed the query yourself; it is still pure vector similarity.</div></li>
+      <li data-correct="false"><span class="opt">D) Lower-case the codes before searching.</span>
+        <div class="why">Casing is not the problem; embeddings do not represent arbitrary codes precisely.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Where do you run vector_search() if your workspace only has a classic SQL warehouse?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Only inside a notebook with a GPU.</span>
+        <div class="why">vector_search is a SQL function; it needs the right warehouse type, not a GPU.</div></li>
+      <li data-correct="true"><span class="opt">B) Not on it: the docs say vector_search is not available on classic SQL warehouses, so use a serverless or pro warehouse (or the Python/REST API).</span>
+        <div class="why">Correct. It is a documented restriction; planning the warehouse type up front avoids a confusing failure later.</div></li>
+      <li data-correct="false"><span class="opt">C) Only through ai_query.</span>
+        <div class="why">ai_query calls model endpoints; vector_search queries a Vector Search index.</div></li>
+      <li data-correct="false"><span class="opt">D) It works on any warehouse.</span>
+        <div class="why">The docs list classic SQL warehouses as unsupported.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Sketch the SQL for labelling each support ticket with a category using ai_query and a fixed label list.<br>
+    <strong>2.</strong> What grants does a data scientist need to run vector_search against a production index?<br>
+    <strong>3.</strong> Where would you log prompt version and model endpoint for each labelled row?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> <code>SELECT ticket_id, ai_query('&lt;endpoint&gt;', CONCAT('Reply with one of billing, delivery, refund, technical, other. Ticket: ', body), failOnError =&gt; false) AS r FROM tickets WHERE created_at &gt;= current_date()</code>, then a second step that maps <code>r.result</code> onto the allowed set (else 'other') and stores <code>r.errorMessage</code>. The exact field names of the error struct are in the docs; check them before you rely on them.</p>
+        <p><strong>2.</strong> Per the docs the definer must have SELECT on the index, plus access to the warehouse; in Unity Catalog terms, usage on the catalog and schema too. Least privilege: no write access is needed to search.</p>
+        <p><strong>3.</strong> As columns on the output table (<code>prompt_version</code>, <code>endpoint</code>, <code>run_id</code>, <code>labelled_at</code>), so any label can be traced and re-scored when either changes, the same practice as lab 08's traces.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: choosing between ai_query and a served agent</div>
+    <p><code>ai_query</code> is for enrichment: many rows, one prompt, no conversation. When you need tools, multi-step reasoning or a chat interface, you build an agent, serve it behind an endpoint, trace it with MLflow and evaluate it on a golden set; the agent can still call <code>vector_search</code> for retrieval. The design question is the same as in 17.1: batch over tables, or per-request service. Pick by latency need and by whether the work is one call per row or a loop.</p>
+  </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/10_ai_sql_udf.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/10_ai_sql_udf.py</code></pre>
+    <p><strong>What to look for:</strong> Section 1 shows the ai_query pattern locally: a SQL function that calls a model per row, with ai_classify mapping free text onto allowed labels so nothing unexpected lands in the column. Section 4 prints the ai_query query to run in your workspace. The lab has no failOnError equivalent; add a try/except in ai_generate that returns NULL and count NULLs to feel it.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>   (2, Decimal(&#x27;0.380&#x27;), &#x27;Jar lid cracked in a week, customer care never called back.&#x27;)
+   (3, Decimal(&#x27;0.108&#x27;), &#x27;Kettle is okay. Boils fast but the handle gets hot.&#x27;)
+4) The same pattern on your platforms  (needs your account - free trial / free tier)
+  -- BigQuery (AI.GENERATE, docs read 2026-11-03)
+  SELECT review_id, AI.GENERATE(CONCAT(&#x27;Classify sentiment as positive, negative or mixed: &#x27;, review)).result AS sentiment
+  FROM `my_project.shop.reviews`;
+  -- Snowflake Cortex (AI_COMPLETE)
+  SELECT review_id, AI_COMPLETE(&#x27;claude-haiku-4-5&#x27;, &#x27;Classify sentiment as positive, negative or mixed: &#x27; || review) AS sentiment
+  FROM shop.reviews;
+  -- Databricks SQL (ai_query)
+  SELECT review_id, ai_query(&#x27;system.ai.meta-llama-3-3-70b-instruct&#x27;, CONCAT(&#x27;Classify sentiment as positive, negative or mixed: &#x27;, review)) AS sentiment
+  FROM shop.reviews;
+  Model and endpoint names change often: check the current list in each doc page before you run these.
+{&quot;llm&quot;: 10, &quot;cache_hits&quot;: 8}</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/10_ai_sql_udf.txt">labs/outputs</a>. Source: <a href="../labs/10_ai_sql_udf.py">labs/10_ai_sql_udf.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Name the two required and four optional arguments of ai_query as given in the docs.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Required: endpoint and request. Optional: returnType, failOnError, modelParameters and responseFormat (there is also files for image input). The endpoint is a string literal naming a Foundation Model, external or custom serving endpoint.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Rewrite a nightly ai_query job so a single timeout cannot fail the run, and so you can tell which rows to retry.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Call ai_query with failOnError => false; it returns a struct with the response and an error message. Write ticket_id, the response, the error, prompt_version and run_id into a results table. A second job selects rows where the error is not null and re-runs only those, with a retry cap. Alert if the error rate passes a threshold.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Your Vector Search index serves three business units that must never see each other's documents. Design the access control.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Keep a business_unit column on the source Delta table and in the index, and filter on it in every search, with the filter value derived in your service from the authenticated user rather than from the model. Back it with Unity Catalog grants so each unit's service principal can only query what it should, and test with a golden case where the nearest neighbour belongs to another unit. If isolation must be absolute, separate indexes per unit.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What does ai_query do?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>It is a Databricks SQL function that calls a model serving endpoint for each row and returns the response. The endpoint can be a Databricks-hosted foundation model, an external model or your own model. You give it the endpoint name and a request built from columns, and optionally a return type, failOnError, model parameters and a response format for structured output.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> When does hybrid search beat pure vector search, and how would you prove it on Databricks?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>When queries contain exact tokens embeddings blur, such as part numbers, error codes or names. Prove it with a golden set of real queries labelled with the right documents: run vector_search with the default and with query_type HYBRID, compute recall@k and MRR, and look at the per-query differences, especially code-heavy queries. Keep whichever wins on your traffic mix.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> How would you take a Databricks RAG prototype to production?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Make the corpus a governed Delta table with chunking as a pipeline, build the Vector Search index from it so it stays in sync, and serve the agent behind an endpoint. Trace every request with MLflow (inputs, retrieved ids, model, prompt version, latency, cost), and gate releases on an evaluation set with retrieval and answer-quality metrics. Put access control in Unity Catalog and filters set by code, add failOnError-style row handling for batch paths, and monitor cost and error rates.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://docs.databricks.com/aws/en/sql/language-manual/functions/ai_query" target="_blank" rel="noopener">ai_query function - Databricks docs</a></li>
+      <li><a href="https://docs.databricks.com/aws/en/sql/language-manual/functions/vector_search" target="_blank" rel="noopener">vector_search function - Databricks docs</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
+  <p>Next: the same pipeline on <strong>Snowflake Cortex</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js?v=25"></script>
+<script src="../assets/app.js?v=25"></script>
+</body>
+</html>

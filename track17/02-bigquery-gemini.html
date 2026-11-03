@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BigQuery and Gemini — Applied GenAI Engineer</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="stylesheet" href="../assets/styles.css?v=25">
+</head>
+<body data-base="../" data-lesson="17.2">
+<main class="lesson">
+
+  <span class="eyebrow">Track 17 · Lesson 17.2</span>
+  <h1>BigQuery and Gemini: RAG without leaving SQL</h1>
+  <p class="lead">On GCP you can embed a table, search it by meaning and generate a grounded answer, all as BigQuery SQL. This lesson maps the RAG pipeline from Track 3 onto three BigQuery functions, with the exact syntax from the docs and the parts that need your account called out.</p>
+
+  <div class="box warn">
+    <div class="box-label">Needs your account (free trial / free tier)</div>
+    <p>Everything on this page runs in a Google Cloud project with billing enabled and a connection to Google's model platform. The BigQuery docs (read 2026-11-03) describe model charges in the platform's own billing, so the no-card BigQuery sandbox is unlikely to cover these calls (⚠ unverified: check before you rely on it). The local stand-in that always works is <a href="../labs/10_ai_sql_udf.py">labs/10_ai_sql_udf.py</a>. We did not run the SQL below against a live project.</p>
+  </div>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p>Three functions cover the RAG path. <code>AI.GENERATE_EMBEDDING</code> is a table function that turns a <code>content</code> column into an <code>embedding</code> column using a remote embedding model. <code>VECTOR_SEARCH</code> finds the nearest rows to a query embedding and returns them with a <code>distance</code>. <code>AI.GENERATE</code> sends a prompt (built from the question plus the retrieved rows) to a Gemini model and returns the answer. The docs name the model platform "Gemini Enterprise Agent Platform" in places and still say Vertex AI in others; it is the same managed model service.</p>
+  </div>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>BigQuery RAG is like a school library where every book already has a sticky note saying what it is about. When you ask a question, the librarian writes your question on a sticky note too, finds the books whose notes are most alike, and hands those pages to a helper who writes your answer using only them. The analogy breaks because the sticky notes are lists of numbers, not words, so two books can look alike to the librarian for reasons no human would pick.</p>
+  </div>
+<!-- shape:analogy:end -->
+
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t17-bigquery.svg" alt="Five boxes: Docs table with a content column; AI.GENERATE_EMBEDDING calls a remote embedding model and produces an embedding column; optional CREATE VECTOR INDEX for large tables; VECTOR_SEARCH takes the query embedding and returns top_k nearest rows by distance_type; AI.GENERATE takes the question plus retrieved rows and returns a grounded answer. Footer: needs a project with billing and a model connection.">
+    <figcaption>The Track 3 pipeline (chunk, embed, retrieve, generate), expressed as BigQuery SQL.</figcaption>
+  </figure>
+
+  <div class="box example">
+    <div class="box-label">Worked example: from a chunk table to a grounded answer (needs your account)</div>
+    <p><strong>Step 1: generate text.</strong> The docs' own first example summarises public BBC articles; with no <code>endpoint</code> argument BigQuery picks a recent stable Gemini model (the docs list <code>gemini-3.5-flash-lite</code> as the default on 2026-11-03):</p>
+<pre><code><span class="k">SELECT</span>
+  title,
+  AI.GENERATE(<span class="f">CONCAT</span>(<span class="s">"Summarize in one sentence: "</span>, body)).result <span class="k">AS</span> article_summary
+<span class="k">FROM</span> <span class="s">`bigquery-public-data.bbc_news.fulltext`</span>
+<span class="k">LIMIT</span> <span class="n">3</span>;</code></pre>
+    <p><strong>Step 2: embed your chunks once.</strong> The input must have a STRING column called <code>content</code>; the output adds <code>embedding</code> (ARRAY&lt;FLOAT64&gt;). <code>kb.text_embedding</code> is a remote model you create over a Google embedding model:</p>
+<pre><code><span class="k">CREATE OR REPLACE TABLE</span> kb.chunk_emb <span class="k">AS</span>
+<span class="k">SELECT</span> * <span class="k">FROM</span> AI.GENERATE_EMBEDDING(
+  <span class="k">MODEL</span> <span class="s">`kb.text_embedding`</span>,
+  (<span class="k">SELECT</span> chunk_id, text <span class="k">AS</span> content <span class="k">FROM</span> kb.chunks));</code></pre>
+    <p><strong>Step 3: retrieve.</strong> <code>VECTOR_SEARCH</code> takes the base table, the column to search and a query table, and returns <code>query</code>, <code>base</code> and <code>distance</code>:</p>
+<pre><code><span class="k">SELECT</span> base.chunk_id, base.content, distance
+<span class="k">FROM</span> VECTOR_SEARCH(
+  <span class="k">TABLE</span> kb.chunk_emb, <span class="s">'embedding'</span>,
+  (<span class="k">SELECT</span> embedding <span class="k">FROM</span> AI.GENERATE_EMBEDDING(<span class="k">MODEL</span> <span class="s">`kb.text_embedding`</span>,
+      (<span class="k">SELECT</span> <span class="s">'How long do card refunds take?'</span> <span class="k">AS</span> content))),
+  top_k =&gt; <span class="n">3</span>, distance_type =&gt; <span class="s">'COSINE'</span>);</code></pre>
+    <p><strong>Step 4: generate a grounded answer.</strong> Concatenate the retrieved <code>content</code> into the prompt with an instruction to answer only from it and cite <code>chunk_id</code> (exactly the grounded prompt from Lesson 3.7), and pass it to <code>AI.GENERATE</code>. Use <code>output_schema</code> when you want typed fields back instead of prose.</p>
+    <p>Whether non-<code>content</code> columns such as <code>chunk_id</code> pass through the embedding function unchanged is worth confirming on your own data before you depend on it; it is the usual behaviour of BigQuery ML table functions.</p>
+  </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Policy search over 3 M chunks for a bank's internal assistant</div>
+    <p>Assumptions (scenario): 150,000 policy documents split into 3 M chunks of about 300 tokens; 2% of documents change each week; 20,000 questions a day.</p><ol><li><strong>Initial embedding.</strong> 3 M chunks x 300 tokens = 900 M tokens through AI.GENERATE_EMBEDDING, run once as a batch job into kb.chunk_emb.</li><li><strong>Weekly refresh.</strong> 2% of 150,000 documents = 3,000 documents, about 60,000 chunks: re-embed only those, keyed on a content hash. That is 2% of the original work.</li><li><strong>Search.</strong> Brute force compares each question with 3 M vectors: 20,000 x 3 M = 60 B comparisons a day. A vector index makes each search approximate and touches a small fraction of them; measure recall@10 on your golden set before and after creating it.</li><li><strong>Generation.</strong> Each answer prompt holds 5 chunks x 300 tokens plus about 200 tokens of instructions: about 1,700 input tokens. 20,000 x 1,700 = 34 M input tokens a day into AI.GENERATE.</li><li><strong>Failures.</strong> If 0.5% of requests fail or are blocked, that is 100 NULL answers a day. Log them with the question id and retry or route to a human.</li></ol><p>The architecture choice: the embeddings and index are scheduled batch jobs, while search and generation are per question. Keeping those two lifecycles separate is what keeps the bill predictable.</p>
+  </div>
+<!-- shape:scale:end -->
+
+
+  <h2>What changes at warehouse scale</h2>
+  <p>For a few thousand chunks, <code>VECTOR_SEARCH</code> without an index is a brute-force scan and that is fine. For millions, create a vector index on the embedding column so the search is approximate and fast (the docs cover <code>CREATE VECTOR INDEX</code>). The docs also describe a simpler <code>AI.SEARCH</code> syntax for tables with automatic embedding generation enabled, plus a hybrid form of vector search that adds lexical search columns (Preview on 2026-11-03).</p>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li><code>AI.GENERATE(prompt [, endpoint, model_params, output_schema, connection_id, request_type])</code> generates text or typed fields per row.</li>
+      <li><code>AI.GENERATE_EMBEDDING(MODEL ..., table_or_query)</code> needs a <code>content</code> column and returns <code>embedding</code>.</li>
+      <li><code>VECTOR_SEARCH(base_table, column, query_table, top_k, distance_type)</code> returns <code>query</code>, <code>base</code>, <code>distance</code>; add a vector index for big tables.</li>
+      <li>Failed or blocked requests come back as NULL: count them, re-run them, alert on the rate.</li>
+      <li>Embed once into a table; never call the embedding model inside a dashboard query.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">Your VECTOR_SEARCH query over 30 M chunks is slow and expensive. What is the first fix?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Create a vector index on the embedding column so search is approximate instead of a full scan.</span>
+        <div class="why">Correct. Without an index, every query compares against all 30 M vectors. An approximate index (Lesson 3.4) trades a little recall for a large cut in work; measure recall@k before and after.</div></li>
+      <li data-correct="false"><span class="opt">B) Re-embed the table with a bigger model.</span>
+        <div class="why">Bigger vectors make each comparison slower, not faster, and it costs a full re-embedding.</div></li>
+      <li data-correct="false"><span class="opt">C) Raise top_k.</span>
+        <div class="why">top_k controls how many results come back, not how much is scanned.</div></li>
+      <li data-correct="false"><span class="opt">D) Call AI.GENERATE_EMBEDDING on the base table inside the search query each time.</span>
+        <div class="why">That re-embeds 30 M rows per question: the most expensive possible design. Embed once into a stored column.</div></li>
+    </ul>
+  </div>
+  <div class="quiz">
+    <p class="quiz-q">AI.GENERATE returns NULL for 2% of rows in a nightly job. What does that most likely mean, and what do you do?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Those requests failed or were blocked by safety filters; log the ids, retry the failures, and alert if the rate rises.</span>
+        <div class="why">Correct. The docs say the result is NULL when a request fails or is blocked. Treat it as an operational signal: a retry queue for transient failures and a review of blocked inputs.</div></li>
+      <li data-correct="false"><span class="opt">B) The model decided those rows had no answer.</span>
+        <div class="why">An empty model answer is still a string. NULL signals a failed or blocked request.</div></li>
+      <li data-correct="false"><span class="opt">C) BigQuery sampled the table.</span>
+        <div class="why">It does not silently sample rows in an AI function call.</div></li>
+      <li data-correct="false"><span class="opt">D) Nothing; 2% is noise.</span>
+        <div class="why">2% of a nightly 1 M rows is 20,000 missing labels that silently vanish from aggregates. Count and fix them.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Your AI.GENERATE_EMBEDDING call errors because the input has no 'content' column. What is the fix?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Alias the text column: SELECT chunk_id, text AS content FROM kb.chunks.</span>
+        <div class="why">Correct. The docs require a STRING column named content in the input table or query; aliasing an existing column is the standard fix.</div></li>
+      <li data-correct="false"><span class="opt">B) Rename the table to content.</span>
+        <div class="why">The requirement is on a column name, not the table name.</div></li>
+      <li data-correct="false"><span class="opt">C) Pass the text column name as a model parameter.</span>
+        <div class="why">There is no such parameter in the documented syntax; the column must be named content.</div></li>
+      <li data-correct="false"><span class="opt">D) Switch to AI.GENERATE.</span>
+        <div class="why">AI.GENERATE produces text, not embeddings; you would lose the vectors you need for VECTOR_SEARCH.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Write the prompt you would pass to AI.GENERATE in step 4 so the answer is grounded and cites chunk ids.<br>
+    <strong>2.</strong> Which steps of this pipeline should be scheduled jobs and which run per question?<br>
+    <strong>3.</strong> How would you test the BigQuery pipeline's retrieval quality before any user sees it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> "Answer the question using ONLY the passages below. After each fact, cite the passage id in square brackets. If the passages do not contain the answer, reply exactly: I don't know. Passages: [c-102] ... [c-877] ... Question: ..." Built with <code>STRING_AGG(CONCAT('[', chunk_id, '] ', content), '\n')</code> over the retrieved rows.</p>
+        <p><strong>2.</strong> Chunking and embedding the corpus (and building the index) are scheduled, incremental jobs keyed on changed documents. Embedding the question, the vector search and the generation run per question.</p>
+        <p><strong>3.</strong> A golden table of questions with the chunk ids that answer them; run VECTOR_SEARCH for each and compute recall@k and MRR in SQL (lab 06 shows the formulas). Gate any index or embedding-model change on those numbers.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: when to stay in SQL and when to leave</div>
+    <p>SQL RAG is ideal when the corpus already lives in BigQuery, the consumers are analysts and dashboards, and latency of seconds is fine. It is a poor fit for a chat app that must answer in under a second with streaming, conversation memory and tools. The common production split: BigQuery owns the corpus, the chunking and the embeddings as governed tables; a small service (Track 12) does the per-request retrieval and generation, reading the same embedding table or an index exported from it. Either way, the eval set and the cost controls from 17.1 apply unchanged.</p>
+  </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/10_ai_sql_udf.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/10_ai_sql_udf.py</code></pre>
+    <p><strong>What to look for:</strong> Section 3 embeds a column once and ranks rows with array_cosine_similarity in SQL: the same shape as AI.GENERATE_EMBEDDING into a stored column followed by VECTOR_SEARCH. Section 4 prints the BigQuery AI.GENERATE query to run on your own project. The lab does not exercise a real vector index; on 6 rows a scan is the right choice anyway.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>   (2, Decimal(&#x27;0.380&#x27;), &#x27;Jar lid cracked in a week, customer care never called back.&#x27;)
+   (3, Decimal(&#x27;0.108&#x27;), &#x27;Kettle is okay. Boils fast but the handle gets hot.&#x27;)
+4) The same pattern on your platforms  (needs your account - free trial / free tier)
+  -- BigQuery (AI.GENERATE, docs read 2026-11-03)
+  SELECT review_id, AI.GENERATE(CONCAT(&#x27;Classify sentiment as positive, negative or mixed: &#x27;, review)).result AS sentiment
+  FROM `my_project.shop.reviews`;
+  -- Snowflake Cortex (AI_COMPLETE)
+  SELECT review_id, AI_COMPLETE(&#x27;claude-haiku-4-5&#x27;, &#x27;Classify sentiment as positive, negative or mixed: &#x27; || review) AS sentiment
+  FROM shop.reviews;
+  -- Databricks SQL (ai_query)
+  SELECT review_id, ai_query(&#x27;system.ai.meta-llama-3-3-70b-instruct&#x27;, CONCAT(&#x27;Classify sentiment as positive, negative or mixed: &#x27;, review)) AS sentiment
+  FROM shop.reviews;
+  Model and endpoint names change often: check the current list in each doc page before you run these.
+{&quot;llm&quot;: 10, &quot;cache_hits&quot;: 8}</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/10_ai_sql_udf.txt">labs/outputs</a>. Source: <a href="../labs/10_ai_sql_udf.py">labs/10_ai_sql_udf.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> List the four BigQuery steps of a RAG answer in order, naming the function used in each.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>1. Embed the corpus once into a table with AI.GENERATE_EMBEDDING. 2. Embed the question with AI.GENERATE_EMBEDDING. 3. Retrieve the nearest chunks with VECTOR_SEARCH (top_k, distance_type). 4. Build a grounded prompt from the retrieved content and call AI.GENERATE. Optionally a vector index between steps 1 and 3 for large tables.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Write SQL that computes hit@3 for a golden table golden(question_id, question, gold_chunk_id) using VECTOR_SEARCH. Describe the shape rather than exact syntax if unsure.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Embed the golden questions into a query table (AI.GENERATE_EMBEDDING over SELECT question_id, question AS content). Run VECTOR_SEARCH with that query table and top_k => 3; the output has query.question_id and base.chunk_id. Then SELECT AVG(CASE WHEN hit THEN 1 ELSE 0 END) over a grouping by question_id where hit = LOGICAL_OR(base.chunk_id = gold_chunk_id). Join back to golden on question_id.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Your bank's assistant must not show chunks from documents a user is not allowed to read. How do you enforce that in the BigQuery design?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Store an access attribute (department, classification) on each chunk row and filter the base table to the user's allowed set before or during VECTOR_SEARCH, for example by searching over a filtered subquery or a row-level-secured view. Set the filter in your service code from the authenticated user, never from the model. Test it with a golden case where the most similar chunk is forbidden and assert it never appears.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What does VECTOR_SEARCH return in BigQuery?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>For each query row it returns the nearest rows from the base table: a query struct with the query columns, a base struct with the base table's columns, and a distance. You choose how many with top_k and the metric with distance_type, such as cosine.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> When would you add a vector index, and what do you check after adding it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>When the base table is large enough that brute-force search is slow or expensive, typically millions of rows queried often. An index makes search approximate, so afterwards you check recall@k on a golden set against the brute-force baseline, plus latency and cost per query. If recall drops too far, tune the index options or retrieve more candidates and rerank.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Would you build a customer-facing chatbot entirely in BigQuery SQL?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Usually not end to end. BigQuery is excellent for owning the corpus, chunking, embeddings and batch evaluation as governed tables. A customer chat needs low latency, streaming, conversation state, rate limiting and tool calls, which belong in a service. I would keep embeddings and evals in BigQuery, serve retrieval from an index the service can query quickly, and run AI.GENERATE-style batch jobs for offline evaluation and enrichment.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://docs.cloud.google.com/bigquery/docs/reference/standard-sql/bigqueryml-syntax-ai-generate" target="_blank" rel="noopener">The AI.GENERATE function - BigQuery docs</a></li>
+      <li><a href="https://docs.cloud.google.com/bigquery/docs/reference/standard-sql/bigqueryml-syntax-ai-generate-embedding" target="_blank" rel="noopener">The AI.GENERATE_EMBEDDING function - BigQuery docs</a></li>
+      <li><a href="https://docs.cloud.google.com/bigquery/docs/reference/standard-sql/search_functions" target="_blank" rel="noopener">Search functions (VECTOR_SEARCH) - BigQuery docs</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
+  <p>Next: the same pipeline on <strong>Databricks Mosaic AI</strong>.</p>
+
+</main>
+<script src="../assets/curriculum.js?v=25"></script>
+<script src="../assets/app.js?v=25"></script>
+</body>
+</html>

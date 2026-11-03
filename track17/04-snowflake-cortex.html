@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Snowflake Cortex — Applied GenAI Engineer</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="stylesheet" href="../assets/styles.css?v=25">
+</head>
+<body data-base="../" data-lesson="17.4">
+<main class="lesson">
+
+  <span class="eyebrow">Track 17 · Lesson 17.4</span>
+  <h1>Snowflake Cortex: Cortex Search and AI_COMPLETE</h1>
+  <p class="lead">Snowflake packages retrieval as a managed service (Cortex Search: hybrid search with reranking, kept fresh on a schedule) and generation as a SQL function (<code>AI_COMPLETE</code>). Together they are a full RAG stack with your data never leaving the account.</p>
+
+  <div class="box warn">
+    <div class="box-label">Needs your account (free trial / free tier)</div>
+    <p>You need a Snowflake account in a region where Cortex features are available, a role with the <code>SNOWFLAKE.CORTEX_USER</code> database role, and a warehouse. Trial accounts come with credits; check that Cortex is enabled for your region and edition (⚠ unverified for your account). Local stand-in: <a href="../labs/10_ai_sql_udf.py">labs/10_ai_sql_udf.py</a>. We did not run the SQL below against a live account.</p>
+  </div>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p><span class="term">Cortex Search</span> is a search service you create over a table's text column. Each query combines vector search, keyword search and semantic reranking of the top results, and the service refreshes from the source table within a <code>TARGET_LAG</code> you set. <code>AI_COMPLETE(model, prompt [, model_parameters, response_format, show_details])</code> generates a completion from a model hosted in Snowflake; <code>response_format</code> gives you structured output. <code>AI_COMPLETE</code> is the newer form of the older <code>SNOWFLAKE.CORTEX.COMPLETE</code>.</p>
+  </div>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>Cortex Search is like a school library that re-shelves itself every night: you tell it how fresh the shelves must be, and it keeps them that fresh. AI_COMPLETE is the helper who reads the books it finds and writes the answer. The analogy breaks because 'every night' is a setting you pay for: ask for every minute and the library re-shelves constantly, whether or not any book changed.</p>
+  </div>
+<!-- shape:analogy:end -->
+
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t17-snowflake.svg" alt="Five boxes: Table support_transcripts with text and attributes; Cortex Search service created on the text column with TARGET_LAG 1 day and an EMBEDDING_MODEL; Hybrid retrieval of vector plus keyword plus semantic rerank with attribute filters; AI_COMPLETE with model, prompt and response_format; Result: grounded answer, with the CORTEX_USER role governing access. Footer: needs a Snowflake account with Cortex in your region.">
+    <figcaption>Retrieval as a managed service, generation as a SQL function, both inside your account.</figcaption>
+  </figure>
+
+  <div class="box example">
+    <div class="box-label">Worked example: search call transcripts, then answer (needs your account)</div>
+    <p><strong>Create the service</strong> (this is the docs' own example):</p>
+<pre><code><span class="k">CREATE OR REPLACE CORTEX SEARCH SERVICE</span> transcript_search_service
+  <span class="k">ON</span> transcript_text
+  <span class="k">ATTRIBUTES</span> region
+  <span class="k">WAREHOUSE</span> = cortex_search_wh
+  <span class="k">TARGET_LAG</span> = <span class="s">'1 day'</span>
+  <span class="k">EMBEDDING_MODEL</span> = <span class="s">'snowflake-arctic-embed-l-v2.0'</span>
+  <span class="k">AS</span> (
+    <span class="k">SELECT</span> transcript_text, region, agent_id
+    <span class="k">FROM</span> support_transcripts
+);</code></pre>
+    <p><strong>Query it.</strong> In SQL you preview results with <code>SNOWFLAKE.CORTEX.SEARCH_PREVIEW</code>, passing a JSON body with the query, the columns to return, a filter (for example <code>region</code> equals North America) and a limit. Apps call the same service through the Python API or REST.</p>
+    <p><strong>Generate.</strong> The docs' simplest call:</p>
+<pre><code><span class="k">SELECT</span> AI_COMPLETE(<span class="s">'claude-sonnet-5'</span>, <span class="s">'What are large language models?'</span>);</code></pre>
+    <p>For RAG, put the retrieved transcripts in the prompt with the grounding instruction from Lesson 3.7. Model names in Snowflake's examples on 2026-11-03 included <code>claude-sonnet-5</code>, <code>claude-haiku-4-5</code>, <code>llama3.3-70b</code>, <code>mistral-large3</code>, <code>openai-gpt-5.4</code> and <code>gemini-3.1-pro</code>; availability varies by region, so check before you choose.</p>
+  </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: A contact-centre assistant over 5 M call transcripts</div>
+    <p>Assumptions (scenario): 5 M transcripts, 40,000 new ones a day, agents in 4 regions, 15,000 assistant questions a day, 4 retrieved transcript snippets of 250 tokens each per answer.</p><ol><li><strong>Service design.</strong> One Cortex Search service ON transcript_text with ATTRIBUTES region, so each query filters to the agent's region. Filtering cuts both leakage risk and the candidate set.</li><li><strong>Freshness.</strong> New transcripts matter within hours, not seconds: TARGET_LAG = '1 hour' picks up the 40,000 daily additions in about 24 refreshes. A one-minute lag would refresh 1,440 times a day for little gain.</li><li><strong>Prompt size.</strong> 4 x 250 = 1,000 tokens of context plus 200 of instructions: about 1,200 input tokens per answer, 15,000 x 1,200 = 18 M input tokens a day into AI_COMPLETE.</li><li><strong>Model choice.</strong> At the <a href="https://platform.claude.com/docs/en/about-claude/models/overview">Claude Haiku 5.5 list price, checked 2026-11-03</a> of from $0.10 per million input tokens that would be about $1.80 a day of input; Snowflake bills Cortex models in its own credits, so check your rate card. Whatever the price, model choice is a smaller lever than prompt size and call count.</li><li><strong>Batch summaries.</strong> Summarising all 40,000 new transcripts nightly with AI_COMPLETE is a separate batch job; enable error handling so one failing row does not stop the statement.</li></ol><p>Two dials decide this design: TARGET_LAG for freshness cost, and attribute filters for who can see what.</p>
+  </div>
+<!-- shape:scale:end -->
+
+
+  <h2>Freshness and cost in one setting</h2>
+  <p><code>TARGET_LAG</code> is the trade-off dial. A lag of one minute keeps search fresh for a live support queue but refreshes constantly; a lag of one day is fine for policy documents and costs far less. Pick it per corpus, the same way you would pick a refresh schedule for any materialised table.</p>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>Cortex Search = managed hybrid retrieval (vector + keyword + semantic rerank), refreshed within <code>TARGET_LAG</code>.</li>
+      <li>Filter on <code>ATTRIBUTES</code> columns (region, product, tenant) at query time to scope results.</li>
+      <li><code>AI_COMPLETE(model, prompt [, model_parameters, response_format, show_details])</code> generates in SQL; <code>response_format</code> for structured output.</li>
+      <li>By default one failing row stops an AI_COMPLETE statement; enable session error handling or <code>return_error_details</code> for batch jobs.</li>
+      <li>Access is governed by the <code>SNOWFLAKE.CORTEX_USER</code> database role.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">An agent in North America should only see North American transcripts in search results. Where does that rule belong?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) In the search request as a filter on the region attribute, set by your code from the agent's identity, plus role-based access on the source data.</span>
+        <div class="why">Correct. Scope is enforced by the system, not requested from the model. Your code sets the filter from who is asking; the model never decides what it is allowed to see.</div></li>
+      <li data-correct="false"><span class="opt">B) In the AI_COMPLETE prompt: "only use North American transcripts".</span>
+        <div class="why">By then the other regions' data is already in the prompt. Prompts are not access control (Track 7).</div></li>
+      <li data-correct="false"><span class="opt">C) Retrieve everything and let the model ignore other regions.</span>
+        <div class="why">That leaks data into the model's context and output on the first injection or mistake.</div></li>
+      <li data-correct="false"><span class="opt">D) Create one search service per agent.</span>
+        <div class="why">It would work but multiplies cost and maintenance; attribute filters exist for exactly this.</div></li>
+    </ul>
+  </div>
+  <div class="quiz">
+    <p class="quiz-q">Policy documents change about twice a week. Which TARGET_LAG makes sense?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Hours to a day: fresh enough for the change rate, without paying for constant refreshes.</span>
+        <div class="why">Correct. Match the lag to how often the data changes and how stale an answer may be; minute-level freshness for twice-weekly changes is wasted spend.</div></li>
+      <li data-correct="false"><span class="opt">B) One minute, always.</span>
+        <div class="why">Constant refresh work for data that changes twice a week.</div></li>
+      <li data-correct="false"><span class="opt">C) It does not matter.</span>
+        <div class="why">It sets both how stale answers can be and how much refresh work you pay for.</div></li>
+      <li data-correct="false"><span class="opt">D) A month, to save money.</span>
+        <div class="why">Users would get answers from outdated policies for weeks: a correctness bug.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">What three retrieval components does each Cortex Search query combine, according to Snowflake's docs?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) An LLM that reads every row.</span>
+        <div class="why">That would be far too slow; the reranker only sees the top candidates.</div></li>
+      <li data-correct="true"><span class="opt">B) Vector search, keyword search, and semantic reranking of the top results.</span>
+        <div class="why">Correct. That is the hybrid design from Lessons 3.5 and 3.6, run as a managed service.</div></li>
+      <li data-correct="false"><span class="opt">C) Keyword search and a SQL LIKE filter.</span>
+        <div class="why">There is a vector leg and a semantic reranker too.</div></li>
+      <li data-correct="false"><span class="opt">D) Only vector search over embeddings.</span>
+        <div class="why">The docs describe it as hybrid: vector plus keyword, then a rerank.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Map each Track 3 RAG step to its Cortex piece.<br>
+    <strong>2.</strong> Your batch AI_COMPLETE over 300 K rows stops at row 90 K. What do you change?<br>
+    <strong>3.</strong> List three things you would compare when choosing between Cortex Search and building your own index.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> Chunk: your SQL (split text into rows) before the service. Embed and index: the Cortex Search service (EMBEDDING_MODEL). Retrieve, hybrid and rerank: the service query. Generate: AI_COMPLETE. Evaluate: a golden table plus SQL metrics, as in lab 06.</p>
+        <p><strong>2.</strong> Enable error handling for the session (<code>AI_SQL_ERROR_HANDLING_USE_FAIL_ON_ERROR=false</code> per the docs) or pass <code>return_error_details =&gt; TRUE</code>, store value and error per row, and retry only the failures.</p>
+        <p><strong>3.</strong> Retrieval quality on your golden set (recall@k), operational cost at your query volume and refresh lag, and control (choice of embedding model, chunking, reranker, latency). Managed wins on operations; your own index wins on control. Measure the first before arguing about the others.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: one pattern, three platforms</div>
+    <p>Step back and the three lessons are one design. Corpus and embeddings live as governed tables. Retrieval is a SQL function or managed service with hybrid search. Generation is a per-row SQL function with structured output and row-level error handling. Around all three sit the same disciplines: filter before you call, constrain the output, evaluate on a golden set, trace every run with prompt and model version, and enforce access in code and grants, never in the prompt. Learn those once and switching platforms is a syntax change.</p>
+  </div>
+
+  <p>You now have the full path from prompt to production, on your laptop and on your platform. Revisit <strong>Lab 10</strong> and port it to the platform you use at work.</p>
+
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/10_ai_sql_udf.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/10_ai_sql_udf.py</code></pre>
+    <p><strong>What to look for:</strong> Section 3 is a tiny Cortex Search stand-in: embeddings in a column and a cosine ranking in SQL (no keyword leg or reranker, which Cortex adds). Section 4 prints the AI_COMPLETE query to run in your account. Add a region column to the reviews table and a WHERE region = ... filter to see attribute scoping.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>   (2, Decimal(&#x27;0.380&#x27;), &#x27;Jar lid cracked in a week, customer care never called back.&#x27;)
+   (3, Decimal(&#x27;0.108&#x27;), &#x27;Kettle is okay. Boils fast but the handle gets hot.&#x27;)
+4) The same pattern on your platforms  (needs your account - free trial / free tier)
+  -- BigQuery (AI.GENERATE, docs read 2026-11-03)
+  SELECT review_id, AI.GENERATE(CONCAT(&#x27;Classify sentiment as positive, negative or mixed: &#x27;, review)).result AS sentiment
+  FROM `my_project.shop.reviews`;
+  -- Snowflake Cortex (AI_COMPLETE)
+  SELECT review_id, AI_COMPLETE(&#x27;claude-haiku-4-5&#x27;, &#x27;Classify sentiment as positive, negative or mixed: &#x27; || review) AS sentiment
+  FROM shop.reviews;
+  -- Databricks SQL (ai_query)
+  SELECT review_id, ai_query(&#x27;system.ai.meta-llama-3-3-70b-instruct&#x27;, CONCAT(&#x27;Classify sentiment as positive, negative or mixed: &#x27;, review)) AS sentiment
+  FROM shop.reviews;
+  Model and endpoint names change often: check the current list in each doc page before you run these.
+{&quot;llm&quot;: 10, &quot;cache_hits&quot;: 8}</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/10_ai_sql_udf.txt">labs/outputs</a>. Source: <a href="../labs/10_ai_sql_udf.py">labs/10_ai_sql_udf.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Read the CREATE CORTEX SEARCH SERVICE example and name what each clause controls: ON, ATTRIBUTES, WAREHOUSE, TARGET_LAG, EMBEDDING_MODEL, AS.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>ON: the text column that is searched. ATTRIBUTES: columns you can filter on at query time. WAREHOUSE: the compute that builds and refreshes the service. TARGET_LAG: how stale the service may get relative to the source. EMBEDDING_MODEL: which model creates the vectors. AS: the query defining the source rows and returned columns.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> A batch AI_COMPLETE over 300 K rows must not stop on one failure. Give two ways the docs offer.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Set the session parameter AI_SQL_ERROR_HANDLING_USE_FAIL_ON_ERROR to false so failing rows return NULL or an error object while others continue, or pass return_error_details => TRUE as the last argument so each row returns an object with value and error. Store both, and retry only the errored rows.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Compare Cortex Search with building your own index from embeddings in a table. When does each win?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Cortex Search wins when you want hybrid retrieval with reranking and scheduled freshness without running anything yourself, and the corpus already lives in Snowflake. Your own index wins when you need a specific embedding model, custom chunking or reranking, very tight latency control, or the same index across clouds. Decide with recall@k on your golden set, cost at your query and refresh volume, and the operational load your team can carry.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is AI_COMPLETE?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>A Snowflake SQL function that generates a completion from a prompt (text or images) using a model hosted in Snowflake. You pass a model name and a prompt, and optionally model parameters, a response_format for structured output and a flag for details. It is the newer form of SNOWFLAKE.CORTEX.COMPLETE, and callers need the SNOWFLAKE.CORTEX_USER database role.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> How do you choose TARGET_LAG for a Cortex Search service?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>From how quickly the data changes and how stale an answer may be. A live support queue may need minutes; policy documents changing weekly are fine with hours or a day. Lower lag means more frequent refresh work and cost. Measure: track the age of the newest indexed row and set the lag just under the staleness your users notice.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> How do you stop a Snowflake RAG assistant from leaking one customer's data to another?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Enforce scope in the system, not the prompt. Put the tenant or region in ATTRIBUTES and apply the filter in every search request from the authenticated identity in service code. Back it with role-based access on the source tables and service, so a misconfigured filter still cannot read forbidden data. Add golden tests where the most similar document belongs to another tenant, and log retrieved ids per request so you can audit.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-search/cortex-search-overview" target="_blank" rel="noopener">Cortex Search overview - Snowflake docs</a></li>
+      <li><a href="https://docs.snowflake.com/en/sql-reference/functions/ai_complete" target="_blank" rel="noopener">AI_COMPLETE - Snowflake docs</a></li>
+      <li><a href="https://docs.snowflake.com/en/sql-reference/functions/ai_complete-single-string" target="_blank" rel="noopener">AI_COMPLETE (single string) - Snowflake docs</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+</main>
+<script src="../assets/curriculum.js?v=25"></script>
+<script src="../assets/app.js?v=25"></script>
+</body>
+</html>

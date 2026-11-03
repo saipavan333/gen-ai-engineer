@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LLM functions inside SQL — Applied GenAI Engineer</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="stylesheet" href="../assets/styles.css?v=25">
+</head>
+<body data-base="../" data-lesson="17.1">
+<main class="lesson">
+
+  <span class="eyebrow">Track 17 · Lesson 17.1</span>
+  <h1>LLM functions inside SQL: the warehouse pattern</h1>
+  <p class="lead">BigQuery, Databricks and Snowflake all let you call a language model from a <code>SELECT</code>. For a data engineer this is the fastest way to ship GenAI: no service to deploy, no data leaving the warehouse, the same governance you already have. It is also the fastest way to run up a bill, because the model runs once per row. This lesson is the shared mental model; the next three are each platform.</p>
+
+  <div class="box concept">
+    <div class="box-label">Concept</div>
+    <p>An <span class="term">AI function</span> is a SQL function whose body is a call to a hosted model. You pass a prompt built from column values, and you get back text, a label, an embedding or a JSON object as a new column. On BigQuery it is <code>AI.GENERATE</code>, on Snowflake <code>AI_COMPLETE</code>, on Databricks <code>ai_query</code>. The warehouse handles batching, retries and quotas; you handle three things the warehouse cannot: <strong>which rows</strong> reach the function, <strong>what shape</strong> the answer must have, and <strong>whether the answers are right</strong>.</p>
+  </div>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>An AI function in SQL is like hiring a reader who charges per page. You can hand them the whole library, or you can first throw out the duplicate copies and the pages you already read last week. The reader is equally good either way; your bill is not. The analogy breaks because a human reader would notice the duplicates and tell you; the warehouse will happily pay for every one.</p>
+  </div>
+<!-- shape:analogy:end -->
+
+
+  <figure class="diagram">
+    <img src="../assets/diagrams/t17-ai-sql.svg" alt="Five boxes in a row. 1 Source table: 10 M review rows. 2 Filter and dedupe: WHERE date = today, SELECT DISTINCT text, 10 M becomes 40 K rows. 3 AI function: AI.GENERATE, AI_COMPLETE or ai_query, one call per row. 4 Model endpoint: managed LLM with quota, cost and latency per call. 5 New column: label, JSON or text; validate and eval it, then GROUP BY. Footer: cost scales with rows that reach step 3.">
+    <figcaption>The model is called once for every row that reaches the AI function. Everything before it decides your cost; everything after it decides whether you can trust the column.</figcaption>
+  </figure>
+
+  <h2>Why this pattern is worth learning first</h2>
+  <p>Most GenAI work inside a data team is not chatbots. It is enrichment: classify 2 M support tickets, pull fields out of contract text, tag product reviews by issue, summarise call transcripts for a dashboard. That is batch work over tables, which is exactly what a warehouse is built for. Writing it as SQL means it runs on your schedule (a dbt model, a scheduled query, a Workflow), lands in a governed table, and inherits row and column access control.</p>
+
+  <div class="box example">
+    <div class="box-label">Worked example: classify reviews in SQL (runs locally on DuckDB + Ollama)</div>
+    <p>DuckDB lets you register a Python function as a SQL function, so we can build the same thing on a laptop. Lab 10 does exactly this; the core is three lines:</p>
+<pre><code>con.<span class="f">create_function</span>(<span class="s">"ai_classify"</span>, ai_classify, [<span class="s">"VARCHAR"</span>, <span class="s">"VARCHAR"</span>], <span class="s">"VARCHAR"</span>)
+
+<span class="k">SELECT</span> sku, ai_classify(review, <span class="s">'positive,negative,mixed'</span>) <span class="k">AS</span> sentiment, <span class="f">COUNT</span>(*)
+<span class="k">FROM</span> (<span class="k">SELECT DISTINCT</span> sku, review <span class="k">FROM</span> reviews <span class="k">WHERE</span> review_date = <span class="f">current_date</span>)
+<span class="k">GROUP BY ALL</span>;</code></pre>
+    <p>Two habits are already in that query. <code>SELECT DISTINCT</code> runs before the AI function, so a review pasted twice costs one call. And <code>ai_classify</code> maps the model's free text onto the allowed labels (anything else becomes <code>unknown</code>), so a chatty answer can never leak into a label column and break the <code>GROUP BY</code>.</p>
+  </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Tagging 12 M product reviews at a large Indian marketplace</div>
+    <p>Assumptions (a scenario, not a real company): 12 M historical reviews, 25% exact duplicates, 60,000 new reviews a day; each prompt is about 120 input tokens and the label about 5 output tokens. For a price we use <a href="https://platform.claude.com/docs/en/about-claude/models/overview">Claude Haiku 5.5 list price, checked 2026-11-03</a>: from $0.10 per million input tokens and $0.50 per million output tokens. Your warehouse's model prices will differ; the arithmetic will not.</p><ol><li><strong>Naive back-fill.</strong> 12 M calls x 120 tokens = 1.44 B input tokens = $144, plus 12 M x 5 = 60 M output tokens = $30. About $174 once.</li><li><strong>Dedupe first.</strong> 25% duplicates leaves 9 M distinct texts: $130. Small saving, but it also cuts runtime by a quarter.</li><li><strong>The real trap: a view.</strong> If the AI column is a view and 40 dashboards each scan it 5 times a day, that is 200 full passes: 200 x $174 = <strong>$34,800 a day</strong>. Materialise the column once.</li><li><strong>Daily incremental.</strong> 60,000 new reviews, about 45,000 after dedupe: 45,000 x 125 tokens = 5.6 M tokens: 45,000 x 120 x $0.10/M + 45,000 x 5 x $0.50/M = about $0.65 a day.</li><li><strong>Runtime.</strong> If your quota allows, say, 500 calls a second, the 9 M back-fill takes 9,000,000 / 500 = 18,000 s, 5 hours. Plan it as a one-off job, not part of the nightly run.</li></ol><p>The lesson: the model choice moves cost by a factor of a few; where you put the AI function (view vs table, before vs after dedupe) moves it by a factor of thousands.</p>
+  </div>
+<!-- shape:scale:end -->
+
+
+  <h2>The three levers you control</h2>
+  <div class="tbl-wrap">
+  <table class="t">
+    <tr><th>Lever</th><th>What to do</th><th>Why</th></tr>
+    <tr><td>Rows in</td><td>Filter to new or changed rows, dedupe identical text, sample for exploration</td><td>Cost and runtime are linear in rows that reach the function</td></tr>
+    <tr><td>Shape out</td><td>Ask for a label from a fixed list or JSON with a schema (<code>output_schema</code>, <code>response_format</code>, <code>responseFormat</code>)</td><td>Free text in a column is unqueryable and drifts between runs</td></tr>
+    <tr><td>Trust</td><td>Keep a labelled sample, re-score it whenever the prompt or model changes, log failed rows</td><td>An AI column is model output; a wrong label looks exactly like a right one</td></tr>
+  </table>
+  </div>
+
+  <div class="box key">
+    <div class="box-label">Key points</div>
+    <ul>
+      <li>All three warehouses expose an <strong>LLM-in-SQL function</strong>: <code>AI.GENERATE</code>, <code>AI_COMPLETE</code>, <code>ai_query</code>.</li>
+      <li>It runs <strong>once per row</strong> that reaches it: filter and dedupe before, never after.</li>
+      <li>Constrain the output to a <strong>label set or schema</strong>, and map anything else to a sentinel like <code>unknown</code>.</li>
+      <li>Decide <strong>row-level error handling</strong> up front: by default one failing row can fail the statement (each platform has a switch to return NULL or an error object instead).</li>
+      <li>Treat the new column like any model output: <strong>a labelled eval sample</strong> and a re-check on every prompt or model change.</li>
+    </ul>
+  </div>
+
+  <div class="quiz">
+    <p class="quiz-q">You need sentiment for 12 M reviews, of which about 3 M are exact duplicates and only 50 K arrive each day. What is the best first design?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) A daily incremental job that dedupes the day's new review text, calls the AI function once per distinct text, and joins the label back.</span>
+        <div class="why">Correct. Back-fill once on the 9 M distinct texts, then each day you pay for at most 50 K calls (fewer after dedupe) instead of 12 M. Filtering and dedupe before the AI function is the single biggest cost lever.</div></li>
+      <li data-correct="false"><span class="opt">B) A view that calls the AI function on every review, so dashboards are always fresh.</span>
+        <div class="why">A view re-runs the model on every query of every dashboard: millions of calls each time someone opens it. AI columns belong in materialised tables, computed once.</div></li>
+      <li data-correct="false"><span class="opt">C) Run it on all 12 M rows every night to pick up model improvements.</span>
+        <div class="why">You would pay for 12 M calls a night to relabel text that has not changed. Re-label everything only when you deliberately change the prompt or model, after the new version passes your eval sample.</div></li>
+      <li data-correct="false"><span class="opt">D) Export to a notebook and loop over rows in Python.</span>
+        <div class="why">You lose the warehouse's batching, quotas, governance and scheduling, and you move data out. The in-SQL function exists precisely so you don't have to do this.</div></li>
+    </ul>
+  </div>
+  <div class="quiz">
+    <p class="quiz-q">The AI column sometimes contains "The sentiment is positive." instead of "positive". What fixes this at the source?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Constrain the output (a schema or label list via the platform's structured-output option) and map anything outside the set to 'unknown'.</span>
+        <div class="why">Correct. Structured output removes most of the chatter, and the mapping step guarantees the column only ever holds allowed values, so the chatter can never break downstream SQL.</div></li>
+      <li data-correct="false"><span class="opt">B) Add LIKE '%positive%' in every dashboard query.</span>
+        <div class="why">That spreads a parsing bug into every consumer and still mis-reads "not positive". Fix the column once, where it is produced.</div></li>
+      <li data-correct="false"><span class="opt">C) Increase the model size.</span>
+        <div class="why">A bigger model may chatter less, but nothing guarantees it. Shape is a contract you enforce, not a capability you hope for.</div></li>
+      <li data-correct="false"><span class="opt">D) Ignore it; the rows are a small fraction.</span>
+        <div class="why">A small fraction of malformed rows silently drops out of every GROUP BY, biasing your numbers. Unknowns should be visible and counted.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Which of these belongs BEFORE the AI function in the query, not after?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Filters on date and status, and SELECT DISTINCT on the text being sent.</span>
+        <div class="why">Correct. Anything that reduces the rows reaching the function reduces cost and runtime linearly. Filters and dedupe applied after the call only hide rows you already paid for.</div></li>
+      <li data-correct="false"><span class="opt">B) Writing the result into the gold table.</span>
+        <div class="why">Persisting happens last; what matters is not calling the model on rows you will discard.</div></li>
+      <li data-correct="false"><span class="opt">C) Mapping the model's answer onto the allowed label set.</span>
+        <div class="why">That has to come after: it processes the model's output.</div></li>
+      <li data-correct="false"><span class="opt">D) The GROUP BY that counts labels.</span>
+        <div class="why">Aggregation needs the labels, so it runs after the function.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
+
+  <div class="box practice">
+    <div class="box-label">Practice</div>
+    <p><strong>1.</strong> Your enrichment query takes 3 hours. Name two changes that shorten it without touching the model.<br>
+    <strong>2.</strong> Write the shape of a labelled eval table for an "issue category" AI column. What columns does it need?<br>
+    <strong>3.</strong> When would you NOT use an in-SQL AI function and deploy a service instead?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Show solutions &amp; reasoning</summary>
+      <div class="sol-body">
+        <p><strong>1.</strong> Process only new or changed rows (incremental, keyed by an id and updated-at), and dedupe identical text so each distinct prompt is sent once. If the platform supports it, also shorten the prompt: input tokens cost time as well as money.</p>
+        <p><strong>2.</strong> <code>row_id, text, human_label, labelled_by, labelled_at</code>, plus for each scoring run <code>prompt_version, model, predicted_label, run_at</code>. That lets you compute accuracy per prompt and model version, and see exactly which rows changed when you upgrade.</p>
+        <p><strong>3.</strong> When you need low latency per request (a user waiting on a chat answer), multi-step agent logic with tools, streaming, or a model the warehouse cannot reach. AI functions are for batch enrichment over tables; interactive apps belong in a service (Track 12).</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="box deep">
+    <div class="box-label">Deep dive: error handling, quotas and idempotency</div>
+    <p>At a million rows, some calls will fail: rate limits, a blocked response from a safety filter, a timeout. The platforms differ in the default. On Snowflake, an <code>AI_COMPLETE</code> statement stops at the first failing row unless you enable error handling for the session, after which it can return NULL or an error object per row (<a href="https://docs.snowflake.com/en/sql-reference/functions/ai_complete">Snowflake docs</a>). Databricks <code>ai_query</code> has <code>failOnError</code>; set it to <code>false</code> and you get a struct with the response and an error message (<a href="https://docs.databricks.com/aws/en/sql/language-manual/functions/ai_query">Databricks docs</a>). BigQuery <code>AI.GENERATE</code> returns NULL in the result when a request fails or is blocked (<a href="https://docs.cloud.google.com/bigquery/docs/reference/standard-sql/bigqueryml-syntax-ai-generate">BigQuery docs</a>).</p>
+    <p>Design for it: write results to a table keyed by row id with a status column, re-run only the failed ids, and alert when the failure rate crosses a threshold. That makes the job idempotent: running it twice never double-charges you for rows that already succeeded.</p>
+  </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/10_ai_sql_udf.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/10_ai_sql_udf.py</code></pre>
+    <p><strong>What to look for:</strong> Section 1 prints llm_calls and cache_hits for 6 rows and 2 AI columns: review 6 duplicates review 1, so two calls are saved. Section 2 aggregates the AI column with GROUP BY and costs nothing extra because identical prompts hit the cache. Add 20 duplicate rows to the reviews table and watch llm_calls stay flat while rows grow.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>   (2, Decimal(&#x27;0.380&#x27;), &#x27;Jar lid cracked in a week, customer care never called back.&#x27;)
+   (3, Decimal(&#x27;0.108&#x27;), &#x27;Kettle is okay. Boils fast but the handle gets hot.&#x27;)
+4) The same pattern on your platforms  (needs your account - free trial / free tier)
+  -- BigQuery (AI.GENERATE, docs read 2026-11-03)
+  SELECT review_id, AI.GENERATE(CONCAT(&#x27;Classify sentiment as positive, negative or mixed: &#x27;, review)).result AS sentiment
+  FROM `my_project.shop.reviews`;
+  -- Snowflake Cortex (AI_COMPLETE)
+  SELECT review_id, AI_COMPLETE(&#x27;claude-haiku-4-5&#x27;, &#x27;Classify sentiment as positive, negative or mixed: &#x27; || review) AS sentiment
+  FROM shop.reviews;
+  -- Databricks SQL (ai_query)
+  SELECT review_id, ai_query(&#x27;system.ai.meta-llama-3-3-70b-instruct&#x27;, CONCAT(&#x27;Classify sentiment as positive, negative or mixed: &#x27;, review)) AS sentiment
+  FROM shop.reviews;
+  Model and endpoint names change often: check the current list in each doc page before you run these.
+{&quot;llm&quot;: 10, &quot;cache_hits&quot;: 8}</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/10_ai_sql_udf.txt">labs/outputs</a>. Source: <a href="../labs/10_ai_sql_udf.py">labs/10_ai_sql_udf.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> A table has 2 M rows and you add two AI columns. How many model calls does a full refresh make, and how many if 30% of the texts are duplicates and you dedupe first?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Two columns means two calls per row: 2 M x 2 = 4 M calls. After dedupe 1.4 M distinct texts x 2 = 2.8 M calls. The saving is exactly the duplicate fraction, applied to every AI column.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Design a dbt-style incremental model for an AI label column. What is the key, what triggers a re-label, and where do you store the prompt version?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Key on the source row id (or a hash of the text if many rows share text). Re-label when the text changes (compare a hash) or when you deliberately bump the prompt or model version. Store prompt_version and model as columns next to the label, so a version bump selects exactly the rows to redo and you can compare old vs new labels on your eval sample before switching.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Your AI label column feeds a revenue dashboard. How do you make sure a silent change in the provider's default model does not shift the numbers?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Pin the model or endpoint explicitly instead of relying on a default (BigQuery picks a recent stable Gemini when no endpoint is given, per its docs). Keep a labelled sample of a few hundred rows and score it on every run; alert when accuracy or the label distribution moves beyond a threshold. Version the prompt, log model and prompt per row, and treat a model change as a deploy with an eval gate.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is an AI function in a data warehouse, and why would a data team use one?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>It is a SQL function that calls a hosted language model for each row, for example AI.GENERATE in BigQuery, AI_COMPLETE in Snowflake or ai_query in Databricks. Data teams use it for batch enrichment such as classifying tickets or extracting fields, because it runs where the data lives, on the existing scheduler, with the existing access controls, and lands results in a table analysts can query.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> An AI enrichment job costs ten times what you estimated. Where do you look first?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Count how many calls it actually made versus rows you expected. The usual causes: the AI function sits in a view or a CTE that is re-evaluated by many queries; it runs before filters and dedupe; a retry loop resends the whole table; or prompts are far longer than planned because a big text column was concatenated in. Fix by materialising, filtering and deduping before the call, trimming the prompt, and making retries row-level.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> How would you govern AI columns across a company's warehouse?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Treat each AI column as a model in production. Require a pinned model or endpoint, a versioned prompt, row-level lineage (prompt version, model, run id), and a labelled eval sample with an accuracy threshold before the column is used in reporting. Put cost guardrails in place: incremental processing, quotas per job, and alerts on call volume. Use the platform's access controls so only approved roles can call models, and document which columns are model-generated so consumers know they carry error rates.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://docs.cloud.google.com/bigquery/docs/reference/standard-sql/bigqueryml-syntax-ai-generate" target="_blank" rel="noopener">The AI.GENERATE function - BigQuery docs</a></li>
+      <li><a href="https://docs.snowflake.com/en/sql-reference/functions/ai_complete" target="_blank" rel="noopener">AI_COMPLETE - Snowflake docs</a></li>
+      <li><a href="https://docs.databricks.com/aws/en/sql/language-manual/functions/ai_query" target="_blank" rel="noopener">ai_query function - Databricks docs</a></li>
+      <li><a href="https://duckdb.org/docs/stable/clients/python/function" target="_blank" rel="noopener">Python function API (create_function) - DuckDB docs</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
+  <p>Same pattern, three dialects. Next: <strong>BigQuery and Gemini</strong>, where retrieval, embeddings and generation all live in SQL.</p>
+
+</main>
+<script src="../assets/curriculum.js?v=25"></script>
+<script src="../assets/app.js?v=25"></script>
+</body>
+</html>
