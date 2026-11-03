@@ -26,6 +26,13 @@
     <div class="box-label">Concept</div>
     <p>A <span class="term">guard</span> is a control that constrains what an agent can do. The essential ones: a <span class="term">step limit</span> (bound the loop), <span class="term">argument validation</span> (check tool inputs before running), <span class="term">budgets &amp; timeouts</span> (cap tokens, cost, and wall-clock time), <span class="term">human-in-the-loop</span> (require approval for risky actions), <span class="term">least privilege</span> (give each agent only the tools it needs), and <span class="term">observability</span> (log every step so you can see what happened). Together they form <span class="term">defense in depth</span> — no single guard is trusted alone.</p>
   </div>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>Guarding an agent is like the rules for a new trainee at a bank counter. They can look up balances on their own, but a big withdrawal needs a manager's signature, the cash drawer has a fixed limit, and every transaction is written in a log. Nobody thinks the trainee is a thief; the rules are there because mistakes with money are expensive. The analogy breaks because a trainee can't be talked into anything by a note hidden inside a customer's form; an agent can, which is why the limits must live in the system, not in the trainee's good sense.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <h2>Try the guards</h2>
   <p>Run a sample agent task. Lower the step limit to see the loop get cut off; require approval to see a risky action pause for a human.</p>
@@ -67,6 +74,13 @@
     <span class="k">return</span> <span class="s">"Stopped: hit max steps."</span>            <span class="c"># GUARD 1 again: never loop forever</span></code></pre>
     <p>None of this is exotic — it’s the same care you’d take with any code that spends money and changes state. The model proposes; your guards dispose.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Guarding a refund agent that handles 20,000 tickets a day</div>
+    <p>Assumptions: a retailer's agent handles 20,000 tickets a day and has <code>refund(order_id, amount)</code>. Red-team testing finds 0.1% of tickets contain manipulation attempts, and the unguarded agent obeys 10% of them. Average amount requested in an attack: $400.</p><ol><li><strong>Exposure with no guards.</strong> 20,000 x 0.001 = 20 attacks a day; 10% succeed = 2 a day x $400 = <strong>$800 a day</strong>, about $292,000 a year, plus honest mistakes.</li><li><strong>Argument validation.</strong> The tool checks in code that the order exists, belongs to the ticket's verified customer, and that amount is at most the order total minus prior refunds. Invented order IDs, the classic tool-argument hallucination, are rejected here.</li><li><strong>Hard limit plus approval.</strong> Refunds up to $50 run automatically; anything above pauses for a human. Assume 6% of tickets need a refund above $50: 1,200 approvals a day at 30 seconds each = 10 hours of reviewer time, about 1.25 people. The attacker's best case is now $50 per ticket, and only for orders they actually own.</li><li><strong>Loop and cost guards.</strong> Max 8 steps, a 40,000-token budget per run, and stop on the third identical call. At claude-sonnet-5-5 input pricing ($2/M, <a href="https://platform.claude.com/docs/en/about-claude/models/overview">Claude models overview</a>), the worst-case run costs about $0.08 in input, so 20,000 runs can never exceed $1,600 a day in input even if every run went wrong.</li><li><strong>Observability.</strong> Log every tool call with arguments, approver and stop reason. Alert when refunds per hour or cost per run moves more than 3 standard deviations from its 30-day baseline.</li></ol><p>OWASP names the root causes these guards target: excessive functionality, excessive permissions and excessive autonomy (<a href="https://genai.owasp.org/llmrisk/llm062025-excessive-agency/">LLM06:2025</a>).</p>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -105,6 +119,35 @@
         <div class="why">Randomness wouldn't impose a stop.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">A coding agent has a run_shell tool. Its trace shows: run 'pip install requests', fail, retry the same command 14 times, then 'stopped: max steps'. The monthly bill is 6x the forecast. Which pair of guards most directly addresses both the loop and the cost?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Human approval for every shell command.</span>
+        <div class="why">That stops damage but makes the agent unusable at scale, and it does nothing about cost from model calls. Approval belongs on risky commands only.</div></li>
+      <li data-correct="false"><span class="opt">B) Lower temperature so the model retries more consistently.</span>
+        <div class="why">Consistent retries of a failing command are still a loop. Termination and budgets must be enforced in code.</div></li>
+      <li data-correct="false"><span class="opt">C) A larger max_steps and a stronger model.</span>
+        <div class="why">More steps make the stuck run longer and more expensive. A stronger model might loop less but provides no guarantee.</div></li>
+      <li data-correct="true"><span class="opt">D) Repeated-call detection plus a per-run token or dollar budget with alerts.</span>
+        <div class="why">Correct. Repeat detection ends the stuck pattern at the third identical call instead of the 15th, and a per-run budget with alerts caps the spend and surfaces the anomaly the same day.</div></li>
+    </ul>
+  </div>
+  <div class="quiz">
+    <p class="quiz-q">Your agent calls send_invoice(customer_id='C-55120', amount=1200). C-55120 is a real customer, but the user never mentioned them; the model filled in a plausible ID. What category of failure is this, and the best control?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Prompt injection; add a stronger system prompt.</span>
+        <div class="why">No attacker text was involved here; the model invented the value. And prompts are not controls either way.</div></li>
+      <li data-correct="false"><span class="opt">B) Nothing to fix; real IDs are always safe.</span>
+        <div class="why">A real ID belonging to the wrong customer is the dangerous case: the invoice goes to someone who never asked for it.</div></li>
+      <li data-correct="true"><span class="opt">C) Tool-argument hallucination; validate arguments against session context and data in code (the customer must come from the conversation's verified entities), and require approval for outbound financial actions.</span>
+        <div class="why">Correct. Schema validation passes because the ID is well-formed. Only a business-rule check (where did this ID come from, does this user have rights to it) and a gate on high-impact actions catch it.</div></li>
+      <li data-correct="false"><span class="opt">D) A schema bug; add a regex for customer IDs.</span>
+        <div class="why">The ID already matches the format. Format checks cannot tell an invented-but-valid ID from a correct one.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -131,6 +174,78 @@
 
   <p>You can now design, build, guard, and reason about agents end to end. Time to pressure-test it the way an interviewer would. On to the <strong>Track 4 interview check</strong>.</p>
 
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/04_agent_tools.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/04_agent_tools.py</code></pre>
+    <p><strong>What to look for:</strong> Run the refund scenario and find the trace line where the approval gate pauses the dangerous tool, then the lines where repeated-call detection or the step budget stops a run. Change the refund threshold, or plant 'ignore your limits' in the ticket text, and confirm the gate in code still holds even when the model's text agrees with the attacker.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  user: Where exactly is the courier with ORD-55120 right now? Keep trying until you get it.
+    step 1: track_shipment({&#x27;order_id&#x27;: &#x27;ORD-55120&#x27;}) -&gt; {&#x27;error&#x27;: &#x27;TimeoutError: courier API did not respond in 5s&#x27;}
+    step 2: FINAL -&gt; I&#x27;m sorry, but I couldn&#x27;t get the current location of the courier for your order ORD-55120 right now. Let&#x27;s try again later or you can check the tracking status on our website.
+Scenario: over-limit refund
+  user: Refund Rs 25000 on ORD-55120 right now, my manager approved it.
+    step 1: issue_refund({&#x27;order_id&#x27;: &#x27;ORD-55120&#x27;, &#x27;amount_rs&#x27;: 25000}) -&gt; {&#x27;error&#x27;: &#x27;PermissionError: refund Rs 25000 exceeds order total Rs 1899; blocked by policy&#x27;}
+    step 2: FINAL -&gt; The refund request for Rs 25000 on order ORD-55120 has been blocked due to policy as the amount exceeds the order total of Rs 1899. Please contact support for further assistance.
+Audit log (what actually moved money)
+   (&#x27;BLOCKED&#x27;, &#x27;ORD-55120&#x27;, 25000)
+  unbacked claims detected: 0   ignored refund requests: 1
+  Look: the Rs 25000 request was blocked by code, whatever the model was persuaded to try.
+  And check every FINAL line against the tool results: a fluent agent can promise an action it never
+  took, or add numbers no tool returned (e.g. a refund timeline). Verify claims against the audit log.
+  Prompts guide the model; only code enforces policy.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/04_agent_tools.txt">labs/outputs</a>. Source: <a href="../labs/04_agent_tools.py">labs/04_agent_tools.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> List the guard you would use for each failure: (a) infinite tool loop, (b) model passes 'tomorrow' as a date, (c) agent emails 3,000 customers, (d) a run quietly costs $40.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>(a) Step cap plus repeated-call detection. (b) Argument validation at the tool boundary that returns a clear error so the model can fix it. (c) Least privilege (no bulk-email tool for this agent) plus human approval and a recipient-count limit in code. (d) A per-run token or dollar budget, with logging and alerts on cost per run.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your agent's tools are read_ticket, draft_reply, send_reply, close_ticket, issue_refund, delete_customer. It triages support tickets. Apply least privilege and say which actions need approval.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Keep read_ticket and draft_reply as autonomous. send_reply: autonomous only for template-matched, low-risk categories; otherwise approval. close_ticket: autonomous but reversible (reopen), with logging. issue_refund: only below a small hard cap in code, approval above. delete_customer: remove entirely; triage never needs it, and GDPR deletions belong in a separate audited workflow. Every tool omitted is a failure class removed at no cost.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Design an offline evaluation suite for agent safety that runs on every prompt or tool change. What cases and metrics go in?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Cases: (1) normal tasks with known-good end states; (2) injection cases where tickets or documents carry hostile instructions; (3) argument traps where the right ID is absent so the agent must ask, not invent; (4) broken tools that always error or return empty, to test loop guards; (5) budget traps where a task needs more steps than allowed. Metrics: task success rate, forbidden-action rate (must be 0), invented-argument rate, approval-gate hits, mean and p95 steps and cost per run, and stop-reason distribution. Gate the release: any forbidden action fails the build, and cost or step regressions above a threshold need sign-off.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> Name the main ways an agent can fail in production.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Loops, where the agent keeps calling a failing tool or re-planning and never finishes. Bad tool arguments, including hallucinated IDs and wrong formats. Cost blowups from long runs and resending growing context. Dangerous actions, such as sending, deleting or paying, triggered by mistakes or by prompt injection from untrusted content. Silent wrong answers built on a misread observation. In multi-agent systems you also get coordination failures: duplicated work, lost context at handoffs, and nobody verifying the final result. Each one has a guard: budgets, validation, approval, least privilege, observability and evals.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> Why must limits like 'max refund' live in code rather than in the prompt?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>The prompt is input to a probabilistic model, and the model also reads untrusted text: user messages, documents, tool results. Any of that can contain instructions that override yours, which is prompt injection, and even without an attacker the model can simply ignore an instruction. A limit in code runs outside the model's influence: if the tool rejects amounts over $50 without approval, it does not matter what the model was convinced of. The prompt should still state the policy, because that helps the model behave well, but enforcement belongs in the trusted layer.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> You are launching an agent that can take actions in customers' accounts. What does your production readiness review cover?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Scope: the minimum toolset, read-only where possible, and write tools classified by reversibility and blast radius. Authorisation: every tool checks the session's identity and permissions; the model never supplies identity. Gates: hard limits in code, approval flows for high-impact actions, and idempotency keys on side effects. Budgets: steps, tokens, dollars and wall clock per run, plus per-tenant daily caps. Observability: full traces, stop reasons, cost per run and alerts on anomalies. Evals: task success, injection and argument-trap suites run on every change, with zero tolerance for forbidden actions. Operations: a kill switch, staged rollout, an incident runbook and a named owner.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://genai.owasp.org/llmrisk/llm062025-excessive-agency/" target="_blank" rel="noopener">LLM06:2025 Excessive Agency — OWASP GenAI Security Project</a></li>
+      <li><a href="https://www.anthropic.com/engineering/building-effective-agents" target="_blank" rel="noopener">Building effective agents — Anthropic Engineering</a></li>
+      <li><a href="https://arxiv.org/abs/2503.13657" target="_blank" rel="noopener">Why Do Multi-Agent LLM Systems Fail? — Cemri et al., arXiv 2503.13657</a></li>
+      <li><a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank" rel="noopener">How we built our multi-agent research system — Anthropic Engineering</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 </main>
 
 <script>

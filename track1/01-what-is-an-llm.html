@@ -21,6 +21,13 @@
     <div class="box-label">Concept</div>
     <p>A <span class="term">language model</span> (LM) is a program that takes some text and predicts what comes next. A <span class="term">large language model</span> (LLM) is just a language model with a very large number of internal numbers — its <span class="term">parameters</span> — trained on a very large amount of text. “Large” today means billions of parameters and trillions of words of training text.</p>
   </div>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>Think of the phone keyboard that suggests the next word while you text. An LLM is that same game played by a player who has read a huge library, so its suggestions are good enough to finish whole essays one word at a time. It never plans the whole message; it just keeps picking the next suggestion and adding it on. The analogy breaks because a phone keyboard learns from your own texts as you type, while an LLM's weights are frozen after training and learn nothing from your chat.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <h2>The one move: predict the next token</h2>
   <p>Models don’t read whole words at a time. They read <span class="term">tokens</span> — short chunks of text (a token is roughly a word or a word-piece; we’ll dissect them in the very next lesson). Given the tokens so far, the model outputs a <strong>probability for every possible next token</strong> in its vocabulary. Not one answer — a ranked distribution over tens of thousands of options.</p>
@@ -38,6 +45,20 @@
     <p style="margin:6px 0 0"><code>Paris</code> → 0.92 &nbsp;·&nbsp; <code>a</code> → 0.02 &nbsp;·&nbsp; <code>the</code> → 0.02 &nbsp;·&nbsp; <code>located</code> → 0.01 &nbsp;·&nbsp; <em>(everything else)</em> → 0.03</p>
     <p>It’s very confident, so <code>Paris</code> gets picked. Now feed in <code>"The capital of France is Paris"</code> and it might predict <code>,</code> or <code>.</code> next, then maybe <code>which</code>, then <code>is</code>… and a sentence assembles itself. The model never “decided to tell you about France.” It just kept answering “what’s a likely next token?” — and likely-next-token, over and over, <em>looks</em> like knowing the answer.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: What 2 million support replies a day really costs, token by token</div>
+    <p>Assume a support platform drafts <strong>2,000,000 replies a day</strong>. Each request carries about <strong>1,500 input tokens</strong> (instructions plus the ticket) and each reply is about <strong>300 output tokens</strong>. These volumes are assumptions; plug in your own.</p>
+<ol>
+<li><strong>Count the forward passes.</strong> Autoregression means one model step per output token. 2,000,000 x 300 = <strong>600 million</strong> sequential next-token steps a day, spread across many GPUs.</li>
+<li><strong>Input is read in parallel, output is not.</strong> The 1,500 input tokens are processed together in one pass (the "prefill"). The 300 output tokens come one at a time. That is why a long answer feels slow even when the prompt is short.</li>
+<li><strong>Latency per reply.</strong> If the serving stack decodes at an assumed 60 tokens/second, 300 tokens take 300 / 60 = <strong>5 seconds</strong>. Halve the answer length and you halve the wait.</li>
+<li><strong>Price it.</strong> On Claude Sonnet 5.5 at $2 per million input and $10 per million output tokens (<a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic models overview</a>): input = 2,000,000 x 1,500 = 3 billion tokens = <strong>$6,000/day</strong>; output = 600 million tokens = <strong>$6,000/day</strong>. Output is one fifth the token count but costs the same, because each output token is 5x the price.</li>
+<li><strong>The lesson.</strong> Every "word" the model writes is one more predict-sample-append step you pay for in time and money. Asking for "a 2-sentence reply" is not just style; it is the cheapest optimisation you have.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="demo" id="nt-demo">
     <div class="demo-head"><span class="tag">Live demo</span><h4>Next-token predictor</h4></div>
@@ -108,6 +129,22 @@
         <div class="why">A base model only uses its trained weights unless you add tools/retrieval.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">A base model (no instruction tuning) is given the prompt 'What is the capital of Japan?' and replies 'What is the capital of China? What is the capital of Korea?'. Why?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) The context window was too small to hold the question.</span>
+        <div class="why">A one-line question fits in any context window. Size is not the problem here.</div></li>
+      <li data-correct="false"><span class="opt">B) The model does not know the capital of Japan.</span>
+        <div class="why">The fact is almost certainly in its weights. The issue is the format of the continuation, not missing knowledge.</div></li>
+      <li data-correct="false"><span class="opt">C) The temperature was set too high.</span>
+        <div class="why">High temperature adds randomness, but a base model behaves like this even at temperature 0. The behaviour comes from what it was trained to do.</div></li>
+      <li data-correct="true"><span class="opt">D) It continued the text the way a list of quiz questions usually continues, because it was only trained to predict the next token of documents.</span>
+        <div class="why">Right. A base model has learned what text tends to come next, and a page of quiz questions is often followed by more questions. Instruction tuning is what teaches it that a question should be followed by an answer.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -130,6 +167,78 @@
     <p>It’s fair to be skeptical that something so simple could write code or pass exams. Here’s the intuition for why it works. To predict the next token <em>well</em> across all of human text, a model is pushed to internalize whatever structure makes text predictable: grammar, of course, but also facts (“the capital of France is ___”), arithmetic patterns, the rules of chess notation, the shape of a valid Python function, even the gist of an argument (“therefore, ___”). Getting the next token right at scale <em>requires</em> capturing these regularities. So “mere” prediction, pushed hard enough, produces something that behaves a lot like understanding for many tasks.</p>
     <p>But the same lens shows the limits. The model optimizes for <em>plausible</em>, not <em>true</em>. When a fluent continuation and a correct continuation diverge — an obscure fact, a fresh event, a tricky calculation — it will happily produce the fluent one. That’s hallucination, and it’s not a glitch bolted on; it’s the flip side of the very mechanism that makes the model powerful. Much of this course — grounding with RAG, tool use, evals, guardrails — is about systematically closing the gap between “plausible” and “true.”</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/01_generate_and_sample.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/01_generate_and_sample.py</code></pre>
+    <p><strong>What to look for:</strong> Look at the streamed output: tokens arrive one by one, which is autoregression you can watch. Compare prompt_eval_count (input tokens, processed in one go) with eval_count (output tokens, generated one at a time) and the tokens/sec figure. Ask for a reply twice as long and watch total time roughly double while time-to-first-token barely moves.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>2) Same prompt, temperature 1.0, three different seeds
+  seed=1: Bengaluru in July typically experiences warm to hot temperatures with occasional thunderstorms.
+  seed=2: Bengaluru in July typically experiences hot and humid weather with occasional thunderstorms.
+  seed=3: Bengaluru in July typically experiences hot and dry weather with temperatures often soaring above 30°C.
+  distinct outputs at T=1.0: 3  (sampling -&gt; usually 2-3)
+3) Same seed twice at T=1.0 -&gt; reproducible on the same machine
+  identical: True
+4) Tokens are what you pay for: prompt vs output token counts
+  short prompt: prompt_tokens=   36  output_tokens=  2  prefill_s=  0.52  answer=&#x27;Paris&#x27;
+  long prompt : prompt_tokens=  639  output_tokens=  2  prefill_s=  0.22  answer=&#x27;Paris&#x27;
+  Look: the long prompt costs many more input tokens and more prefill time for the same answer.
+5) Streaming: time-to-first-token (TTFT) vs total time
+  TTFT=0.36s  total=2.54s  chunks=16  decode_tokens_per_s=7.3
+  Look: streaming does not make generation faster; it shows the first words sooner.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/01_generate_and_sample.txt">labs/outputs</a>. Source: <a href="../labs/01_generate_and_sample.py">labs/01_generate_and_sample.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> A model writes a 600-token answer. How many times did it run the predict-sample-append loop, and how many times did it read your 2,000-token prompt from scratch if it uses a KV cache?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>It ran the loop 600 times, once per output token. With a KV cache (the standard trick of storing each token's attention keys and values) the 2,000-token prompt is processed once up front; each new step only computes the newest token and reuses the cached rest. Without a cache it would reprocess the growing text every step, which is why every serving stack caches.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your product manager wants the bot to 'remember' a customer's preferences between sessions. Using only what this lesson taught, explain what has to happen in the system, and why retraining the model nightly is the wrong first idea.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>The weights are frozen at inference, so memory has to live outside the model: store the preferences in a database and put them back into the prompt at the start of each session (or retrieve them when relevant). Nightly retraining is slow, expensive, mixes one customer's data into a shared model, and still would not guarantee recall of a specific fact. Supplying text in the context is cheap, exact, and per-user.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Estimate how much text a model sees in pre-training versus what one person reads in a lifetime. Assume 15 trillion training tokens, 0.75 words per token, a reader doing 300 words/minute for 1 hour a day for 60 years. What does the ratio tell you about why the model knows so much and still makes things up?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Training: 15e12 x 0.75 = about 11 trillion words. Person: 300 x 60 x 365 x 60 = about 394 million words. Ratio is roughly 28,000 lifetimes of reading. That breadth is why it can continue text on almost any topic. But it learned to produce likely text, not to keep a checked list of facts, so on rare or recent facts the likely continuation and the true one can split apart. Scale buys coverage, not a truth check. (The 15T figure is an assumption for the exercise; labs publish different numbers per model.)</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> Explain what an LLM does when it generates a response, to a non-technical stakeholder.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>It looks at all the text so far and gives every possible next token a probability. The program picks one token, adds it to the text, and asks again. It repeats that until it hits a stop signal or a length limit. That loop is called autoregression. The model is not searching a database or the web; it is continuing text using patterns learned in training. That is why answers can sound confident and still be wrong, and why we add things like retrieval and checks around it.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> What is the difference between a base model and an instruction-tuned model, and when would you choose a base model?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>A base model is trained only on next-token prediction over raw text, so it continues documents. An instruction-tuned model is then fine-tuned on instruction and response pairs and shaped with human preference data, so it answers questions, follows formats, and refuses some requests. For products you nearly always want the instruction-tuned model. A base model is useful when you want pure continuation (autocomplete, code completion in the middle of a file), when you plan your own fine-tune and do not want an inherited chat style, or for research on what the pre-training learned.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Why are output tokens slower and usually pricier than input tokens, and how does that change how you design a feature?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Input tokens are processed in parallel in one prefill pass, which uses the GPU well. Output tokens are produced one at a time, each step depending on the last, so decoding is bound by memory bandwidth and is much less efficient per token. Providers price that in: output often costs several times input. Design consequences: keep answers short and structured, put verbosity limits in the prompt, stream so users see the first tokens early, move long reasoning to cheaper models or batch jobs, cache repeated prefixes, and measure time-to-first-token and tokens/sec separately because they have different causes.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">Attention Is All You Need (Vaswani et al., 2017) — arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2005.14165" target="_blank" rel="noopener">Language Models are Few-Shot Learners (Brown et al., 2020) — arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2203.02155" target="_blank" rel="noopener">Training language models to follow instructions with human feedback (Ouyang et al., 2022) — arXiv</a></li>
+      <li><a href="https://platform.claude.com/docs/en/about-claude/models/overview" target="_blank" rel="noopener">Models overview — Anthropic</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>You now know what the engine does. Next, let’s zoom into the fuel it runs on: <strong>tokens</strong> — what they are, why they’re weird, and why they quietly control your costs and limits.</p>
 

@@ -13,6 +13,13 @@
   <span class="eyebrow">Structured Data &amp; Text-to-SQL · Lesson 9.4</span>
   <h1>The self-correcting SQL agent</h1>
   <p class="lead">First tries fail: a wrong column name, a bad join, a dialect quirk. The trick that makes text-to-SQL feel reliable is letting the system read its own error and fix itself — the agent loop from Track&nbsp;4, pointed at a database.</p>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>It is like a spelling test where the teacher circles the exact wrong letter and lets you try again twice. With the circle you fix it almost every time; if the teacher just said "wrong, try again", you would probably make the same mistake. The analogy breaks because the database only circles mistakes that break the rules of SQL; a query that is valid but answers the wrong question gets no circle at all.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <h2>Why a single shot isn’t enough</h2>
   <p>Even with a good schema prompt, the model’s first query will sometimes fail: it references <code>customer.country</code> when the table is <code>customers</code>, or uses a function your dialect doesn’t have. A one-shot system just surfaces that error to the user, who has no idea what to do with <code>no such column: customer.country</code>. But notice: the database just told us <em>exactly</em> what’s wrong. If we hand that error message back to the model and ask it to try again, it fixes the mistake the overwhelming majority of the time. That single feedback loop is the difference between a brittle demo and something people trust.</p>
@@ -43,7 +50,14 @@
   <h2>Beyond errors: verify the result, and ask when unsure</h2>
   <p>Self-correction fixes queries that <em>error</em>. But recall the scarier failure: SQL that runs and returns the wrong number. Two habits help. First, <strong>sanity-check the result shape</strong> — if a “how many customers” question returns 40,000 rows instead of one number, something’s off; that mismatch can itself be fed back for a fix. Second, when a question is genuinely <strong>ambiguous</strong> (“best customers”?), the most reliable “agent” move is often not to guess but to <em>ask a clarifying question</em> — “by revenue or by number of orders?” A system that occasionally asks is far more trustworthy than one that confidently guesses wrong.</p>
 
-  <div class="box key">
+  
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: What a 3-try loop buys on 1,000 questions, and what it cannot fix</div>
+    <p>Assumptions (measure your own): 82% of first-try queries run without error, each retry fixes 70% of the remaining errors, max_tries = 3 (one try plus two retries), 4,000 input and 200 output tokens per call, about 4,400 input on retries because they carry the error and the failed SQL, prices of $2 / $10 per million input / output tokens (<a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic models overview, checked 2026-11-03</a>).</p><ol><li><strong>After try 1:</strong> 820 of 1,000 run; 180 error.</li><li><strong>After try 2:</strong> 180 x 0.7 = 126 fixed, 946 run (94.6%); 54 still failing.</li><li><strong>After try 3:</strong> 54 x 0.7 = 37.8 fixed, about 984 run (98.4%); about 16 give up gracefully with a message.</li><li><strong>Calls per question.</strong> 1 + 0.18 + 0.054 = 1.234 on average.</li><li><strong>Cost.</strong> First call = 4,000 x $2 / 1 M + 200 x $10 / 1 M = $0.010. Retry = 4,400 x $2 / 1 M + $0.002 = $0.0108. Average = $0.010 + 0.234 x $0.0108 = about $0.0125 a question, $12.50 per 1,000.</li><li><strong>The ceiling.</strong> Suppose execution accuracy against reference answers is 86%. Then 984 - 860 = 124 queries ran fine and returned the wrong result. The error loop cannot touch those: there was no error. They need result-shape checks, clarifying questions and the semantic layer.</li></ol><p>So the loop takes "runs" from 82% to 98%, cheaply. "Correct" is a separate number that you must measure separately.</p>
+  </div>
+<!-- shape:scale:end -->
+<div class="box key">
     <div class="box-label">Key points</div>
     <ul>
       <li>First-try SQL often fails; feeding the <strong>database’s error message back</strong> lets the model fix it — usually within one retry.</li>
@@ -92,6 +106,22 @@
         <div class="why">The whole point is bounded retry with the error as feedback.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Your loop sees the same error three times in a row: the model keeps producing identical SQL. What is the best change?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Remove the schema from retries to save tokens.</span>
+        <div class="why">The schema is exactly what the model needs to fix a wrong column. Removing it makes the fix less likely.</div></li>
+      <li data-correct="true"><span class="opt">B) Detect a repeated query or error and stop early, or change the feedback (add the real column list for the table named in the error) before retrying.</span>
+        <div class="why">Retrying with the same input usually gets the same output. Either give the model new information, such as the actual columns, or stop and fail gracefully instead of paying for identical failures.</div></li>
+      <li data-correct="false"><span class="opt">C) Raise max_tries to 10.</span>
+        <div class="why">If the model is stuck, more identical retries just cost more and delay the user.</div></li>
+      <li data-correct="false"><span class="opt">D) Raise the temperature on retries.</span>
+        <div class="why">More randomness may change the SQL but not toward correctness, and many hosted models no longer accept temperature changes. New information is what helps.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box deep">
@@ -99,6 +129,78 @@
     <p>The self-correcting SQL agent is a specific case of a pattern worth internalizing, because it recurs everywhere in applied GenAI: give a model a tool whose failures are <em>legible</em>, let it call the tool, and feed the tool’s response — success or a precise error — back into the loop. SQL is a beautiful example because databases return unusually good error messages, but the same shape works for calling an API (feed back the 400 and the validation message), running code (feed back the stack trace), or invoking any function with a schema (feed back “missing required field X”). The model becomes reliable not because it’s always right the first time, but because the environment tells it exactly how it was wrong and it can try again.</p>
     <p>That reframes what you’re building across this whole course. An agent’s intelligence is only half the story; the other half is the quality of the feedback its tools give it. When you design a tool for an LLM, you’re also designing its error messages — and a tool that fails with a clear, specific, actionable message turns a model that “sometimes gets it right” into a system that “gets it right after a bounded, self-correcting loop.” That design instinct — engineering the feedback, not just the action — is what separates people who can make agents production-grade from people who can only demo them.</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/09_text_to_sql_duckdb.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/09_text_to_sql_duckdb.py</code></pre>
+    <p><strong>What to look for:</strong> The lab's self-correction loop feeds the SQL error back to the model and retries. Count, from its output, how many questions succeeded on the first try, how many needed a retry, and how many gave up. Then compare "ran without error" with the execution-accuracy score: the gap between them is the wrong-but-runs share that error feedback cannot fix. Try setting the retry cap to 1 to see the first-try rate on its own.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  Q: What share of orders were returned? Give a fraction between 0 and 1.
+     SQL: SELECT SUM(CASE WHEN status = &#x27;returned&#x27; THEN 1 ELSE 0 END) / COUNT(*) AS return_share FROM orders;
+     PASS fixes=0 got=[(0.09483333333333334,)] gold=[(0.09483333333333334,)]
+  Q: Average delivered order value for Plus members vs non-members.
+     SQL: SELECT AVG(CASE WHEN c.is_plus THEN o.amount_rs ELSE NULL END) AS avg_plus, AVG(CASE WHEN NOT c.is_plus THEN o.amount_rs ELSE NULL END) AS avg_non_plu
+     FAIL fixes=0 got=[(4945.648507917174, 5045.7609119496865)] gold=[(False, 5045.760911949686), (True, 4945.648507917174)]
+  Q: How many customers placed no orders at all?
+     SQL: SELECT COUNT(*) FROM customers WHERE customer_id NOT IN (SELECT customer_id FROM orders WHERE status = &#x27;delivered&#x27;)
+     PASS fixes=0 got=[(50,)] gold=[(50,)]
+  execution accuracy: 5/6
+3) A user asks for something destructive
+  blocked by the gate: DELETE is not allowed (SELECT only)
+  Look: safety comes from the parser + read-only principal + row cap, not from asking the model nicely.
+  Wrong-but-valid SQL (a FAIL above) is the harder problem; only an eval set with gold answers catches it.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/09_text_to_sql_duckdb.txt">labs/outputs</a>. Source: <a href="../labs/09_text_to_sql_duckdb.py">labs/09_text_to_sql_duckdb.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> First-try success is 75% and each retry fixes 60% of remaining errors. With max_tries = 3, what fraction of queries end up running, and how many calls per question on average?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>After try 1: 75% run, 25% fail. Try 2 fixes 25% x 0.6 = 15%, total 90%, 10% fail. Try 3 fixes 10% x 0.6 = 6%, total 96%, 4% give up. Average calls = 1 + 0.25 + 0.10 = 1.35.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Write three result-shape checks that would catch wrong-but-runs answers, and the feedback you would send to the model for each.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>(1) The question asks for one number ("how many", "total") but the result has many rows: "The question expects a single value but the query returned 4,210 rows. Aggregate it." (2) A count or sum is far larger than the table's row count or known totals, a sign of fan-out: "The sum is larger than the total of all orders; check for a join that duplicates rows." (3) An empty result for a question that names a value: "No rows matched country = 'DE'. Sample values for country are 'Germany', 'Canada'." Each turns a silent wrong answer into an observation the loop can act on, still bounded by max_tries.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Design an experiment to show leadership what the self-correction loop is worth, honestly.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Use the golden set (150+ questions with reference SQL). Run three configurations on the same questions and the same model: (A) single shot, (B) error feedback with max_tries = 3, (C) B plus result-shape checks and clarifying questions for flagged ambiguous ones. Report for each: ran-without-error rate, execution accuracy, average calls, p95 latency and cost per 1,000 questions. Use a paired comparison on the same questions (count questions fixed and broken between configs) to see whether gains beat noise. Expect B to raise the run rate a lot and execution accuracy less; C to close part of the remaining gap. Presenting both numbers stops anyone confusing "it runs" with "it is right".</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> How does a self-correcting SQL agent work?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>It runs the generated SQL with a safe read-only runner. If the database returns an error, the agent sends the exact error message and the failed query back to the model and asks for a fix, then tries again, up to a small limit such as three tries. On success it returns the rows and the SQL for transparency; on repeated failure it stops and tells the user. It works because databases give precise errors like "no such column", which tell the model exactly what to change.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> Why cap retries, and what else should stop the loop early?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Some questions cannot be answered from the schema at all, and a stuck model will produce the same failure again, so an uncapped loop burns time and money with no gain. Two or three tries catch most fixable errors. Stop earlier when the same SQL or the same error repeats, when a per-request token or time budget runs out, or when the error is not fixable by rewriting, such as a permission denied or timeout, which should go to the user or an operator rather than back to the model.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Error-driven self-correction raised your run rate to 98% but users still find wrong numbers. What do you do next?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Recognize the loop only fixes queries that fail, so I measure execution accuracy separately and read the runs-but-wrong cases. Typical causes: fan-out joins, wrong filters, wrong metric definitions, and ambiguous questions. Fixes in order of leverage: a semantic layer with canonical metric views; result-shape and sanity checks fed back into the same bounded loop; clarifying questions when the question maps to several plausible queries; showing SQL and row counts in the UI; and a growing golden set from user-reported errors, gated in CI. The Self-Debugging and DIN-SQL papers show the feedback idea; the semantic layer is what makes answers right.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2304.05128" target="_blank" rel="noopener">Chen et al., Teaching Large Language Models to Self-Debug (2023) - arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2304.11015" target="_blank" rel="noopener">Pourreza and Rafiei, DIN-SQL: Decomposed In-Context Learning of Text-to-SQL with Self-Correction (2023) - arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2210.03629" target="_blank" rel="noopener">Yao et al., ReAct: Synergizing Reasoning and Acting in Language Models (2022) - arXiv</a></li>
+      <li><a href="https://docs.python.org/3/library/sqlite3.html" target="_blank" rel="noopener">sqlite3 module documentation - Python</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>You can now build a safe, self-correcting text-to-SQL system. The last question is the one interviewers always ask: how do you know it’s any good? Next: the <strong>interview check</strong>, where evaluation ties it together.</p>
 

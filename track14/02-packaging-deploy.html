@@ -13,6 +13,13 @@
   <span class="eyebrow">Productionization &amp; LLMOps · Lesson 12.2</span>
   <h1>Packaging &amp; deploy</h1>
   <p class="lead">“It works on my machine” is not a deployment strategy. Containers make your service run the same everywhere, and a little discipline with config and secrets keeps it safe. This lesson gets your API off your laptop.</p>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>A container is like a packed lunchbox. Instead of hoping the school canteen has the right bread, you pack the sandwich, the napkin and the fork together, so lunch is the same wherever you eat it. The note from your parents saying which allergy you have is not glued inside the box; it is handed to the teacher separately (config and secrets from the environment). Where it breaks: a lunchbox is small, but people sometimes try to pack the whole fridge, like baking a 5 GB model into the image, and then every delivery becomes slow.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <h2>Why containers: kill “works on my machine”</h2>
   <p>Your service depends on a specific Python version, specific libraries at specific versions, and system bits underneath. Move it to another computer and any mismatch breaks it — the classic “works on my machine” failure. A <span class="term">container</span> solves this by packaging your code <em>together with</em> its entire environment (Python, libraries, config) into one portable image that runs identically on your laptop, a teammate’s machine, or a cloud server. <strong>Docker</strong> is the standard tool for building and running these images. The payoff: build once, run anywhere, with no “but it worked here” surprises.</p>
@@ -44,7 +51,22 @@ API_KEY <span class="o">=</span> os.<span class="f">environ</span>.<span class="
     <p>A hardcoded API key (<code>api_key = "sk-abc123..."</code>) pushed to GitHub is the single most common, most damaging beginner mistake. Reviewers look for it. Secrets live in environment variables and secret managers — <em>never</em> in code or version control.</p>
   </div>
 
-  <div class="box key">
+  
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Shipping a RAG service to 3 environments and 12 replicas, with versioned prompts</div>
+    <p>Assumptions (ours): dev, staging and prod; 12 prod replicas; app image about 200 MB on a slim Python base; model served separately (local qwen2.5:7b is 4.7 GB per <code>ollama list</code>, a hosted API in prod).</p>
+<ol>
+<li><strong>Keep weights out of the app image.</strong> Baked in, each prod deploy pulls 12 x 4.9 GB = 59 GB and every new replica waits minutes for it. Kept out, a deploy pulls 12 x 0.2 GB = 2.4 GB. Run the model as its own service (Ollama, vLLM) or call an API, and point at it with <code>MODEL_URL</code>.</li>
+<li><strong>Tag images by commit, never latest.</strong> <code>my-llm-app:3f9c2a1</code> means a rollback is "run the previous tag", and you can always say exactly what code served a bad answer.</li>
+<li><strong>Treat prompts as versioned artefacts.</strong> Store prompts as files in the repo. At build time compute <code>sha256(prompt)[:12]</code> and record it with a human name, e.g. <code>support_answer@v14 (a81f0c33d2e9)</code>. The env var <code>PROMPT_VERSION=v14</code> picks which one runs, so staging can test v15 while prod stays on v14 with the same image.</li>
+<li><strong>Stamp every trace.</strong> The OpenTelemetry GenAI conventions define <code>gen_ai.prompt.name</code> and <code>gen_ai.prompt.version</code> (status: Development), so each span says which prompt produced the answer (<a href="https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/client-inference.md" target="_blank" rel="noopener">GenAI inference spans</a>).</li>
+<li><strong>Roll out in waves.</strong> With 25% surge, 3 replicas change at a time: 4 waves. If each new replica needs 90 s to pass its readiness check (assumption), the rollout takes about 6 minutes, and a bad health check stops it after 3 replicas, not 12.</li>
+<li><strong>Secrets stay outside.</strong> The API key is injected at run time from the platform's secret store; it is never in the Dockerfile, the image layers or git. GitHub secret scanning can flag known key formats if one slips into a push, but treat any committed key as leaked and rotate it.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+<div class="box key">
     <div class="box-label">Key points</div>
     <ul>
       <li><strong>Containers (Docker)</strong> package code + its whole environment so it runs identically everywhere — no “works on my machine.”</li>
@@ -94,6 +116,22 @@ API_KEY <span class="o">=</span> os.<span class="f">environ</span>.<span class="
         <div class="why">Unrelated — that's a separate technique.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Your team bakes the system prompt into the Docker image as a string constant. Product wants to A/B test a new prompt in production next week. What is the better design?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Store the prompt in an environment variable as free text with no version.</span>
+        <div class="why">Config is the right channel, but without a version name or hash you cannot tell which prompt produced a given answer.</div></li>
+      <li data-correct="false"><span class="opt">B) Let product edit the prompt directly in the production container.</span>
+        <div class="why">Hand edits in a running container are unreviewed, unversioned and lost on the next restart.</div></li>
+      <li data-correct="false"><span class="opt">C) Build a separate image for every prompt variant and tag them all latest.</span>
+        <div class="why">Separate images can work, but 'latest' destroys traceability and rollback. Prompt selection by config is simpler.</div></li>
+      <li data-correct="true"><span class="opt">D) Keep prompts as versioned files (with a content hash), select the version by config, and record the version on every trace.</span>
+        <div class="why">Then the same image can serve v14 and v15 to different traffic slices, you can roll back by changing config, and every answer is traceable to the prompt that produced it.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box deep">
@@ -102,6 +140,78 @@ API_KEY <span class="o">=</span> os.<span class="f">environ</span>.<span class="
     <p><strong>Statelessness</strong> means your service shouldn’t store important data in its own memory or local disk between requests, because a deployment might run several copies of it and replace them at any time; anything that must persist goes to a database or object store. This is what lets a platform run three, then ten, copies of your container behind a load balancer to handle traffic — horizontal scaling — without any of them stepping on each other.</p>
     <p>For LLM services specifically, statelessness has a twist worth naming in interviews: conversation “memory” must live outside the process (a database or cache keyed by session), never in a local variable, precisely because the next request might hit a different container. Combine that with the operational ring from the last lesson — timeouts, rate limits, caching, streaming — and you have the shape of a real deployment: a stateless, containerized, env-configured service with persistence and state pushed to backing stores. You don’t need to memorize the whole twelve-factor list; you need the instinct that <em>code is fixed, config and state live outside it</em>, because that instinct is what makes something you can actually run at scale.</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/08_llmops.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/08_llmops.py</code></pre>
+    <p><strong>What to look for:</strong> Look at the lab's versioned prompt registry: each prompt is identified by a content hash, and every trace line records which version ran. Edit one word of a prompt and rerun; the hash and the version stamped in the trace both change. The lab does not build a Docker image or deploy anything; those steps are the commands on this page.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  semantic similarity to the cached &#x27;track my order&#x27;: paraphrase=0.657  different intent (cancel)=0.523
+  semantic hits at threshold 0.9: 0
+  Look: a threshold low enough to catch the paraphrase would sit close to the wrong-intent score.
+  Serving &#x27;how to track&#x27; to someone who asked &#x27;how to cancel&#x27; is worse than a cache miss. Tune the
+  threshold on labelled pairs, scope caches per intent/tenant, and log every semantic hit for review.
+  traces written to traces.jsonl; first span:
+  {&quot;trace_id&quot;: &quot;54d669838c1f47758c9099aba0110b3f&quot;, &quot;name&quot;: &quot;chat qwen2.5:7b&quot;, &quot;gen_ai.operation.name&quot;: &quot;chat&quot;, &quot;gen_ai.provider.name&quot;: &quot;ollama&quot;, &quot;gen_ai.request.model&quot;: &quot;qwen2.5:7b&quot;, &quot;gen_ai.prompt.name&quot;: &quot;support_answer&quot;, &quot;gen_ai.prompt.version&quot;: 2, &quot;prompt.hash&quot;: &quot;5ab3d11ffb3b&quot;, &quot;user.id&quot;: &quot;u-123&quot;, 
+4) Prompt version rollout: v1 vs v2 on the same question, both traced
+  v1 hash=47ed77f326d6 -&gt; &quot;Yes, you can return innerwear as long as it meets your retailer&#x27;s return policy conditions, such as being unus&quot;
+  v2 hash=5ab3d11ffb3b -&gt; &#x27;Please contact support for specific return policies on innerwear.&#x27;
+  Check the facts too: store policy (labs/data/kb.json, ret-01) says innerwear cannot be returned. Neither
+  prompt has retrieval, so any &#x27;yes&#x27; is a hallucination; the version that defers to support is the safer one.
+  Look: the trace links every answer to an exact prompt hash and model, so a bad answer is debuggable,
+  and a rollout is a registry change you can roll back, not a code edit buried in a deploy.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/08_llmops.txt">labs/outputs</a>. Source: <a href="../labs/08_llmops.py">labs/08_llmops.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Your Dockerfile has COPY . . before pip install -r requirements.txt. Every code change reinstalls all dependencies. Why, and how do you fix it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Docker caches layers in order; any change to a copied file invalidates that layer and all layers after it. With COPY . . first, editing main.py busts the pip install layer. Fix: COPY requirements.txt first, run pip install, then COPY the rest. Code changes now reuse the cached dependency layer, so builds take seconds. Also add a .dockerignore so .env, .git and data files never enter the build context.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Write the environment variables you would define for dev, staging and prod of a RAG service, and say which ones are secrets.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>MODEL (e.g. qwen2.5:7b in dev, a pinned hosted model ID in prod), MODEL_URL (local Ollama vs provider endpoint), PROMPT_VERSION, INDEX_URI (local DuckDB file vs managed vector store), LOG_LEVEL, OTEL_EXPORTER_OTLP_ENDPOINT (where traces go), RATE_LIMIT_PER_MIN, and API_KEY / DB_PASSWORD. Only the last two are secrets: inject them from a secret manager at run time, never commit them, and give each environment its own key so a dev leak cannot touch prod. Everything else is plain config and can live in a reviewed config file per environment.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> A prod incident: answers got worse at 14:05. Image tag, prompt version and model ID are all in your traces. Write the investigation steps that use them, and what you would change if one of the three was missing.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>1) Group traces before and after 14:05 by (image tag, prompt version, model ID). 2) If one of them changed at 14:05, roll that one back first; that is why they are pinned. 3) If none changed, the cause is outside the release: data or index refresh, upstream model behaviour, or traffic mix, so compare retrieval scores and intents across the boundary. If the model ID was missing (for example you called an alias like a 'latest' model name), you could not rule out a silent upstream upgrade; the fix is to pin dated model IDs and log the response model the provider returns (gen_ai.response.model).</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> Why should configuration and secrets come from environment variables instead of the code?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>So the same build runs everywhere and no secret lives in version control. Code is identical across dev, staging and prod; only config differs, such as model name, database URL and log level. If those were hard-coded you would edit code per environment, which breaks reproducibility. Secrets are worse: a key committed to git is readable by anyone with repo access, forever, even after you delete the line. So secrets are injected at run time from a secret manager, .env files go in .gitignore, and a leaked key is rotated immediately.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> How do you manage prompt versions in a production LLM system?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Prompts are code: they live in the repo as files and change through pull requests that run the eval gate. Each prompt has a name and a version, and I record a content hash so the version name cannot drift from the text. The running version is selected by config, which lets me canary a new prompt on a slice of traffic or roll back without a rebuild. Every trace records prompt name and version, so I can compare quality, cost and latency per version. Tools like Langfuse add a UI and labels such as production on top, but the principle is the same.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> What belongs in the container image and what does not, for an LLM service that uses a self-hosted model?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>The image holds code, pinned dependencies and the prompt files for that release: small, rebuilt often, tagged by commit. Model weights are large and change rarely, so they live in a model registry or object store and are served by a separate inference service (vLLM, TGI, Ollama) with its own scaling, GPU nodes and rollout. Secrets and per-environment config are injected at run time. State such as conversation memory and caches lives in backing stores. This split means a prompt fix ships in minutes, a model upgrade is its own controlled rollout, and app replicas start fast because they do not pull gigabytes.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://docs.docker.com/build/building/best-practices/" target="_blank" rel="noopener">Building best practices - Docker docs</a></li>
+      <li><a href="https://12factor.net/config" target="_blank" rel="noopener">The Twelve-Factor App: III. Config - 12factor.net</a></li>
+      <li><a href="https://docs.github.com/en/code-security/secret-scanning/introduction/about-secret-scanning" target="_blank" rel="noopener">About secret scanning - GitHub Docs</a></li>
+      <li><a href="https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/client-inference.md" target="_blank" rel="noopener">GenAI inference spans (gen_ai.prompt.version) - OpenTelemetry semantic-conventions-genai</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>Your service can run anywhere. But every change you make risks breaking quality — so before anything ships, it should have to pass your evals. Next: <strong>CI for prompts &amp; evals.</strong></p>
 

@@ -26,6 +26,13 @@
     <div class="box-label">Concept</div>
     <p><span class="term">PEFT</span> (parameter-efficient fine-tuning) trains a small number of new parameters instead of all of them. <span class="term">LoRA</span> is the most popular PEFT method: it freezes the base model and inserts small low-rank matrices (the adapter) whose <span class="term">rank</span> <code>r</code> controls capacity. <span class="term">QLoRA</span> goes further: it <span class="term">quantizes</span> the frozen base model to 4-bit (shrinking its memory ~4×) and trains a LoRA adapter on top — so a model that wouldn’t otherwise fit now trains on one consumer/free GPU. The trained <span class="term">adapter</span> is a tiny file (megabytes) you load on top of the base.</p>
   </div>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>LoRA is like putting clip-on lenses over a camera instead of rebuilding it. The camera (the frozen base model) stays exactly as it was; the small clip-on (the adapter) bends the picture the way you want, and you can swap clip-ons for different jobs. QLoRA is the same, but you also pack the camera body into a smaller case (4-bit) so it fits in your bag. The analogy breaks because a clip-on can't add a feature the camera lacks; LoRA can steer what the model can already do, but it is a poor way to pour in new facts.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <div class="box example">
     <div class="box-label">Worked example — QLoRA on a free Colab GPU</div>
@@ -53,6 +60,13 @@ trainer.<span class="f">train</span>()
 trainer.<span class="f">save_model</span>(<span class="s">"my-adapter"</span>)               <span class="c"># tens of MB (~8.8M LoRA params for 0.5B at r=16, per its <a href="https://huggingface.co/Qwen/Qwen2.5-0.5B/blob/main/config.json">config</a>), not GB — the whole "fine-tune"</span></code></pre>
     <p>The output isn’t a new multi-gigabyte model — it’s a tiny adapter you load on top of the base at inference. That’s why teams can serve many fine-tunes cheaply: one base model, many small adapters swapped in as needed.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: LoRA math for Qwen2.5-7B: parameters, memory and 12 department adapters</div>
+    <p>From the model's <a href="https://huggingface.co/Qwen/Qwen2.5-7B/blob/main/config.json">config.json</a>: hidden size 3,584, MLP size 18,944, 28 layers, 28 query heads and 4 key/value heads of size 128 (so k and v project to 512). The model card lists 7.61B parameters.</p><ol><li><strong>LoRA on one matrix.</strong> A weight W of shape d_out x d_in gets B (d_out x r) and A (r x d_in), so r x (d_in + d_out) trainable parameters. The update is W + (alpha/r) x BA, and B starts at zero, so training starts from the unchanged model (<a href="https://arxiv.org/abs/2106.09685">LoRA, arXiv 2106.09685</a>; PEFT's default init).</li><li><strong>One layer, r = 16, all linear layers.</strong> q and o: 16 x (3,584 + 3,584) = 114,688 each. k and v: 16 x (3,584 + 512) = 65,536 each. gate and up: 16 x (3,584 + 18,944) = 360,448 each. down: 360,448. Layer total = <strong>1,441,792</strong>.</li><li><strong>Whole model.</strong> 1,441,792 x 28 = <strong>40,370,176</strong> trainable parameters, about 0.53% of 7.61B. Adapter file: about 81 MB in bf16, 161 MB in fp32. (q and v only, the LoRA paper's main setting: about 5.0M, 0.07%.)</li><li><strong>Memory.</strong> Full fine-tuning at about 18 bytes per parameter (<a href="https://huggingface.co/docs/transformers/model_memory_anatomy">HF memory guide</a>) = 137 GB. QLoRA: the frozen base in 4-bit NF4 is about 0.5 bytes per parameter = 3.8 GB (plus small quantization constants, which QLoRA's double quantization shrinks), and the 40.4M adapter parameters at 18 bytes = 0.73 GB, plus activations. The QLoRA paper fit a 65B model on one 48 GB GPU (<a href="https://arxiv.org/abs/2305.14314">arXiv 2305.14314</a>).</li><li><strong>12 departments.</strong> 12 full copies in bf16 = 12 x 15.2 GB = 183 GB. One base + 12 adapters = 15.2 GB + 12 x 81 MB = about 16.2 GB.</li></ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <h2>Size a LoRA yourself</h2>
   <p>Pick a base model and a rank, and watch what you would actually be training. The percentage is the whole reason LoRA exists.</p>
@@ -96,6 +110,35 @@ trainer.<span class="f">save_model</span>(<span class="s">"my-adapter"</span>)  
         <div class="why">LoRA is about which weights train, not data size.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">A LoRA adapter on a 4,096 x 4,096 weight matrix with rank r = 8 adds how many trainable parameters?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) 65,536</span>
+        <div class="why">Correct. r x (d_in + d_out) = 8 x (4,096 + 4,096) = 65,536, against 16,777,216 in the frozen matrix: 0.39%.</div></li>
+      <li data-correct="false"><span class="opt">B) 32,768</span>
+        <div class="why">That's r x 4,096, counting only one of the two matrices. LoRA trains both A (r x d_in) and B (d_out x r).</div></li>
+      <li data-correct="false"><span class="opt">C) 131,072</span>
+        <div class="why">That would be rank 16. Parameter count grows linearly with r.</div></li>
+      <li data-correct="false"><span class="opt">D) 16,777,216</span>
+        <div class="why">That's the full matrix, which LoRA freezes. The point is to train far fewer parameters than this.</div></li>
+    </ul>
+  </div>
+  <div class="quiz">
+    <p class="quiz-q">Which statement about QLoRA is accurate?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) It trains the 4-bit weights directly, so the base model itself changes.</span>
+        <div class="why">The quantized base stays frozen. Only the LoRA adapters receive updates.</div></li>
+      <li data-correct="false"><span class="opt">B) It makes inference 4x faster because the adapter is in 4-bit.</span>
+        <div class="why">QLoRA is a training-memory technique. 4-bit inference speed depends on kernels and hardware, and the adapter isn't the 4-bit part.</div></li>
+      <li data-correct="false"><span class="opt">C) It needs no training data because the quantization does the adapting.</span>
+        <div class="why">Quantization only compresses the frozen base. Behaviour still comes from training the adapter on your data.</div></li>
+      <li data-correct="true"><span class="opt">D) It freezes the base model in 4-bit NF4 and backpropagates through it into LoRA adapters that train in higher precision; it also uses double quantization and paged optimizers to save memory.</span>
+        <div class="why">Correct. That is the recipe in Dettmers et al. (arXiv 2305.14314): a 4-bit frozen base, 16-bit-quality results, and memory tricks that fit a 65B model on one 48 GB GPU.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -119,6 +162,78 @@ trainer.<span class="f">save_model</span>(<span class="s">"my-adapter"</span>)  
     <p>At serving time you have two options. You can <strong>merge</strong> the adapter into the base to get a single standalone model (simplest to deploy, but you lose the swap-ability). Or you can <strong>keep adapters separate</strong> and load them on top of a shared base — which is what makes the “one base, many fine-tunes” pattern so powerful: serving infrastructure can hold one base in memory and dynamically apply different adapters per request, even batching requests for different adapters together. This is how a platform offers dozens of customer-specific fine-tunes affordably.</p>
     <p>The takeaway: LoRA didn’t just make fine-tuning <em>cheaper to train</em> — it made fine-tunes <em>cheap to store and serve at scale</em>, which is arguably why fine-tuning became practical for everyone, including you on a free GPU.</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/11_lora_tiny.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/11_lora_tiny.py</code></pre>
+    <p><strong>What to look for:</strong> The first half prints the LoRA parameter math for the real Qwen2.5-7B config; check that its totals match this page's 40,370,176 at r = 16 on all linear layers, then change r to 8 and target modules to q and v only and watch the count drop. The second half trains a real adapter on a tiny model: note the 'trainable %' line and the adapter's size on disk next to the base model's.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  base model: 798,848 params. Pre-training it on &#x27;count UP&#x27; sequences (0123456789012...)
+  base loss  count-up=0.097   count-down=10.885  &lt;- it never saw &#x27;down&#x27;
+  LoRA r=8 on attention + MLP: trainable=65,536 of 864,384 (7.6%)
+    after   0 LoRA steps: count-down loss=10.878  count-up loss=0.098
+    after 100 LoRA steps: count-down loss=0.100  count-up loss=9.747
+    after 200 LoRA steps: count-down loss=0.098  count-up loss=10.912
+    after 300 LoRA steps: count-down loss=0.097  count-up loss=10.695
+  frozen base tensors changed during LoRA training: 0  (expect 0)
+  adapter switched OFF: count-up loss=0.098  count-down loss=10.882  &lt;- the old skill is back: forgetting lived in the adapter, not the base
+  saved adapter: 266 KB  vs base model ~3120 KB in fp32
+  merge_and_unload: max logit difference after merging = 2.86e-06  (merged = same model, no adapter overhead)
+  Look: count-down loss falls while the base stays byte-identical. But count-up loss rose: with the adapter
+  on, the model forgot the old skill. That is why you eval BOTH the new task and the old ones (Lesson 5.6),
+  and why keeping adapters separate (swap or disable per task) is a real advantage of LoRA.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/11_lora_tiny.txt">labs/outputs</a>. Source: <a href="../labs/11_lora_tiny.py">labs/11_lora_tiny.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Compute LoRA trainable parameters for a model with hidden size 2,048, MLP size 8,192, 24 layers, full-width k and v (no grouped-query attention), r = 8 on all seven linear layers per block.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>q, k, v, o: each 8 x (2,048 + 2,048) = 32,768, so 4 x 32,768 = 131,072. gate and up: 8 x (2,048 + 8,192) = 81,920 each = 163,840. down: 81,920. Per layer = 131,072 + 163,840 + 81,920 = 376,832. x 24 = <strong>9,043,968</strong>, about 9.0M. In bf16 that's an 18 MB adapter.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your QLoRA fine-tune for a support-reply style works, but answers about product specs got worse. A teammate suggests raising r from 16 to 128 to 'learn the specs'. What do you say?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Wrong lever. Product specs are knowledge that changes; that is RAG's job, and fine-tuning is a poor way to add facts. The drop in spec answers is likely forgetting or style override from training. Check whether training examples contained wrong or outdated specs. Fix it by keeping r modest, adding general and spec-grounded examples where the answer comes from retrieved context (so the model learns to use context rather than memorise), and measuring both the style metric and spec accuracy against the base model. Biderman et al. found LoRA forgets less than full fine-tuning, but it isn't zero.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> You serve 40 customer-specific LoRA adapters on one 7B base. Traffic is skewed: 3 adapters get 70% of requests. Design serving and deployment.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Keep one base model in GPU memory and load adapters dynamically; use a server that batches requests for different adapters together (the S-LoRA line of work, arXiv 2311.03285, showed thousands of adapters on one GPU). Keep the 3 hot adapters resident and load the long tail from CPU memory or disk on demand with an LRU cache. Consider merging an adapter into a dedicated deployment (PEFT's merge_and_unload) only if a tenant needs isolation or the lowest latency. Version adapters with the base model hash, since an adapter is only valid for the exact base it was trained on. Run each adapter's eval before promoting it, and roll out per tenant.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> Explain LoRA in plain terms.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Instead of updating a huge weight matrix W during fine-tuning, LoRA freezes W and learns a small low-rank update: two thin matrices B and A whose product has the same shape as W. The output becomes Wx plus a scaled BAx. Because r is small (8, 16, 64), you train a tiny fraction of the parameters, often well under 1%. The LoRA paper reported 10,000x fewer trainable parameters and 3x less GPU memory than full fine-tuning on GPT-3 175B, with on-par quality on their benchmarks. You can merge the update into W afterwards, so there's no extra inference latency.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> How do you choose r, alpha and target modules?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Start with sensible defaults and let the eval decide. Target modules: all linear layers is a strong default (QLoRA applied adapters to all linear layers, and PEFT supports 'all-linear'); attention-only is lighter. Rank: 8-16 for style and format, higher for harder tasks, raising it only if the model underfits on validation. Alpha scales the update by alpha/r; many people keep alpha around r to 2r, and rsLoRA scales by alpha over the square root of r so higher ranks behave more stably. Learning rate matters more than people expect: adapters usually use around 1e-4 to 2e-4. Then sweep a couple of settings on a held-out set.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> When would you choose full fine-tuning over LoRA?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>When the target needs a large change to the model and you have the data and compute: continued pretraining on a new domain or language, or heavy instruction tuning with hundreds of thousands of examples. Biderman et al. found LoRA substantially underperformed full fine-tuning on code and math in those regimes, while forgetting less of the base model's other abilities, and that full fine-tuning learns updates of much higher rank. For most product work (style, format, a narrow task, many tenant variants), LoRA wins on cost, iteration speed and serving. The choice is driven by an eval on both target and general ability.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2106.09685" target="_blank" rel="noopener">LoRA: Low-Rank Adaptation of Large Language Models — Hu et al., arXiv 2106.09685</a></li>
+      <li><a href="https://arxiv.org/abs/2305.14314" target="_blank" rel="noopener">QLoRA: Efficient Finetuning of Quantized LLMs — Dettmers et al., arXiv 2305.14314</a></li>
+      <li><a href="https://huggingface.co/docs/peft/index" target="_blank" rel="noopener">PEFT documentation — Hugging Face</a></li>
+      <li><a href="https://huggingface.co/docs/peft/developer_guides/lora" target="_blank" rel="noopener">LoRA developer guide (LoraConfig, merge_and_unload) — Hugging Face PEFT</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>LoRA is the <em>how</em>; the most common <em>what</em> is teaching a model to follow instructions in your style. Next: <strong>instruction tuning</strong>.</p>
 

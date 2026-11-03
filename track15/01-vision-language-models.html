@@ -13,6 +13,13 @@
   <span class="eyebrow">Multimodal AI · Lesson 10.1</span>
   <h1>Beyond text: vision-language models</h1>
   <p class="lead">Everything so far has been words in, words out. But a huge amount of the world’s information is visual — screenshots, receipts, charts, product photos, scanned forms. Vision-language models let a system <em>see</em>, and that unlocks a whole class of products.</p>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>Picture cutting a photo into a grid of small square stickers and describing each sticker with a short code. Now the picture is a list of codes, just like a sentence is a list of words, and the model can read both lists together. Where it breaks: when you cut a photo into stickers, tiny details that cross a sticker's edge, like small print, can get lost, which is one reason VLMs misread small text and miscount objects.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <h2>What a vision-language model is</h2>
   <p>A <span class="term">vision-language model</span> (VLM, or “multimodal LLM”) is an LLM that accepts images alongside text and reasons about both together. You can hand it a photo and ask “what’s in this picture?”, give it a screenshot and ask “what does this error mean?”, or show it a chart and ask “what was the trend in Q3?”. It’s the same next-token machine from Track&nbsp;1, extended so that images can enter the prompt as tokens.</p>
@@ -43,7 +50,22 @@ reply <span class="o">=</span> ollama.<span class="f">chat</span>(
   <p>VLMs are impressive and unreliable in specific, predictable ways — and naming these is a senior signal. They’re weak at <strong>precise spatial reasoning</strong> (exact positions, “is A to the left of B”), <strong>counting</strong> many objects, and reading <strong>small or dense text</strong> reliably. And they <strong>hallucinate visually</strong> just like text models hallucinate facts — confidently describing an object that isn’t there, especially if your question presupposes it (“what breed is the dog?” when there’s no dog).</p>
   <p>The mitigations are familiar: ask neutral questions, don’t presuppose, verify critical extractions, and for exact text use OCR as a check. Treat a VLM’s reading of an image the way you treat any model output — useful, fluent, and to be verified when it matters.</p>
 
-  <div class="box key">
+  
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Pricing photo triage for 80,000 insurance claims a day</div>
+    <p>Facts from <a href="https://platform.claude.com/docs/en/build-with-claude/vision" target="_blank" rel="noopener">Anthropic vision docs</a>: Claude splits an image into 28 x 28-pixel patches, so it costs ceil(width / 28) x ceil(height / 28) visual tokens. Claude 4.7 and later models use a high-resolution tier: long edge up to 2,576 px and at most 4,784 visual tokens; bigger images are downscaled. Their example: a 1000 x 1000 image is 1,296 tokens. Traffic numbers are our assumptions.</p>
+<ol>
+<li><strong>Volume.</strong> 80,000 claims a day x 4 phone photos = 320,000 images, each 4032 x 3024 (12 MP).</li>
+<li><strong>Sent as-is.</strong> 4032 x 3024 is far over the limits, so each is downscaled to the cap: up to <strong>4,784 tokens</strong> per photo. 320,000 x 4,784 = 1.53 billion tokens a day. On claude-opus-5-5 at $4 per million input: <strong>$6,124 a day</strong>, before any text or output.</li>
+<li><strong>Resize first.</strong> Damage triage does not need 12 MP. Resize to 1092 x 819: ceil(1092/28) = 39, ceil(819/28) = 30, so 1,170 tokens. 320,000 x 1,170 = 374 million tokens, <strong>$1,498 a day</strong> on Opus 5.5. A 75% cut from one line of Pillow code, and lower latency because uploads are smaller.</li>
+<li><strong>Right-size the model.</strong> If an eval shows claude-haiku-5-5 (from $0.10 per million input, <a href="https://platform.claude.com/docs/en/about-claude/models/overview" target="_blank" rel="noopener">models overview</a>) meets your triage bar: 374M x $0.10/M = <strong>$37 a day</strong>.</li>
+<li><strong>Where not to downsample.</strong> Reading a licence plate or a VIN needs pixels. Crop that region at full resolution and send it as its own image instead of upscaling the whole photo.</li>
+<li><strong>Guard the known weaknesses.</strong> Ask neutral questions ("list visible damage") rather than leading ones ("how bad is the dent on the door?"), and send high-value or low-confidence claims to a human adjuster.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+<div class="box key">
     <div class="box-label">Key points</div>
     <ul>
       <li>A <strong>vision-language model (VLM)</strong> takes images + text and reasons over both — an LLM extended to see.</li>
@@ -92,6 +114,35 @@ reply <span class="o">=</span> ollama.<span class="f">chat</span>(
         <div class="why">CLIP is about aligned embeddings, not compression.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Under Claude's documented patch rule, how many visual tokens does a 560 x 280 pixel image cost (it is under every resize limit)?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) 156,800, one token per pixel.</span>
+        <div class="why">Models work on patches, not pixels. Per-pixel tokens would make every image unaffordable.</div></li>
+      <li data-correct="true"><span class="opt">B) 200: ceil(560/28) x ceil(280/28) = 20 x 10.</span>
+        <div class="why">Each 28 x 28 patch is one visual token; small images are not resized.</div></li>
+      <li data-correct="false"><span class="opt">C) 1, one token per image.</span>
+        <div class="why">An image is many tokens; that is why images are expensive in context.</div></li>
+      <li data-correct="false"><span class="opt">D) It depends only on the file size in KB.</span>
+        <div class="why">Cost depends on pixel dimensions after any resizing, not on compression. A heavily compressed JPEG of the same size costs the same tokens.</div></li>
+    </ul>
+  </div>
+  <div class="quiz">
+    <p class="quiz-q">A user uploads a photo of a living room and asks 'what breed is the dog?'. There is no dog. What is the most likely VLM failure and the best mitigation?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Use a higher resolution so the model can see the dog.</span>
+        <div class="why">There is no dog to see. Resolution does not fix a false premise.</div></li>
+      <li data-correct="false"><span class="opt">B) Lower the temperature so the model is more accurate.</span>
+        <div class="why">Lower randomness does not remove a false premise, and newer Claude models do not accept a temperature setting anyway.</div></li>
+      <li data-correct="true"><span class="opt">C) The model may invent a dog and a breed because the question presupposes one; ask a neutral question first ('list the animals you see') and only then ask about them.</span>
+        <div class="why">Leading questions push VLMs into visual hallucination. A neutral first pass grounds the follow-up.</div></li>
+      <li data-correct="false"><span class="opt">D) The model will refuse, so nothing can go wrong.</span>
+        <div class="why">VLMs often answer confidently instead of refusing, especially when the question assumes the object exists.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box deep">
@@ -99,6 +150,78 @@ reply <span class="o">=</span> ollama.<span class="f">chat</span>(
     <p>The reason multimodal matters commercially is that an enormous share of real business information was never text you could query — it lived in images and documents: receipts and invoices, ID cards, insurance forms, medical scans, product photos, screenshots in support tickets, slides, engineering diagrams, shelf photos in retail. For decades, using that information meant either manual data entry or brittle, narrow computer-vision pipelines that took months to build per use case. A capable VLM collapses much of that into a prompt: “read this form and return the fields as JSON,” “is this product damaged?”, “what does this screenshot show the user doing?” Whole workflows that required humans looking at pictures become automatable.</p>
     <p>For you, this connects directly to everything else in the course rather than replacing it. A VLM is still an LLM, so prompting (Track&nbsp;2), structured output (Track&nbsp;2), grounding and hallucination management (Tracks&nbsp;1, 3, 7), evaluation (Track&nbsp;6), and serving cost (Track&nbsp;8 — images are token-hungry and pricier) all carry over unchanged. The new skill is knowing <em>when</em> a problem is actually a vision problem, choosing between a VLM and a specialized tool like OCR, and combining them. That’s the theme of this track: not a new field, but your existing toolkit pointed at images, documents, and audio — which is exactly how the highest-value multimodal products get built.</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/02_structured_output.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/02_structured_output.py</code></pre>
+    <p><strong>What to look for:</strong> No local vision model is installed for this course, so no lab sends an image. The closest lab is the structured-output one, because the production use of a VLM is usually 'image in, validated JSON out'. Watch the parse-failure rate for free-text prompting versus schema-constrained decoding, and the retry-with-error-feedback loop; the same schema and retry would wrap a VLM call. What it does not show: image tokens, resizing, or visual hallucination. To see those, pull a small vision model (the Ollama vision docs use gemma4) if you have the disk, and pass an images list.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  #5: valid  {&#x27;category&#x27;: &#x27;refund&#x27;, &#x27;order_id&#x27;: &#x27;ORD-90011&#x27;, &#x27;urgency&#x27;: &#x27;high&#x27;, &#x27;summary&#x27;: &#x27;Refund for ORD-90011, 3 weeks overdue&#x27;}
+  #6: valid  {&#x27;category&#x27;: &#x27;delivery&#x27;, &#x27;order_id&#x27;: &#x27;ORD-31337&#x27;, &#x27;urgency&#x27;: &#x27;medium&#x27;, &#x27;summary&#x27;: &#x27;Request to change delivery address before shipment&#x27;}
+  #7: valid  {&#x27;category&#x27;: &#x27;refund&#x27;, &#x27;order_id&#x27;: None, &#x27;urgency&#x27;: &#x27;high&#x27;, &#x27;summary&#x27;: &#x27;Cancel subscription, refund last month&#x27;}
+C) Schema-valid is not business-valid: validate rules, retry with the error
+  rule violations repaired by retry: 0
+D) Content check against gold labels (shape-valid does not mean right)
+  #4: model said &#x27;delivery&#x27;, a human would file &#x27;other&#x27;: &#x27;Just wanted to say the delivery guy was very polite. thanks!&#x27;
+  category accuracy: 7/8
+Summary
+  vague-prompt valid:       0/4
+  prompt-only valid:        8/8
+  schema-constrained valid: 8/8
+  Look: constrained decoding guarantees the SHAPE. It does not guarantee the CONTENT is right;
+  that is what the business-rule check + retry (and your eval set) are for.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/02_structured_output.txt">labs/outputs</a>. Source: <a href="../labs/02_structured_output.py">labs/02_structured_output.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Compute visual tokens on Claude for a 1456 x 812 screenshot (under the limits), and its input cost per 10,000 screenshots on claude-sonnet-5-5 ($2 per million).</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>ceil(1456/28) = 52, ceil(812/28) = 29, so 52 x 29 = 1,508 tokens. 10,000 x 1,508 = 15.08M tokens x $2/M = $30.16. Add your text prompt and output on top.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> A support-ticket feature attaches full-page browser screenshots (2560 x 1440) and asks the VLM what error the user sees. Costs are high and the model sometimes reads the wrong error from a sidebar. Propose two changes.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>1) Crop: detect the dialog or main content region (or ask the user to crop) and send only that, which cuts tokens and removes distracting sidebars that cause wrong reads. 2) Combine with text: run OCR on the crop and include the extracted text in the prompt, then ask the VLM to answer using both and to quote the error text it relied on. If its quote does not appear in the OCR text, flag the answer. The why: fewer pixels on irrelevant regions means less cost and fewer chances to attend to the wrong thing, and OCR gives an exact-text check.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Design an eval for a VLM that counts items on retail shelf photos. What metrics and slices, and how do you decide whether it is good enough to replace manual counts?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Golden set: a few hundred shelf photos with human counts per product, covering lighting, angle, occlusion and crowded shelves. Metrics: mean absolute error per product, the share of counts within +/-1, and the share with large errors (off by 5 or more), because a few big misses drive stock-outs. Slice by number of items (VLMs degrade as counts rise), occlusion and image quality. Compare with the current manual process's own error rate, measured on the same photos. Decide in advance: e.g. replace manual counts only for shelves with 10 or fewer items where the error is within +/-1 at least 95% of the time, and keep humans or a detection model for the rest.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> How does a vision-language model take an image as input?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>The image is split into small square patches. A vision encoder, usually a vision transformer, turns each patch into a vector, and a projection layer maps those vectors into the same space as the language model's token embeddings. The resulting image tokens sit in the context window next to the text tokens, and the language model attends over both. That is why images cost tokens: for example Claude counts one visual token per 28 x 28-pixel patch, so a 1000 x 1000 image is 1,296 tokens.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> When would you use a VLM, and when a classic computer-vision model, for an image task?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>A VLM is great when the task is open-ended or changes often, the labels are expressed in language, volume is moderate, and a few seconds of latency is fine: describing damage, answering questions about screenshots, reading a varied form. A classic model, like a trained detector or classifier, wins when the task is fixed and narrow, volume is huge, latency must be milliseconds, or precise localisation and counting matter: defect detection on a production line, counting items. Often the best system uses both: a detector finds regions and a VLM reasons about the crops.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> How would you control cost and reliability for a VLM feature processing millions of images a month?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Cost: resize to the smallest resolution that passes the eval, crop to regions of interest, route easy images to a cheaper model, cache results by image hash, and use batch processing for anything offline. Reliability: schema-constrained outputs with validation and retries, neutral prompts to reduce hallucination, cross-checks such as OCR for exact text, and confidence routing to humans for high-stakes cases. Measure per-slice accuracy on a golden set, monitor online with sampled human review, and track tokens per image because a client sending larger photos silently raises the bill.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://platform.claude.com/docs/en/build-with-claude/vision" target="_blank" rel="noopener">Vision (patch-based token cost, resolution tiers) - Anthropic</a></li>
+      <li><a href="https://arxiv.org/abs/2304.08485" target="_blank" rel="noopener">Visual Instruction Tuning (LLaVA) - arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2010.11929" target="_blank" rel="noopener">An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale (ViT) - arXiv</a></li>
+      <li><a href="https://docs.ollama.com/capabilities/vision" target="_blank" rel="noopener">Vision - Ollama docs</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>The single most valuable business application of vision is turning documents into data. Next: <strong>document AI &amp; OCR.</strong></p>
 

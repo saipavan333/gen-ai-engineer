@@ -26,6 +26,13 @@
     <div class="box-label">Concept</div>
     <p>You evaluate against a <span class="term">baseline</span> — the original base model — on a <span class="term">held-out set</span> (examples never used in training). Measure a <span class="term">task metric</span> (accuracy, exact match, or an LLM-as-judge score) <em>and</em> a <span class="term">general-ability</span> check (a few diverse prompts or a small benchmark). Watch for <span class="term">overfitting</span> (great on train, poor on held-out) and <span class="term">regression / catastrophic forgetting</span> (better on the task, worse generally).</p>
   </div>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>Evaluating a fine-tune is like checking whether extra maths tuition helped a student. You don't ask the tutor; you give the student a test they haven't seen. You also check they didn't forget how to read while cramming maths. The analogy breaks because a student's school report covers many subjects for free; for a model, you only find out what got worse if you built a test for it.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <div class="box example">
     <div class="box-label">Worked example — compare fine-tuned vs base (free)</div>
@@ -47,6 +54,13 @@ general  <span class="o">=</span> load(<span class="s">"general_probe.jsonl"</sp
 <span class="f">print</span>(<span class="s">"general    — tuned:"</span>, <span class="f">accuracy</span>(tuned_model, general))    <span class="c"># should NOT be much lower</span></code></pre>
     <p>If the target task rose and general ability held, ship it. If general ability dropped, you over-fit your task — train for fewer epochs, use more/diverse data, a lower learning rate, or a smaller LoRA rank, and re-measure.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Is 0.60 to 0.91 real, and did general ability drop?</div>
+    <p>Assumptions: a held-out task set of 1,000 examples and a general-ability probe of 300 diverse prompts. Base model: 0.60 on the task, 0.82 on the probe. Fine-tune: 0.91 on the task, 0.76 on the probe.</p><ol><li><strong>Task gain uncertainty.</strong> Standard error of a proportion = sqrt(p(1-p)/n). Tuned: sqrt(0.91 x 0.09 / 1,000) = 0.009, so the 95% interval is about +/-1.8 points. Base: sqrt(0.60 x 0.40 / 1,000) = 0.015, about +/-3.0 points. A 31-point gain is far outside both: real.</li><li><strong>General drop uncertainty.</strong> Base: sqrt(0.82 x 0.18 / 300) = 0.022. Tuned: sqrt(0.76 x 0.24 / 300) = 0.025. Standard error of the difference, treating them as independent, is about sqrt(0.022^2 + 0.025^2) = 0.033. The 6-point drop is about 1.8 standard errors: suggestive but not conclusive.</li><li><strong>Use a paired test.</strong> Both models answered the same 300 prompts, so count disagreements. Say 31 prompts flipped from right to wrong and 13 from wrong to right: net 18 / 300 = 6 points. McNemar's statistic = (31 - 13)^2 / (31 + 13) = 324 / 44 = 7.4, above 3.84 (the 5% threshold), so the drop is real.</li><li><strong>Diagnose.</strong> Read the 31 regressions. Say most are 'ignores instructions to answer in a list': the fine-tune overwrote format-following.</li><li><strong>Fix and re-measure.</strong> Mix 10% general instruction data into training, cut epochs from 3 to 2, and re-run both sets. Biderman et al. report LoRA forgets less than full fine-tuning, but it still forgets (<a href="https://arxiv.org/abs/2405.09673">arXiv 2405.09673</a>).</li></ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -85,6 +99,22 @@ general  <span class="o">=</span> load(<span class="s">"general_probe.jsonl"</sp
         <div class="why">Speed isn't quality.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">On 300 shared probe prompts, 25 flip from right to wrong after fine-tuning and 25 flip from wrong to right. What do you conclude?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) The probe set is broken because results changed.</span>
+        <div class="why">Changing results are what a probe is for. The set isn't broken; you need to read the flipped cases.</div></li>
+      <li data-correct="false"><span class="opt">B) Nothing changed; ship it.</span>
+        <div class="why">Totals can stay flat while behaviour changes a lot. Look at what flipped before shipping.</div></li>
+      <li data-correct="true"><span class="opt">C) Net general accuracy is unchanged, but the model's behaviour changed on 50 prompts, so read those flips to see what moved.</span>
+        <div class="why">Correct. Equal flips give the same total, but a 17% change in which prompts pass is a real behaviour shift; the totals hide it. The 25 new failures may matter more (safety, key customers) than the 25 new passes.</div></li>
+      <li data-correct="false"><span class="opt">D) The fine-tune is clearly worse.</span>
+        <div class="why">The counts are balanced; there's no net loss. Whether it's worse depends on which prompts flipped.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -110,6 +140,77 @@ general  <span class="o">=</span> load(<span class="s">"general_probe.jsonl"</sp
 
   <p>You can now decide on, prepare for, run, and evaluate a fine-tune. Time to pressure-test it. On to the <strong>Track 5 interview check</strong>.</p>
 
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/06_evals.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/06_evals.py</code></pre>
+    <p><strong>What to look for:</strong> The regression gate compares two versions case by case, which is exactly 'fine-tune versus base on the same held-out set'. Look at the per-case table, not just the totals: count cases that went from pass to fail as well as fail to pass. Swap in your base and tuned outputs as the two versions, and check whether the position-bias test changes your judge's verdicts.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  against human labels before you trust it (report agreement and Cohen&#x27;s kappa, not vibes).
+5) Judge position bias: same pair, swapped order
+  How long do card refunds take?      order1 picked B, order2 picked B  -&gt; FLIPPED
+  Return window for electronics?      order1 picked B, order2 picked A  -&gt; consistent
+  Express shipping price?             order1 picked B, order2 picked A  -&gt; consistent
+  When is standard shipping free?     order1 picked A, order2 picked B  -&gt; consistent
+  Duplicate charge reversal time?     order1 picked A, order2 picked B  -&gt; consistent
+  consistent verdicts: 4/5   correct in both orders: 2/5
+  Look: with no reference passage in the judge prompt, the judge has to guess which number is right.
+  Always judge both orders and count a win only when both agree; give the judge the reference.
+6) How wide is the error bar on 12 cases?
+  v1 accuracy 92%, 95% normal-approx interval +/- 16%  (n=12)
+  At n=400 the same accuracy would be roughly +/- 2.7%
+{&quot;v1_correct&quot;: 0.917, &quot;regressions&quot;: 12, &quot;judge_consistent&quot;: 4}</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/06_evals.txt">labs/outputs</a>. Source: <a href="../labs/06_evals.py">labs/06_evals.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Your held-out set has 200 examples. The base scores 0.70 and the fine-tune 0.75. Roughly how big is the 95% interval on each score, and is the gain convincing?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>SE(0.70) = sqrt(0.7 x 0.3 / 200) = 0.032, so about +/-6.4 points. SE(0.75) = sqrt(0.75 x 0.25 / 200) = 0.031, about +/-6.0 points. The intervals overlap heavily; a 5-point gain on 200 examples isn't convincing on its own. Run a paired test on the per-example flips, or grow the set. Small eval sets make fine-tunes look better or worse at random.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your fine-tune passes the offline eval, but after launch users report it refuses harmless requests more often. Which eval was missing, and how do you add it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>A safety and over-refusal probe. Build two sets: harmful requests the model must refuse, and borderline-but-harmless requests it must answer (medical information, security education, fiction). Score refusal rates on both for base and tuned models, and gate releases on both: refusals of harmful requests must not drop, and refusals of harmless ones must not rise beyond a set threshold. Training data often contains many refusals or hedged replies that teach over-caution, so check the dataset for that too.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Write a release gate for fine-tuned adapters that runs in CI. List the suites, the metrics and the pass rules.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Suites: (1) frozen held-out task set; (2) general-ability probe; (3) safety: must-refuse and must-answer; (4) format and contract tests (valid JSON, schema, stops correctly); (5) a slice of last month's real traffic with reference answers. Metrics: task score with confidence interval, paired flips against the current production adapter, refusal rates, format failure rate, latency and tokens per answer. Pass rules: task score not lower than production (paired test), general probe net flips not significantly negative, harmful-refusal rate not lower, harmless-refusal rate up no more than 1 point, zero format regressions. Store all outputs so failures can be read, and require human sign-off for any rule override.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> How do you know a fine-tune actually helped?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>I compare it with the base model, and with the best prompt-only setup, on a held-out set it never trained on, using a task metric that reflects what users need. I check that the gain is bigger than the noise for the set size, ideally with a paired comparison since both models see the same examples. Then I check it didn't get worse elsewhere: a general-ability probe, safety refusals and format compliance. Only if the target improved and the guardrail metrics held do I call it a win. After launch, I confirm with an A/B test or a staged rollout.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> What is catastrophic forgetting and how do you detect and reduce it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>It's when training on a narrow task makes the model worse at things it used to do: following general instructions, reasoning, formatting or safety behaviour. You detect it by running probes outside the target task on both base and tuned models and comparing per prompt, not just averages. To reduce it: train less aggressively (fewer epochs, lower learning rate), use LoRA, which Biderman et al. found forgets less than full fine-tuning, mix some general instruction data into the training set, and keep the rank modest. Then re-measure both axes.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Leadership wants one number to decide if the fine-tune ships. What do you give them?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>I'd push back gently: one number hides trade-offs. But I can give one decision with a short scorecard behind it. The headline is the change in the business metric's proxy, for example 'resolution-quality score up 9 points (95% CI 6 to 12) versus production'. Under it, three guardrails with pass or fail: general ability held, safety refusals held, cost and latency within budget. If any guardrail fails, the answer is no regardless of the headline. Then a rollout plan: 5% traffic for a week, watching live metrics, with automatic rollback.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2405.09673" target="_blank" rel="noopener">LoRA Learns Less and Forgets Less — Biderman et al., arXiv 2405.09673</a></li>
+      <li><a href="https://arxiv.org/abs/2305.14314" target="_blank" rel="noopener">QLoRA: Efficient Finetuning of Quantized LLMs — Dettmers et al., arXiv 2305.14314</a></li>
+      <li><a href="https://huggingface.co/docs/trl/sft_trainer" target="_blank" rel="noopener">SFT Trainer — Hugging Face TRL docs</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>

@@ -21,6 +21,13 @@
     <div class="box-label">Concept</div>
     <p>A <span class="term">prompt</span> is everything you feed the model for one request. In chat models it’s usually structured as a list of <span class="term">messages</span>, each with a <span class="term">role</span>: the <span class="term">system message</span> sets overall behavior and persona, <span class="term">user messages</span> are the human’s turns, and <span class="term">assistant messages</span> are the model’s replies. The model reads them all and produces the next assistant message.</p>
   </div>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>A prompt is like the note you leave for a babysitter. 'Look after the kids' gets you anything; 'You're in charge (role), dinner at 6 (task), here's the allergy list (context), text me a one-line update at 9 (format), and if anything odd happens call me instead of guessing (an out)' gets you what you wanted. The system message is the note stuck on the fridge for every visit; the user message is what you say at the door tonight. The analogy breaks because the babysitter remembers last week, while the model only knows what is in this request.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <figure class="diagram">
     <img src="../assets/diagrams/t2-chat-flow.svg" alt="A chat request flows from a 'messages' list (a system message 'you are a support agent' and a user message 'my card was charged twice') into the LLM, which decodes and returns one assistant message ('I'm sorry about that — let's fix the double charge'). The system message sets behavior.">
@@ -96,6 +103,20 @@ Answer with exactly one word: high, medium, or low. If unclear, answer medium.""
 <span class="f">print</span>(<span class="f">ask</span>(user, system<span class="o">=</span>system))   <span class="c"># -> "high"</span></code></pre>
     <p>The weak prompt makes the model guess what you want and how to format it — so you get a different shape every run. The engineered prompt removes the guesswork: a role to set stance, the context inline, an exact output format, and a fallback. That’s the whole game in miniature — and it’s why <code>temperature=0</code> plus a tight format is the backbone of reliable features.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: What a sloppy triage prompt costs at 250,000 tickets a day</div>
+    <p>Assume a helpdesk classifies <strong>250,000 tickets a day</strong> with a <strong>900-token</strong> system prompt and a ~150-token ticket. Prices are Claude Sonnet 5.5: $2 per million input tokens, $10 per million output tokens (<a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic models overview</a>). Volumes are assumptions.</p>
+<ol>
+<li><strong>No format line.</strong> Without a pinned format the model writes friendly paragraphs, about 200 output tokens. 250,000 x 200 = 50M output tokens = <strong>$500/day</strong>, and your code still has to parse prose.</li>
+<li><strong>Pin the format.</strong> "Answer with exactly one word: high, medium, or low" cuts output to about 3 tokens. 250,000 x 3 = 750,000 tokens = <strong>$7.50/day</strong>. One line of the prompt saved about $490 a day and made parsing trivial.</li>
+<li><strong>The system prompt is repeated input.</strong> 250,000 x 900 = 225M input tokens = <strong>$450/day</strong>.</li>
+<li><strong>Cache the stable part.</strong> The system prompt is identical across requests, so it can be cached. Cache reads on Sonnet 5.5 cost 5% of the input price: 225M x $2 x 0.05 / 1M = <strong>$22.50/day</strong> plus cache writes. This is another reason durable rules belong in the system message and changing data in the user message: a stable prefix caches, a shuffled one does not.</li>
+<li><strong>Test before shipping.</strong> Run both prompts on 200 labelled tickets. Track accuracy, the rate of answers outside the three labels, and output tokens. Ship the version that wins on all three.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box note">
     <div class="box-label">System vs. user — when to use which</div>
@@ -139,6 +160,22 @@ Answer with exactly one word: high, medium, or low. If unclear, answer medium.""
         <div class="why">That makes invention more likely, not less.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">You move the customer's ticket text into the system message and the fixed rules into the user message. Accuracy is the same. What did you most likely make worse?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) The model can no longer read the ticket.</span>
+        <div class="why">The model reads all messages; it can still see the ticket.</div></li>
+      <li data-correct="false"><span class="opt">B) The answer must now be in JSON.</span>
+        <div class="why">Moving text between messages does not change the output format.</div></li>
+      <li data-correct="true"><span class="opt">C) Maintainability and caching: the system message now changes every request, so the stable prefix is lost and rules are harder to version.</span>
+        <div class="why">Right. Durable rules in the system message give you one reusable, versioned, cacheable block. Putting changing data there breaks prompt caching and mixes data with rules.</div></li>
+      <li data-correct="false"><span class="opt">D) Temperature is now ignored.</span>
+        <div class="why">Message placement has nothing to do with sampling settings.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -169,6 +206,77 @@ user <span class="o">=</span> <span class="s">"""Classify the sentiment of the r
 
   <p>You can assemble a solid prompt now. The single most powerful upgrade to most prompts is showing the model examples of exactly what you want — that’s <strong>few-shot prompting</strong>, next.</p>
 
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/02_structured_output.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/02_structured_output.py</code></pre>
+    <p><strong>What to look for:</strong> The free-text run is a prompt without a pinned format, and the constrained run is the same task with an exact output shape. Compare the parse-failure rates the lab prints across the batch of messy emails. Delete the format instructions from the prompt and rerun to see the failure count rise.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  #5: valid  {&#x27;category&#x27;: &#x27;refund&#x27;, &#x27;order_id&#x27;: &#x27;ORD-90011&#x27;, &#x27;urgency&#x27;: &#x27;high&#x27;, &#x27;summary&#x27;: &#x27;Refund for ORD-90011, 3 weeks overdue&#x27;}
+  #6: valid  {&#x27;category&#x27;: &#x27;delivery&#x27;, &#x27;order_id&#x27;: &#x27;ORD-31337&#x27;, &#x27;urgency&#x27;: &#x27;medium&#x27;, &#x27;summary&#x27;: &#x27;Request to change delivery address before shipment&#x27;}
+  #7: valid  {&#x27;category&#x27;: &#x27;refund&#x27;, &#x27;order_id&#x27;: None, &#x27;urgency&#x27;: &#x27;high&#x27;, &#x27;summary&#x27;: &#x27;Cancel subscription, refund last month&#x27;}
+C) Schema-valid is not business-valid: validate rules, retry with the error
+  rule violations repaired by retry: 0
+D) Content check against gold labels (shape-valid does not mean right)
+  #4: model said &#x27;delivery&#x27;, a human would file &#x27;other&#x27;: &#x27;Just wanted to say the delivery guy was very polite. thanks!&#x27;
+  category accuracy: 7/8
+Summary
+  vague-prompt valid:       0/4
+  prompt-only valid:        8/8
+  schema-constrained valid: 8/8
+  Look: constrained decoding guarantees the SHAPE. It does not guarantee the CONTENT is right;
+  that is what the business-rule check + retry (and your eval set) are for.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/02_structured_output.txt">labs/outputs</a>. Source: <a href="../labs/02_structured_output.py">labs/02_structured_output.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Label each line of this prompt with its part (role, task, context, examples, format, out): 'You are a billing analyst.' / 'Decide if this invoice is overdue.' / 'Invoice: due 2026-10-01, paid: no.' / 'Reply overdue or not_overdue.' / 'If the due date is missing, reply unknown.'</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Role, task, context, format, out. No examples are present; adding one labelled invoice would be the next upgrade if outputs wobble.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> A weak prompt 'write a product description for this blender' gives wildly different lengths and tones. Rebuild it for a shop that needs 50-word, plain-English, no-superlatives copy, and list what each part fixes.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>System: 'You write product copy for a kitchen shop. Plain English, no superlatives like best or amazing.' User: 'Write a product description for the blender below. Product facts: <facts>...</facts>. Exactly one paragraph, 45-55 words. Use only the facts given; if a fact is missing, leave it out.' Role sets the voice; the facts block stops invented specs; the word range pins length; 'only the facts' plus 'leave it out' is the out that prevents made-up wattage or warranty.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Write a small test plan to prove your rebuilt prompt is better than the weak one, with numbers you would report.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Pick 50 real products, including edge cases (missing specs, very long spec sheets). Run both prompts on each, 3 times. Measure: word count in range (target 100%), banned-word rate, facts not in the input (manual or LLM-judge check), and output tokens. Report a table: weak vs rebuilt for each metric, plus 3 worst examples from each. Ship only if the rebuilt prompt wins on invented facts and length without losing readability in a quick human review.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What goes in a system message versus a user message?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>The system message holds things that apply to every turn: role, rules, tone, output format, safety constraints like answering only from context. The user message holds this turn's request and data: the question, the document, the ticket. Keeping them separate makes the prompt reusable, easier to version and test, and it keeps a stable prefix that providers can cache. It also helps keep untrusted user data clearly apart from your instructions.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> Your prompt works on your three test examples but fails in production. How do you debug it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Collect the failing production inputs and group them by failure type: wrong format, invented facts, wrong label, ignored instruction. Map each group to the part of the prompt that should have prevented it, for example missing context or no out for unknowns. Fix one part at a time and re-run a test set made from real traffic, including the failures, so you can see both the fix and any regressions. Version each prompt change. Three hand-picked examples were never a test set.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> How do you manage prompts across a team with many features in production?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Treat prompts as code: templates in the repo with variables, owned per feature, reviewed in pull requests, with a version id logged on every request. Each prompt has an eval set and a pass threshold that runs in CI, so a wording change cannot ship if it regresses. Keep stable instructions first to benefit from caching, and keep model choice and decoding settings next to the prompt because they change behaviour together. Monitor production for drift and feed failures back into the eval set.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/overview" target="_blank" rel="noopener">Prompt engineering overview — Anthropic</a></li>
+      <li><a href="https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices" target="_blank" rel="noopener">Prompting best practices — Anthropic</a></li>
+      <li><a href="https://docs.ollama.com/api/chat" target="_blank" rel="noopener">Chat API (messages and roles) — Ollama</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 </main>
 
 <script>

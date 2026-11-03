@@ -21,6 +21,13 @@
     <div class="box-label">Concept</div>
     <p><span class="term">Grounding</span> means instructing the model to answer strictly from the provided context. <span class="term">Faithfulness</span> is the property that the answer is actually supported by that context (no invented claims). <span class="term">Citations</span> are references (like <code>[1]</code>, <code>[2]</code>) tying each claim to the chunk it came from. <span class="term">Abstention</span> is the model saying “I don’t know” or “not in the provided documents” when the answer isn’t present — a feature, not a failure.</p>
   </div>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>Grounding is a school report where the teacher says: every sentence needs a footnote to a page in the books on your desk, and if the books do not say it, write "not in my sources". A student who adds a fact from memory without a footnote loses marks even if the fact is true. The analogy breaks because a teacher checks the footnotes by reading the page; your system only checks footnotes if you write code or a judge to do it.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <figure class="diagram">
     <img src="../assets/diagrams/t3-grounding.svg" alt="Grounding: a prompt is assembled from a SYSTEM instruction ('Answer ONLY from the context below. Cite sources as [n]. If absent: I don't know.'), a CONTEXT block with numbered chunks ([1] 3-year limited warranty, [2] free returns within 30 days), and a QUESTION. The LLM produces a grounded answer: 'You get a 3-year warranty [1], and returns are free within 30 days [2]', where every claim traces to a source.">
@@ -74,6 +81,13 @@ out <span class="o">=</span> <span class="f">grounded_answer</span>(<span class=
 <span class="f">print</span>(out)   <span class="c"># answer "...3-year... [1]", citations_valid=True, sources=["warranty.md"]</span></code></pre>
     <p>For stricter systems, go further: check that the cited chunk’s text actually <em>supports</em> the claim (string overlap, or an LLM-as-judge faithfulness check from Track 6). A citation that points at an unrelated chunk is worse than none.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Grounded answers and faithfulness checks for a 60,000-employee HR bot</div>
+    <p>Assumptions: 60,000 employees, 9,000 questions a day, about 6% of questions not covered by any policy, each answer built from 3,000 tokens of context, judged by claude-sonnet-5-5 at $2 / $10 per million input / output tokens (<a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic models overview, checked 2026-11-03</a>).</p><ol><li><strong>Expected abstentions.</strong> 9,000 x 6% = 540 questions a day should end in "Not in the provided documents". Track the abstain rate daily: if it drops to 1%, the bot has started guessing.</li><li><strong>Citation validity check.</strong> A regex that every [n] points to a real chunk costs nothing and runs on all 9,000 answers.</li><li><strong>Faithfulness judge on everything.</strong> Per answer: 3,000 context + 300 answer + 200 instructions = 3,500 input tokens and about 150 output tokens. Daily input: 9,000 x 3,500 = 31.5 M tokens x $2 = $63. Daily output: 9,000 x 150 = 1.35 M x $10 = $13.50. Total about $76.50 a day.</li><li><strong>Or sample.</strong> Judging a 10% random sample costs about $7.65 a day. With 900 judged answers a day, a faithfulness rate near 0.9 has a 95% margin of about 1.96 x sqrt(0.9 x 0.1 / 900) = 0.0196, roughly 2 points, which is enough to catch a regression within a day.</li><li><strong>Escalate the risky ones.</strong> Judge 100% of answers on high-stakes topics (pay, leave, disciplinary) and sample the rest.</li></ol><p>The lesson: citations make answers checkable, but only the checks (regex, judge, abstain rate) tell you the bot is actually behaving.</p>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -112,6 +126,22 @@ out <span class="o">=</span> <span class="f">grounded_answer</span>(<span class=
         <div class="why">They're references in the output, unrelated to window size.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">An answer says "Parental leave is 26 weeks [1] and can be split into two blocks [2]." Chunk [2] does not mention splitting. Which check catches this?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Lowering the temperature.</span>
+        <div class="why">Sampling settings do not verify anything, and many current hosted models no longer let you change temperature at all.</div></li>
+      <li data-correct="false"><span class="opt">B) Checking that every [n] refers to a chunk that was supplied.</span>
+        <div class="why">[2] was supplied, so this check passes. Valid citation ids do not mean the content supports the claim.</div></li>
+      <li data-correct="false"><span class="opt">C) Retrieving more chunks.</span>
+        <div class="why">More context does not test whether the existing claim is supported, and can add more material to blend wrongly.</div></li>
+      <li data-correct="true"><span class="opt">D) A claim-level support check (string match or LLM judge) comparing each claim to its cited chunk.</span>
+        <div class="why">The citation format is valid, so only checking whether the cited text supports the claim exposes it. That is what faithfulness measures.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -134,6 +164,78 @@ out <span class="o">=</span> <span class="f">grounded_answer</span>(<span class=
     <p>“Grounded” isn’t a vibe — it’s something you can score. The key metric is <span class="term">faithfulness</span> (also called groundedness): the fraction of claims in the answer that are actually supported by the retrieved context. You estimate it by decomposing the answer into individual claims and checking each against the cited chunks — increasingly with an LLM-as-judge (Track 6) that reads claim + source and returns supported / unsupported. A separate metric, <span class="term">answer relevance</span>, asks whether the answer actually addresses the question (a faithful answer can still be off-topic). Strong RAG teams track both on every release.</p>
     <p>Why this matters: grounding reduces hallucination dramatically but doesn’t eliminate it. Models can still paraphrase a source into something subtly wrong, blend two chunks into a claim neither makes, or cite the right chunk for the wrong sentence. So the production posture is layered: ground hard in the prompt, verify citations exist, measure faithfulness, and for high-stakes use surface the sources to the user so they can check. You’re not asking the model to be trustworthy — you’re building a system where its claims are <em>checkable</em>, which is a far stronger guarantee. That checkability, more than any single prompt trick, is what makes RAG safe to ship.</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/03_rag_local.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/03_rag_local.py</code></pre>
+    <p><strong>What to look for:</strong> Look at the final step of the lab: the grounded answer with [doc-id] citations, and the refusal when the best retrieval score is below the threshold. Check that each cited id is one of the retrieved chunks. Then raise the threshold until a question you know is answerable gets refused, and lower it until an off-topic question gets an answer: that range is the precision-versus-coverage dial for abstention. Note the refusal here is a retrieval-score gate, not a judge-based faithfulness check.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  out of the top 3. On this tiny corpus dense already wins; hybrid earns its keep on big corpora full of
+  near-identical codes (SKUs, error ids) that embeddings blur. Never assume: measure hit@k (lab 06).
+5) Grounded answers with citations, and a refusal when retrieval is weak
+  Q: I was charged twice for one order. What happens now?
+  A: If you were charged twice for one order, the duplicate payment is reversed automatically within 3 business days [pay-01#0]. If it is not reversed after 3 business days, raise a billing ticket with both transaction ids.
+     citations=[&#x27;pay-01#0&#x27;] all-cited-ids-were-retrieved=True
+  Q: Can I change my delivery address after the order has shipped?
+  A: No, you cannot change your delivery address after the order has shipped. According to [ship-03#0], the address can only be changed before the order is packed.
+     citations=[&#x27;ship-03#0&#x27;] all-cited-ids-were-retrieved=True
+  Q: Do you deliver to Antarctica by drone?
+  A: I don&#x27;t know based on our policies. (refused before calling the LLM: best cosine 0.27 &lt; 0.35)
+     citations=[] all-cited-ids-were-retrieved=True
+  Look: every factual sentence carries an id you can check; the off-topic question is refused
+  cheaply by the retrieval threshold, so the model never gets a chance to make something up.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/03_rag_local.txt">labs/outputs</a>. Source: <a href="../labs/03_rag_local.py">labs/03_rag_local.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> An answer has 5 claims. 4 are supported by the cited chunks; 1 is not supported by any retrieved chunk. What is its faithfulness score?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Faithfulness = supported claims / total claims = 4 / 5 = 0.8. This is the definition used by RAGAS: split the answer into claims and check each against the retrieved context. One unsupported claim in five is a serious problem in a policy bot, so you look at which claim and why.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Users complain the bot abstains too much: 25% of questions get "Not in the provided documents" even though the policy exists. Where do you look first?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>At retrieval, not the prompt. Take a sample of the abstentions and check whether the answering chunk was in the retrieved context. If it was missing, it is a recall problem (chunking, embedder, hybrid search, k too small, or a too-strict score threshold); fix retrieval and the abstentions turn into answers. If the chunk was present and the model still abstained, the instruction is too strict or the chunk is phrased indirectly, so adjust the prompt or add an example. Measure the abstain rate split into "correct abstention" and "wrong abstention" on a labelled set.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Design a citation format and verification step for answers that combine two sources, e.g. "Contractors get 10 days of leave [3], prorated for part-time [5]." How do you make the check cheap at 9,000 answers a day?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Format: one or more citations at the end of each sentence, and require each sentence to be one claim where possible. Verification in two tiers. Tier 1, free: parse sentences and their citation ids, check ids exist, and do a lexical check that key numbers and named entities in the sentence (10, part-time) appear in the cited chunks. Most bad citations fail this. Tier 2, paid: send only sentences that fail or are ambiguous, plus a random sample, to an LLM judge that returns supported or unsupported for each (sentence, cited chunks) pair. Log per-sentence verdicts so you can compute faithfulness and find which document types cause slips.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> How do you make a RAG answer grounded?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Number the retrieved chunks in the prompt and tell the model to answer only from them, cite the chunk number for each claim, and say it does not know if the answer is not there. Put the question after the context. Then verify in code that each cited number refers to a chunk you actually supplied. Grounding reduces hallucination a lot but does not remove it, so you also measure faithfulness on a sample.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> What is the difference between faithfulness and answer correctness?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Faithfulness asks whether every claim in the answer is supported by the retrieved context; it does not care whether the context itself is right. Answer correctness compares the answer against a reference answer or the truth. You can be faithful and wrong if retrieval fetched an outdated policy, and correct but unfaithful if the model answered from memory and got lucky. In RAG you want both, and measuring them separately tells you whether to fix generation or fix the data and retrieval.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Legal wants a guarantee that the bot never states anything unsupported. What can you honestly promise, and what do you build?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>I cannot promise zero; models can paraphrase a source into something subtly different. I can promise layered controls and measured rates. Build: strict grounding prompt with abstention; per-sentence citations; automated support checks (lexical then LLM judge) on high-stakes answers, blocking or flagging any sentence that fails; showing sources to users with quotes so they can verify; and a monitored faithfulness rate on a daily sample with a confidence interval and alerting. I would also calibrate the judge against lawyer-labelled examples so its verdicts mean something. Then the promise is a measured, monitored number, not a hope.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2305.14627" target="_blank" rel="noopener">Gao et al., Enabling Large Language Models to Generate Text with Citations (ALCE, 2023) - arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2309.15217" target="_blank" rel="noopener">Es et al., Ragas: Automated Evaluation of Retrieval Augmented Generation (2023) - arXiv</a></li>
+      <li><a href="https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/faithfulness/" target="_blank" rel="noopener">Faithfulness metric - Ragas documentation</a></li>
+      <li><a href="https://platform.claude.com/docs/en/about-claude/models/overview" target="_blank" rel="noopener">Models overview and pricing - Anthropic docs</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>You can now build a RAG system that retrieves, grounds, and cites. The last question — the one that separates demos from products — is: <em>how do you know it’s actually any good?</em> Next: <strong>evaluating retrieval quality</strong>.</p>
 

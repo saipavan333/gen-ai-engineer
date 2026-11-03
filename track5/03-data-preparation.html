@@ -26,6 +26,13 @@
     <div class="box-label">Concept</div>
     <p>A fine-tuning <span class="term">training example</span> is an input paired with the desired output — for instruction tuning, an <span class="term">instruction → response</span> pair, often expressed in a <span class="term">chat format</span> (a list of role/content messages). You split your examples into a <span class="term">training set</span> the model learns from and a <span class="term">validation set</span> held out to measure honestly. The cardinal rule: the data’s format must <strong>match how you’ll prompt the model at inference</strong>.</p>
   </div>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>Preparing fine-tuning data is like choosing which past exam answers to give a younger student to study. If you hand over a pile with messy answers, wrong answers and the same question copied 50 times, they'll learn the mess. If you hand over 300 neat, correct, varied ones, they'll learn the pattern. The analogy breaks because a student can tell a crossed-out wrong answer is wrong; a model copies whatever you show it, wrong answers included.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <h2>The quality checklist</h2>
   <ul>
@@ -67,6 +74,13 @@ train, val <span class="o">=</span> data[:split], data[split:]      <span class=
 <span class="f">print</span>(<span class="f">len</span>(train), <span class="s">"train /"</span>, <span class="f">len</span>(val), <span class="s">"val examples"</span>)</code></pre>
     <p>Notice the system + user + assistant structure matches exactly how you’ll call the model later. If you train on one format and prompt with another, the model gets confused — <strong>train how you’ll serve</strong>.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: From 1.2 million support tickets to 8,000 training examples</div>
+    <p>Assumptions: a telecom company has 1,200,000 resolved support tickets with agent replies and wants a model that drafts replies in house style.</p><ol><li><strong>Exact dedup.</strong> Normalise whitespace and case, then hash. Say 18% are exact duplicates (auto-replies, copy-paste macros): 1,200,000 x 0.82 = 984,000 left.</li><li><strong>Near-dup dedup.</strong> MinHash on word shingles removes templated replies that differ only in a name or date. Say 40% go: about 590,000 left.</li><li><strong>Quality filter.</strong> Keep tickets that were resolved on the first reply and rated CSAT 4-5. Say 15% pass: about 88,500.</li><li><strong>PII scrub.</strong> Replace phone numbers, account IDs and addresses with typed placeholders like [PHONE]. Drop tickets where scrubbing breaks the meaning. Say about 80,000 remain.</li><li><strong>Stratified sample.</strong> Production traffic is 30% billing, 25% network, 20% SIM and port-out, 25% other. Sample 8,000 in those proportions, capping any single intent at 5%, so a few common intents don't drown out the rest.</li><li><strong>Group split, not random split.</strong> Split 90/10 by customer and by month, so no customer and no week of tickets sits in both train and validation. Random splitting would leak a customer's repeated issues across the split and flatter the score.</li><li><strong>Human spot-check.</strong> Read 200 random examples (2.5%). If more than 5% are bad, fix the filter and rerun, rather than hand-patching rows.</li></ol><p>Why stop at 8,000? LIMA got strong instruction-following from just 1,000 carefully curated examples (<a href="https://arxiv.org/abs/2305.11206">arXiv 2305.11206</a>). Curation beats volume.</p>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -105,6 +119,22 @@ train, val <span class="o">=</span> data[:split], data[split:]      <span class=
         <div class="why">Bad data harms even large models.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">You randomly split 50,000 tickets 90/10. Many customers filed 5-10 near-identical tickets. Validation accuracy is 94%; on next month's tickets it's 78%. What is the most likely cause?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Group leakage: the same customers' near-identical tickets landed in both train and validation, so validation rewarded memorisation.</span>
+        <div class="why">Correct. Split by group (customer, thread, time window) so related examples stay on one side. Random row-level splits leak whenever rows are correlated.</div></li>
+      <li data-correct="false"><span class="opt">B) Next month's tickets are harder; nothing is wrong with the evaluation.</span>
+        <div class="why">Possible but unproven. The correlated-rows setup makes leakage the first thing to rule out, and a time-based split would test this directly.</div></li>
+      <li data-correct="false"><span class="opt">C) The model is too small for the task.</span>
+        <div class="why">A capacity problem would show low validation scores too. A high validation score that collapses on fresh data is the signature of leakage.</div></li>
+      <li data-correct="false"><span class="opt">D) Too few epochs.</span>
+        <div class="why">More training would increase memorisation, widening the gap rather than closing it.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -127,6 +157,77 @@ train, val <span class="o">=</span> data[:split], data[split:]      <span class=
     <p>In a world where everyone can call the same base models, your <em>data</em> is what’s defensible. A thoughtfully curated set of examples for your specific task — your tone, your formats, your edge cases — is something competitors can’t copy from a model card. That’s why mature teams invest more in data pipelines than in clever training tricks: collecting real examples, cleaning and labeling them, generating and <em>filtering</em> synthetic ones, and continuously folding production failures back into the training set. The fine-tuning algorithm is a commodity; the dataset is the asset.</p>
     <p>Two traps to internalize. First, <strong>silent format drift</strong>: a stray difference between training and serving (a missing system message, different delimiters, a different chat template) quietly degrades a model that looked great in evaluation — always serve in the exact shape you trained. Second, <strong>evaluation contamination</strong>: leakage between train and validation (or reusing your validation set so often that you implicitly tune to it) makes your numbers lie. The discipline is boring but decisive: clean data, consistent formatting, honest held-out splits. Do that and fine-tuning becomes reliable engineering; skip it and it becomes expensive guesswork.</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/11_lora_tiny.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/11_lora_tiny.py</code></pre>
+    <p><strong>What to look for:</strong> Open the lab's tiny training set and check that each example has the same structure the model will see at inference. Duplicate one example 20 times and retrain: training loss drops faster, but the model starts parroting that one answer, a small version of the duplication problem in this lesson. The lab's data is toy-sized, so judge the direction of the change, not the numbers.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  base model: 798,848 params. Pre-training it on &#x27;count UP&#x27; sequences (0123456789012...)
+  base loss  count-up=0.097   count-down=10.885  &lt;- it never saw &#x27;down&#x27;
+  LoRA r=8 on attention + MLP: trainable=65,536 of 864,384 (7.6%)
+    after   0 LoRA steps: count-down loss=10.878  count-up loss=0.098
+    after 100 LoRA steps: count-down loss=0.100  count-up loss=9.747
+    after 200 LoRA steps: count-down loss=0.098  count-up loss=10.912
+    after 300 LoRA steps: count-down loss=0.097  count-up loss=10.695
+  frozen base tensors changed during LoRA training: 0  (expect 0)
+  adapter switched OFF: count-up loss=0.098  count-down loss=10.882  &lt;- the old skill is back: forgetting lived in the adapter, not the base
+  saved adapter: 266 KB  vs base model ~3120 KB in fp32
+  merge_and_unload: max logit difference after merging = 2.86e-06  (merged = same model, no adapter overhead)
+  Look: count-down loss falls while the base stays byte-identical. But count-up loss rose: with the adapter
+  on, the model forgot the old skill. That is why you eval BOTH the new task and the old ones (Lesson 5.6),
+  and why keeping adapters separate (swap or disable per task) is a real advantage of LoRA.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/11_lora_tiny.txt">labs/outputs</a>. Source: <a href="../labs/11_lora_tiny.py">labs/11_lora_tiny.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> You have 10,000 rows. 22% are exact duplicates; of the rest, 30% are near-duplicates; 20% of what remains fails your quality filter. How many examples are left?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>10,000 x 0.78 = 7,800. 7,800 x 0.70 = 5,460. 5,460 x 0.80 = <strong>4,368</strong>. Each filter multiplies, which is why raw counts badly overstate usable data. Plan your collection around the final number.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your examples come from three teams: one writes 'Hi there,' and bullet lists, one writes formal paragraphs, one writes one-liners. You want one consistent house style. What do you do with the data?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Pick the target style and write it down with 5 gold examples. Then either keep only the examples that already match (if there are enough), or rewrite the others into the target style, by people or with a strong model plus human review, and record which examples are rewritten. Mixed styles in training teach the model to pick a style at random, which looks like inconsistency in production. Check with a style rubric on validation outputs.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Design a pipeline that keeps the fine-tuning set fresh: production failures should flow back in each month without contaminating the eval set.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Log production outputs with user feedback and reviewer corrections. Each month, sample failures and corrections, scrub PII, and send them through the same dedup and quality filters. Before adding, run near-dup matching against the frozen eval set and drop any candidate too close to an eval item. Keep the eval set frozen and versioned, with a small new eval slice each quarter for drift, kept separately. Version the training set (hash plus manifest) per model release so any result can be reproduced, and track the training mix by intent so new data doesn't skew it.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What makes a good fine-tuning dataset?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Consistent format that matches exactly how the model will be prompted in production, including the system message and chat template. High-quality target outputs, because the model copies them. Coverage of the real input distribution, including edge cases, without a few common cases dominating. Deduplicated and clean. And a validation split that is truly held out. A few hundred to a few thousand excellent examples usually beat a much larger noisy set; LIMA used 1,000.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> How do you prevent train/validation leakage in practice?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>First, dedupe across the split, not just within it, with near-duplicate detection such as MinHash or embedding similarity, since exact hashing misses templated text. Second, split by group: customer, conversation thread, document or time window, so correlated examples stay together. For anything that will run on future data, a time-based split is the most honest. Third, freeze the eval set and check every new training batch against it. Finally, if the score looks too good, measure on a fresh sample of production data before believing it.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> You can buy 100,000 synthetic examples generated by a frontier model, or spend the same budget on 3,000 expert-written examples. How do you decide?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Run a small pilot of both against the same eval. Synthetic data is good for coverage and format but carries the generator's errors, biases and sameness, and some providers' terms restrict training on their outputs, so I'd check the license. Expert data is better for the hard, high-stakes cases. Often the best mix is a few thousand expert examples as the core, plus synthetic data that has been filtered and graded to fill coverage gaps, with every synthetic example passing an automatic check and a sample passing human review. The decision should come from eval results per slice, not from volume.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2305.11206" target="_blank" rel="noopener">LIMA: Less Is More for Alignment — Zhou et al., arXiv 2305.11206</a></li>
+      <li><a href="https://huggingface.co/docs/trl/sft_trainer" target="_blank" rel="noopener">SFT Trainer — Hugging Face TRL docs</a></li>
+      <li><a href="https://huggingface.co/docs/transformers/chat_templating" target="_blank" rel="noopener">Chat templates — Hugging Face Transformers docs</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>With clean data ready, you need a way to actually train that’s cheap enough to run for free. That’s the breakthrough that made fine-tuning accessible. Next: <strong>LoRA &amp; QLoRA</strong>.</p>
 

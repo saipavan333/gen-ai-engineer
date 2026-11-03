@@ -13,6 +13,13 @@
   <span class="eyebrow">Structured Data &amp; Text-to-SQL · Lesson 9.3</span>
   <h1>Generating safe, correct SQL</h1>
   <p class="lead">You are about to let a language model write queries that run against your database. That sentence should make you nervous — and this lesson turns that nervousness into layered, boring, reliable safety.</p>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>Letting a model write SQL is like letting a new driver take the family car. You tell them to drive carefully (the prompt), but you also give them a car with a speed limiter (timeout), a small fuel tank (row and cost caps), and no keys to the truck (a read-only account). If they ignore your advice, the car itself still will not do the dangerous thing. The analogy breaks because a new driver is not being actively tricked; a model can be prompt-injected by text hidden in the very data it reads.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <h2>Why you never trust generated SQL</h2>
   <p>A model can be prompt-injected (Track&nbsp;7): a malicious value in the data, or a cleverly worded question, can steer it into producing <code>DROP TABLE customers;</code> or <code>DELETE FROM orders;</code>. Even without an attacker, a well-meaning model can write a query that scans a billion rows and takes your database down, or one that exposes data the user shouldn’t see.</p>
@@ -57,7 +64,14 @@
     <p>Putting your safety in the prompt (“do not write destructive queries”) and then executing whatever comes back with a normal read-write connection. One prompt injection and your data is gone. The prompt is a hint; the <em>permissions</em> are the wall.</p>
   </div>
 
-  <div class="box key">
+  
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Guarding a 2 TB fact table on Postgres, BigQuery and Snowflake</div>
+    <p>Assumptions: a 2 TB orders fact table, a scan rate of about 1 GB/s on the read replica (measure yours), rows of about 200 bytes, and a model that occasionally forgets a WHERE clause.</p><ol><li><strong>The runaway.</strong> A full scan of 2 TB at 1 GB/s is 2,000 s, about 33 minutes of replica time per bad query. Ten users retrying makes the replica useless for everyone.</li><li><strong>Postgres: timeout.</strong> statement_timeout aborts any statement that runs longer than the value; the default 0 disables it (<a href="https://www.postgresql.org/docs/current/runtime-config-client.html">Postgres docs</a>). Set it on the text-to-SQL role, e.g. 15 s, so the 33-minute scan dies after 15 seconds.</li><li><strong>Postgres: permissions.</strong> GRANT only SELECT on the analytics schema to that role. default_transaction_read_only = on adds a second layer, but a session can change it, so the GRANT is the real wall.</li><li><strong>Row cap.</strong> 1,000 rows x 200 bytes = 200 KB to the app. An uncapped SELECT * of 10 M rows is 2 GB pulled into your API process.</li><li><strong>BigQuery is different.</strong> Google's docs say a LIMIT clause does not reduce compute cost on non-clustered tables; use the maximum bytes billed setting, which fails the query before it runs if the estimate is over the limit, without a charge (<a href="https://cloud.google.com/bigquery/docs/best-practices-costs">BigQuery cost best practices</a>). A row LIMIT protects your app, not your bill.</li><li><strong>Snowflake.</strong> STATEMENT_TIMEOUT_IN_SECONDS defaults to two days (<a href="https://docs.snowflake.com/en/sql-reference/parameters">Snowflake parameters</a>). Set it low on the warehouse or user that serves the tool.</li></ol><p>Same idea in every engine: the limits live in the database, configured for the model's account, not in the prompt.</p>
+  </div>
+<!-- shape:scale:end -->
+<div class="box key">
     <div class="box-label">Key points</div>
     <ul>
       <li><strong>Never trust generated SQL</strong> — and never make the prompt your only defense.</li>
@@ -106,6 +120,22 @@
         <div class="why">Parsing is standard and reliable.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Your text-to-SQL tool on BigQuery appends LIMIT 1000 to every query. A user's question triggers a SELECT over a 5 TB non-clustered table. What does the LIMIT do for cost?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Nothing for compute cost; the table is still scanned. Use maximum bytes billed to fail the query before it runs.</span>
+        <div class="why">Google's cost docs state that LIMIT does not reduce compute cost on non-clustered tables. Maximum bytes billed checks the estimated bytes up front and fails the query without a charge.</div></li>
+      <li data-correct="false"><span class="opt">B) It makes the query read-only.</span>
+        <div class="why">LIMIT has nothing to do with permissions. Read-only access comes from the IAM roles of the account running the query.</div></li>
+      <li data-correct="false"><span class="opt">C) It cuts the scan to 1,000 rows' worth of bytes.</span>
+        <div class="why">BigQuery's on-demand cost depends on bytes read, and LIMIT does not reduce bytes read on non-clustered tables.</div></li>
+      <li data-correct="false"><span class="opt">D) It blocks the query because 5 TB is above the limit.</span>
+        <div class="why">LIMIT counts output rows, not bytes scanned. It never blocks a query for scanning too much.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box deep">
@@ -113,6 +143,83 @@
     <p>We’ve focused on <em>security</em> safety — no deletes, no injection, no runaway scans. But there’s a quieter safety that matters just as much in analytics: <em>not returning a confident wrong answer</em>. A query that silently double-counts through a fan-out join, or misses rows because of a null in the join key, is a different kind of unsafe — it corrupts decisions instead of data. Some of the same discipline helps here: constrain the surface (curated views with the joins baked in), and validate the <em>shape</em> of results (did we expect one row and get thousands?).</p>
     <p>The deeper move is to make the system <em>show its work</em>. Returning the generated SQL alongside the answer — and, in a good UI, the row count and a sample — lets a user sanity-check the “how” behind the number, turning a black box into something auditable. This dovetails with grounding and citations from RAG: just as a RAG answer should point to its sources, a text-to-SQL answer should point to the query that produced it. Transparency doesn’t make the SQL correct, but it makes wrongness <em>visible</em>, which is the next best thing — and it’s exactly what earns trust from the analysts whose bottleneck you’re trying to remove.</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/09_text_to_sql_duckdb.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/09_text_to_sql_duckdb.py</code></pre>
+    <p><strong>What to look for:</strong> Find the lab's SELECT-only validation and row limit. Feed it a few hostile strings by hand: a DELETE, a SELECT followed by a semicolon and DROP TABLE, and a CTE that ends in a DELETE (WITH x AS (SELECT 1) DELETE FROM t), which starts with WITH and so passes a naive prefix check. Note which layer stops each one. Then ask a question whose correct answer has its own LIMIT 3 and confirm the row-limit wrapper does not break it.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  Q: What share of orders were returned? Give a fraction between 0 and 1.
+     SQL: SELECT SUM(CASE WHEN status = &#x27;returned&#x27; THEN 1 ELSE 0 END) / COUNT(*) AS return_share FROM orders;
+     PASS fixes=0 got=[(0.09483333333333334,)] gold=[(0.09483333333333334,)]
+  Q: Average delivered order value for Plus members vs non-members.
+     SQL: SELECT AVG(CASE WHEN c.is_plus THEN o.amount_rs ELSE NULL END) AS avg_plus, AVG(CASE WHEN NOT c.is_plus THEN o.amount_rs ELSE NULL END) AS avg_non_plu
+     FAIL fixes=0 got=[(4945.648507917174, 5045.7609119496865)] gold=[(False, 5045.760911949686), (True, 4945.648507917174)]
+  Q: How many customers placed no orders at all?
+     SQL: SELECT COUNT(*) FROM customers WHERE customer_id NOT IN (SELECT customer_id FROM orders WHERE status = &#x27;delivered&#x27;)
+     PASS fixes=0 got=[(50,)] gold=[(50,)]
+  execution accuracy: 5/6
+3) A user asks for something destructive
+  blocked by the gate: DELETE is not allowed (SELECT only)
+  Look: safety comes from the parser + read-only principal + row cap, not from asking the model nicely.
+  Wrong-but-valid SQL (a FAIL above) is the harder problem; only an eval set with gold answers catches it.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/09_text_to_sql_duckdb.txt">labs/outputs</a>. Source: <a href="../labs/09_text_to_sql_duckdb.py">labs/09_text_to_sql_duckdb.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> In SQLite, <code>WITH x AS (SELECT 1) DELETE FROM orders</code> starts with WITH. Does the page's validate() let it through, and what stops it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>validate() lets it through: there is no semicolon and it starts with "with". SQLite does allow a WITH clause in front of INSERT, UPDATE and DELETE (<a href="https://www.sqlite.org/lang_with.html">SQLite WITH docs</a>). What stops it: the read-only connection (mode=ro) would reject the write, and the row-limit wrapper SELECT * FROM (...) is a syntax error for a DELETE. This is why the page has several layers; the prefix check alone is not enough.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Write the Postgres setup for a text-to-SQL role that can only read the analytics schema, times out after 15 s and defaults to read-only transactions.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p><pre><code>CREATE ROLE nl2sql LOGIN PASSWORD '...';  -- store it in a secret manager
+GRANT USAGE ON SCHEMA analytics TO nl2sql;
+GRANT SELECT ON ALL TABLES IN SCHEMA analytics TO nl2sql;
+ALTER DEFAULT PRIVILEGES IN SCHEMA analytics GRANT SELECT ON TABLES TO nl2sql;
+ALTER ROLE nl2sql SET statement_timeout = '15s';
+ALTER ROLE nl2sql SET default_transaction_read_only = on;</code></pre>The GRANTs are the hard guarantee; the role settings are defaults that the session could override, so they are a second layer. Point the role at a read replica so even an allowed heavy query cannot slow production writes.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> A support agent uses the tool and asks "show me all employees and their salaries". The role can read the HR schema. Nothing technical stops it. Redesign access so the tool respects who is asking.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Make the database enforce the user's permissions, not the tool's. Options: run each query under the end user's identity (or a role mapped to their group) so existing grants apply; expose only curated views that exclude sensitive columns, with column-level grants; add row-level security policies for per-team data. Keep the tool's own account at the minimum: views only, no raw HR tables. Then add a policy check before execution that blocks queries touching tagged sensitive columns for non-authorized users, and log every query with the requesting user. The model should never be the component deciding who may see salaries.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> Why is "only write SELECT statements" in the prompt not enough?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Because a prompt is a request, not a control. The model usually follows it, but a prompt injection, hidden in a question or in data the model reads, can override it, and models also make plain mistakes. If the code runs whatever comes back on a read-write connection, one bad output can delete data. The real protection is a read-only database account, plus validation, a timeout and a row cap in code. The prompt instruction stays, as a way to reduce bad generations, not as the safety mechanism.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> List the layers you would put around generated SQL, strongest first.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>One: a least-privilege database account, SELECT only, ideally on curated views and a read replica, which makes writes impossible. Two: a statement timeout and, on BigQuery, maximum bytes billed, which bound cost and load in the engine. Three: code validation, using a SQL parser to allow only a single SELECT rather than string matching. Four: a row cap by wrapping the query. Five: parameterizing any user-supplied literals. Six: logging every query with the user. Each layer assumes the others can fail.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> How do prompt injection risks differ for text-to-SQL compared with a RAG chatbot?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>In RAG, injected text mostly corrupts the answer or tries to exfiltrate data through the output. In text-to-SQL the model's output is executed, so injection can become an action: a write, a huge scan, or a query reading data the user should not see. Sources of injection include the question, column comments and data values pulled into few-shot examples or result summaries. The defence is to treat generated SQL as untrusted code: least-privilege execution under the user's own permissions, engine-level limits, parser-based allowlists, and never feeding raw result data back to the model without care. OWASP lists prompt injection as the top LLM risk for this reason.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://www.postgresql.org/docs/current/runtime-config-client.html" target="_blank" rel="noopener">Client connection defaults (statement_timeout, default_transaction_read_only) - PostgreSQL documentation</a></li>
+      <li><a href="https://cloud.google.com/bigquery/docs/best-practices-costs" target="_blank" rel="noopener">Best practices for controlling costs (LIMIT and maximum bytes billed) - BigQuery documentation</a></li>
+      <li><a href="https://docs.snowflake.com/en/sql-reference/parameters" target="_blank" rel="noopener">Parameters (STATEMENT_TIMEOUT_IN_SECONDS) - Snowflake documentation</a></li>
+      <li><a href="https://genai.owasp.org/llmrisk/llm01-prompt-injection/" target="_blank" rel="noopener">LLM01: Prompt Injection - OWASP GenAI Security Project</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>Safety in place, we can let the system actually run queries — and, crucially, recover when they fail. Next: <strong>the self-correcting SQL agent.</strong></p>
 

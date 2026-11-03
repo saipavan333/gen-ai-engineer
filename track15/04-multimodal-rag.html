@@ -13,6 +13,13 @@
   <span class="eyebrow">Multimodal AI · Lesson 10.4</span>
   <h1>Multimodal RAG</h1>
   <p class="lead">RAG gave a model your documents. Multimodal RAG gives it your <em>images</em> too — product photos, charts, diagrams, scanned pages — so it can retrieve and reason over visual knowledge, not just text. It’s Track&nbsp;3 with a wider definition of “document.”</p>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>Imagine a giant map where every picture and every sentence gets a pin. Pictures of red shoes and the words 'red running shoe' get pinned close together, while 'blue sofa' is pinned far away. To search, you pin your question and look at the nearest pins. Where it breaks: the map has room for the gist, not the fine print, so a pin cannot tell you a shoe's price or model number unless that information is also written in text somewhere.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <h2>Why retrieve over images</h2>
   <p>Plenty of the knowledge you’d want a system to ground on isn’t text: a product catalog is photos, a technical manual is full of diagrams, financial reports are charts, an archive is scanned pages. Text-only RAG can’t reach any of it. <span class="term">Multimodal RAG</span> extends the same retrieve-then-ground pattern so the “documents” can be images: given a question, find the most relevant images (and text), and feed them to a VLM to produce a grounded, cited answer. The shape is identical to Track&nbsp;3 — index, retrieve top-k, ground — only the content type widened.</p>
@@ -38,7 +45,22 @@ hits <span class="o">=</span> util.<span class="f">cos_sim</span>(q_vec, img_vec
   <h2>Then ground with a VLM</h2>
   <p>Retrieval finds the relevant images; the generation step hands those images (not just captions) to a VLM along with the question, so it can actually look at them to answer — “based on the retrieved photo, this shoe has a mesh upper and a visible air unit.” That’s grounding (Track&nbsp;3, Track&nbsp;7) in multimodal form: the answer is anchored to retrieved visual evidence, and you can “cite” by showing the image it used. Same trust discipline, richer sources.</p>
 
-  <div class="box key">
+  
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Search over a 2-million-image product catalogue</div>
+    <p>Facts: the open <code>clip-ViT-B-32</code> model in sentence-transformers produces 512-dimensional vectors (its config's projection_dim). Image tokens follow the 28 x 28 patch rule in <a href="https://platform.claude.com/docs/en/build-with-claude/vision" target="_blank" rel="noopener">Anthropic vision docs</a>; Batch API 50% off per <a href="https://platform.claude.com/docs/en/build-with-claude/batch-processing" target="_blank" rel="noopener">batch docs</a>. The catalogue size and image sizes are our assumptions.</p>
+<ol>
+<li><strong>CLIP index size.</strong> 2,000,000 images x 512 dims x 4 bytes (float32) = 4.1 GB; at float16 about 2.0 GB. One CPU machine holds it in RAM.</li>
+<li><strong>Caption-then-embed cost.</strong> Caption each 800 x 800 product photo with claude-haiku-5-5: ceil(800/28)^2 = 29 x 29 = 841 image tokens + 100 prompt = 941 input, 80 output. 941 x $0.10/M + 80 x $0.50/M = $0.000134 an image. 2M images = <strong>$268</strong>, or <strong>$134</strong> through the Batch API. A one-off cost, re-run only for new or changed products.</li>
+<li><strong>Caption index size.</strong> MiniLM caption vectors at 384 dims: 2M x 384 x 4 bytes = 3.1 GB.</li>
+<li><strong>Query path.</strong> Embed the query with CLIP's text encoder and with MiniLM, take top-50 from each index (FAISS or a vector database), fuse with reciprocal rank fusion as in Track 3, then pass the top 5 images plus their captions to a VLM to answer and show the images as citations.</li>
+<li><strong>Eval before choosing.</strong> 300 real queries with known-correct products. Measure recall@10 for CLIP only, captions only, and fused. Visual queries ("curved velvet sofa") tend to favour CLIP; attribute queries ("walnut, 180 cm, in stock") favour captions and metadata filters. Let the numbers pick the blend.</li>
+<li><strong>Scanned documents are different.</strong> For page images full of text, models like ColPali embed page patches with a VLM and match query tokens against them, which often beats a single CLIP vector; evaluate it if your corpus is PDFs, not photos.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+<div class="box key">
     <div class="box-label">Key points</div>
     <ul>
       <li><strong>Multimodal RAG</strong> widens “documents” to images (photos, charts, diagrams, scans) — same retrieve-then-ground shape as Track&nbsp;3.</li>
@@ -87,6 +109,22 @@ hits <span class="o">=</span> util.<span class="f">cos_sim</span>(q_vec, img_vec
         <div class="why">Unrelated to multimodal retrieval.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Users search a furniture catalogue for 'SKU 4471-B oak'. CLIP-only retrieval returns visually similar oak chairs but not the exact product. Why, and what fixes it?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) CLIP is broken and should be retrained.</span>
+        <div class="why">It is doing its job: matching appearance. SKUs are not visual.</div></li>
+      <li data-correct="true"><span class="opt">B) A CLIP vector captures visual gist, not exact codes; add keyword or metadata search over SKUs and captions and fuse it with CLIP results.</span>
+        <div class="why">Exact identifiers need lexical matching. Hybrid retrieval (CLIP plus BM25 or a filter) handles both visual and exact queries.</div></li>
+      <li data-correct="false"><span class="opt">C) Increase top-k to 1,000.</span>
+        <div class="why">The product might not rank in the top 1,000 by visual similarity, and the VLM cannot use that many images anyway.</div></li>
+      <li data-correct="false"><span class="opt">D) Caption every image with a longer description.</span>
+        <div class="why">Captions help only if they contain the SKU, which comes from your product database, not from the photo. Metadata search is the direct fix.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box deep">
@@ -97,6 +135,78 @@ hits <span class="o">=</span> util.<span class="f">cos_sim</span>(q_vec, img_vec
     <p>And the generation half needs its own check — did the VLM’s answer actually reflect the retrieved image, or did it hallucinate (faithfulness, Track&nbsp;6/12)? The through-line of this entire track is that multimodal is your familiar toolkit — retrieval, grounding, evaluation, hybrid fusion — applied to images and audio.</p>
     <p>Master that framing and you can build, and defend, systems over any kind of data, which is exactly the range that makes a GenAI engineer valuable.</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/03_rag_local.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/03_rag_local.py</code></pre>
+    <p><strong>What to look for:</strong> No lab embeds images (CLIP and a VLM are not part of the verified local stack). The RAG lab is the same pipeline with text: chunk, embed with MiniLM, search in DuckDB and FAISS, fuse BM25 and vector results with RRF, cite [doc-id]s and refuse below a score threshold. Watch how RRF merges the two ranked lists; in multimodal RAG one list would come from CLIP image vectors and the other from caption text. To try CLIP itself, load the sentence-transformers clip-ViT-B-32 model (check free disk first; it is a separate download).</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  out of the top 3. On this tiny corpus dense already wins; hybrid earns its keep on big corpora full of
+  near-identical codes (SKUs, error ids) that embeddings blur. Never assume: measure hit@k (lab 06).
+5) Grounded answers with citations, and a refusal when retrieval is weak
+  Q: I was charged twice for one order. What happens now?
+  A: If you were charged twice for one order, the duplicate payment is reversed automatically within 3 business days [pay-01#0]. If it is not reversed after 3 business days, raise a billing ticket with both transaction ids.
+     citations=[&#x27;pay-01#0&#x27;] all-cited-ids-were-retrieved=True
+  Q: Can I change my delivery address after the order has shipped?
+  A: No, you cannot change your delivery address after the order has shipped. According to [ship-03#0], the address can only be changed before the order is packed.
+     citations=[&#x27;ship-03#0&#x27;] all-cited-ids-were-retrieved=True
+  Q: Do you deliver to Antarctica by drone?
+  A: I don&#x27;t know based on our policies. (refused before calling the LLM: best cosine 0.27 &lt; 0.35)
+     citations=[] all-cited-ids-were-retrieved=True
+  Look: every factual sentence carries an id you can check; the off-topic question is refused
+  cheaply by the retrieval threshold, so the model never gets a chance to make something up.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/03_rag_local.txt">labs/outputs</a>. Source: <a href="../labs/03_rag_local.py">labs/03_rag_local.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> How much RAM does a float32 CLIP ViT-B/32 index of 500,000 images need, and how much at int8?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>500,000 x 512 x 4 bytes = 1.02 GB at float32. int8 is 1 byte a dimension: 256 MB (plus small overhead for scales), usually with a small recall loss you should measure.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your multimodal RAG answers questions about a technical manual with diagrams. The VLM's answer cites a diagram, but engineers say the answer is not supported by it. How do you measure and reduce this?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Measure faithfulness separately from retrieval: for a sample of answers, ask a judge (validated against human labels) whether every claim is supported by the retrieved images and text, and log unsupported claims. Reduce it by asking the VLM to quote or describe the specific diagram element it relied on before answering, sending the diagram at enough resolution to read its labels, including the diagram's caption and nearby text as context, and refusing when retrieval scores are low. Track faithfulness per prompt version so changes are checked.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> You must choose between CLIP embeddings and caption-then-embed for a 10-million-photo real-estate archive, and you have budget for only one in year one. Lay out the decision with costs and an experiment.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Costs: CLIP is a local GPU or CPU embedding pass, no per-image API fee; the index is 10M x 512 x 4 bytes = 20.5 GB float32 (10 GB float16). Captioning at the $0.000134 per image computed for 800 x 800 photos is about $1,340 through the normal API or $670 batched, plus a 384-dim caption index of 15.4 GB. Neither is expensive, so the choice is about quality. Experiment: 1,000 photos, 200 real buyer queries ('sunny kitchen with island', '3 bedrooms near park'), recall@10 for each. Visual queries favour CLIP; factual ones (bedrooms, location) belong in structured metadata filters anyway. Pick the one that wins on visual queries, and plan to add the other later as a hybrid.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is CLIP and why is it useful for retrieval?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>CLIP is a model trained on image-caption pairs so that an image and a matching caption end up close together in the same vector space. It has an image encoder and a text encoder. For retrieval, you embed all your images once, then embed a text query and find the nearest image vectors by cosine similarity. That gives you search by appearance, like 'red running shoe', even when no caption contains those words.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> Compare CLIP-style shared embeddings with caption-then-embed for multimodal RAG.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Shared embeddings match on appearance directly, need no per-image LLM pass, and are cheap to index at scale, but one vector misses fine detail and cannot search non-visual facts. Caption-then-embed turns images into text with a VLM, so it plugs into an existing text RAG stack and can search details the caption spells out; it costs a captioning pass and loses anything the caption omits. Many systems use both and fuse rankings, plus metadata filters for exact attributes. I decide with recall@k on real queries.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Design multimodal RAG for 5 million scanned insurance documents with tables, stamps and handwriting.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Ingestion: render pages to images, run OCR for text and layout, and use a VLM to extract structured fields and describe stamps, signatures and tables. Index three ways: OCR text with BM25 for exact terms, dense text embeddings for meaning, and page-image embeddings (a ColPali-style late-interaction model) for layout-heavy pages; fuse with RRF and filter by metadata such as policy number and date. Generation: pass the top pages as images plus OCR text to a VLM, require page citations, and refuse on low scores. Evaluate retrieval recall and answer faithfulness per document type, enforce access control at retrieval, and batch the ingestion for cost.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2103.00020" target="_blank" rel="noopener">Learning Transferable Visual Models From Natural Language Supervision (CLIP) - arXiv</a></li>
+      <li><a href="https://sbert.net/examples/sentence_transformer/applications/image-search/README.html" target="_blank" rel="noopener">Image Search with CLIP - Sentence Transformers docs</a></li>
+      <li><a href="https://arxiv.org/abs/2407.01449" target="_blank" rel="noopener">ColPali: Efficient Document Retrieval with Vision Language Models - arXiv</a></li>
+      <li><a href="https://platform.claude.com/docs/en/build-with-claude/vision" target="_blank" rel="noopener">Vision (image token cost) - Anthropic</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>You can now bring vision, documents, audio, and multimodal retrieval into your work. Let’s pressure-test it. Next: the <strong>interview check</strong>.</p>
 

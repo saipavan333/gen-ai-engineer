@@ -26,6 +26,13 @@
     <div class="box-label">Concept — the words you’ll hear</div>
     <p>The <span class="term">forward pass</span> is the model making a prediction. The <span class="term">loss</span> is a number measuring how wrong it was (lower is better). The <span class="term">gradient</span> points in the direction that increases loss, so we step the <em>opposite</em> way — this is <span class="term">gradient descent</span>. <span class="term">Backpropagation</span> is the efficient method for computing those gradients across all the weights. The <span class="term">learning rate</span> is how big each step is. An <span class="term">epoch</span> is one full pass over your training data. You split data into a <span class="term">training set</span> (to learn from) and a <span class="term">validation set</span> (held out, to check honestly).</p>
   </div>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>Training is like learning to shoot a basketball. You shoot, see how far you missed, adjust your arm a little, and shoot again, thousands of times. Big adjustments make you overshoot; tiny ones take forever. The analogy breaks because you adjust one arm, while the model adjusts billions of numbers at once, and it can 'get good' by memorising the exact shots in practice rather than learning to shoot, which is why you test it on shots it has never seen.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <h2>Roll the ball downhill</h2>
   <p>Here’s gradient descent on the simplest possible “model”: one weight, with loss = (weight − 3)². The lowest point is at 3. Take steps and watch it descend — then crank the learning rate too high and watch it overshoot. This <em>is</em> training, minus the billions of weights.</p>
@@ -58,6 +65,13 @@ lr <span class="o">=</span> <span class="n">0.1</span>            <span class="c
 <span class="c"># w marches toward 3.0 and loss toward 0 — that's learning.</span></code></pre>
     <p>Real training is this exact loop, but <code>w</code> is billions of weights, the loss is “how wrong was the next-token prediction,” and the gradient is computed by backpropagation. Same idea, more numbers.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: The training budget for a 7B model on 20,000 examples</div>
+    <p>Assumptions: you fine-tune Qwen2.5-7B (the model card lists 7.61B parameters, <a href="https://huggingface.co/Qwen/Qwen2.5-7B">model card</a>) on 20,000 instruction-response examples of about 600 tokens each, with an effective batch size of 32.</p><ol><li><strong>Tokens per epoch.</strong> 20,000 x 600 = 12 million tokens.</li><li><strong>Optimizer steps.</strong> 20,000 / 32 = 625 steps per epoch. Three epochs = 1,875 weight updates. Each one is the loop from this lesson: forward pass, loss, backprop, nudge.</li><li><strong>Validation cadence.</strong> Hold out 2,000 examples (10%). Evaluate every 125 steps, giving 15 validation points across the run, enough to see where validation loss bottoms out.</li><li><strong>Memory for full fine-tuning.</strong> Hugging Face's memory guide counts about 6 bytes per parameter for mixed-precision weights, 8 for Adam's two optimizer states and 4 for gradients: 18 bytes per parameter before activations (<a href="https://huggingface.co/docs/transformers/model_memory_anatomy">HF memory anatomy</a>). 7.61B x 18 = about <strong>137 GB</strong>, more than any single consumer GPU, which is why Lesson 5.4 exists.</li><li><strong>Reading the curves.</strong> Say validation loss falls to 0.92 at step 1,000, then rises to 0.98 by step 1,875 while training loss keeps falling. Keep the step-1,000 checkpoint: that's early stopping, and stopping there would have saved nearly half the compute.</li><li><strong>Learning rate.</strong> TRL's SFTConfig defaults to 2e-5 for full fine-tuning, and its docs suggest about 1e-4 when training adapters, because only new parameters are learning (<a href="https://huggingface.co/docs/trl/sft_trainer">TRL SFT docs</a>).</li></ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -96,6 +110,22 @@ lr <span class="o">=</span> <span class="n">0.1</span>            <span class="c
         <div class="why">Loss is a training error metric, unrelated to billing.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">You have 8,000 examples, batch size 16 and gradient accumulation 4. How many optimizer steps are in one epoch?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) 8,000</span>
+        <div class="why">That would be one update per example (batch size 1). Batching averages many examples into each step.</div></li>
+      <li data-correct="false"><span class="opt">B) 500</span>
+        <div class="why">That's 8,000 / 16. It ignores gradient accumulation, which combines 4 micro-batches into one optimizer step.</div></li>
+      <li data-correct="true"><span class="opt">C) 125</span>
+        <div class="why">Correct. Effective batch = 16 x 4 = 64 examples per weight update, so 8,000 / 64 = 125 steps per epoch.</div></li>
+      <li data-correct="false"><span class="opt">D) 2,000</span>
+        <div class="why">That's 8,000 / 4. Accumulation multiplies the batch, it doesn't replace it.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -118,6 +148,77 @@ lr <span class="o">=</span> <span class="n">0.1</span>            <span class="c
     <p>The loop has a handful of knobs you’ll meet in any fine-tuning tool. <strong>Learning rate</strong> (and its schedule) sets step size — usually small for fine-tuning, since you’re gently adjusting a good model, not reshaping it. <strong>Epochs</strong> set how many passes over the data; too few underfits, too many overfits, so you watch validation loss and stop when it stops improving (<span class="term">early stopping</span>). <strong>Batch size</strong> is how many examples you average each step (bigger = smoother but more memory). You don’t tune these blind — you watch the train and validation curves and let them guide you.</p>
     <p>The deepest idea here is that the goal isn’t low <em>training</em> loss — it’s <em>generalization</em>, doing well on data the model never saw. A model can drive training loss to near zero by memorizing, which is useless (it’ll fail on real inputs). That’s why the held-out validation set is sacred: it’s your only honest read on whether the model learned the <em>pattern</em> or just the <em>answers</em>. Everything in fine-tuning — data quality, regularization, early stopping, evaluation (Lesson 5.6) — is in service of generalization. Keep that north star and the knobs make sense: each one is a lever for “learn the pattern, don’t memorize the examples.”</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/11_lora_tiny.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/11_lora_tiny.py</code></pre>
+    <p><strong>What to look for:</strong> Watch the printed loss fall step by step during the tiny fine-tune: that's this lesson's loop running for real. Raise the learning rate by 10x and rerun to see the loss jump around or blow up; set epochs high on the tiny dataset to see training loss go near zero, which is memorisation. The lab's model and data are toy on purpose, so the numbers show the mechanism, not real-world quality.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  base model: 798,848 params. Pre-training it on &#x27;count UP&#x27; sequences (0123456789012...)
+  base loss  count-up=0.097   count-down=10.885  &lt;- it never saw &#x27;down&#x27;
+  LoRA r=8 on attention + MLP: trainable=65,536 of 864,384 (7.6%)
+    after   0 LoRA steps: count-down loss=10.878  count-up loss=0.098
+    after 100 LoRA steps: count-down loss=0.100  count-up loss=9.747
+    after 200 LoRA steps: count-down loss=0.098  count-up loss=10.912
+    after 300 LoRA steps: count-down loss=0.097  count-up loss=10.695
+  frozen base tensors changed during LoRA training: 0  (expect 0)
+  adapter switched OFF: count-up loss=0.098  count-down loss=10.882  &lt;- the old skill is back: forgetting lived in the adapter, not the base
+  saved adapter: 266 KB  vs base model ~3120 KB in fp32
+  merge_and_unload: max logit difference after merging = 2.86e-06  (merged = same model, no adapter overhead)
+  Look: count-down loss falls while the base stays byte-identical. But count-up loss rose: with the adapter
+  on, the model forgot the old skill. That is why you eval BOTH the new task and the old ones (Lesson 5.6),
+  and why keeping adapters separate (swap or disable per task) is a real advantage of LoRA.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/11_lora_tiny.txt">labs/outputs</a>. Source: <a href="../labs/11_lora_tiny.py">labs/11_lora_tiny.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Using the HF figure of 18 bytes per parameter for mixed-precision training with Adam, estimate memory (before activations) to fully fine-tune a 1.5B model and a 70B model.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>1.5B x 18 = <strong>27 GB</strong>: tight even on a 24 GB GPU, so you'd need an 8-bit optimizer or a smaller batch. 70B x 18 = <strong>1,260 GB</strong>: a multi-node job. Activations come on top and grow with batch size and sequence length. This arithmetic is why LoRA and QLoRA dominate applied fine-tuning.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your run's training loss is flat at 2.3 from step 0 to step 500. List three likely causes and how you'd check each.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>(1) Learning rate far too low, or the scheduler stuck in warmup: print the logged learning rate. (2) Nothing is actually trainable, for example adapters not attached or everything frozen: print the trainable parameter count (PEFT's print_trainable_parameters). (3) Labels are all masked, or the data is broken, for example every label is -100 or the prompts are empty: decode one batch of input_ids and labels and read them. A flat loss is almost always a plumbing bug, not 'the model can't learn'.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Design the checkpoint and early-stopping policy for a 3-epoch run where each validation pass costs 4 minutes and the run takes 6 hours.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Evaluate every ~10% of the run (about every 36 minutes), so roughly 10 validation passes = 40 minutes of overhead, about 11%. Save a checkpoint at each eval, but keep only the best 2 by validation loss plus the latest (save_total_limit) to bound disk. Stop when validation loss hasn't improved for 2 consecutive evals (patience = 2), and load the best checkpoint at the end. Also log a task metric on a small held-out sample at each eval, because validation loss and task quality don't always move together.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is the difference between training loss and validation loss, and why do you need both?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Training loss is measured on the examples the model is learning from; validation loss is measured on held-out examples it never trains on. Training loss almost always goes down, because the model can memorise. Validation loss tells you whether it is learning something that generalises. When training loss keeps falling and validation loss starts rising, the model is overfitting, and that's where I'd stop or pick the best checkpoint.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> Walk me through what happens in one optimizer step when fine-tuning an LLM.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>A batch of tokenised examples goes through the model (forward pass), producing next-token probabilities at every position. Cross-entropy loss compares those with the actual next tokens, ignoring masked positions such as padding or prompt tokens. Backpropagation computes the gradient of the loss with respect to every trainable parameter. With gradient accumulation, gradients from several micro-batches are summed before updating. The optimizer, usually AdamW, uses the gradients plus its running averages to update the weights by an amount scaled by the learning rate, the scheduler adjusts the learning rate, and gradients are cleared.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> A fine-tune looks great on validation loss but the business metric didn't move. How do you reason about it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Loss measures how likely the model finds the reference tokens, not whether outputs are useful. Possible gaps: the validation set doesn't look like production traffic, the metric depends on a few key tokens (a label, a number) that loss averages away, or the model learned the reference style without the substance. I'd build a task-level eval on real production samples, check the decoding settings and chat template used at serving match training, and look at failure cases by hand. Then I'd select checkpoints on the task metric, not just loss.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://huggingface.co/docs/transformers/model_memory_anatomy" target="_blank" rel="noopener">GPU memory usage during training — Hugging Face Transformers docs</a></li>
+      <li><a href="https://huggingface.co/docs/trl/sft_trainer" target="_blank" rel="noopener">SFT Trainer — Hugging Face TRL docs</a></li>
+      <li><a href="https://huggingface.co/Qwen/Qwen2.5-7B" target="_blank" rel="noopener">Qwen2.5-7B model card — Hugging Face</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>The single biggest determinant of whether your fine-tune works isn’t the algorithm — it’s the data you feed it. Next: <strong>data preparation</strong>.</p>
 

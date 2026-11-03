@@ -26,6 +26,13 @@
     <div class="box-label">Concept</div>
     <p>A <span class="term">token</span> is a small chunk of text — often a whole common word, but sometimes a word-piece, a single character, or a punctuation mark. The fixed list of all tokens a model knows is its <span class="term">vocabulary</span> (typically ~50,000–200,000 entries). A <span class="term">tokenizer</span> is the tool that converts your text into tokens (and their numeric ids) on the way in, and converts tokens back to text on the way out.</p>
   </div>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>Tokens are like LEGO bricks. Common words come as one big ready-made brick, and rare words have to be built from several small bricks. The model only ever sees the bricks, never the individual plastic dots, which is why counting letters is hard for it. The analogy breaks because LEGO bricks are fixed shapes for everyone, while each model family has its own brick set, so the same sentence can be a different number of tokens on two models.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <h2>Why chop words into pieces at all?</h2>
   <p>Two bad extremes make the reason clear. If every <em>whole word</em> were its own token, the vocabulary would be enormous and the model could never handle a word it hadn’t seen (a typo, a new product name, a rare medical term). If every <em>single character</em> were a token, the vocabulary would be tiny but sequences would be punishingly long and the model would waste effort relearning that “t-h-e” spells “the.”</p>
@@ -56,6 +63,21 @@ ids <span class="o">=</span> enc.<span class="f">encode</span>(text)
 <span class="f">print</span>([enc.<span class="f">decode</span>([i]) <span class="k">for</span> i <span class="k">in</span> ids])       <span class="c"># the human-readable pieces</span></code></pre>
     <p>Try swapping in your own sentences, a paragraph of code, and a sentence in another language. Compare the token counts — you’ll feel the cost differences directly.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Budgeting tokens for 40 million product descriptions in six languages</div>
+    <p>Assume a marketplace wants every product description rewritten by an LLM: <strong>40,000,000 descriptions</strong>, average <strong>120 English words</strong> each, plus translations into five other languages. Numbers are assumptions; the method is the point.</p>
+<ol>
+<li><strong>English input tokens.</strong> At about 0.75 words per token, 120 words is about 160 tokens. 40M x 160 = <strong>6.4 billion tokens</strong>.</li>
+<li><strong>Do not trust the rule of thumb for other scripts.</strong> Sample 1,000 real descriptions per language and count with the target model's tokenizer (for example <code>tiktoken</code> for OpenAI models). Suppose you measure 1.4x for Spanish and 2.5x for Hindi. Those multipliers are what you must budget, not the 4-characters rule.</li>
+<li><strong>Price one language.</strong> On Claude Sonnet 5.5 at $2 per million input tokens (<a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic models overview</a>), English input = 6.4B / 1M x $2 = <strong>$12,800</strong>. If outputs are similar length, at $10 per million output tokens that adds about <strong>$64,000</strong>.</li>
+<li><strong>Batch it.</strong> This is an offline job, so the Batch API at 50% off halves both: about $38,400 for English in and out.</li>
+<li><strong>Hindi costs more for the same meaning.</strong> At 2.5x tokens, the Hindi output alone is 2.5 x $64,000 x 0.5 (batch) = <strong>$80,000</strong>. Same products, same model, more than double the English bill.</li>
+<li><strong>Act on it.</strong> Put a per-language token multiplier in the cost model, cap output length in the prompt, and re-measure if you switch model families, because the tokenizer changes with them.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box note">
     <div class="box-label">Different models, different tokenizers</div>
@@ -110,6 +132,22 @@ ids <span class="o">=</span> enc.<span class="f">encode</span>(text)
         <div class="why">Most tokenizers use sub-word units, not single characters.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">To stay under a 1,000-token input limit, your app cuts every user message at 4,000 characters. Some requests still fail with 'input too long'. Why?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) The model counts words, not tokens.</span>
+        <div class="why">Limits are in tokens. Word counts are an even rougher proxy than characters.</div></li>
+      <li data-correct="true"><span class="opt">B) Characters per token is only an average for English prose; code, JSON, numbers and many non-English scripts use more tokens per character, so count tokens with the model's tokenizer instead.</span>
+        <div class="why">Right. The 4-characters rule is an estimate. A 4,000-character block of Hindi or minified JSON can be well over 1,000 tokens. Measure in tokens, then truncate.</div></li>
+      <li data-correct="false"><span class="opt">C) Spaces are not counted as characters, so the limit is really higher.</span>
+        <div class="why">Spaces are characters and usually ride inside tokens. The problem is the varying characters-per-token ratio.</div></li>
+      <li data-correct="false"><span class="opt">D) The tokenizer adds a random number of tokens to each request.</span>
+        <div class="why">Tokenization is deterministic for a given tokenizer and text.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -132,6 +170,77 @@ ids <span class="o">=</span> enc.<span class="f">encode</span>(text)
     <p>BPE is trained, not hand-written. Start by treating every character (technically every byte, so any text is representable) as a token. Then scan a large corpus and find the most frequent adjacent pair of tokens — say <code>t</code> followed by <code>h</code>. Merge it into a new token <code>th</code>, and add it to the vocabulary. Repeat: next maybe <code>th</code>+<code>e</code> → <code>the</code>, then common suffixes like <code>ing</code>, <code>ed</code>, <code>tion</code>. Keep going for tens of thousands of merges. The merges you’ve learned, applied in order, <em>are</em> the tokenizer.</p>
     <p>This explains the quirks you saw. Frequent words become single tokens because they got merged early; rare words never earned a merge, so they stay in pieces. Leading spaces matter because the merges were learned over text where spaces precede words, so <code>" the"</code> (with its space) is its own learned token, distinct from <code>"the"</code>. And because everything bottoms out at bytes, the tokenizer can encode emoji, code, and languages it barely saw — just less efficiently. When you later wonder why a prompt costs what it costs, you’re really asking which merges fired.</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/01_generate_and_sample.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/01_generate_and_sample.py</code></pre>
+    <p><strong>What to look for:</strong> The lab prints prompt_eval_count and eval_count, which are qwen2.5:7b's real token counts. Send the same sentence in English and in another language (or a block of JSON) and compare prompt_eval_count. Note that this is Qwen's tokenizer, so counts will differ from tiktoken's cl100k_base numbers in the lesson.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>2) Same prompt, temperature 1.0, three different seeds
+  seed=1: Bengaluru in July typically experiences warm to hot temperatures with occasional thunderstorms.
+  seed=2: Bengaluru in July typically experiences hot and humid weather with occasional thunderstorms.
+  seed=3: Bengaluru in July typically experiences hot and dry weather with temperatures often soaring above 30°C.
+  distinct outputs at T=1.0: 3  (sampling -&gt; usually 2-3)
+3) Same seed twice at T=1.0 -&gt; reproducible on the same machine
+  identical: True
+4) Tokens are what you pay for: prompt vs output token counts
+  short prompt: prompt_tokens=   36  output_tokens=  2  prefill_s=  0.52  answer=&#x27;Paris&#x27;
+  long prompt : prompt_tokens=  639  output_tokens=  2  prefill_s=  0.22  answer=&#x27;Paris&#x27;
+  Look: the long prompt costs many more input tokens and more prefill time for the same answer.
+5) Streaming: time-to-first-token (TTFT) vs total time
+  TTFT=0.36s  total=2.54s  chunks=16  decode_tokens_per_s=7.3
+  Look: streaming does not make generation faster; it shows the first words sooner.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/01_generate_and_sample.txt">labs/outputs</a>. Source: <a href="../labs/01_generate_and_sample.py">labs/01_generate_and_sample.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> A 2,400-word English report goes into a prompt. Estimate the tokens, then say how much room is left in a 32,000-token window if you reserve 3,000 tokens for the answer and 800 for instructions.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>2,400 / 0.75 = 3,200 tokens. Used: 3,200 + 3,000 + 800 = 7,000. Left: 32,000 - 7,000 = 25,000 tokens. Treat it as an estimate and keep a 10% safety margin, because the real count depends on the tokenizer.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> You log 10,000 real user prompts and find the mean is 1,100 tokens on cl100k_base. You plan to switch to a model with a different tokenizer. What do you do before you trust your cost forecast?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Re-tokenize a sample of those same prompts with the new model's tokenizer (or send them and read the usage fields) and compute the ratio. A different vocabulary can change counts noticeably, especially for code, non-English text, and numbers. Update the forecast with the measured ratio, per language if your traffic is mixed. Never carry token counts across model families on faith.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Explain why the number 1234567 might be split into odd pieces and why that makes arithmetic hard, then propose a fix that does not need a bigger model.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Tokenizers learn merges from frequency, so a long number can split into chunks like '123', '456', '7' that do not line up with place value, and two numbers of the same length may split differently. The model then has to do column arithmetic over chunks it never sees as digits. Fixes: give it a calculator tool, ask it to write the numbers digit by digit before computing, or do the maths in code and let the model only explain. A tool is the reliable one.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is a token and why do we care about it as engineers?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>A token is a chunk of text from the model's fixed vocabulary, often a whole common word or a piece of a rarer one. The model reads and writes token ids, not characters. We care because tokens are how providers bill, how context windows are measured, and they drive latency since output is generated token by token. In English a token is about four characters or three quarters of a word, but code, JSON and many non-English scripts use more tokens for the same meaning.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> How does byte-pair encoding build a vocabulary, and what quirks does that cause in production?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>BPE starts from bytes and repeatedly merges the most frequent adjacent pair into a new token, for tens of thousands of merges. Frequent words become single tokens; rare words stay split. Quirks: leading spaces are part of tokens, so ' yes' and 'yes' differ, which matters for stop sequences and logit bias; numbers split unevenly, which hurts arithmetic; letter-level tasks like counting characters are hard; and under-represented languages fragment, which raises cost and eats context. Because it works on bytes, it never fails to encode anything.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> You are building a multilingual product. How do tokenizers affect your cost model, fairness, and model choice?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Measure tokens per language on real traffic with each candidate model's tokenizer; the same meaning can cost 2x or more in some scripts. That changes the cost forecast, the context left for retrieval, and latency for those users, which is a fairness issue as well as a budget one. In model selection I would include tokens-per-meaning as a metric next to quality, cap output lengths per language, and consider models whose vocabularies cover the target scripts better. I would also make sure billing alerts and rate limits are set in tokens, not requests.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/1508.07909" target="_blank" rel="noopener">Neural Machine Translation of Rare Words with Subword Units (Sennrich et al., 2016) — arXiv</a></li>
+      <li><a href="https://github.com/openai/tiktoken" target="_blank" rel="noopener">tiktoken — OpenAI (GitHub)</a></li>
+      <li><a href="https://platform.claude.com/docs/en/about-claude/models/overview" target="_blank" rel="noopener">Models overview (pricing, batch discount) — Anthropic</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>You can now reason in tokens. Next we’ll ask: what does the model do with a <em>sequence</em> of these tokens — how much can it hold at once, and how does it decide which earlier tokens matter? That’s <strong>context windows and attention</strong>… but first, the idea that gives tokens their meaning: <strong>embeddings</strong>.</p>
 

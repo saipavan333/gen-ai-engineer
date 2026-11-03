@@ -26,6 +26,13 @@
     <div class="box-label">Concept</div>
     <p>A <span class="term">golden set</span> is a small labeled dataset of queries paired with the chunk(s) that should be retrieved (and ideally a correct answer). On it you compute <span class="term">retrieval metrics</span>: <span class="term">recall@k</span> (what fraction of the relevant chunks appeared in the top k? when each query has one relevant chunk this is the same as hit rate@k, "did it appear at all", which is what the harness below computes), <span class="term">precision@k</span> (what fraction of the top k were relevant?), and <span class="term">MRR</span> (mean reciprocal rank — how high up the first relevant chunk was, rewarding good ordering). For the answer you add <span class="term">end-to-end metrics</span>: faithfulness (supported by context?) and answer correctness/relevance.</p>
   </div>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>Grading a treasure hunt team. Recall asks: of the 3 treasures hidden, how many did they bring back? Precision asks: of the 5 things in their bag, how many are treasure and how many are rocks? MRR asks: how many steps until they found the first treasure? nDCG gives more points for treasure found early and for the gold over the silver. The analogy breaks because in a treasure hunt you know where every treasure is; in retrieval your labels are often incomplete, so a "rock" might be an unlabelled treasure.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <h2>Play with the metrics</h2>
   <p>Toggle which retrieved results are actually relevant and watch the metrics move. Build the intuition for what each one rewards.</p>
@@ -70,6 +77,13 @@ golden <span class="o">=</span> {
 <span class="c"># Now change chunk size OR add reranking, re-run, and compare the numbers.</span></code></pre>
     <p>This tiny harness is the engine of all RAG improvement: change one variable, re-measure, keep it only if the metric improved. It’s also the seed of Track 6 (Evals), which generalizes this to whole LLM systems.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Scoring a telco support RAG: one query by hand, then 400 queries with error bars</div>
+    <p>Assumptions: 2 M chunks, a 400-query golden set labelled by support leads, a judge priced at $2 / $10 per million input / output tokens (<a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic models overview, checked 2026-11-03</a>).</p><ol><li><strong>One query by hand.</strong> Relevant chunks {A, B, C}. Top 5 returned: [X, A, Y, B, Z].<ul><li>recall@5 = 2/3 = 0.667; precision@5 = 2/5 = 0.40; hit@5 = 1.</li><li>Reciprocal rank = 1/2 = 0.5 (first relevant at rank 2).</li><li>nDCG@5 (binary gains, log2 discount): DCG = 1/log2(3) + 1/log2(5) = 0.631 + 0.431 = 1.062. Ideal DCG (A, B, C at ranks 1-3) = 1 + 0.631 + 0.5 = 2.131. nDCG = 1.062 / 2.131 = 0.498.</li><li>Context precision as Ragas defines it (mean of precision@k at each relevant rank, <a href="https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/context_precision/">Ragas context precision docs</a>): (P@2 + P@4) / 2 = (0.5 + 0.5) / 2 = 0.50.</li></ul></li><li><strong>Average over 400 queries.</strong> Say recall@10 = 0.85. Standard error = sqrt(0.85 x 0.15 / 400) = 0.0179, so the 95% interval is about 0.85 plus or minus 0.035. A change to 0.87 is inside the noise.</li><li><strong>How many queries for plus or minus 1 point?</strong> n = 1.96<sup>2</sup> x 0.1275 / 0.01<sup>2</sup> = about 4,900. You rarely need that: compare old and new on the same queries (a paired test) and only the queries that flipped carry signal.</li><li><strong>Labelling cost.</strong> At about 3 minutes per query, 400 queries is 20 hours of expert time. Budget it like any other dataset.</li><li><strong>Generation side.</strong> Faithfulness judging per run: 400 x 3,500 input tokens = 1.4 M x $2 = $2.80, plus 400 x 200 output = 80,000 x $10 / 1 M = $0.80. About $3.60, cheap enough to run on every pull request.</li></ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -108,6 +122,35 @@ golden <span class="o">=</span> {
         <div class="why">It's returning the right docs, so it's working.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Two retrievers return the same 3 relevant chunks in the top 10. Retriever P puts them at ranks 1, 2, 3; retriever Q at ranks 1, 8, 9. Which metric tells them apart?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) recall@10, because P found more.</span>
+        <div class="why">Both found all three relevant chunks in the top 10, so recall@10 is 1.0 for both.</div></li>
+      <li data-correct="false"><span class="opt">B) MRR, because it rewards good ordering.</span>
+        <div class="why">MRR only looks at the first relevant result. Both have it at rank 1, so both get RR = 1.</div></li>
+      <li data-correct="false"><span class="opt">C) None; they are equally good.</span>
+        <div class="why">If you keep only the top 3 for the prompt, P gives the model all three facts and Q gives one. That difference is real and nDCG captures it.</div></li>
+      <li data-correct="true"><span class="opt">D) nDCG@10, because it discounts every relevant result by its rank, not just the first one.</span>
+        <div class="why">P and Q have the same recall@10 (3/3), the same precision@10 (0.3) and the same MRR (first hit at rank 1). Only nDCG rewards P for placing all three high.</div></li>
+    </ul>
+  </div>
+  <div class="quiz">
+    <p class="quiz-q">A team cuts retrieved chunks from 10 to 2. Context precision rises from 0.61 to 0.83 and faithfulness holds at 0.90, yet users say answers are now incomplete. Which metric should have warned them?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Faithfulness, which should have dropped.</span>
+        <div class="why">Faithfulness checks that claims are supported by the context given. Saying less from less context is still faithful, which is exactly why it missed the problem.</div></li>
+      <li data-correct="false"><span class="opt">B) None; incomplete answers cannot be measured.</span>
+        <div class="why">Context recall measures exactly this, and answer correctness against a reference answer would also catch it.</div></li>
+      <li data-correct="false"><span class="opt">C) Context precision, which should have dropped.</span>
+        <div class="why">Precision rewards a clean context. Returning fewer, more relevant chunks raises it, so it cannot see missing information.</div></li>
+      <li data-correct="true"><span class="opt">D) Context recall, which drops when answer-bearing chunks are no longer retrieved.</span>
+        <div class="why">Fewer chunks means less noise (precision up) but missing facts (recall down). Faithfulness stays high because the model only says what the 2 chunks support. Watch precision and recall together.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -133,6 +176,78 @@ golden <span class="o">=</span> {
 
   <p>You’ve built RAG end to end and learned to measure it. Time to pressure-test the whole track the way an interviewer would. On to the <strong>Track 3 interview check</strong>.</p>
 
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/06_evals.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/06_evals.py</code></pre>
+    <p><strong>What to look for:</strong> The lab computes recall@k, MRR and nDCG@k over a golden set and an LLM-as-judge faithfulness score, then runs a regression gate between two prompt versions. Check one query's metrics by hand against the printout using the formulas above. Then shrink k from 5 to 1 and watch recall@k fall while MRR stays the same (MRR only cares about the first hit). Finally, remove one label from the golden set: a correct chunk now counts as a miss, which shows how incomplete labels pull every metric down.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  against human labels before you trust it (report agreement and Cohen&#x27;s kappa, not vibes).
+5) Judge position bias: same pair, swapped order
+  How long do card refunds take?      order1 picked B, order2 picked B  -&gt; FLIPPED
+  Return window for electronics?      order1 picked B, order2 picked A  -&gt; consistent
+  Express shipping price?             order1 picked B, order2 picked A  -&gt; consistent
+  When is standard shipping free?     order1 picked A, order2 picked B  -&gt; consistent
+  Duplicate charge reversal time?     order1 picked A, order2 picked B  -&gt; consistent
+  consistent verdicts: 4/5   correct in both orders: 2/5
+  Look: with no reference passage in the judge prompt, the judge has to guess which number is right.
+  Always judge both orders and count a win only when both agree; give the judge the reference.
+6) How wide is the error bar on 12 cases?
+  v1 accuracy 92%, 95% normal-approx interval +/- 16%  (n=12)
+  At n=400 the same accuracy would be roughly +/- 2.7%
+{&quot;v1_correct&quot;: 0.917, &quot;regressions&quot;: 12, &quot;judge_consistent&quot;: 4}</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/06_evals.txt">labs/outputs</a>. Source: <a href="../labs/06_evals.py">labs/06_evals.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Relevant chunks {B, D}. Ranked top 5: [B, X, Y, D, Z]. Compute recall@5, precision@5, reciprocal rank, nDCG@5 (binary) and Ragas-style context precision.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>recall@5 = 2/2 = 1.0. precision@5 = 2/5 = 0.4. RR = 1/1 = 1.0. DCG = 1/log2(2) + 1/log2(5) = 1 + 0.431 = 1.431. Ideal DCG with B and D at ranks 1-2 = 1 + 1/log2(3) = 1 + 0.631 = 1.631. nDCG@5 = 1.431 / 1.631 = 0.877. Context precision = mean of precision@k at relevant ranks = (P@1 + P@4) / 2 = (1.0 + 0.5) / 2 = 0.75. Notice recall and MRR are perfect but nDCG and context precision are not, because D sits at rank 4 behind two irrelevant chunks.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your RAG report reads: context recall 0.92, context precision 0.41, faithfulness 0.88, answer relevance 0.62. Diagnose and name the first two fixes.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Context recall 0.92: the needed facts usually reach the prompt, so retrieval coverage is fine. Context precision 0.41: they are buried among irrelevant chunks, often ranked below them. Faithfulness 0.88: the model mostly sticks to the context. Answer relevance 0.62: answers drift or pad, which fits a noisy context, since the model talks about the irrelevant chunks too. Fix 1: add a reranker and keep fewer chunks, which should lift context precision without hurting recall (check that it does). Fix 2: tighten the prompt to answer the question directly and briefly, and re-measure answer relevance. Leave the embedder alone; recall says it is not the problem.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> For each metric, name one way it can look good while the system is bad, and the guard you add: recall@k, MRR, nDCG, context precision, context recall, faithfulness, answer relevance.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p><ul><li><strong>recall@k</strong>: high at k = 50 while the prompt only gets 5. Guard: report recall at the k you actually feed the model.</li><li><strong>MRR</strong>: perfect when the first hit is at rank 1 even if the other needed chunks are missing. Guard: pair with recall or nDCG for multi-fact questions.</li><li><strong>nDCG</strong>: computed against incomplete labels, so a relevant but unlabelled chunk counts as a miss, and the ideal ranking only knows the labelled items. Guard: pool top results from several systems and label them.</li><li><strong>context precision</strong>: rises by returning fewer chunks. Guard: always read it next to context recall.</li><li><strong>context recall</strong> (Ragas): needs a reference answer and an LLM to attribute its claims, so a wrong reference or a sloppy judge corrupts it. Guard: spot-check attributions by hand.</li><li><strong>faithfulness</strong>: an answer that says little, or copies context verbatim, scores high, and a refusal has no claims at all, so depending on the implementation it is undefined or trivially perfect. Guard: track abstention rate and answer correctness separately.</li><li><strong>answer relevance</strong>: Ragas scores it by generating questions from the answer and comparing their embeddings to the user question, and its docs state it does not evaluate factual accuracy. An answer that restates the question scores well. Guard: pair it with faithfulness and correctness.</li></ul></p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> Explain recall@k, precision@k and MRR in one sentence each, and when each matters.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Recall@k is the fraction of the relevant chunks that appear in the top k; it matters when the model needs every piece of evidence. Precision@k is the fraction of the top k that are relevant; it matters because irrelevant chunks cost tokens and distract the model. MRR is the average of 1 over the rank of the first relevant result; it matters when you mostly need one good chunk near the top, as in single-fact FAQ answers. I report them at the k that actually goes into the prompt.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> What is nDCG and when would you use it over MRR?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>nDCG sums the relevance of each result divided by log2(rank + 1), so results lower down count less, then divides by the best possible score for that query so it lands between 0 and 1. Unlike MRR, it counts every relevant result, not just the first, and it supports graded relevance, for example 2 for the exact answer and 1 for useful background. I use it when questions need several chunks, when I have graded labels, or when comparing rerankers, since they change the order of all candidates. BEIR uses nDCG@10 as its headline metric for that reason.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Design the evaluation for a production RAG system, including the generation side. What are the failure modes of the metrics themselves?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Two layers. Retrieval: a labelled golden set from real queries, recall@k and nDCG@k at the k fed to the model, sliced by query type. Generation: the Ragas set, which are faithfulness, answer relevance, and context precision and recall, plus answer correctness against references for a subset. The Ragas paper (arXiv 2309.15217) shows these can run without human labels, but they are only as good as the judge, so I calibrate the judge against 50 to 100 human labels and pin the judge model and prompt. Known failure modes: incomplete labels deflate retrieval metrics; context precision games itself by returning less; faithfulness rewards saying nothing; answer relevance ignores correctness; and judges carry position, verbosity and self-preference biases. I report confidence intervals and compare versions on the same queries.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2309.15217" target="_blank" rel="noopener">Es et al., Ragas: Automated Evaluation of Retrieval Augmented Generation (2023) - arXiv</a></li>
+      <li><a href="https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/context_precision/" target="_blank" rel="noopener">Context Precision - Ragas documentation</a></li>
+      <li><a href="https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/context_recall/" target="_blank" rel="noopener">Context Recall - Ragas documentation</a></li>
+      <li><a href="https://arxiv.org/abs/2104.08663" target="_blank" rel="noopener">Thakur et al., BEIR benchmark (nDCG@10 as the standard retrieval metric) - arXiv</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 </main>
 
 <script>

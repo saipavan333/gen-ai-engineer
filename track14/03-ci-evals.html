@@ -13,6 +13,13 @@
   <span class="eyebrow">Productionization &amp; LLMOps · Lesson 12.3</span>
   <h1>CI for prompts &amp; evals</h1>
   <p class="lead">In normal software, tests in CI stop you shipping bugs. In LLM software, a one-word prompt tweak can quietly wreck quality with no error anywhere. The fix is the same idea, upgraded: make every change pass your evals before it can ship.</p>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>A school spelling test checks the same 50 words every week. If a new teaching trick helps you spell 'necessary' but makes you forget 'separate' and 'definitely', the test catches it before report-card day. The eval gate is that weekly test for your prompts: every change has to pass the whole list, not just the word you were fixing. Where it breaks: a spelling test has exact right answers, while many LLM answers are judged by a rubric or another model, and that judge can be wrong or noisy too.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <h2>Why LLM apps need an eval gate</h2>
   <p><span class="term">CI</span> (continuous integration) is the automation that runs your tests every time you change code, blocking the change if they fail. It works because bugs in normal code usually announce themselves — a test goes red. But LLM behavior is different: you “fix” one prompt to improve one answer and silently break five others, and <em>nothing errors</em>. The output is still fluent, still plausible — just worse.</p>
@@ -49,7 +56,22 @@ jobs:
     <p>Keep prompts in version control, not pasted into a dashboard. Then a prompt change is a diff that goes through the same review + eval gate as any code change — reviewable, revertible, and testable. Treating prompts as code is what makes “we changed the prompt and quality dropped” a caught regression instead of a mystery.</p>
   </div>
 
-  <div class="box key">
+  
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: An eval gate on a 400-case golden set at 30 pull requests a day</div>
+    <p>Assumptions (ours): 400 golden cases; each answer uses 2,000 input and 300 output tokens on claude-sonnet-5-5 ($2 / $10 per million); an LLM judge on claude-haiku-5-5 (from $0.10 / $0.50) reads 2,500 tokens and writes 100 per case; 30 PRs a day touch prompts or retrieval. Prices: <a href="https://platform.claude.com/docs/en/about-claude/models/overview" target="_blank" rel="noopener">Anthropic models overview</a>.</p>
+<ol>
+<li><strong>Cost per CI run.</strong> Generation: 400 x ($0.004 + $0.003) = $2.80. Judge: 400 x ($0.00025 + $0.00005) = $0.12. About <strong>$2.92 a run</strong>, $88 a day, $2,600 a month. Cheap next to one bad release, but worth knowing. (The Batch API is half price but can take hours, so it suits the nightly full run, not a PR check.)</li>
+<li><strong>How noisy is the score?</strong> At 88% pass rate on 400 cases the standard error is sqrt(0.88 x 0.12 / 400) = 0.016, so a 95% interval is about <strong>+/- 3.2 points</strong>. A gate of "block if the score drops more than 1 point" will fail good PRs at random.</li>
+<li><strong>Gate on paired flips instead.</strong> Run baseline and candidate on the same 400 cases and count cases that went pass to fail versus fail to pass. If baseline-vs-baseline reruns flip about 6 cases from sampling alone (measure it), block when the candidate has more than, say, 12 pass-to-fail flips or more pass-to-fail than fail-to-pass flips. Tag each case with intent so a flip cluster in "refunds" is visible.</li>
+<li><strong>Determinism is not always available.</strong> Claude 4.7 and later accept only default sampling, and API version 2026-10-21 rejects <code>temperature</code> with a 400 (<a href="https://platform.claude.com/docs/en/api/migration-2026-10-21" target="_blank" rel="noopener">Anthropic migration guide</a>). So pin dated model IDs, assert on structure, and estimate noise by reruns rather than relying on temperature 0.</li>
+<li><strong>Tie results to versions.</strong> The gate's report records prompt name and version, model ID and index version for both arms; that is the same <code>gen_ai.prompt.version</code> you stamp on production traces.</li>
+<li><strong>Split the suite.</strong> 100-case smoke set on every PR (about $0.73), full 400 plus adversarial cases nightly and before release.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+<div class="box key">
     <div class="box-label">Key points</div>
     <ul>
       <li>LLM regressions are <strong>silent</strong> — no error, just worse output — so ordinary tests miss them.</li>
@@ -98,6 +120,35 @@ jobs:
         <div class="why">Unrelated.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Your golden set has 300 cases and the pass rate is 85%. A PR drops it to 83.7% (4 fewer passes). What should the gate do?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Set temperature to 0 and rerun until it passes.</span>
+        <div class="why">Rerunning until green is gaming the gate. And on Claude 4.7+ models you cannot set temperature at all.</div></li>
+      <li data-correct="false"><span class="opt">B) Pass it, small drops never matter.</span>
+        <div class="why">If all 4 lost cases are in one high-risk intent, it matters a lot. Look at which cases moved.</div></li>
+      <li data-correct="false"><span class="opt">C) Block it, any drop is a regression.</span>
+        <div class="why">With non-deterministic outputs, some movement happens on reruns of the same prompt. Blocking on any drop makes the gate flaky and people learn to ignore it.</div></li>
+      <li data-correct="true"><span class="opt">D) Look at the paired flips: which cases went pass-to-fail and fail-to-pass. A 1.3-point move on 300 cases is inside sampling noise, so the average alone cannot decide.</span>
+        <div class="why">The standard error at 85% on 300 cases is about 2 points. Paired per-case comparison against a measured noise floor is the reliable signal.</div></li>
+    </ul>
+  </div>
+  <div class="quiz">
+    <p class="quiz-q">Why should the eval report record the prompt version, model ID and retrieval index version for both baseline and candidate?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Because GitHub Actions requires it.</span>
+        <div class="why">CI does not care; this is for your own ability to reason about results.</div></li>
+      <li data-correct="true"><span class="opt">B) So a score change can be attributed to exactly one changed component, and the same versions can be matched against production traces.</span>
+        <div class="why">If two things changed at once you cannot tell which caused the regression. Versions make the comparison an experiment.</div></li>
+      <li data-correct="false"><span class="opt">C) It is only needed for fine-tuned models.</span>
+        <div class="why">Prompt and index changes alter behaviour as much as weights do; every component that can change the answer needs a version.</div></li>
+      <li data-correct="false"><span class="opt">D) To make the report longer for auditors.</span>
+        <div class="why">The point is attribution and reproducibility, not length.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box deep">
@@ -106,6 +157,78 @@ jobs:
     <p>Now the eval gate guarantees you can never regress on it again — the system literally cannot ship a change that reintroduces that failure. Over months, this turns your evaluation suite into an encoded memory of every mistake you’ve made and fixed, which is a genuine competitive moat (Track&nbsp;11): a competitor can copy your prompts, but not your hard-won library of failure cases.</p>
     <p>This also changes how you adopt new models. When a better model launches, teams without an eval gate upgrade nervously and hope; teams with one just run the new model against the golden set and <em>see</em> whether it’s actually better on their real cases — often within an hour, safely. The eval gate is what lets you move fast without breaking things: it’s simultaneously your regression shield, your model-selection tool, and your institutional memory. When an interviewer asks how you’d keep an LLM product reliable as it evolves, “evals in CI, and every production failure becomes a permanent test case” is the answer that signals real operational maturity.</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/06_evals.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/06_evals.py</code></pre>
+    <p><strong>What to look for:</strong> The lab's regression gate compares two prompt versions per case and prints which cases flipped. Change one instruction in the candidate prompt and rerun: the per-case flip list, not the average, tells you what broke. Also run the baseline against itself twice to see how many flips come from sampling noise alone; that number is your gate's floor. The position-bias test shows why an LLM judge needs its own checks.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  against human labels before you trust it (report agreement and Cohen&#x27;s kappa, not vibes).
+5) Judge position bias: same pair, swapped order
+  How long do card refunds take?      order1 picked B, order2 picked B  -&gt; FLIPPED
+  Return window for electronics?      order1 picked B, order2 picked A  -&gt; consistent
+  Express shipping price?             order1 picked B, order2 picked A  -&gt; consistent
+  When is standard shipping free?     order1 picked A, order2 picked B  -&gt; consistent
+  Duplicate charge reversal time?     order1 picked A, order2 picked B  -&gt; consistent
+  consistent verdicts: 4/5   correct in both orders: 2/5
+  Look: with no reference passage in the judge prompt, the judge has to guess which number is right.
+  Always judge both orders and count a win only when both agree; give the judge the reference.
+6) How wide is the error bar on 12 cases?
+  v1 accuracy 92%, 95% normal-approx interval +/- 16%  (n=12)
+  At n=400 the same accuracy would be roughly +/- 2.7%
+{&quot;v1_correct&quot;: 0.917, &quot;regressions&quot;: 12, &quot;judge_consistent&quot;: 4}</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/06_evals.txt">labs/outputs</a>. Source: <a href="../labs/06_evals.py">labs/06_evals.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Compute the 95% confidence half-width for a 90% pass rate on a 200-case golden set, and say what that means for a gate threshold.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>SE = sqrt(0.9 x 0.1 / 200) = sqrt(0.00045) = 0.0212. Half-width = 1.96 x 0.0212 = 0.042, about +/- 4.2 points. A gate that blocks on a 2-point average drop would trigger on noise often. Either grow the set, gate on paired flips, or only block on larger drops while still reviewing the flip list.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Write the GitHub Actions trigger and job condition so the expensive eval job runs only when prompts, retrieval code or the golden set change, while unit tests run on every push.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Use two jobs. The unit-test job runs on: [push, pull_request] with no path filter. The eval job lives in a workflow with on: pull_request: paths: ['prompts/**', 'app/retrieval/**', 'evals/golden/**', 'evals/*.py']. Its steps: checkout, install, run python eval.py --baseline main --candidate HEAD --max-pass-to-fail 12, and upload the per-case report as an artifact. Make that job a required status check on the main branch so a red eval blocks the merge. Path filters keep cost down without letting a prompt change skip the gate.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Your LLM judge is a smaller model than the system it grades. Describe how you would validate the judge before trusting it as a gate.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Build a calibration set of a few hundred answers with human labels (pass/fail with the rubric). Measure the judge's agreement with humans (accuracy and Cohen's kappa), its false-pass rate on known-bad answers, and position bias by swapping A/B order in pairwise judgments and counting flips (the lab does this). Check length bias by comparing verdicts on padded versus concise correct answers. Only gate on rubric items where agreement is high; route low-agreement items to sampled human review. Recheck the judge whenever you change its prompt or model, because the judge is a component that can regress too.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is an eval gate in CI for an LLM application?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>It is a CI step that runs the application against a fixed golden set of inputs with expected outputs or rubrics, scores the results, and fails the build if quality drops below an agreed bar. It exists because LLM regressions are silent: a prompt change can make answers worse without any error. The gate runs on every pull request that touches prompts, retrieval or model settings, so a regression shows up as a red build before it reaches users. Every production failure we fix is added to the golden set so it cannot come back.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> How do you deal with non-determinism when gating on LLM evals?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>First I measure it: rerun the baseline against itself and count how many cases flip. That gives a noise floor. Then I gate on paired comparisons, the same cases for baseline and candidate, counting pass-to-fail versus fail-to-pass flips, instead of comparing two noisy averages. I pin model IDs, assert on structure for deterministic checks, and where the provider allows it I lower sampling variance; on newer Claude models sampling parameters are fixed, so reruns are the tool. For close calls I run each case several times and use majority pass.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> A team says their golden set always passes but users keep finding regressions. What is wrong with their eval program and how do you fix it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>The set has gone stale or was too easy. Likely causes: it was written once by engineers, it does not reflect current traffic, it is saturated (everything passes, so it has no power), and the judge is lenient. Fixes: sample real production traffic every week by intent and add hard cases, especially every incident and thumbs-down; keep a held-out slice the team cannot tune against; add adversarial and long-tail cases; validate the judge against human labels; and report per-intent scores. A healthy gate fails sometimes; if it never fails, it is not measuring anything.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax" target="_blank" rel="noopener">Workflow syntax for GitHub Actions (on.paths) - GitHub Docs</a></li>
+      <li><a href="https://arxiv.org/abs/2306.05685" target="_blank" rel="noopener">Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena - arXiv</a></li>
+      <li><a href="https://platform.claude.com/docs/en/api/migration-2026-10-21" target="_blank" rel="noopener">Migrating to API version 2026-10-21 (sampling parameters removed) - Anthropic</a></li>
+      <li><a href="https://langfuse.com/docs/prompt-management/overview" target="_blank" rel="noopener">Prompt management overview - Langfuse docs</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>Even with a great eval gate, production will surprise you — real users do things your golden set didn’t imagine. So you watch. Next: <strong>monitoring in production.</strong></p>
 

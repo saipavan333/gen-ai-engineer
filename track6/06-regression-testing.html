@@ -26,6 +26,13 @@
     <div class="box-label">Concept</div>
     <p>A <span class="term">regression test</span> verifies that a previously-correct behavior still works after a change. An <span class="term">eval suite</span> is your golden set wired up to run automatically and report pass/fail. A <span class="term">gate</span> is the rule that decides whether a change can ship (e.g., “no case may regress” or “overall score must not drop”). <span class="term">Prompt versioning</span> means treating each prompt as a versioned artifact you can compare and roll back, just like code.</p>
   </div>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>A regression test suite is like the safety checklist a pilot runs before every flight, even on a plane that flew fine yesterday. Each line on the list exists because something once went wrong. If any line fails, the plane does not leave. Where it breaks: the plane's checks give the same result every time, but an LLM can pass a check on one run and fail it on the next, so for LLMs you sometimes run a check more than once and decide on the majority.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <h2>Run the gate</h2>
   <p>Your baseline (v1) passes 4 of 5 cases. Try a good candidate and a risky one, and watch the gate decide.</p>
@@ -62,6 +69,13 @@ GOLDEN <span class="o">=</span> [
 <span class="c">#   assert judge(query, reference, out)["score"] &gt;= 4</span></code></pre>
     <p>Now a prompt change that breaks the “abstain” case turns the build red with “Regressed on: Do you ship to Antarctica?” — caught in CI, before any user sees it. Two tricks keep LLM tests stable: use <strong>temperature 0</strong> where the API still accepts it (Anthropic’s <a href="https://platform.claude.com/docs/en/api/migration-2026-10-21">API version 2026-10-21</a> rejects temperature with a 400, so there you rely on robust assertions and repeated runs) and assert on <strong>structure/keywords or judge thresholds</strong>, not exact wording.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Pricing a prompt CI gate for a team shipping 30 PRs a week</div>
+    <p>Assumptions: a 600-case suite, of which 150 are critical (safety, refusals, key facts). Each case runs 3 times because outputs vary between runs. Generator and judge are claude-sonnet-5-5 at $2 in / $10 out per million tokens (<a href="https://platform.claude.com/docs/en/about-claude/models/overview">Claude models overview</a>). Anthropic's API version 2026-10-21 rejects temperature settings (<a href="https://platform.claude.com/docs/en/api/migration-2026-10-21">migration guide</a>), so repeated runs, not temperature 0, are how you handle variance there.</p><ol><li><strong>Calls per full run.</strong> 600 x 3 = 1,800 generations and 1,800 judge calls.</li><li><strong>Generation cost.</strong> About 2,000 input and 400 output tokens each: 3.6 M x $2 = $7.20, plus 0.72 M x $10 = $7.20.</li><li><strong>Judge cost.</strong> About 2,500 input and 100 output tokens each: 4.5 M x $2 = $9.00, plus 0.18 M x $10 = $1.80.</li><li><strong>Total per full run.</strong> $7.20 + $7.20 + $9.00 + $1.80 = $25.20. At 30 PRs a week that is $756 a week.</li><li><strong>Tier it.</strong> Run only the 150 critical cases on every PR: a quarter of the calls, about $6.30 per PR, or $189 a week. Run the full 600 nightly on main: 7 x $25.20 = $176 a week. New total about $365 a week, and the Batch API's 50% discount can roughly halve the nightly part.</li><li><strong>Gate rules.</strong> A critical case passes if it passes at least 2 of 3 runs; any critical failure blocks the merge. Non-critical cases: the overall pass rate may not drop more than 1 point against main, measured in the same run.</li><li><strong>Flake budget.</strong> Track cases whose result differs across the 3 runs. If one case flips on more than 20% of runs over a week, its check is too strict or the prompt is unstable; fix it rather than retrying CI.</li></ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -100,6 +114,22 @@ GOLDEN <span class="o">=</span> [
         <div class="why">It's fixed; a case regressed.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Your CI eval uses an LLM judge, and last week someone upgraded the judge model. Today a PR fails the gate with lower scores on cases nobody touched. What do you check first?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Revert the PR.</span>
+        <div class="why">The PR may be fine. The drop could come entirely from the judge change.</div></li>
+      <li data-correct="false"><span class="opt">B) Lower the gate threshold until it passes.</span>
+        <div class="why">That hides the problem. Fix the comparison first, then decide whether thresholds need to move.</div></li>
+      <li data-correct="false"><span class="opt">C) Add more test cases.</span>
+        <div class="why">More cases scored inconsistently do not fix an inconsistent comparison.</div></li>
+      <li data-correct="true"><span class="opt">D) Whether the baseline was scored with the same judge version; rescore main with the current judge before comparing.</span>
+        <div class="why">Correct. Comparing a candidate scored by the new judge with a baseline scored by the old judge mixes two rulers. Always score base and candidate in the same run.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -126,6 +156,87 @@ GOLDEN <span class="o">=</span> [
 
   <p>You’ve built the full evaluation toolkit — the skill that quietly underlies every other track. Time to pressure-test it. On to the <strong>Track 6 interview check</strong>.</p>
 
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/06_evals.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/06_evals.py</code></pre>
+    <p><strong>What to look for:</strong> The last part of the lab is a regression gate: it runs two prompt versions over the same cases and reports, per case, pass to fail and fail to pass. Make the candidate prompt break one case on purpose and confirm the gate fails even though the average score barely moves.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  against human labels before you trust it (report agreement and Cohen&#x27;s kappa, not vibes).
+5) Judge position bias: same pair, swapped order
+  How long do card refunds take?      order1 picked B, order2 picked B  -&gt; FLIPPED
+  Return window for electronics?      order1 picked B, order2 picked A  -&gt; consistent
+  Express shipping price?             order1 picked B, order2 picked A  -&gt; consistent
+  When is standard shipping free?     order1 picked A, order2 picked B  -&gt; consistent
+  Duplicate charge reversal time?     order1 picked A, order2 picked B  -&gt; consistent
+  consistent verdicts: 4/5   correct in both orders: 2/5
+  Look: with no reference passage in the judge prompt, the judge has to guess which number is right.
+  Always judge both orders and count a win only when both agree; give the judge the reference.
+6) How wide is the error bar on 12 cases?
+  v1 accuracy 92%, 95% normal-approx interval +/- 16%  (n=12)
+  At n=400 the same accuracy would be roughly +/- 2.7%
+{&quot;v1_correct&quot;: 0.917, &quot;regressions&quot;: 12, &quot;judge_consistent&quot;: 4}</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/06_evals.txt">labs/outputs</a>. Source: <a href="../labs/06_evals.py">labs/06_evals.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> A critical case passes with probability 0.9 on any single run. With a '2 of 3 runs' rule, what is the chance it passes the gate?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>P(at least 2 of 3) = P(3) + P(exactly 2) = 0.9^3 + 3 x 0.9^2 x 0.1 = 0.729 + 0.243 = 0.972. So a case that flakes 10% of the time on a single run blocks a PR only about 2.8% of the time, while a case that has truly broken (say 0.3 pass rate) passes the gate only 0.027 + 3 x 0.09 x 0.7 = 0.216, about 22% of the time. Majority voting separates flakes from real breaks much better than one run.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your prompts live in a database and product managers edit them live. Propose a minimal change that brings them under regression testing without blocking PMs.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Keep the editing UI, but make it write a new version row with a content hash instead of overwriting. A webhook on save runs the critical suite against the new version and shows pass or fail in the UI within a few minutes. Production reads a 'released' pointer, not the latest version, and the pointer moves only when the suite passes, with an override that needs a second person. Every version stays available for rollback by moving the pointer back. PMs keep their speed; the system gains versions, tests and an audit trail.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Write a pytest-style test for a JSON extraction prompt that is stable even though outputs vary between runs. Explain each assertion.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p><pre><code>@pytest.mark.parametrize("email, expected", GOLDEN)
+def test_extract(email, expected):
+    runs = [extract(email) for _ in range(3)]
+    ok = 0
+    for out in runs:
+        data = Invoice.model_validate_json(out)   # schema must parse
+        if (data.invoice_id == expected["invoice_id"]
+            and abs(data.total - expected["total"]) &lt; 0.01
+            and data.currency in {"INR", "USD", "EUR"}):
+            ok += 1
+    assert ok &gt;= 2, f"{email[:40]}: {ok}/3 runs correct"</code></pre>Schema validation catches format breaks. Exact checks on closed fields (ID, total within a cent, currency in an allowlist) test meaning, not wording. Three runs with a 2-of-3 rule absorb sampling variance. The failure message names the case and how many runs passed, which tells you whether it is a flake or a break.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> How do you regression-test a prompt?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Treat it like code. Keep the prompt in version control. Keep a golden set of inputs with checks: exact values for closed fields, must-include facts, schema validation, or an LLM-judge score threshold for open text. Run the suite in CI on every change and block the merge if any critical case fails or the overall score drops against the main branch. Avoid exact-string assertions on free text, because valid answers vary in wording. Add every production bug as a new permanent test so it cannot come back.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> Your prompt test suite is flaky. How do you make it trustworthy?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>First find the source. If the API still allows it, use deterministic decoding settings, but many current APIs, including Anthropic's latest version, no longer accept temperature, so plan for variance anyway. Replace exact-match asserts with structural checks and must-include facts. Run critical cases several times and decide by majority. Score the baseline and the candidate in the same run with the same judge version. Track flip rates per case; a case that flips often has a vague check or an unstable prompt, and both are bugs to fix. Never 'fix' flakiness by deleting tests or retrying until green.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> How would you design release gating for LLM changes across prompts, models and retrieval settings?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Version every component that changes behaviour: prompt hash, model ID, retrieval config, index version and judge version, and record them with every eval result. Tier the suites: a fast critical suite on every PR, the full suite nightly, and a locked release suite before promotion. Gate on hard rules (no critical regressions, no safety failures) plus bounded movement on aggregates, with paired comparison against main scored in the same run. Model upgrades from a provider go through the same gate as code. After the offline gate, promotion moves through canary and A/B with guardrails, and incidents feed new tests. Report per-category diffs on the PR so reviewers see what moved.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://docs.pytest.org/en/stable/how-to/parametrize.html" target="_blank" rel="noopener">How to parametrize fixtures and test functions - pytest documentation</a></li>
+      <li><a href="https://www.promptfoo.dev/docs/integrations/ci-cd/" target="_blank" rel="noopener">CI/CD Integration for LLM Eval and Security - Promptfoo docs</a></li>
+      <li><a href="https://platform.claude.com/docs/en/api/migration-2026-10-21" target="_blank" rel="noopener">API migration guide 2026-10-21 - Claude Platform Docs</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 </main>
 
 <script>

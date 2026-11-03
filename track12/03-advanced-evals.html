@@ -13,6 +13,13 @@
   <span class="eyebrow">Going Deeper · Lesson 11.3</span>
   <h1>Advanced evals</h1>
   <p class="lead">Track&nbsp;6 made you measure. This lesson makes your measurements <em>trustworthy</em> — calibrating LLM judges, cancelling their biases, and using enough statistical care that “v2 is better” is a fact, not a hopeful glance at a number that ticked up.</p>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>An LLM judge is a new referee. Before you let them run the final, you watch them call 50 recorded plays and compare their calls with a panel of experienced referees. If they agree far more often than chance, you trust them; if they always favour the team on the left side of the screen, you swap the sides and see if the call changes. The analogy breaks because a human referee can explain each call; an LLM judge's reasons can sound good and still be wrong, so you check agreement in numbers, not in explanations.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <h2>Why your eval needs its own eval</h2>
   <p>An LLM-as-judge is itself a model, with all the unreliability that implies — so an unvalidated judge is just another unvalidated model, and trusting it blindly means you’re measuring your system with a ruler of unknown length. Worse, judges have <em>systematic</em> biases: they tend to favor the first answer shown (position bias), longer answers (verbosity bias), and outputs from models like themselves (self-preference). If you don’t account for these, you’ll confidently ship changes that the judge liked for the wrong reasons. Advanced evaluation is the discipline of making the measurement itself rigorous before you let it drive decisions.</p>
@@ -41,7 +48,14 @@
   <h2>3 · Respect the noise</h2>
   <p>LLM outputs vary run to run, so a small score difference can be pure randomness. Before declaring a winner, take three precautions. <strong>Reduce noise</strong> where you can: fix the seed and use temperature&nbsp;0 for eval runs so results are reproducible, on models that still let you (local Ollama does, through its <a href="https://docs.ollama.com/modelfile">seed and temperature options</a>). Hosted APIs are dropping this knob: Claude 4.7 and later accept only the default sampling, and Anthropic API version 2026-10-21 returns a 400 if you send temperature at all (<a href="https://platform.claude.com/docs/en/api/migration-2026-10-21">migration guide</a>). There you cut noise by running each case several times and averaging instead. <strong>Use enough examples</strong>: a 2-point move on 50 questions is one or two answers flipping — well within noise — whereas the same gap over 500 questions is far more credible. And <strong>quantify uncertainty</strong>: report a confidence interval or run a simple significance check, and only call a change a win when the gap clearly exceeds run-to-run variation. “The number went up” is the beginning of an investigation, not the end of one.</p>
 
-  <div class="box key">
+  
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Validating a faithfulness judge before it gates releases of a 500-question RAG suite</div>
+    <p>Assumptions: a 500-question RAG golden set, an LLM judge that labels each answer faithful or not, and 50 answers hand-labelled by two engineers.</p><ol><li><strong>Agreement table on the 50.</strong> Both say faithful: 27. Human yes, judge no: 3. Human no, judge yes: 5. Both no: 15.</li><li><strong>Raw agreement.</strong> (27 + 15) / 50 = 0.84.</li><li><strong>Chance agreement.</strong> Humans say yes 30/50 = 0.60, the judge 32/50 = 0.64. p_e = 0.60 x 0.64 + 0.40 x 0.36 = 0.384 + 0.144 = 0.528.</li><li><strong>Cohen's kappa.</strong> (0.84 - 0.528) / (1 - 0.528) = 0.312 / 0.472 = 0.66. Usable, but look at the 5 cases where the judge passed answers humans failed: those are the dangerous ones for a faithfulness gate. Tighten the rubric ("any number not in the context is unsupported") and re-measure.</li><li><strong>Compare v1 and v2 on 500.</strong> Net score moved from 80.0% to 82.4%. But only the flipped questions carry signal: v2 fixed 31, broke 19. McNemar's test: (|31 - 19| - 1)<sup>2</sup> / (31 + 19) = 121 / 50 = 2.42, below the 3.84 needed for p &lt; 0.05. Not yet a proven win.</li><li><strong>RAG metrics follow the same rule.</strong> Faithfulness, answer relevance and context precision and recall in the Ragas style are all judge outputs (<a href="https://arxiv.org/abs/2309.15217">Es et al., arXiv 2309.15217</a>), so each needs this calibration, and the judge model and prompt must stay fixed when you compare versions. Change the judge and you changed the ruler.</li></ol>
+  </div>
+<!-- shape:scale:end -->
+<div class="box key">
     <div class="box-label">Key points</div>
     <ul>
       <li>An <strong>unvalidated judge is an unvalidated model</strong> — calibrate it against human labels (Cohen’s κ) before trusting it at scale.</li>
@@ -91,6 +105,35 @@
         <div class="why">You run the whole golden set precisely to be rigorous.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Your judge agrees with humans on 90% of items, but 90% of all answers are good. Why is 90% agreement not impressive here?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) A judge that says "good" to everything would also agree about 90% of the time; kappa corrects for this chance agreement.</span>
+        <div class="why">With skewed classes, raw agreement is inflated. If both rate 90% as good independently, chance agreement is 0.9 x 0.9 + 0.1 x 0.1 = 0.82, so 90% observed gives kappa = (0.90 - 0.82) / 0.18 = 0.44, only moderate.</div></li>
+      <li data-correct="false"><span class="opt">B) Because 90% is below the 95% industry standard.</span>
+        <div class="why">There is no universal 95% bar. The issue is that raw agreement ignores how much agreement chance alone would produce.</div></li>
+      <li data-correct="false"><span class="opt">C) Because humans are always right, so any disagreement is fatal.</span>
+        <div class="why">Humans disagree with each other too; you often measure human-human kappa as the ceiling. The problem here is chance agreement, not human infallibility.</div></li>
+      <li data-correct="false"><span class="opt">D) It is impressive; 90% agreement means the judge is reliable.</span>
+        <div class="why">Not with a 90% base rate. The judge may be useless at catching the 10% of bad answers, which are the ones you built it to catch.</div></li>
+    </ul>
+  </div>
+  <div class="quiz">
+    <p class="quiz-q">After switching the judge to a newer model, your RAG system's faithfulness score jumps from 0.78 to 0.86 with no change to the system. What is the right conclusion?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Faithfulness cannot be measured by LLMs at all.</span>
+        <div class="why">It can, as in the Ragas paper, once the judge is validated. The mistake is comparing scores across judges.</div></li>
+      <li data-correct="false"><span class="opt">B) Average the two scores to get the true value.</span>
+        <div class="why">Averaging two uncalibrated rulers gives a third uncalibrated number.</div></li>
+      <li data-correct="false"><span class="opt">C) The system got better; newer judges are more accurate.</span>
+        <div class="why">Nothing about the system changed. A newer judge may be more lenient or stricter, and neither is accuracy until you check it against humans.</div></li>
+      <li data-correct="true"><span class="opt">D) The ruler changed, not the system: re-calibrate the new judge against human labels and re-score the old baseline with it before comparing anything.</span>
+        <div class="why">A judge-scored metric is the judge's opinion. A new judge may be more lenient. Scores are comparable only when produced by the same judge, prompt and rubric.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box deep">
@@ -104,6 +147,78 @@
     <p>That’s the whole journey — from “what is a token?” to calibrating an LLM judge. You can open the box, feed a model knowledge, let it act, make it trustworthy, fast, and cheap, prove it with built-and-measured projects, and present yourself for the role. The only thing left isn’t reading — it’s reps: build the capstones (Track&nbsp;14), run your study plan (16.1), and start applying. You’re ready. Go build something real.</p>
   </div>
 
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/06_evals.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/06_evals.py</code></pre>
+    <p><strong>What to look for:</strong> The lab's position-bias test swaps the A/B order and counts how many verdicts flip; that flip rate is your judge's position bias in one number. The regression gate compares two prompt versions per case, so list the cases that flipped in each direction and run the McNemar arithmetic above on them. Also look at the LLM-as-judge faithfulness score: hand-label 20 of its verdicts yourself and compute kappa before you trust it.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  against human labels before you trust it (report agreement and Cohen&#x27;s kappa, not vibes).
+5) Judge position bias: same pair, swapped order
+  How long do card refunds take?      order1 picked B, order2 picked B  -&gt; FLIPPED
+  Return window for electronics?      order1 picked B, order2 picked A  -&gt; consistent
+  Express shipping price?             order1 picked B, order2 picked A  -&gt; consistent
+  When is standard shipping free?     order1 picked A, order2 picked B  -&gt; consistent
+  Duplicate charge reversal time?     order1 picked A, order2 picked B  -&gt; consistent
+  consistent verdicts: 4/5   correct in both orders: 2/5
+  Look: with no reference passage in the judge prompt, the judge has to guess which number is right.
+  Always judge both orders and count a win only when both agree; give the judge the reference.
+6) How wide is the error bar on 12 cases?
+  v1 accuracy 92%, 95% normal-approx interval +/- 16%  (n=12)
+  At n=400 the same accuracy would be roughly +/- 2.7%
+{&quot;v1_correct&quot;: 0.917, &quot;regressions&quot;: 12, &quot;judge_consistent&quot;: 4}</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/06_evals.txt">labs/outputs</a>. Source: <a href="../labs/06_evals.py">labs/06_evals.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> On 100 items: both pass 70, human pass and judge fail 5, human fail and judge pass 10, both fail 15. Compute raw agreement and Cohen's kappa.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Raw agreement = (70 + 15) / 100 = 0.85. Human pass rate = (70 + 5) / 100 = 0.75; judge pass rate = (70 + 10) / 100 = 0.80. Chance agreement = 0.75 x 0.80 + 0.25 x 0.20 = 0.60 + 0.05 = 0.65. Kappa = (0.85 - 0.65) / (1 - 0.65) = 0.20 / 0.35 = 0.57. Moderate. The 10 items the judge passed but humans failed are the risk; read them and fix the rubric.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Prompt v2 beats v1 on a 300-question set: 74% vs 70%. Per question, v2 fixed 22 and broke 10. Is this a real improvement at the 5% level?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Net gain = 22 - 10 = 12 questions = 4 points of 300. McNemar with continuity correction: (|22 - 10| - 1)^2 / (22 + 10) = 121 / 32 = 3.78. The 5% critical value for 1 degree of freedom is 3.84, so it is just short. Call it promising, not proven: add questions or repeat runs, and read the 10 regressions, since a fix that breaks a safety-critical case may not be worth 22 small wins.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> You run Ragas-style faithfulness, answer relevance, context precision and context recall in CI on every pull request. Design the safeguards so the numbers deserve trust.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p><ul><li><strong>Calibrate each judged metric.</strong> Hand-label 50-100 items per metric, compute kappa (or correlation for scores), and keep the labels as a regression test for the judge itself.</li><li><strong>Pin the ruler.</strong> Version the judge model, prompt and rubric. When any changes, re-score the baseline before comparing.</li><li><strong>Know what each metric cannot see.</strong> Faithfulness ignores whether the context was right; answer relevance (Ragas uses generated-question similarity) does not check factual accuracy; context recall needs reference answers; context precision rises if you return less. So pair them, and add answer correctness on a referenced subset.</li><li><strong>Quantify noise.</strong> Bootstrap confidence intervals or paired tests on the same questions; gate on "significantly worse", not "any drop".</li><li><strong>Avoid self-preference.</strong> Use a judge from a different model family from the generator where possible.</li><li><strong>Watch for gaming.</strong> Track abstention rate and answer length so a system cannot raise faithfulness by saying less.</li></ul></p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is position bias in an LLM judge and how do you handle it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Position bias is when a judge comparing two answers tends to prefer whichever it sees first (or second), regardless of quality. You handle it by judging each pair twice with the order swapped and only counting a win when both orders agree; disagreement becomes a tie. You can also measure it directly: the fraction of pairs whose verdict flips when swapped is the judge's position-bias rate, and it should be low before you trust the judge.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> How do you validate an LLM-as-judge for RAG faithfulness before using it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>I sample 50 to 100 real answers with their retrieved context and have two people label each claim or answer as supported or not, using the same rubric the judge gets. I check human-human agreement first, which is my ceiling. Then I run the judge and compute Cohen's kappa against the consensus, and I read the confusion matrix, because for a gate the key number is how often the judge passes answers humans failed. If kappa is weak I fix the rubric, add examples, or try a stronger judge, and re-measure. I keep the labelled set to re-check whenever the judge changes.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> A dashboard shows faithfulness 0.91 and answer relevancy 0.88 from Ragas, and leadership wants to ship. What might these numbers hide?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Several things. Both are reference-free, so neither says whether answers are correct: faithfulness only checks support by the retrieved context, which may be stale, and Ragas's answer relevancy scores how well questions generated from the answer match the user question, and its docs say it does not evaluate factual accuracy. Neither measures retrieval coverage; context recall needs references. A system that abstains or says little can score high faithfulness. Judges have position, verbosity and self-preference bias, so I need kappa against human labels and a judge from a different family from the generator. And I want confidence intervals, slices by query type, and a check that the golden set matches production traffic. Then decide.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2306.05685" target="_blank" rel="noopener">Zheng et al., Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena (2023) - arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2309.15217" target="_blank" rel="noopener">Es et al., Ragas: Automated Evaluation of Retrieval Augmented Generation (2023) - arXiv</a></li>
+      <li><a href="https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/answer_relevance/" target="_blank" rel="noopener">Answer Relevancy - Ragas documentation</a></li>
+      <li><a href="https://arxiv.org/abs/2311.09476" target="_blank" rel="noopener">Saad-Falcon et al., ARES: An Automated Evaluation Framework for RAG Systems (2023) - arXiv</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>

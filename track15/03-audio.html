@@ -13,6 +13,13 @@
   <span class="eyebrow">Multimodal AI · Lesson 10.3</span>
   <h1>Audio: speech-to-text &amp; TTS</h1>
   <p class="lead">Voice is how people most naturally communicate, and it’s now cheap to work with. This lesson covers turning speech into text, text into speech, and how they combine with an LLM to build voice applications — meeting notes, assistants, call analytics.</p>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>A voice assistant is like a relay race with three runners: the first listens and writes down what you said (speech-to-text), the second thinks of an answer (the LLM), and the third reads it out loud (text-to-speech). If any runner is slow, the whole team is slow, and if the first runner writes down the wrong word, the others carry the mistake to the finish line. Where it breaks: in a real relay each runner waits for the baton, but good voice systems let the runners overlap, starting to speak before the answer is fully written.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <h2>The two halves of audio AI</h2>
   <p><span class="term">Speech-to-text</span> (STT, or automatic speech recognition) turns spoken audio into a transcript. The open model <strong>Whisper</strong> made this remarkably good and completely free — it runs locally or on free Colab, handles many languages, and is robust to accents and background noise. <span class="term">Text-to-speech</span> (TTS) does the reverse: turns text into natural-sounding spoken audio, so your system can talk back. Free/open TTS options exist too. Neither is an LLM — they’re specialized audio models — but they’re the ears and mouth you bolt onto an LLM to make it conversational by voice.</p>
@@ -32,7 +39,26 @@ result <span class="o">=</span> model.<span class="f">transcribe</span>(<span cl
   <p>Two honest challenges. <strong>Accuracy degrades</strong> on heavy accents, cross-talk, jargon, and noisy audio, and STT usually doesn’t know <em>who</em> spoke (separating speakers is “diarization,” a harder add-on). Errors in the transcript then propagate into everything downstream — a misheard word can flip a summary. <strong>Latency</strong> is the big one for <em>real-time</em> voice: a back-and-forth conversation feels broken if there’s a long pause, and now you have three models in series (STT + LLM + TTS), each adding delay.</p>
   <p>Real-time voice agents fight hard for every millisecond — streaming each stage, starting the LLM before the user finishes, and speaking the reply as it’s generated. For non-real-time uses (transcribe a recording, summarize later), latency doesn’t matter and the whole thing is easy.</p>
 
-  <div class="box key">
+  
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Call analytics for 20,000 calls a day, and a 1-second voice-agent budget</div>
+    <p>All volumes, speeds and latencies below are our assumptions or round illustrative numbers; measure your own hardware. Prices: claude-haiku-5-5 from $0.10 / $0.50 per million (<a href="https://platform.claude.com/docs/en/about-claude/models/overview" target="_blank" rel="noopener">models overview</a>).</p>
+<p><strong>Part A, batch analytics.</strong></p>
+<ol>
+<li><strong>Audio volume.</strong> 20,000 calls x 6 minutes = 120,000 minutes = <strong>2,000 hours of audio a day</strong>.</li>
+<li><strong>Transcription compute.</strong> If a Whisper-family model on one GPU runs at 50x real time (illustrative; faster-whisper's benchmarks are a good place to start), that is 2,000 / 50 = 40 GPU-hours a day, about <strong>2 GPUs running around the clock</strong>.</li>
+<li><strong>LLM cost.</strong> 6 minutes x 150 words a minute = 900 words, about 1,200 tokens, plus a 300-token prompt: 1,500 in, 200 out. 1,500 x $0.10/M + 200 x $0.50/M = $0.00025 a call, so 20,000 calls = <strong>$5 a day</strong>.</li>
+<li><strong>Lesson.</strong> Here the speech model, not the LLM, is the cost and capacity driver. Optimise STT first: model size, voice activity detection to skip silence, batching.</li>
+</ol>
+<p><strong>Part B, real-time agent.</strong> Target: reply audio starts within 1.0 s of the user stopping.</p>
+<ol>
+<li><strong>Budget.</strong> End-of-speech detection 300 ms + final transcript 150 ms + LLM TTFT 350 ms + first clause of 8 tokens at 50 tokens/s = 160 ms + TTS first audio 150 ms = <strong>1,110 ms</strong>. Over by 110 ms.</li>
+<li><strong>Cuts.</strong> Prompt-cache the system prompt to lower TTFT; stream partial transcripts so the LLM starts on the near-final text; start TTS on the first clause, not the full sentence. Shortening end-of-speech detection is the riskiest cut, because it makes the agent interrupt slow speakers.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+<div class="box key">
     <div class="box-label">Key points</div>
     <ul>
       <li><strong>Speech-to-text</strong> (Whisper — free/open) makes transcripts; <strong>text-to-speech</strong> makes audio replies. Neither is an LLM.</li>
@@ -82,6 +108,22 @@ result <span class="o">=</span> model.<span class="f">transcribe</span>(<span cl
         <div class="why">Errors don't speed anything up.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">A meeting-notes product transcribes 1-hour recordings and summarises them overnight. Users complain summaries get names and numbers wrong. Where should you spend effort first?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) A faster TTS voice.</span>
+        <div class="why">There is no speech output in this product, and TTS does not affect what the summary says.</div></li>
+      <li data-correct="false"><span class="opt">B) A bigger LLM for the summary.</span>
+        <div class="why">A stronger LLM cannot recover words that were mistranscribed; it will summarise the wrong ones fluently.</div></li>
+      <li data-correct="true"><span class="opt">C) Transcription quality: a larger STT model, a vocabulary or prompt with names and jargon, and checking the transcript itself against a few reference recordings.</span>
+        <div class="why">The LLM only sees the transcript. Wrong names and numbers usually enter at STT; measure word error rate on a reference set first.</div></li>
+      <li data-correct="false"><span class="opt">D) Streaming the summary to the user.</span>
+        <div class="why">Latency is not the problem in an overnight batch job; accuracy is.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box deep">
@@ -91,6 +133,77 @@ result <span class="o">=</span> model.<span class="f">transcribe</span>(<span cl
     <p>For real-time voice specifically, think in a <strong>latency budget</strong>, which ties straight back to Track&nbsp;8. Natural conversation wants a response within a few hundred milliseconds, and you’re spending that budget across capturing speech, transcribing, thinking, and speaking. The techniques are all streaming: transcribe incrementally as the person talks, detect when they’ve stopped, start the LLM immediately, stream its tokens into TTS so speech begins before the full answer exists, and keep prompts tight so time-to-first-token is low.</p>
     <p>Designing a voice agent is largely a latency-engineering problem wrapped around an LLM — which, again, is systems work you’re well suited to. The lesson of this whole track holds: multimodal doesn’t replace your skills, it points them at richer inputs, and the winners are the people who can make the plumbing fast, accurate, and reliable.</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/01_generate_and_sample.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/01_generate_and_sample.py</code></pre>
+    <p><strong>What to look for:</strong> No lab processes audio (no speech model is installed). The closest is the generation lab, because the middle stage of every voice pipeline is an LLM call and its TTFT and tokens/sec are the numbers in the latency budget. Note the lab's TTFT and tokens/sec for qwen2.5:7b on your machine, then compute how long the first 8-token clause would take; that is your LLM slice of the budget. If you want the audio halves, faster-whisper and a local TTS install with pip, but they are not part of this course's verified labs.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>2) Same prompt, temperature 1.0, three different seeds
+  seed=1: Bengaluru in July typically experiences warm to hot temperatures with occasional thunderstorms.
+  seed=2: Bengaluru in July typically experiences hot and humid weather with occasional thunderstorms.
+  seed=3: Bengaluru in July typically experiences hot and dry weather with temperatures often soaring above 30°C.
+  distinct outputs at T=1.0: 3  (sampling -&gt; usually 2-3)
+3) Same seed twice at T=1.0 -&gt; reproducible on the same machine
+  identical: True
+4) Tokens are what you pay for: prompt vs output token counts
+  short prompt: prompt_tokens=   36  output_tokens=  2  prefill_s=  0.52  answer=&#x27;Paris&#x27;
+  long prompt : prompt_tokens=  639  output_tokens=  2  prefill_s=  0.22  answer=&#x27;Paris&#x27;
+  Look: the long prompt costs many more input tokens and more prefill time for the same answer.
+5) Streaming: time-to-first-token (TTFT) vs total time
+  TTFT=0.36s  total=2.54s  chunks=16  decode_tokens_per_s=7.3
+  Look: streaming does not make generation faster; it shows the first words sooner.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/01_generate_and_sample.txt">labs/outputs</a>. Source: <a href="../labs/01_generate_and_sample.py">labs/01_generate_and_sample.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> A call centre records 3,000 hours of audio a day. If your STT setup processes audio at 30x real time per GPU, how many GPUs run around the clock?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>3,000 / 30 = 100 GPU-hours a day. 100 / 24 = 4.2, so 5 GPUs, with a sixth for headroom and failover. If you can run overnight only (say 10 hours), you need 100 / 10 = 10 GPUs, so the schedule is a capacity lever too.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Design the evaluation for the transcription stage of a call-analytics system in Indian English and Hindi code-mixed speech.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Build a reference set of a few hours of real calls, with human transcripts, covering accents, code-mixing, background noise and phone-line quality. Measure word error rate overall and per slice, plus a targeted metric for what the business needs: accuracy on names, numbers, product terms and Hindi words written in Latin script. Compare two or three model sizes and settings (language hint off vs on, a vocabulary prompt). Then measure the downstream effect: run the LLM classifier on human versus machine transcripts and compare labels. If downstream labels barely change, a cheaper STT model may be fine.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Your voice agent's p50 response start is 0.9 s but p95 is 2.8 s. Name three likely contributors and how you would find out which dominates.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Likely contributors: LLM TTFT tails (provider queueing, long prompts in long calls as history grows), end-of-speech detection waiting on hesitant speakers, and tool calls inserted before the reply (a CRM lookup). To find out, trace every turn with spans per stage (VAD end, STT final, LLM first token, TTS first audio, any tool span) and compare the span breakdown of p95 turns against p50 turns. Whichever stage grows most in the tail is the target: trim history for long calls, speak a filler phrase while a tool runs, or tune VAD per channel.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> How would you build a free meeting-summary tool from a recording?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Record or upload the audio, transcribe it with an open speech-to-text model such as Whisper running locally, then send the transcript to an LLM with a prompt asking for a summary, decisions and action items with owners. If the meeting is long, I would split the transcript into chunks, summarise each, then summarise the summaries. I would show the transcript alongside the summary so users can check names and numbers, because transcription errors flow straight into the summary.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> What is speaker diarization and when do you need it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Diarization answers 'who spoke when': it splits the audio into segments and assigns each to a speaker label. Plain speech-to-text gives you words but not who said them. You need diarization when the speaker matters: action items with owners in meetings, separating agent from customer in call analytics, or compliance checks on what the agent said. It is a separate model step with its own errors, especially on overlapping speech, so I evaluate it separately, for example by checking speaker labels on a reference set.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Would you build a voice agent as STT, then LLM, then TTS, or use an end-to-end speech model? What drives the choice?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>The pipeline is modular: I can pick the best STT for my languages, any LLM with tools and RAG, and a TTS voice, and I can evaluate and log each stage, including the transcript, which helps compliance and debugging. Its cost is latency and lost prosody, since three hops add delay and the LLM never hears tone. End-to-end speech models cut latency and sound more natural, but are harder to ground, test, guard and audit, and there are fewer choices. For regulated or tool-heavy agents I would start with the pipeline and stream every stage; for casual conversation where latency and naturalness dominate, I would evaluate an end-to-end model.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2212.04356" target="_blank" rel="noopener">Robust Speech Recognition via Large-Scale Weak Supervision (Whisper) - arXiv</a></li>
+      <li><a href="https://github.com/openai/whisper" target="_blank" rel="noopener">openai/whisper - GitHub</a></li>
+      <li><a href="https://github.com/SYSTRAN/faster-whisper" target="_blank" rel="noopener">faster-whisper (CTranslate2 Whisper, benchmarks) - GitHub</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>You can now bring vision and audio into your systems. The natural next step is retrieving over them. Next: <strong>multimodal RAG.</strong></p>
 

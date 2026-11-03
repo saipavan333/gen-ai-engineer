@@ -26,6 +26,13 @@
     <div class="box-label">Concept</div>
     <p><span class="term">Quantization</span> reduces the number of bits used to store each model weight (e.g., 16-bit → 8-bit → 4-bit). Lower <span class="term">precision</span> means less memory and faster compute, at the cost of some accuracy. The trade-off is usually favorable: 8-bit is often nearly lossless, and 4-bit is a popular sweet spot for running large models on modest hardware. Local runtimes like <span class="term">Ollama</span> serve quantized models (often in the <span class="term">GGUF</span> format) by default — which is how this course runs models for free.</p>
   </div>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>Imagine writing down everyone's height in a class. You could write 152.3847 cm, or just 152 cm. The short version takes much less paper and is almost always good enough. Quantization does that to a model's billions of numbers: it rounds them to fewer digits so the model fits in less memory. Where it breaks: rounding a height loses nothing you care about, but a few of a model's numbers matter a lot, so good quantization methods round those more carefully than the rest.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <div class="box example">
     <div class="box-label">Worked example — quantized models, free (Ollama)</div>
@@ -39,6 +46,21 @@
 <span class="o">$</span> ollama pull llama3.1:8b-instruct-q8_0       <span class="c"># 8-bit (bigger, closer to full quality)</span></code></pre>
     <p>The lesson: quantization isn’t exotic — it’s the default that makes free local models practical. When self-hosting, choosing a quant level is one of your main cost/quality dials.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Fitting Qwen2.5-7B and its KV cache on a 24 GB GPU</div>
+    <p>Facts: Qwen2.5-7B-Instruct has 7.61B parameters, 28 layers, 4 key-value heads and hidden size 3,584 with 28 attention heads, so head dimension is 128 (<a href="https://huggingface.co/Qwen/Qwen2.5-7B-Instruct" target="_blank" rel="noopener">model card and config</a>). Locally, <code>ollama show qwen2.5:7b</code> reports quantization Q4_K_M and <code>ollama list</code> shows 4.7 GB. The 24 GB GPU and the traffic are our assumptions.</p>
+<ol>
+<li><strong>Weights at each precision.</strong> bf16: 7.61B x 2 bytes = 15.2 GB. int8: 7.6 GB. The Q4_K_M file at 4.7 GB works out to 4.7e9 x 8 / 7.61e9 = about 4.9 bits per weight, not exactly 4, because k-quants keep scales and some tensors at higher precision.</li>
+<li><strong>KV cache per token.</strong> 2 (K and V) x 28 layers x 4 KV heads x 128 dims x 2 bytes (fp16) = 57,344 bytes, about 56 KB a token.</li>
+<li><strong>KV for real traffic.</strong> 16 concurrent conversations at 8,000 tokens each = 128,000 tokens x 56 KB = about 7.3 GB.</li>
+<li><strong>Does it fit in 24 GB?</strong> bf16: 15.2 + 7.3 = 22.5 GB, leaving about 1.5 GB for activations and runtime overhead, which is too tight. Q4_K_M: 4.7 + 7.3 = 12 GB, leaving room to double concurrency.</li>
+<li><strong>So quantization buys concurrency, not just fit.</strong> Every GB saved on weights is about 17,000 more tokens of KV cache, which means more users per GPU and a lower cost per request.</li>
+<li><strong>The quality check.</strong> Before shipping Q4, run your golden set on bf16 (or the provider's full model) and on Q4. If the per-case regression list is short and not concentrated in one task type, ship it; if arithmetic or extraction cases cluster in the failures, try Q8 or AWQ/GPTQ builds and re-measure.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <h2>Trade precision for memory</h2>
   <p>Step down the precision and watch the model shrink. Somewhere on this slider is the point where a 7B model fits on hardware you already own.</p>
@@ -82,6 +104,22 @@
         <div class="why">It makes it smaller.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Ollama lists qwen2.5:7b (7.61B parameters, Q4_K_M) at 4.7 GB rather than the 3.8 GB that exactly 4 bits a weight would give. Why?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) The file includes the KV cache for a full context.</span>
+        <div class="why">The KV cache is allocated at run time and depends on context length and concurrency; it is not in the model file.</div></li>
+      <li data-correct="true"><span class="opt">B) k-quant formats store per-block scale factors and keep some sensitive tensors at higher precision, so the average is closer to 5 bits a weight.</span>
+        <div class="why">4.7e9 bytes x 8 / 7.61e9 is about 4.9 bits a weight. 'Q4' names the main block format, not the exact average.</div></li>
+      <li data-correct="false"><span class="opt">C) Ollama stores two copies of the weights.</span>
+        <div class="why">There is one set of quantized weights; the overhead comes from scales and mixed precision.</div></li>
+      <li data-correct="false"><span class="opt">D) Quantization does not really reduce size; the 3.8 GB number is a myth.</span>
+        <div class="why">bf16 would be about 15.2 GB, so 4.7 GB is a 3x reduction. The arithmetic is real; the overhead is just bigger than zero.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -105,6 +143,78 @@
     <p>The engineering nuance is that quantization quality isn’t uniform — it depends on the method (modern schemes like GPTQ, AWQ, and the GGUF k-quants preserve quality better than naive rounding), the model (bigger models tolerate quantization better; small ones degrade more), and the task (simple tasks barely notice 4-bit; subtle reasoning may).</p>
     <p>So you don’t pick a quant level by reputation — you serve a couple of candidates and run your eval set (Track 6) to see the real quality-vs-memory trade-off for <em>your</em> workload, then choose the smallest that clears your bar. Combined with the rest of this track, the pattern for self-hosters is: quantize to fit cheap hardware, batch to keep it busy (next lesson), cache and route to avoid work, and budget tokens to keep every call lean. That stack is how teams run capable models affordably — and it’s the same stack that lets <em>you</em> run them for free on a laptop.</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/01_generate_and_sample.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/01_generate_and_sample.py</code></pre>
+    <p><strong>What to look for:</strong> No lab compares quant levels, because that would need a second multi-GB download. What you can see: run <code>ollama show qwen2.5:7b</code> (it prints quantization Q4_K_M) and the lab's tokens/sec for that 4.7 GB build on your machine. If you have disk to spare, pull a q8_0 tag of a small model, rerun, and compare tokens/sec and answers on the same seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>2) Same prompt, temperature 1.0, three different seeds
+  seed=1: Bengaluru in July typically experiences warm to hot temperatures with occasional thunderstorms.
+  seed=2: Bengaluru in July typically experiences hot and humid weather with occasional thunderstorms.
+  seed=3: Bengaluru in July typically experiences hot and dry weather with temperatures often soaring above 30°C.
+  distinct outputs at T=1.0: 3  (sampling -&gt; usually 2-3)
+3) Same seed twice at T=1.0 -&gt; reproducible on the same machine
+  identical: True
+4) Tokens are what you pay for: prompt vs output token counts
+  short prompt: prompt_tokens=   36  output_tokens=  2  prefill_s=  0.52  answer=&#x27;Paris&#x27;
+  long prompt : prompt_tokens=  639  output_tokens=  2  prefill_s=  0.22  answer=&#x27;Paris&#x27;
+  Look: the long prompt costs many more input tokens and more prefill time for the same answer.
+5) Streaming: time-to-first-token (TTFT) vs total time
+  TTFT=0.36s  total=2.54s  chunks=16  decode_tokens_per_s=7.3
+  Look: streaming does not make generation faster; it shows the first words sooner.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/01_generate_and_sample.txt">labs/outputs</a>. Source: <a href="../labs/01_generate_and_sample.py">labs/01_generate_and_sample.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Estimate weight memory for a 32B-parameter model at bf16, int8 and 4-bit (assume 4.9 bits a weight for the 4-bit format).</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>bf16: 32e9 x 2 = 64 GB. int8: 32 GB. 4-bit at 4.9 bits: 32e9 x 4.9 / 8 = 19.6 GB. So a 32B model goes from needing an 80 GB-class GPU to fitting, with modest KV room, on a 24 GB card.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Using the Qwen2.5-7B KV figure of about 56 KB a token, how many concurrent 4,000-token conversations fit in the memory left on a 24 GB GPU after the 4.7 GB Q4 weights, keeping 3 GB for runtime overhead?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Free memory: 24 - 4.7 - 3 = 16.3 GB. Per conversation: 4,000 x 57,344 bytes = about 229 MB. 16.3 GB / 0.229 GB = about 71 conversations. Serving engines like vLLM allocate the KV cache in pages so they can use this space efficiently; in Ollama, RAM scales with OLLAMA_NUM_PARALLEL x context length, so you set those two knobs within this budget.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Your team proposes 3-bit quantization of a 7B model to double concurrency. Lay out how you would decide, and name the failure pattern you would watch for.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Build three candidates (bf16 reference, Q4, Q3) and run the full golden set plus a task-specific stress set (long-context recall, arithmetic, JSON extraction) on each with fixed seeds. Compare per-case, not just averages, and compute the cost per request at the concurrency each fits. Watch for failures that cluster: low-bit models often degrade first on precise tasks such as numbers, code and long instructions while chat quality looks fine. Decide with a rule set in advance, e.g. 'no more than 2 points average drop and no task family drops more than 5 points'. If Q3 fails, consider a smaller model at Q4 or KV-cache quantization instead.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is quantization and what does it trade off?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Quantization stores a model's weights with fewer bits, for example 16-bit down to 8 or 4. Memory drops roughly in proportion, so a 7B model goes from about 15 GB in bf16 to under 5 GB at 4-bit. Less memory also means faster decoding because generation is limited by how fast weights move from memory. The cost is some lost precision, which usually means a small quality drop that grows at lower bit-widths and on smaller models. You measure that drop on your own eval set before choosing a level.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> Compare GPTQ, AWQ and GGUF k-quants at a high level. When would you pick each?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>All three are post-training weight quantization. GPTQ quantizes layer by layer using second-order information from calibration data to minimise error. AWQ protects the small fraction of weights that matter most, found from activation statistics, by scaling them before quantizing. GGUF k-quants are the llama.cpp/Ollama family, with block-wise scales and mixed precision, built for CPU and consumer-GPU inference. I pick GGUF for local and edge serving, and GPTQ or AWQ builds for GPU serving engines like vLLM, choosing between them by running my eval set, since the winner depends on the model and task.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> You run a self-hosted 70B model at bf16 on multiple GPUs. Make the case for or against moving to 4-bit.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>For: weights drop about 4x, so the model may fit on fewer GPUs, which cuts cost and removes cross-GPU communication; freed memory goes to KV cache, so concurrency and throughput rise. Against: quality risk, especially on precise tasks; some kernels at low precision can be slower at large batch sizes than bf16 on high-end GPUs; and the team must operate a second artefact. I would benchmark both on our traffic: quality per task family, tokens/s at our concurrency, and cost per 1,000 requests. If 4-bit holds quality within the threshold we agree on beforehand and lowers cost per request, ship it behind a canary.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2210.17323" target="_blank" rel="noopener">GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers - arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2306.00978" target="_blank" rel="noopener">AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration - arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2208.07339" target="_blank" rel="noopener">LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale - arXiv</a></li>
+      <li><a href="https://huggingface.co/Qwen/Qwen2.5-7B-Instruct" target="_blank" rel="noopener">Qwen2.5-7B-Instruct model card - Hugging Face</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>Quantization makes one model instance cheaper. The next technique squeezes maximum work out of that instance by serving many requests at once. Next: <strong>batching &amp; throughput</strong>.</p>
 

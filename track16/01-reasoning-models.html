@@ -13,6 +13,13 @@
   <span class="eyebrow">Frontier &amp; Responsible AI · Lesson 13.1</span>
   <h1>Reasoning models &amp; test-time compute</h1>
   <p class="lead">A major shift in the field: instead of only making models bigger, we now let them <em>think longer</em> at answer time. Understanding “reasoning models” and “test-time compute” keeps you current and helps you choose the right model for a job.</p>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>A standard model is a quiz contestant who must hit the buzzer immediately. A reasoning model is allowed to scribble on a notepad for a minute before answering. On a hard maths question the notepad wins; on 'what colour is the sky' it just wastes a minute. And you pay for every page of scribbling. The analogy breaks because the model's scribbling is not always shown to you, but you are still billed for it.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <h2>Two ways to make a model smarter</h2>
   <p>For years, the recipe for a more capable model was “train a bigger one on more data.” That still works, but there’s a second lever that reshaped the field: spend more compute <em>when answering</em>, not just when training. A <span class="term">reasoning model</span> (sometimes called “o1-style,” after an early prominent one) is trained to produce a long internal <span class="term">chain-of-thought</span> — working through a problem step by step, checking itself, exploring approaches — before it commits to a final answer. That extra deliberation at inference is called <span class="term">test-time compute</span>: the model literally uses more tokens and time to think, and on hard problems that buys markedly better accuracy.</p>
@@ -37,7 +44,22 @@
 
   <div class="lab" data-lab="testtime"></div>
 
-  <div class="box key">
+  
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Routing 1 million requests a day between a fast model and a reasoning model</div>
+    <p>Assume an assistant gets <strong>1,000,000 requests a day</strong>, of which <strong>5%</strong> are genuinely hard (multi-step debugging, calculations). A hard request uses about <strong>4,000 thinking tokens</strong> when extended thinking is on. All numbers except prices are assumptions.</p>
+<ol>
+<li><strong>Thinking is billed as output.</strong> Anthropic reports thinking as part of billed output tokens, visible in <code>usage.output_tokens_details.thinking_tokens</code> (<a href="https://platform.claude.com/docs/en/build-with-claude/extended-thinking">extended thinking docs</a>).</li>
+<li><strong>Think on everything.</strong> On Claude Sonnet 5.5 at $10 per million output tokens (<a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic models overview</a>): 1,000,000 x 4,000 = 4 billion tokens = <strong>$40,000/day</strong> just for thinking.</li>
+<li><strong>Think only on hard requests.</strong> 50,000 x 4,000 = 200M tokens = <strong>$2,000/day</strong>. Routing cuts the thinking bill by 95%.</li>
+<li><strong>Price the router.</strong> A small classifier, or a cheap model call of about 200 input tokens, decides "hard or not". On a model priced from $0.10 per million input tokens, 1M x 200 = 200M tokens = about $20/day.</li>
+<li><strong>Measure the misroutes.</strong> On a labelled set of 1,000 requests, suppose the router sends 15% of hard requests to the fast model. Those 7,500 a day get weaker answers. Add an escalation rule: if the fast model's answer fails a check (tests fail, numbers disagree), retry on the reasoning model.</li>
+<li><strong>Latency.</strong> 4,000 thinking tokens at an assumed 80 tokens/second is about 50 seconds. Show progress, or move hard jobs to an async queue.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+<div class="box key">
     <div class="box-label">Key points</div>
     <ul>
       <li>Capability comes from two levers: <strong>bigger training</strong> and <strong>more test-time compute</strong> (thinking longer at answer time).</li>
@@ -87,6 +109,22 @@
         <div class="why">The key is spending compute to think, not raw size.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">You give a reasoning model a 'think step by step, list every assumption' prompt on top of its built-in thinking. Tokens double, accuracy is unchanged. What is the best reading?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Double the thinking budget again until accuracy improves.</span>
+        <div class="why">If accuracy is flat, more tokens is likely to keep spending without gain. Find where the curve flattens first.</div></li>
+      <li data-correct="false"><span class="opt">B) Reasoning models cannot follow instructions.</span>
+        <div class="why">They follow instructions; the issue is redundant prompting.</div></li>
+      <li data-correct="false"><span class="opt">C) The model ignored the prompt, which means it is broken.</span>
+        <div class="why">It may have followed it; it just did not help. That is a result, not a fault.</div></li>
+      <li data-correct="true"><span class="opt">D) The model already reasons internally, so the extra CoT instruction mostly added tokens; measure and drop it unless an eval shows a gain.</span>
+        <div class="why">Right. Reasoning models are trained to think before answering. Classic CoT prompting is often redundant on them, so it should earn its place on an eval.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box deep">
@@ -96,6 +134,78 @@
     <p>But not all of it: agents still need tools, memory, and bounded loops, and reasoning models still hallucinate, still can’t know private facts, and still need grounding and evaluation. The durable lesson is that the field advances by giving models new ways to spend compute — more parameters, more data, more inference-time thinking, more tools — and your job is to <em>compose</em> those capabilities into reliable systems.</p>
     <p>Knowing that reasoning is now a dial you can turn, at a price, is what lets you make that call deliberately instead of defaulting to the most expensive model for everything.</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/12_self_consistency.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/12_self_consistency.py</code></pre>
+    <p><strong>What to look for:</strong> Self-consistency is test-time compute you can control by hand: more samples, more tokens, better accuracy up to a point. Read the accuracy-vs-N table next to tokens spent and find where the curve flattens. That knee is the same trade a reasoning model makes internally. The lab does not run a trained reasoning model; qwen2.5:7b is a standard model.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>1) Sample 7 chains per problem at temperature 0.8 (different seeds)
+  P1 gold=348    answers=[348.0, None, 348.0, 348.0, 348.0, 348.0, None]
+  P2 gold=215    answers=[265.0, None, 215.0, 195.0, 195.0, 215.0, 195.0]
+  P3 gold=17     answers=[17.0, 17.0, 17.0, 17.0, 17.0, 17.0, 17.0]
+  P4 gold=540    answers=[540.0, 5.0, 540.0, 540.0, 540.0, 540.0, 540.0]
+  P5 gold=676.5  answers=[676.5, 676.5, 676.5, 676.5, 676.5, 676.5, 676.5]
+2) Accuracy vs number of samples (majority vote over the first N)
+  N=1: accuracy 4/5   ~200 output tokens per problem
+  N=3: accuracy 4/5   ~601 output tokens per problem
+  N=5: accuracy 4/5   ~1,002 output tokens per problem
+  N=7: accuracy 4/5   ~1,403 output tokens per problem
+  Look: more samples cost tokens linearly; accuracy gains are bumpy and flatten out. A vote only helps
+  when the model is right more often than any single wrong answer. Measure the curve on YOUR task before
+  paying for N=7 (or for a reasoning model&#x27;s long thinking) in production.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/12_self_consistency.txt">labs/outputs</a>. Source: <a href="../labs/12_self_consistency.py">labs/12_self_consistency.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> A reasoning model answers in 300 visible output tokens but the usage shows 3,300 output tokens. At $10 per million output tokens, what did the thinking cost per request and per 100,000 requests?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Thinking tokens = 3,300 - 300 = 3,000. Per request: 3,000 x $10 / 1,000,000 = $0.03. Per 100,000 requests: $3,000. Always read the usage field; visible text underestimates the bill.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Design a 'try cheap first, escalate if needed' flow for a coding assistant that writes unit-testable functions.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Step 1: fast model writes the function and tests. Step 2: run the tests in a sandbox. Step 3: if they pass, return. If they fail, send the code, the failing test output and the task to the reasoning model. Step 4: run tests again; if they still fail, return the best attempt with the failure shown. Track the escalation rate and cost per solved task. The tests are the cheap, objective check that makes escalation safe.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Snell et al. (2024) report that spending test-time compute well can beat simply using a larger model in some settings. What conditions make that more likely, and how would you test it for your workload?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>It is more likely when problems are of moderate difficulty for the smaller model, when there is a good way to check or score candidates (tests, verifiers), and when compute can be adapted per problem instead of spent evenly. Test it by building an eval set grouped by difficulty, then compare cost and accuracy for: small model once, small model with N samples plus a verifier, small model with reasoning on, and a larger model once. Plot accuracy against cost per task and pick the best point per difficulty group.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is a reasoning model?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>It is a model trained to produce a long internal chain of thought before its final answer: working through steps, checking itself, trying other approaches. That uses more tokens at answer time, called test-time compute, and gives better results on hard maths, coding and planning. The cost is higher price, because thinking tokens are billed, and more latency. For simple tasks a standard model is cheaper and just as good.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> How do you decide whether a feature should use a reasoning model?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Run an eval on representative cases with both options and compare accuracy, cost per request including thinking tokens, and latency. Reasoning tends to pay off on multi-step tasks with a clear right answer and low to moderate volume. For high-volume simple tasks, use a fast model. Often the answer is both: route by difficulty, or try the fast model first and escalate when a check fails. Set thinking budgets and watch the usage field so cost does not surprise you.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> How does test-time compute change system design compared with the 'just pick a bigger model' era?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Compute becomes a per-request decision, not a fixed property of the deployed model. So you design routing, budgets and verification: a difficulty classifier or cascade, thinking budgets per feature, verifiers such as tests or rule checks to decide when more compute is worth it, and async flows for long jobs. Observability must track thinking tokens and latency separately. Some agent scaffolding gets simpler because the model plans more by itself, but tools, grounding, bounded loops and evals stay essential.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2408.03314" target="_blank" rel="noopener">Scaling LLM Test-Time Compute Optimally can be More Effective than Scaling Model Parameters (Snell et al., 2024) — arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2501.12948" target="_blank" rel="noopener">DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning (2025) — arXiv</a></li>
+      <li><a href="https://platform.claude.com/docs/en/build-with-claude/extended-thinking" target="_blank" rel="noopener">Extended thinking — Anthropic docs</a></li>
+      <li><a href="https://arxiv.org/abs/2203.11171" target="_blank" rel="noopener">Self-Consistency Improves Chain of Thought Reasoning (Wang et al., 2022) — arXiv</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>Reasoning is one frontier shift; there are several worth a working engineer’s awareness. Next: <strong>the modern frontier.</strong></p>
 

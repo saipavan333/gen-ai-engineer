@@ -13,6 +13,13 @@
   <span class="eyebrow">Structured Data &amp; Text-to-SQL · Lesson 9.2</span>
   <h1>Schema-aware prompting</h1>
   <p class="lead">A text-to-SQL model is only as good as its picture of your database. This lesson is about feeding it the right context — the schema, descriptions, and a few examples — and, when you have hundreds of tables, giving it just the slice it needs.</p>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>Asking someone to find a book in a library they have never visited is hopeless; giving them the floor map, the section labels and two example call numbers makes it easy. The schema is the map, column descriptions are the labels, and few-shot examples are the sample call numbers. For a huge library you give them only the map of the right floor. The analogy breaks because a visitor who reaches the wrong shelf notices; a model given the wrong tables will still write a query, just against the wrong data.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <h2>Why the schema is the prompt</h2>
   <p>A model cannot query columns it doesn’t know exist. Ask “total spend in Canada” with no schema and it will <em>guess</em> table and column names — sometimes right, often not. Give it the exact schema and the same question becomes almost mechanical. So the core of every text-to-SQL prompt is a clear description of the tables involved: their columns, types, and how they relate. The better and cleaner that description, the more the problem shifts from “creative writing” to “fill in the blanks,” which is where models are reliable.</p>
@@ -61,7 +68,14 @@ A: SELECT c.country, SUM(o.amount) AS revenue
     <p>Schema selection is just retrieval with tables as the “documents.” Everything you learned in Track&nbsp;3 — embeddings, top-k, keeping context tight — transfers directly. Reusing that muscle is why RAG comes before this track.</p>
   </div>
 
-  <div class="box key">
+  
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: 400 tables: dump the schema or retrieve it?</div>
+    <p>Assumptions: a warehouse with 400 tables, 25 columns each on average, about 12 tokens per column line including a short comment and 20 tokens per table header (estimate; count with your tokenizer), 5,000 questions a day, a model at $2 per million input tokens (<a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic models overview, checked 2026-11-03</a>).</p><ol><li><strong>Full schema size.</strong> 400 x (20 + 25 x 12) = 400 x 320 = 128,000 tokens. It fits in a 1 M-token window, so the limit is not the window. It is cost and focus.</li><li><strong>Full schema cost.</strong> 128,000 x $2 / 1 M = $0.256 per question, $1,280 a day, and the model has 394 tables it should ignore, several with similar names.</li><li><strong>Retrieved schema.</strong> Embed one card per table (name, description, column names, grain, join keys). Retrieve the top 6: 6 x 320 = 1,920 tokens, plus about 1,000 for sample rows and value notes, 600 for two few-shot examples and 200 for instructions = about 3,700 tokens. 3,700 x $2 / 1 M = $0.0074, about $37 a day.</li><li><strong>The new failure.</strong> If retrieval misses a needed table (often a bridge table such as order_items), the SQL either fails or quietly answers a different question. So measure table recall@6 on a golden set of questions labelled with the tables their reference SQL uses.</li><li><strong>Close the gap.</strong> After retrieval, add foreign-key neighbours of the retrieved tables (one hop). If that brings the prompt to 10 tables, it is still only about 5,000 tokens.</li></ol><p>Result: about 35 times cheaper and usually more accurate, provided table recall is measured, not assumed.</p>
+  </div>
+<!-- shape:scale:end -->
+<div class="box key">
     <div class="box-label">Key points</div>
     <ul>
       <li>The <strong>schema is the prompt</strong>: give exact tables, columns, types, relationships — plus short descriptions and a few sample rows.</li>
@@ -123,6 +137,22 @@ A: SELECT p.name, SUM(i.qty) AS units
         <div class="why">You still run against the database.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">A user asks for "revenue from Germany". The model writes WHERE country = 'DE' but the column stores 'Germany'. The query returns 0 rows. What prevents this most directly?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) A self-correction loop.</span>
+        <div class="why">The query does not error; it returns 0 rows. An error-driven loop never fires unless you also treat empty results as a signal.</div></li>
+      <li data-correct="false"><span class="opt">B) Lower temperature.</span>
+        <div class="why">Deterministic sampling makes the same wrong guess every time. The missing piece is information, not randomness.</div></li>
+      <li data-correct="true"><span class="opt">C) Sample rows or a value note in the schema context showing that country holds full names like 'Germany'.</span>
+        <div class="why">The model could not know the value format from the column name alone. One sample row or a short comment fixes it, and it is cheap.</div></li>
+      <li data-correct="false"><span class="opt">D) A larger model.</span>
+        <div class="why">No model can know your data's value conventions without being shown them. Bigger models guess better on average, but they still guess.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box deep">
@@ -131,6 +161,82 @@ A: SELECT p.name, SUM(i.qty) AS units
     <p>Instead, teams build a friendly surface just for the model — well-named views, a data dictionary of column meanings, and canonical definitions of business metrics — so that “revenue” is a real column on a view, not a fragile expression the model must reinvent every time.</p>
     <p>This reframes the whole problem in your favor. The accuracy of a text-to-SQL system is determined less by the model and more by the quality of the semantic layer you put in front of it — the naming, the documentation, the example queries, the curated views. That is data modeling and metadata engineering, done for a new kind of consumer. When you present text-to-SQL work this way in an interview — “I’d invest in a clean semantic layer and a library of example queries, because that’s what moves accuracy” — you sound like someone who has actually shipped it, because that insight only comes from taking correctness seriously.</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/09_text_to_sql_duckdb.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/09_text_to_sql_duckdb.py</code></pre>
+    <p><strong>What to look for:</strong> Find where the lab builds the schema context for the prompt (schema grounding). Run the question set once as-is, then remove the column descriptions or sample values from the context and run again: execution accuracy should drop, typically on questions that depend on value formats or which column holds what. Put them back and add one few-shot example matching a failing question's pattern to see it recover.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  Q: What share of orders were returned? Give a fraction between 0 and 1.
+     SQL: SELECT SUM(CASE WHEN status = &#x27;returned&#x27; THEN 1 ELSE 0 END) / COUNT(*) AS return_share FROM orders;
+     PASS fixes=0 got=[(0.09483333333333334,)] gold=[(0.09483333333333334,)]
+  Q: Average delivered order value for Plus members vs non-members.
+     SQL: SELECT AVG(CASE WHEN c.is_plus THEN o.amount_rs ELSE NULL END) AS avg_plus, AVG(CASE WHEN NOT c.is_plus THEN o.amount_rs ELSE NULL END) AS avg_non_plu
+     FAIL fixes=0 got=[(4945.648507917174, 5045.7609119496865)] gold=[(False, 5045.760911949686), (True, 4945.648507917174)]
+  Q: How many customers placed no orders at all?
+     SQL: SELECT COUNT(*) FROM customers WHERE customer_id NOT IN (SELECT customer_id FROM orders WHERE status = &#x27;delivered&#x27;)
+     PASS fixes=0 got=[(50,)] gold=[(50,)]
+  execution accuracy: 5/6
+3) A user asks for something destructive
+  blocked by the gate: DELETE is not allowed (SELECT only)
+  Look: safety comes from the parser + read-only principal + row cap, not from asking the model nicely.
+  Wrong-but-valid SQL (a FAIL above) is the harder problem; only an eval set with gold answers catches it.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/09_text_to_sql_duckdb.txt">labs/outputs</a>. Source: <a href="../labs/09_text_to_sql_duckdb.py">labs/09_text_to_sql_duckdb.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> A mart has 60 tables averaging 18 columns. Using 12 tokens per column and 20 per table header, estimate the full schema in tokens and the cost per question at $2 per million input tokens.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Per table: 20 + 18 x 12 = 236 tokens. 60 x 236 = 14,160 tokens. Cost = 14,160 x $2 / 1 M = $0.028 per question. At this size dumping the whole schema can be reasonable; retrieval pays off as tables grow or when similar tables confuse the model.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Write the schema-context lines for a hostile table: <code>f_txn_d(cid INT, amt_c BIGINT, st SMALLINT, dt INT)</code>, where amt_c is amount in cents, st 1 = paid and 2 = refunded, dt is a date as YYYYMMDD.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p><pre><code>Table f_txn_d(cid INT, amt_c BIGINT, st SMALLINT, dt INT)
+  -- one row per transaction. cid joins customers.id.
+  -- amt_c is the amount in CENTS: divide by 100.0 for currency.
+  -- st: 1 = paid, 2 = refunded. Revenue uses st = 1 only.
+  -- dt is an integer date YYYYMMDD, e.g. 20250603. Filter 2025 with dt BETWEEN 20250101 AND 20251231.
+Sample: (42, 12000, 1, 20250603)</code></pre>Better long-term: a view <code>transactions(customer_id, amount_usd, status, txn_date DATE)</code> so the model never sees the raw encoding.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Design schema retrieval for 400 tables and the eval that proves it works.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Index one card per table: name, a human-written description, column names with short meanings, grain, primary and foreign keys, and two or three questions it answers. Optionally index metric definitions and example Q-to-SQL pairs as separate searchable items. At query time, use hybrid retrieval (BM25 catches exact column or table names, dense catches meaning), take the top 6, then add one-hop foreign-key neighbours. Eval: a golden set of 150+ questions, each with the set of tables in its reference SQL. Report table recall@k (all needed tables retrieved), prompt size, and end-to-end execution accuracy. If execution accuracy fails while table recall is high, the problem is the prompt or examples, not retrieval.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What do you put in a text-to-SQL prompt?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>The SQL dialect, an instruction to use only the listed tables and columns and to return a single SELECT, the schema for the relevant tables with column types and join keys, short descriptions of non-obvious columns, a sample row or value notes so the model sees formats like 'Canada' versus 'CA', and two or three example question-and-SQL pairs showing house conventions such as filtering paid orders. Then the question. Each part removes a specific guessing failure.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> How do you handle a schema too big for the prompt?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Schema retrieval, which is RAG over metadata. I index each table with a description, columns, grain and keys, retrieve the few most relevant tables for each question, and add their foreign-key neighbours so join bridges are not lost. I measure table recall on a golden set because a missed table silently breaks the query. Hybrid search helps, since users often mention exact column or table names. Where possible I also point retrieval at curated views rather than raw tables, which shrinks the search space and removes ambiguity.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Accuracy plateaued at 78% despite better prompts. Where would you invest next?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>In the data surface, not the prompt. I read the failures and usually find ambiguous metrics, cryptic columns, encoded statuses and multi-hop joins. So I build a semantic layer: views with readable names and joins baked in, documented metric definitions, and a library of verified example queries retrieved as few-shot examples per question. I add clarifying questions for ambiguous asks rather than guessing. Then re-run the golden set by slice. Prompt tweaks give a few points; a good semantic layer often moves accuracy far more, because it turns the problem into one the model rarely gets wrong.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2304.11015" target="_blank" rel="noopener">Pourreza and Rafiei, DIN-SQL: Decomposed In-Context Learning of Text-to-SQL with Self-Correction (2023) - arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2305.03111" target="_blank" rel="noopener">Li et al., BIRD: Can LLM Already Serve as A Database Interface? (2023) - arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2411.07763" target="_blank" rel="noopener">Lei et al., Spider 2.0: Real-World Enterprise Text-to-SQL Workflows (2024) - arXiv</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>Now the model can write good SQL. Before we ever run it, we have to make sure it can’t hurt us. Next: <strong>generating safe, correct SQL.</strong></p>
 

@@ -26,6 +26,13 @@
     <div class="box-label">Concept</div>
     <p>A <span class="term">chunk</span> is a contiguous span of a document that you embed and store as one retrievable unit. <span class="term">Chunk size</span> is how big each one is (usually measured in tokens). <span class="term">Overlap</span> is text shared between adjacent chunks — repeating, say, the last 50 tokens at the start of the next chunk — so a sentence or idea straddling a boundary still appears intact in at least one chunk.</p>
   </div>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>Chunking is cutting a long recipe book into index cards so you can pull out just the card you need. Cut too small and the card says "add the eggs" without saying which dish; cut too big and you pull out a whole chapter when you wanted one step. Overlap is writing the last line of each card again at the top of the next, so a step that ran across two cards is still whole on one of them. The analogy breaks because a person reading cards can flip to the next one; a retriever only sees the cards it scored highest.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <h2>The size trade-off</h2>
   <figure class="diagram">
@@ -83,6 +90,13 @@ chunks <span class="o">=</span> <span class="f">chunk_text</span>(doc, size<span
 records <span class="o">=</span> [{<span class="s">"text"</span>: c, <span class="s">"source"</span>: <span class="s">"manual.txt"</span>, <span class="s">"chunk_id"</span>: i} <span class="k">for</span> i, c <span class="k">in</span> <span class="f">enumerate</span>(chunks)]</code></pre>
     <p>Notice the <strong>metadata</strong> on each chunk (source, id). You’ll thank yourself later: it’s what lets you cite sources, filter by document, and debug which chunk produced an answer.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Chunking 200,000 support articles under a 256-token embedder limit</div>
+    <p>Assumptions: 200,000 help-centre articles, about 1,800 tokens each (360 M tokens total), embedded with all-MiniLM-L6-v2, which truncates input longer than 256 word pieces (<a href="https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2">model card</a>). Token counts below are in that model's word pieces.</p><ol><li><strong>Check the ceiling first.</strong> The lesson's common 200-500 token range does not apply blindly: a 500-token chunk would lose its last 244 tokens (about half) silently. So chunk size must be at most 256.</li><li><strong>Pick size 240, overlap 40.</strong> Step = 240 - 40 = 200. Start positions 0, 200, ..., 1,600; the chunk starting at 1,600 would end at 1,840, past the end, so it is the last (and only 200 tokens long). That is 9 chunks per article.</li><li><strong>Count.</strong> 200,000 x 9 = 1.8 M chunks. Tokens embedded = 8 x 240 + 200 = 2,120 per article, about 18% more than the 1,800 raw tokens. That 18% is the price of overlap.</li><li><strong>Storage.</strong> 384 dimensions x 4 bytes (float32) = 1,536 bytes per vector. 1.8 M x 1,536 = 2.76 GB of vectors, plus the chunk text itself (about 360 M tokens x roughly 4 bytes per token of English, around 1.4 GB, an estimate).</li><li><strong>Compare a tiny-chunk design.</strong> Size 120, overlap 20 gives step 100 and 18 chunks per article: 3.6 M vectors, 5.5 GB, and each chunk is so short that a question like "how do I reset 2FA on a new phone" may need three of them.</li></ol><p>Decision: 240/40 with structure-aware splits (never cut inside a numbered procedure), then check recall@k on a golden set (Lesson 3.8) before believing it.</p>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -121,6 +135,22 @@ records <span class="o">=</span> [{<span class="s">"text"</span>: c, <span class
         <div class="why">It helps boundaries but doesn't guarantee anything; you still measure recall.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">You use an embedding model with a 256-token input limit and chunk your documents at 600 tokens. What happens?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) The model averages the chunk into a lower-quality vector but still sees all 600 tokens.</span>
+        <div class="why">Tokens past the limit are dropped before the model runs. They contribute nothing to the vector.</div></li>
+      <li data-correct="false"><span class="opt">B) Nothing; bigger chunks always give more context to the embedder.</span>
+        <div class="why">Bigger chunks only help up to the model limit. Past it you pay to store text that the vector does not represent.</div></li>
+      <li data-correct="true"><span class="opt">C) Each chunk is silently truncated to 256 tokens, so facts in the last 344 tokens of every chunk can never be matched.</span>
+        <div class="why">Embedding models cut input at their maximum sequence length without raising an error. The tail of every chunk is invisible to search, which shows up as mysteriously low recall for facts that sit late in sections.</div></li>
+      <li data-correct="false"><span class="opt">D) The model raises an error and you notice immediately.</span>
+        <div class="why">Most sentence-transformer models truncate quietly. That silence is exactly why this bug survives into production.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -149,6 +179,77 @@ records <span class="o">=</span> [{<span class="s">"text"</span>: c, <span class
   </ul>
     <p>And don’t forget non-prose. <strong>Tables</strong> often need row- or section-level chunks with the header repeated, or they retrieve as meaningless number soup. <strong>Code</strong> should be split on function/class boundaries, not arbitrary lines. The throughline: chunking is really about preserving <em>retrievable meaning</em>, so the smartest strategy is whatever keeps each unit a self-contained, matchable idea. Start with recursive splitting plus overlap and metadata; reach for these only when evaluation (Lesson 3.8) shows retrieval is the bottleneck.</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/03_rag_local.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/03_rag_local.py</code></pre>
+    <p><strong>What to look for:</strong> The lab chunks the same corpus two ways, fixed-size and sentence-aware with overlap, and prints the chunk counts. Pick one question whose answer sits across a sentence boundary and compare which chunking strategy retrieves it in the top-k. Then set overlap to 0 and rerun: watch the chunk count drop and, on boundary questions, the right chunk fall out of the results.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  out of the top 3. On this tiny corpus dense already wins; hybrid earns its keep on big corpora full of
+  near-identical codes (SKUs, error ids) that embeddings blur. Never assume: measure hit@k (lab 06).
+5) Grounded answers with citations, and a refusal when retrieval is weak
+  Q: I was charged twice for one order. What happens now?
+  A: If you were charged twice for one order, the duplicate payment is reversed automatically within 3 business days [pay-01#0]. If it is not reversed after 3 business days, raise a billing ticket with both transaction ids.
+     citations=[&#x27;pay-01#0&#x27;] all-cited-ids-were-retrieved=True
+  Q: Can I change my delivery address after the order has shipped?
+  A: No, you cannot change your delivery address after the order has shipped. According to [ship-03#0], the address can only be changed before the order is packed.
+     citations=[&#x27;ship-03#0&#x27;] all-cited-ids-were-retrieved=True
+  Q: Do you deliver to Antarctica by drone?
+  A: I don&#x27;t know based on our policies. (refused before calling the LLM: best cosine 0.27 &lt; 0.35)
+     citations=[] all-cited-ids-were-retrieved=True
+  Look: every factual sentence carries an id you can check; the off-topic question is refused
+  cheaply by the retrieval threshold, so the model never gets a chance to make something up.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/03_rag_local.txt">labs/outputs</a>. Source: <a href="../labs/03_rag_local.py">labs/03_rag_local.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> A 3,000-token document is chunked at size 500 with overlap 100. How many chunks do you get, and what percentage of extra tokens do you embed?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Step = 500 - 100 = 400. Starts at 0, 400, 800, 1,200, 1,600, 2,000, 2,400; the chunk at 2,400 ends at 2,900 which is short of 3,000, so one more starts at 2,800 and ends at 3,300 (past the end, so it is the last). That is 8 chunks. Embedded tokens: 7 full chunks x 500 = 3,500, plus the last chunk 2,800-3,000 = 200, total 3,700. Extra = 700 / 3,000 = 23%. Overlap is cheap insurance, but it is not free: you pay it in storage, embedding time and duplicate hits.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> You are chunking a pricing page that is mostly an HTML table: 40 rows, columns Plan, Region, Monthly price, Seats. Users ask things like "What does Pro cost in the EU?" How do you chunk it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Chunk by row (or small groups of rows) and repeat the header in every chunk, for example "Plan: Pro | Region: EU | Monthly price: ... | Seats: ...". A fixed-size cut would produce chunks of bare numbers with no column names, which embed as number soup and match nothing. Add metadata (source page, table name, plan, region) so you can also filter on region. This is the general rule for structured content: each chunk must make sense read alone.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Retrieval on a legal corpus is weak because clauses say things like "the Supplier shall indemnify the Customer" without naming the contract. Design a chunking change and say how you would prove it helped.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Use contextual chunking: before embedding, prepend a short header to each chunk built from document metadata, e.g. "Contract: Acme-Globex MSA 2025, Section 12 Indemnification". Keep the original chunk text for display and citation. Better still, combine it with parent-document retrieval: search on small clause-sized chunks, return the whole section to the model. To prove it, build a golden set of 100+ real questions with the clause that answers each, then compare recall@5 and MRR before and after on the same embedder and k. Also track chunk count and storage, since headers add tokens. Ship only if recall moves by more than the noise of a set that size (Lesson 3.8 shows how to size that).</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is chunk overlap and why use it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Overlap repeats the end of one chunk at the start of the next, for example the last 50 tokens. Without it, a sentence or step that straddles a boundary is split in half, and neither half may match a query well enough to be retrieved. With overlap the full idea appears intact in at least one chunk. The cost is extra storage and embedding work, roughly overlap divided by step, and some duplicate results, which you can dedupe after retrieval. It does not guarantee recall; you still measure it.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> How do you choose a chunk size for a new corpus?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>I start from constraints, not a magic number. The embedding model's max sequence length is a hard ceiling, because anything past it is silently cut. Then the content: FAQ pairs, procedures and table rows have natural units, so I split on those. For prose I start with a recursive splitter around one coherent idea per chunk with modest overlap. Then I make it empirical: build a golden set of real questions with labelled answer passages, try two or three sizes, and compare recall@k and MRR, plus token cost per query. Whichever wins on my data wins.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Your company wants one chunking pipeline for PDFs, Confluence pages, code repos and Slack threads. How do you design it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>One pipeline, several splitters behind a common interface. Each source type gets a structure-aware splitter: headings and paragraphs for docs, functions and classes for code, threads or time windows for Slack, rows with repeated headers for tables. Every chunk gets the same metadata contract: source id, URL, section path, timestamps, ACL fields and a content hash, so citations, permission filters and incremental re-indexing work the same everywhere. The hash lets me re-embed only changed chunks. I version the chunker config alongside the index, because changing chunking means re-embedding. Finally, I evaluate per source type, since a size that works for docs can fail for Slack.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2" target="_blank" rel="noopener">sentence-transformers/all-MiniLM-L6-v2 model card (256 word-piece limit) - Hugging Face</a></li>
+      <li><a href="https://arxiv.org/abs/2005.11401" target="_blank" rel="noopener">Lewis et al., Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks - arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2312.10997" target="_blank" rel="noopener">Gao et al., Retrieval-Augmented Generation for Large Language Models: A Survey - arXiv</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>You’ve got chunks. Now we turn them into searchable meaning — the embeddings step, applied to retrieval at scale. Next: <strong>embeddings for retrieval</strong>.</p>
 

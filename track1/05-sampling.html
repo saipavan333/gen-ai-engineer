@@ -29,6 +29,13 @@
     <p><span class="term">Top-k</span>: only consider the <em>k</em> most likely tokens; throw away the rest of the tail before sampling.</p>
     <p><span class="term">Top-p</span> (also called <span class="term">nucleus sampling</span>): consider the smallest set of top tokens whose probabilities add up to at least <em>p</em> (e.g. 0.9). Adapts automatically — few tokens when the model is confident, more when it’s unsure.</p>
   </div>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>Picture a bag of coloured marbles where each colour is a possible next word, and the model decides how many marbles of each colour go in. Temperature is how much you shake the odds: low temperature means almost every marble is the favourite colour, high temperature evens the colours out. Top-k and top-p throw the rarest colours out of the bag before you draw. The analogy breaks because the model refills the bag with new odds after every single draw, based on everything drawn so far.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <p>Temperature is the one you’ll reach for most. Here’s the whole idea in a picture — same model, same context, only the temperature changes:</p>
 
@@ -81,6 +88,21 @@ prompt <span class="o">=</span> <span class="s">"The best way to learn programmi
 <span class="f">print</span>(<span class="s">"HIGH temp 1.3:"</span>, <span class="f">gen</span>(prompt, max_new_tokens<span class="o">=</span><span class="n">25</span>, do_sample<span class="o">=</span><span class="kc">True</span>, temperature<span class="o">=</span><span class="n">1.3</span>)[<span class="n">0</span>][<span class="s">"generated_text"</span>])</code></pre>
     <p>The low-temperature run stays safe and predictable; the high-temperature run wanders into more unusual (and sometimes incoherent) territory. That trade-off — coherence vs. creativity — is exactly what you’re dialing.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Decoding settings for three features on 500,000 requests a day</div>
+    <p>Assume one product has three LLM features: <strong>order-number extraction</strong> (300,000 requests/day), <strong>ticket summaries</strong> (100,000/day) and <strong>marketing taglines</strong> (100,000/day). Volumes are assumptions.</p>
+<ol>
+<li><strong>See what temperature does, with numbers.</strong> Take three logits [2, 1, 0]. At T = 1: e^2 = 7.39, e^1 = 2.72, e^0 = 1, sum 11.11, so probabilities 0.67 / 0.24 / 0.09. At T = 0.5 the logits become [4, 2, 0]: 54.6, 7.39, 1, sum 63.0, so 0.87 / 0.12 / 0.02. Halving T moved the favourite from 67% to 87%.</li>
+<li><strong>See top-p, with numbers.</strong> Next-token probabilities 0.50, 0.20, 0.10, 0.08, 0.05, then a long tail. With top-p 0.9: 0.50 + 0.20 + 0.10 + 0.08 = 0.88, still under 0.9, so add 0.05 to reach 0.93. Five tokens survive; the rest of the tail is gone.</li>
+<li><strong>Extraction on a local model.</strong> On Ollama, temperature 0 plus a fixed seed gives repeatable output for regression tests.</li>
+<li><strong>Extraction on a hosted reasoning model.</strong> On Anthropic API version 2026-10-21, sending <code>temperature</code>, <code>top_p</code> or <code>top_k</code> returns a 400 error, and Claude 4.7+ models accept only defaults (<a href="https://platform.claude.com/docs/en/api/migration-2026-10-21">Anthropic API migration 2026-10-21</a>). Consistency comes from a JSON schema plus validation, and an eval that tracks exact-match rate per release.</li>
+<li><strong>Taglines.</strong> Want 5 options per request: 100,000 x 5 x 40 output tokens = 20M tokens. On Sonnet 5.5 at $10 per million output tokens (<a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic models overview</a>) that is <strong>$200/day</strong>. Asking for all five in one response, distinct from each other, often gives more variety than five independent samples and shares one input.</li>
+<li><strong>Write the setting down.</strong> Store decoding parameters next to the prompt version, so a change is reviewed like code.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box note">
     <div class="box-label">Two gotchas worth knowing</div>
@@ -131,6 +153,35 @@ prompt <span class="o">=</span> <span class="s">"The best way to learn programmi
         <div class="why">Determinism depends directly on temperature being 0.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Your team migrates a feature to Anthropic API version 2026-10-21 and every request starts failing with a 400 error. The request body has temperature: 0. What is the fix?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Switch from top_p to top_k.</span>
+        <div class="why">All three sampling parameters are rejected on that version.</div></li>
+      <li data-correct="false"><span class="opt">B) Move temperature into the system prompt as text: 'use temperature 0'.</span>
+        <div class="why">Writing a sampling setting in the prompt does nothing; sampling is not controlled by prompt text.</div></li>
+      <li data-correct="true"><span class="opt">C) Remove temperature (and top_p/top_k) from the request; on that API version they are rejected even at default values, so get consistency from structured outputs and evals instead.</span>
+        <div class="why">Right. The migration guide says requests with these parameters return 400 on 2026-10-21. Drop them, and use a schema, validation and regression evals for consistency.</div></li>
+      <li data-correct="false"><span class="opt">D) Change temperature to 0.01 so it is not exactly zero.</span>
+        <div class="why">Any value is rejected on that API version, including the default.</div></li>
+    </ul>
+  </div>
+  <div class="quiz">
+    <p class="quiz-q">With top-p = 0.9, the model's top token has probability 0.95. How many tokens are kept for sampling?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Ten, because top-p always keeps a fixed number.</span>
+        <div class="why">That describes top-k. Top-p's set size changes with the distribution.</div></li>
+      <li data-correct="false"><span class="opt">B) None, because 0.95 is above the threshold.</span>
+        <div class="why">The threshold is a minimum cumulative mass to reach, not a ceiling that removes tokens above it.</div></li>
+      <li data-correct="true"><span class="opt">C) One, because the top token alone already covers at least 0.9 of the probability.</span>
+        <div class="why">Right. Top-p keeps the smallest set whose probabilities reach p. When the model is confident, that set is a single token, which is why top-p adapts to confidence.</div></li>
+      <li data-correct="false"><span class="opt">D) All tokens, because 0.9 is close to 1.</span>
+        <div class="why">Top-p 1.0 keeps everything; 0.9 trims the tail as soon as the cumulative sum reaches 0.9.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -156,6 +207,78 @@ prompt <span class="o">=</span> <span class="s">"The best way to learn programmi
 
   <p>One lesson left in this track, and it’s the one that keeps you honest on the job: what these models genuinely <strong>can and can’t do</strong> — including <em>why</em> they hallucinate, and what to do about it.</p>
 
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/01_generate_and_sample.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/01_generate_and_sample.py</code></pre>
+    <p><strong>What to look for:</strong> Compare the temperature 0 runs (identical text across seeds) with the temperature 1.0 runs (different text per seed). Change the seed with temperature 0 and confirm nothing changes; raise temperature to 1.5 and watch the outputs drift further from the prompt. This is the local, knobs-still-exposed side of the 2026 reality check box.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>2) Same prompt, temperature 1.0, three different seeds
+  seed=1: Bengaluru in July typically experiences warm to hot temperatures with occasional thunderstorms.
+  seed=2: Bengaluru in July typically experiences hot and humid weather with occasional thunderstorms.
+  seed=3: Bengaluru in July typically experiences hot and dry weather with temperatures often soaring above 30°C.
+  distinct outputs at T=1.0: 3  (sampling -&gt; usually 2-3)
+3) Same seed twice at T=1.0 -&gt; reproducible on the same machine
+  identical: True
+4) Tokens are what you pay for: prompt vs output token counts
+  short prompt: prompt_tokens=   36  output_tokens=  2  prefill_s=  0.52  answer=&#x27;Paris&#x27;
+  long prompt : prompt_tokens=  639  output_tokens=  2  prefill_s=  0.22  answer=&#x27;Paris&#x27;
+  Look: the long prompt costs many more input tokens and more prefill time for the same answer.
+5) Streaming: time-to-first-token (TTFT) vs total time
+  TTFT=0.36s  total=2.54s  chunks=16  decode_tokens_per_s=7.3
+  Look: streaming does not make generation faster; it shows the first words sooner.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/01_generate_and_sample.txt">labs/outputs</a>. Source: <a href="../labs/01_generate_and_sample.py">labs/01_generate_and_sample.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Logits are [3, 1]. Compute the probability of the first token at T = 1 and at T = 2.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>T = 1: e^3 = 20.09, e^1 = 2.72, p = 20.09 / 22.81 = 0.88. T = 2: logits become [1.5, 0.5]: e^1.5 = 4.48, e^0.5 = 1.65, p = 4.48 / 6.13 = 0.73. Doubling temperature dropped the favourite from 88% to 73%, the flattening effect.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your nightly regression test compares exact output strings from a hosted model and fails randomly. You cannot set temperature on that API. Redesign the test.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Stop asserting exact strings. Ask for structured output (a JSON schema) and assert on fields: types, allowed values, and exact match only on fields that should be deterministic, like an extracted order number. For free text, score with rules or an LLM judge against a rubric, run each case several times, and gate on a pass rate (say 95%) rather than on one sample. Track the pass rate per release so drift shows up as a trend.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Explain why greedy decoding can produce repetitive loops in long generations, and why nucleus sampling was proposed as a fix.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Greedy always takes the single most likely token. Once a phrase repeats, the context makes repeating it again even more likely, so greedy can get stuck in a loop. Holtzman et al. (2019) showed that human text is not made of only the most likely tokens, and that sampling from the full distribution picks junk from the long tail. Nucleus (top-p) sampling samples only from the smallest set covering p of the mass: it keeps variety where the model is unsure and cuts the junk tail.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What does temperature do?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>The model outputs scores called logits for every possible next token. Temperature divides those scores before softmax turns them into probabilities. Low temperature sharpens the distribution so the top token almost always wins, which suits extraction, classification and code. High temperature flattens it, giving more variety for brainstorming but more risk of nonsense. Temperature near 0 approximates greedy decoding. Note that some hosted APIs, such as Anthropic's 2026-10-21 version, no longer accept it.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> Is temperature 0 fully deterministic? How do you get reproducible outputs?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Not always. Ties or near-ties between tokens, floating-point differences across GPUs, batching with other requests, and model updates can all change output even at temperature 0. On local models I set temperature 0 and a seed and pin the model version. On hosted APIs, especially ones that no longer expose sampling settings, I design for variation: structured outputs with a schema, validation, tests that assert on fields and pass rates, and evals run per release. Reproducibility is something you build into the system around the model.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Hosted reasoning models increasingly remove sampling controls. How does that change your reliability strategy?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Sampling settings were always a weak reliability tool; they reduce variance but not error. Without them, I lean on constrained output (JSON schema or strict tool definitions), validation with retry-and-feedback, deterministic code for anything computable, and evals as a release gate with pass-rate thresholds. For tasks that need variety, I ask for multiple distinct candidates in one call. For tasks that need exact repeatability, such as tests or audits, I cache responses by input hash or use a local model where I control decoding.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/1904.09751" target="_blank" rel="noopener">The Curious Case of Neural Text Degeneration (Holtzman et al., 2019) — arXiv</a></li>
+      <li><a href="https://huggingface.co/docs/transformers/generation_strategies" target="_blank" rel="noopener">Generation strategies — Hugging Face Transformers docs</a></li>
+      <li><a href="https://platform.claude.com/docs/en/api/migration-2026-10-21" target="_blank" rel="noopener">API migration guide 2026-10-21 (sampling parameters removed) — Anthropic</a></li>
+      <li><a href="https://docs.ollama.com/api/chat" target="_blank" rel="noopener">Chat API (options such as temperature, seed) — Ollama</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 </main>
 
 <script>

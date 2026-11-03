@@ -13,6 +13,13 @@
   <span class="eyebrow">Productionization &amp; LLMOps · Lesson 12.1</span>
   <h1>From notebook to a service</h1>
   <p class="lead">A model call in a notebook helps exactly one person: you. To let anyone — a website, an app, a teammate — use it, you wrap it in a small web service. This lesson turns your working code into an API others can call.</p>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>Your notebook is like cooking dinner in your own kitchen: it works, but only you eat. A service is a restaurant with a counter and a menu. Customers do not walk into the kitchen; they order through the counter, and the menu says exactly what they can ask for. Where it breaks: a restaurant can see the queue at the door, but a web service only learns it is overloaded when requests start timing out, so you have to plan capacity on purpose.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <h2>Why an API is the unlock</h2>
   <p>Your capstone works in a Python file on your laptop. But a product isn’t a script someone has to run — it’s something other software can talk to over the network. A <span class="term">web service</span> (or API) is a program that listens for requests and sends back responses. Wrapping your model logic in one means a front-end, a mobile app, or another service can send a question and get an answer, without knowing or caring about the Python inside. This single step — “put it behind an endpoint” — is what turns “I built a thing” into “others can use my thing,” and it’s the first thing an interviewer means by “productionize.”</p>
@@ -52,7 +59,23 @@ app <span class="o">=</span> FastAPI()
     <p>The body of <code>ask()</code> is just your capstone logic (RAG, an agent, text-to-SQL). Productionizing doesn’t change what your code <em>does</em> — it changes how it’s <em>reached</em>: from “run the script” to “call the endpoint.”</p>
   </div>
 
-  <div class="box key">
+  
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Capacity-planning a FastAPI LLM endpoint for 2 million requests a day</div>
+    <p>Assumptions (ours): 2,000,000 requests a day for an internal assistant, peak traffic 3x the daily average, and a mean model call of 4 s. Facts: FastAPI runs a plain <code>def</code> endpoint in an external threadpool (<a href="https://fastapi.tiangolo.com/async/" target="_blank" rel="noopener">FastAPI docs</a>), and AnyIO's default worker-thread limiter is 40 (<a href="https://anyio.readthedocs.io/en/stable/threads.html" target="_blank" rel="noopener">AnyIO docs</a>).</p>
+<ol>
+<li><strong>Arrival rate.</strong> 2,000,000 / 86,400 s = 23.1 requests/s on average; peak 3x = <strong>69.4 requests/s</strong>.</li>
+<li><strong>Requests in flight.</strong> Little's law: 69.4 x 4 s = <strong>278 concurrent requests</strong>, nearly all of them just waiting on the model.</li>
+<li><strong>The sync trap.</strong> The 15-line example uses <code>def ask()</code> with a blocking client. Each process then has about 40 threads to wait with. 4 uvicorn workers x 40 = 160 slots, fewer than 278, so requests queue inside your own server and p95 latency climbs even though the model is fine.</li>
+<li><strong>The fix.</strong> Make the endpoint <code>async def</code> and use an async client (for Ollama, <code>ollama.AsyncClient</code>; most provider SDKs have one). Waiting on network I/O then costs almost nothing, and one process can hold hundreds of in-flight calls. Keep 2+ replicas for failover.</li>
+<li><strong>Protect the expensive part.</strong> Set a client timeout (say 30 s) so a stuck call frees its slot; add a per-user rate limit (say 60 requests a minute) so one script cannot eat the capacity of 278 users; cap request body size so nobody sends a 2 MB prompt.</li>
+<li><strong>Know the upstream ceiling.</strong> 69 requests/s x 3,000 tokens = about 208,000 input tokens a second at peak. Check this against your provider's rate limits or your GPU throughput (Lesson 8.6) before launch, not after the first 429.</li>
+<li><strong>Return enough to debug.</strong> Send a request ID back in every response and log it in the trace, so a user's complaint maps to one span tree.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+<div class="box key">
     <div class="box-label">Key points</div>
     <ul>
       <li>A <strong>web service (API)</strong> lets other software use your model logic over the network — the core of “productionize.”</li>
@@ -101,6 +124,22 @@ app <span class="o">=</span> FastAPI()
         <div class="why">Production needs evals and monitoring more, not less.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Your FastAPI LLM endpoint uses a plain def handler and a blocking HTTP client. At peak you see requests waiting in your own server while the model provider shows low load. What is the most likely fix?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Add more pydantic validation.</span>
+        <div class="why">Validation is cheap and runs before the call; it does not change how long each request occupies a thread.</div></li>
+      <li data-correct="true"><span class="opt">B) Switch to async def with an async client, so waiting on the model does not tie up a limited thread pool.</span>
+        <div class="why">Sync handlers run in a threadpool with a default of 40 threads per process under AnyIO. LLM calls are long I/O waits, so the pool fills up and new requests queue.</div></li>
+      <li data-correct="false"><span class="opt">C) Use a bigger model so each call finishes faster.</span>
+        <div class="why">Bigger models are usually slower, and the bottleneck is your server's concurrency, not the model.</div></li>
+      <li data-correct="false"><span class="opt">D) Lower the temperature.</span>
+        <div class="why">Sampling settings do not affect how many requests your server can hold at once.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box deep">
@@ -109,6 +148,77 @@ app <span class="o">=</span> FastAPI()
     <p>FastAPI supports streaming responses, and it dramatically improves perceived speed. Second, these endpoints are <strong>expensive per call</strong> compared to a typical CRUD API, so timeouts, caching (Track&nbsp;8), and per-user rate limits aren’t niceties — they’re how you avoid a surprise bill or an outage from one heavy user.</p>
     <p>Third, and easy to forget: the endpoint is now an <strong>attack surface</strong>. Everything from Track&nbsp;7 applies at the API boundary — validate and bound inputs, guard against prompt injection in whatever text you accept, never trust the client, and don’t leak internal errors in responses. A production LLM service is your model logic plus a ring of operational concerns — latency, cost, and safety — wrapped around it. The rest of this track is about building that ring: packaging it to run anywhere, gating changes with evals, and watching it in production.</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/08_llmops.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/08_llmops.py</code></pre>
+    <p><strong>What to look for:</strong> The lab is not a web server, but it shows the operational ring this lesson ends on: each request becomes a traced span with timing and tokens, input and output guardrails run around the model call, and a cache sits in front of it. Read one JSONL trace line and map each field to where it would live in your FastAPI handler (request ID, latency, tokens, guardrail verdict). The lab does not show concurrency or async handling; use the Little's law arithmetic for that.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  semantic similarity to the cached &#x27;track my order&#x27;: paraphrase=0.657  different intent (cancel)=0.523
+  semantic hits at threshold 0.9: 0
+  Look: a threshold low enough to catch the paraphrase would sit close to the wrong-intent score.
+  Serving &#x27;how to track&#x27; to someone who asked &#x27;how to cancel&#x27; is worse than a cache miss. Tune the
+  threshold on labelled pairs, scope caches per intent/tenant, and log every semantic hit for review.
+  traces written to traces.jsonl; first span:
+  {&quot;trace_id&quot;: &quot;54d669838c1f47758c9099aba0110b3f&quot;, &quot;name&quot;: &quot;chat qwen2.5:7b&quot;, &quot;gen_ai.operation.name&quot;: &quot;chat&quot;, &quot;gen_ai.provider.name&quot;: &quot;ollama&quot;, &quot;gen_ai.request.model&quot;: &quot;qwen2.5:7b&quot;, &quot;gen_ai.prompt.name&quot;: &quot;support_answer&quot;, &quot;gen_ai.prompt.version&quot;: 2, &quot;prompt.hash&quot;: &quot;5ab3d11ffb3b&quot;, &quot;user.id&quot;: &quot;u-123&quot;, 
+4) Prompt version rollout: v1 vs v2 on the same question, both traced
+  v1 hash=47ed77f326d6 -&gt; &quot;Yes, you can return innerwear as long as it meets your retailer&#x27;s return policy conditions, such as being unus&quot;
+  v2 hash=5ab3d11ffb3b -&gt; &#x27;Please contact support for specific return policies on innerwear.&#x27;
+  Check the facts too: store policy (labs/data/kb.json, ret-01) says innerwear cannot be returned. Neither
+  prompt has retrieval, so any &#x27;yes&#x27; is a hallucination; the version that defers to support is the safer one.
+  Look: the trace links every answer to an exact prompt hash and model, so a bad answer is debuggable,
+  and a rollout is a registry change you can roll back, not a code edit buried in a deploy.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/08_llmops.txt">labs/outputs</a>. Source: <a href="../labs/08_llmops.py">labs/08_llmops.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> A service gets 30 requests/s at peak and each LLM call takes 6 s. How many requests are in flight, and how many sync worker processes would you need at 40 threads each?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Little's law: 30 x 6 = 180 in flight. 180 / 40 = 4.5, so 5 processes, before any headroom. With async handlers one or two processes would do, which is why async is the default for LLM services.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Extend the /ask endpoint contract for production. Which request and response fields would you add, and why each?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Request: question (required, max length), optional conversation_id (so memory lives in a store, not the process), optional top_k with a bounded range. Response: answer, sources (doc IDs for grounding), request_id (to find the trace), model and prompt_version (what produced this answer), usage tokens (for cost attribution), and finish_reason (so the client knows a reply was cut off). Errors: 422 for bad input, 429 with Retry-After when rate limited, 503 with a request_id when the model is unavailable, and never a raw stack trace. Each field exists so a caller can trust, debug or pay for the answer.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Users abandon requests after 10 s, but the model keeps generating for them. At 70 requests/s with 15% abandonment after 10 s and an average of 400 further output tokens per abandoned request at $10 per million, what does that waste cost a month, and how do you stop it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Abandoned: 70 x 0.15 = 10.5 requests/s. Waste: 10.5 x 400 = 4,200 output tokens/s, x 86,400 = 362.9M tokens/day (if peak held all day; scale to your real curve). At $10/M that is $3,629/day, about $109,000/month at that worst case. Fix: detect client disconnects (in FastAPI check request.is_disconnected() in the streaming loop, or rely on cancellation of the response task) and cancel the upstream call so generation stops; streaming also reduces abandonment because users see progress.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> How would you turn a Python function that calls an LLM into an API other teams can use?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Wrap it in a web framework like FastAPI. Define a pydantic model for the request body so bad input is rejected with a 422, a POST endpoint that runs the function, and a response model with the answer and any sources. Run it with uvicorn, check the auto-generated docs at /docs, and add a health endpoint. Config like model name comes from environment variables. For production I would make the handler async, add timeouts and a request ID in every response, and log each call as a trace.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> What is different about operating an LLM endpoint compared with a normal CRUD API?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Latency is seconds, not milliseconds, and it varies with output length, so concurrency planning and streaming matter. Each call costs real money, so rate limits, quotas and caching are financial controls, not just protection. Outputs are non-deterministic and can be wrong without an error, so I need evals and quality monitoring, not only status codes. The input is an attack surface for prompt injection. And there is an upstream dependency with its own rate limits and outages, so I need retries with backoff, timeouts and ideally a fallback model.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Design the failure handling for an LLM service whose provider has a partial outage.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Detect it fast: alert on upstream error rate and p95 latency per provider and model. Contain it: timeouts per call, retries with jittered exponential backoff only on retryable errors, and a circuit breaker that stops hammering a failing upstream. Degrade gracefully: fail over to a second model or provider that has passed the same eval gate, serve cached answers for common questions, or return a clear 'try again' message with a request ID. Protect cost: retries count toward budgets. Afterwards, add the incident's traffic pattern to load tests and review whether the fallback model's quality was acceptable.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://fastapi.tiangolo.com/async/" target="_blank" rel="noopener">Concurrency and async / await - FastAPI docs</a></li>
+      <li><a href="https://fastapi.tiangolo.com/advanced/custom-response/" target="_blank" rel="noopener">Custom Response - StreamingResponse - FastAPI docs</a></li>
+      <li><a href="https://anyio.readthedocs.io/en/stable/threads.html" target="_blank" rel="noopener">Working with threads (default limiter of 40) - AnyIO docs</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>Your service runs on your laptop. To run it <em>anywhere</em> — reliably, the same every time — you package it. Next: <strong>containers and deployment.</strong></p>
 

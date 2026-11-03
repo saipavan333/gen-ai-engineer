@@ -13,6 +13,13 @@
   <span class="eyebrow">Going Deeper · Lesson 11.1</span>
   <h1>Advanced RAG</h1>
   <p class="lead">Track&nbsp;3 got you a working, grounded RAG system. This lesson covers what you reach for when “embed and take the top&nbsp;k” isn’t good enough — query transformation, reranking, context curation, and the rigorous evaluation that tells you which change actually helped.</p>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>A good librarian does not just search for the exact words you said. If you ask "that book about the boy wizard's school", they try a few phrasings, guess the title, check two shelves, then hand you only the two pages that matter instead of the whole stack. That is query rewriting, multi-query, HyDE, reranking and compression. The analogy breaks because the librarian knows when a guess is silly; HyDE's made-up answer can confidently point the search in the wrong direction.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <h2>Why basic RAG plateaus</h2>
   <p>A first RAG build usually works on easy questions and then stalls on real ones. The reasons are predictable: the user’s question is phrased differently from the documents (so embedding similarity misses), the right chunk is retrieved but buried among weak ones (so the model overlooks it), or several relevant chunks are needed and the top&nbsp;k grabs only one. Advanced RAG is a set of targeted fixes for these specific failures — and crucially, a way to <em>measure</em> whether each fix worked. Every technique below is a knob; the eval is how you know which knob to turn.</p>
@@ -51,7 +58,14 @@ top <span class="o">=</span> <span class="f">sorted</span>(scores, key<span clas
   <h2>4 · Measure it like an engineer</h2>
   <p>You can’t improve what you don’t measure, and RAG has two failure surfaces that need separate metrics. <strong>Retrieval</strong> quality: <em>context recall</em> (did we fetch the chunks that contain the answer?) and <em>context precision</em> (how much of what we fetched was relevant?). <strong>Generation</strong> quality: <em>faithfulness</em> (is every claim supported by the retrieved context, i.e. no hallucination?) and <em>answer relevance</em> (did it actually address the question?). This four-metric view (popularized by RAGAS) is powerful because it <strong>localizes the problem</strong>: low recall means fix retrieval; high recall but low faithfulness means fix generation/grounding. Build this on the golden-set + LLM-judge foundation from Track&nbsp;6 — it works with free local models.</p>
 
-  <div class="box key">
+  
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Pricing multi-query and context compression at 200,000 questions a day</div>
+    <p>Assumptions: 200,000 questions a day, a rewrite model at $2 / $10 per million input / output tokens (claude-sonnet-5-5, <a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic models overview, checked 2026-11-03</a>), retrieval at about 15 ms per search, 10 retrieved chunks of 400 tokens each.</p><ol><li><strong>Multi-query cost.</strong> One rewrite call returns 3 variants: about 250 input and 90 output tokens. 250 x $2 / 1 M = $0.0005; 90 x $10 / 1 M = $0.0009. Total $0.0014 per question, $280 a day.</li><li><strong>Multi-query latency.</strong> The 4 searches (original + 3) run in parallel, so retrieval stays near 15 ms. The real cost is the rewrite call itself, which adds a model round trip, typically hundreds of milliseconds (measure it). That is often the deciding factor for chat UX.</li><li><strong>Compression saving.</strong> 10 chunks x 400 = 4,000 context tokens. An extractive step that keeps only the sentences relevant to the question, say down to 1,200 tokens, saves 2,800 tokens per call: 2,800 x $2 / 1 M = $0.0056 per question, $1,120 a day.</li><li><strong>Net.</strong> Compression with a local extractive model pays for multi-query four times over: $1,120 saved versus $280 spent, net about $840 a day.</li><li><strong>The risk to measure.</strong> Compression can cut the one sentence that held the answer. Re-run context recall after compression on the golden set; if it drops from 0.91 to 0.84, the saving is buying wrong answers.</li></ol><p>Each technique is a line in a spreadsheet and a line in the eval. Turn on one at a time.</p>
+  </div>
+<!-- shape:scale:end -->
+<div class="box key">
     <div class="box-label">Key points</div>
     <ul>
       <li>Advanced RAG = targeted fixes for specific failures, each <strong>measured</strong>, not guessed.</li>
@@ -101,6 +115,22 @@ top <span class="o">=</span> <span class="f">sorted</span>(scores, key<span clas
         <div class="why">Unrelated to retrieval quality.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">When is HyDE (embedding a hypothetical answer instead of the question) most likely to hurt retrieval?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) When the model does not know the domain and invents a plausible but wrong answer, pulling the search toward the wrong documents, or when the query hinges on an exact identifier.</span>
+        <div class="why">HyDE works because a fake answer often looks more like real documents than a short question does. If the fake answer is wrong in substance, or turns a code like ERR_2043 into prose, the embedding lands in the wrong neighbourhood.</div></li>
+      <li data-correct="false"><span class="opt">B) When documents are long.</span>
+        <div class="why">Document length is a chunking concern. HyDE changes only the query side.</div></li>
+      <li data-correct="false"><span class="opt">C) When the question is short and vague.</span>
+        <div class="why">Short, vague questions are where HyDE tends to help most, because the hypothetical answer adds the vocabulary the documents use.</div></li>
+      <li data-correct="false"><span class="opt">D) HyDE never hurts; it only adds latency.</span>
+        <div class="why">It can lower recall when the hypothetical answer misleads. Measure it on your golden set like any other change.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box deep">
@@ -108,6 +138,78 @@ top <span class="o">=</span> <span class="f">sorted</span>(scores, key<span clas
     <p>At small scale you can compare a query against every vector (exact search). At millions of documents that’s too slow, so production systems use an <span class="term">approximate nearest neighbor</span> (ANN) index — most commonly HNSW, a navigable graph that finds very-close vectors in roughly logarithmic time. The trade is a tunable sliver of recall for an enormous speedup; parameters like HNSW’s <code>ef_search</code> let you dial the accuracy/latency balance, and — being a measurable knob — you set it by watching recall, not by guessing. This is where your data-engineering instincts pay off directly: it’s an index-tuning problem like any other.</p>
     <p>Three more production realities round it out. <strong>Metadata filtering</strong> (by tenant, date, permissions) must combine with vector search, which shapes your index and store choice — and pre- vs post-filtering has real recall implications. <strong>Freshness</strong> means incremental indexing and re-embedding as documents change, plus handling deletes and duplicates, exactly the pipeline hygiene you already do for warehouses. And <strong>cost</strong> compounds: embedding millions of chunks, storing vectors, and re-embedding on model upgrades are budget items you plan for. None of this is exotic — it’s data engineering applied to vectors, which is precisely why your background is an advantage here.</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/03_rag_local.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/03_rag_local.py</code></pre>
+    <p><strong>What to look for:</strong> The lab fuses dense and BM25 results with Reciprocal Rank Fusion, which is the same fusion step multi-query uses. To see multi-query, write two or three rephrasings of a golden question by hand, retrieve for each, and fuse with the lab's RRF function: check whether the right chunk ranks higher than with the original wording alone. The lab does not do HyDE or compression; for metrics on any change, run 06_evals before and after.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  out of the top 3. On this tiny corpus dense already wins; hybrid earns its keep on big corpora full of
+  near-identical codes (SKUs, error ids) that embeddings blur. Never assume: measure hit@k (lab 06).
+5) Grounded answers with citations, and a refusal when retrieval is weak
+  Q: I was charged twice for one order. What happens now?
+  A: If you were charged twice for one order, the duplicate payment is reversed automatically within 3 business days [pay-01#0]. If it is not reversed after 3 business days, raise a billing ticket with both transaction ids.
+     citations=[&#x27;pay-01#0&#x27;] all-cited-ids-were-retrieved=True
+  Q: Can I change my delivery address after the order has shipped?
+  A: No, you cannot change your delivery address after the order has shipped. According to [ship-03#0], the address can only be changed before the order is packed.
+     citations=[&#x27;ship-03#0&#x27;] all-cited-ids-were-retrieved=True
+  Q: Do you deliver to Antarctica by drone?
+  A: I don&#x27;t know based on our policies. (refused before calling the LLM: best cosine 0.27 &lt; 0.35)
+     citations=[] all-cited-ids-were-retrieved=True
+  Look: every factual sentence carries an id you can check; the off-topic question is refused
+  cheaply by the retrieval threshold, so the model never gets a chance to make something up.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/03_rag_local.txt">labs/outputs</a>. Source: <a href="../labs/03_rag_local.py">labs/03_rag_local.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> You have 6 reranked chunks, scores 0.95, 0.91, 0.80, 0.62, 0.55, 0.41. Given lost-in-the-middle, in what order do you place them in the prompt, and would you include all six?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Put the strongest at the edges and the weakest in the middle: for example 0.95 first, 0.91 last, then 0.80 second and 0.62 second-to-last, leaving 0.55 and 0.41 in the middle. Better still, test dropping the last two: a chunk scoring 0.41 is often noise that lowers faithfulness. Keep or drop based on the eval, not on the rule of thumb.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> In a chat, the user first asks about the Pro plan and then says "what about the EU one?" Retrieval for that second message returns junk. Fix it.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Add conversational query rewriting: before retrieval, send the last few turns plus the new message to a model and ask for a standalone search query, here something like "Pro plan pricing in the EU region". Retrieve with that, answer with the full conversation. Log both the raw and rewritten query so you can debug. Evaluate with a multi-turn golden set; a single-turn set will never show this failure.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> You have time to try four upgrades: multi-query, HyDE, a reranker and compression. Design the experiment so you know which helped.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Fix the golden set (300+ queries, sliced by type) and the judge. Measure the baseline: context recall, context precision, faithfulness, answer relevance, latency p95, cost per query. Then add one technique at a time on top of the baseline and measure each alone, followed by the best combination. Record a confidence interval per metric and only count a change as a win if it clears the noise. Expect interactions: the reranker raises context precision, compression can lower context recall, multi-query raises recall but costs latency. The output is a table of metric deltas against cost and latency, from which you pick, rather than shipping all four because each sounded good.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is query rewriting in RAG and why does it help?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Query rewriting uses a model to turn the user's raw message into a better search query before retrieval. Users write messy, conversational or context-dependent questions like "why is it broken since the update", while documents use formal terms. Rewriting can expand abbreviations, resolve references to earlier turns, and match document vocabulary, so the embedding lands nearer the right chunks. The cost is one extra model call, so you check that recall goes up enough to justify the latency.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> Explain the four RAGAS-style metrics and what each tells you to fix.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Context recall: did retrieval fetch the information needed to answer? Low means fix chunking, embeddings, query transformation or k. Context precision: was what we fetched relevant and ranked high? Low means add a reranker or retrieve fewer chunks. Faithfulness: is each claim in the answer supported by the context? Low means fix grounding, prompt and context order. Answer relevance: does the answer address the question? Low means the prompt or the context is pulling the answer off topic. The pair recall-plus-faithfulness localizes whether a fault is retrieval or generation.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Retrieval quality is good in offline evals but poor in production. What could explain the gap?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Usually the golden set does not look like production. Real queries are shorter, multi-turn, misspelled, or use internal jargon the set lacks. The index may be stale or missing sources that production users ask about. Permission filters run in production but not offline, and selective filters can tank recall. Latency budgets may force a smaller k or skip the reranker in production. I sample and label recent production queries, slice metrics by type and tenant, compare offline and online configs line by line, and fold the failures into the golden set so the gap closes.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2212.10496" target="_blank" rel="noopener">Gao et al., Precise Zero-Shot Dense Retrieval without Relevance Labels (HyDE, 2022) - arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2307.03172" target="_blank" rel="noopener">Liu et al., Lost in the Middle: How Language Models Use Long Contexts (2023) - arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2309.15217" target="_blank" rel="noopener">Es et al., Ragas: Automated Evaluation of Retrieval Augmented Generation (2023) - arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2312.10997" target="_blank" rel="noopener">Gao et al., Retrieval-Augmented Generation for Large Language Models: A Survey - arXiv</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>RAG can be tuned and measured to a high bar. Next, the same rigor applied to systems that take actions: <strong>advanced agents.</strong></p>
 

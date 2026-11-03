@@ -26,6 +26,13 @@
     <div class="box-label">Concept</div>
     <p><span class="term">Short-term memory</span> is the information currently in the context window — the recent conversation and the current task’s trace. <span class="term">Long-term memory</span> is information stored <em>outside</em> the model (a database or vector store) that you retrieve and inject when relevant. Within long-term memory, <span class="term">episodic memory</span> recalls specific past events (“last time, the user preferred email”), while <span class="term">semantic memory</span> holds distilled facts (“the user’s timezone is IST”). Writing to memory and reading from it are deliberate steps you build.</p>
   </div>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>Agent memory is like a student's notebook during a long school year. You can't remember every word the teacher said, so you write down key points (summaries) and keep a labelled index at the back so you can find 'fractions' fast before a test (retrieval). The analogy breaks because a student notices when notes contradict each other; an agent will retrieve an old wrong note and trust it just as much as a new correct one unless you date and update memories.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <h2>The two techniques you’ll actually use</h2>
   <p><strong>Summarization (managing short-term memory).</strong> When the conversation grows past a budget, compress older turns into a running summary and keep recent turns verbatim. The summary preserves the gist while freeing tokens — a controlled forgetting.</p>
@@ -60,6 +67,13 @@ memory, mem_vecs <span class="o">=</span> [], <span class="kc">None</span>
 <span class="f">print</span>(<span class="f">recall</span>(<span class="s">"what timezone should I schedule for?"</span>))   <span class="c"># -> ["User is based in Bengaluru (IST)."]</span></code></pre>
     <p>That’s the whole idea: <em>summarize</em> to keep the window lean, <em>store and retrieve</em> to recall the right thing later. Long-term memory is just RAG whose corpus is the agent’s experience.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Memory for an assistant serving 1 million calls a day</div>
+    <p>Assumptions: a banking assistant handles 1,000,000 model calls a day. A long-standing user has 300 past turns of about 150 tokens each. Prices: claude-sonnet-5-5 input at $2 per million tokens (<a href="https://platform.claude.com/docs/en/about-claude/models/overview">Claude models overview</a>).</p><ol><li><strong>Naive: resend everything.</strong> 300 x 150 = 45,000 tokens of history per call. 45,000 x $2/1M = $0.09 per call. If even that were the typical user, 1M calls = <strong>$90,000 a day</strong> on history alone, and the model has to find one fact in the middle of 45,000 tokens.</li><li><strong>Short-term memory.</strong> Keep the last 6 turns verbatim (900 tokens) plus a running summary of older turns (600 tokens).</li><li><strong>Long-term memory.</strong> Extract durable facts ('prefers Telugu', 'salary account at Kukatpally branch') into a per-user store with timestamps. Retrieve the top 5 facts (about 150 tokens) per query.</li><li><strong>New context per call.</strong> 900 + 600 + 150 = 1,650 tokens = $0.0033. At 1M calls: <strong>$3,300 a day</strong>, about 27x cheaper, with the relevant fact placed where the model will see it.</li><li><strong>Storage.</strong> 2,000,000 users x 200 facts = 400M memories. With all-MiniLM-L6-v2 (384 dimensions, <a href="https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2">model card</a>) at 4 bytes per float: 400M x 384 x 4 = about 614 GB of vectors. Partition by user, so each search scans only that user's 200 vectors.</li><li><strong>Privacy cost.</strong> Those 400M memories are personal data: you need retention limits, deletion on request, and a hard user_id filter on every retrieval.</li></ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <h2>Watch the model forget</h2>
   <p>Shrink the context budget and watch the earliest turns fall out of the conversation. This is exactly what users experience as the assistant &ldquo;losing the plot&rdquo;.</p>
@@ -103,6 +117,22 @@ memory, mem_vecs <span class="o">=</span> [], <span class="kc">None</span>
         <div class="why">Temperature is unrelated to context retention.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">A user said 'I moved to Pune' in March. In October your assistant still schedules in Bengaluru, because retrieval returns both 'lives in Bengaluru' (Jan) and 'moved to Pune' (Mar) and the model picks the first. What is the right fix?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Fine-tune the model on the user's history.</span>
+        <div class="why">Fine-tuning for a fact that changes is slow, expensive and impossible to update cleanly. Facts belong in a store you can edit.</div></li>
+      <li data-correct="false"><span class="opt">B) Ask the model to be careful about old information.</span>
+        <div class="why">Without timestamps or supersession, the model has no way to know which fact is newer.</div></li>
+      <li data-correct="true"><span class="opt">C) Treat memory as updatable facts: on write, find the conflicting fact, replace or supersede it, and keep timestamps so recency counts at retrieval.</span>
+        <div class="why">Correct. Memory is a curation problem. Appending every statement creates contradictions; a write path that updates the 'location' fact (and keeps the old one only as history) removes the conflict.</div></li>
+      <li data-correct="false"><span class="opt">D) Retrieve more memories (k=20) so the model sees everything.</span>
+        <div class="why">More retrieved memories means more contradictions and more noise, not fewer. The store itself needs fixing.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -125,6 +155,77 @@ memory, mem_vecs <span class="o">=</span> [], <span class="kc">None</span>
     <p>The hard part of agent memory isn’t storing — it’s deciding <em>what’s worth remembering</em> and <em>when to surface it</em>. Naively dumping every message into a vector store creates a swamp: retrieval returns near-duplicates, outdated facts, and irrelevant chatter that crowds the prompt. Mature memory systems do active curation: they extract <em>salient</em> facts (preferences, decisions, entities) rather than raw transcripts, deduplicate and update them (a new timezone overwrites the old), attach timestamps so recency can be weighed, and sometimes maintain a structured <span class="term">user profile</span> alongside free-text memories. Retrieval then pulls a small, high-quality set rather than a noisy haystack.</p>
     <p>Two more realities. First, memory inherits every RAG concern — chunking, embedding quality, retrieval evaluation — because it <em>is</em> RAG; if recall is poor, the agent “forgets” even though the fact is stored. Second, memory is where privacy and safety get serious: you’re persisting user data across sessions, so you need consent, retention limits, the ability to delete, and care that one user’s memories never leak into another’s context (Track 7). Treat the memory store as sensitive production data, not a convenience cache. Done well, memory is what makes an assistant feel like it actually knows you; done carelessly, it’s a liability that also gives worse answers.</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/03_rag_local.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/03_rag_local.py</code></pre>
+    <p><strong>What to look for:</strong> Long-term memory is RAG over the agent's own history, so the RAG lab is the closest fit. Replace the documents with a list of 'memories' (user facts with dates), ask a question, and look at the retrieved chunks and their scores. Add a newer fact that contradicts an older one and see whether both come back. The lab does not do summarisation or memory updates; that is the part you would add.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  out of the top 3. On this tiny corpus dense already wins; hybrid earns its keep on big corpora full of
+  near-identical codes (SKUs, error ids) that embeddings blur. Never assume: measure hit@k (lab 06).
+5) Grounded answers with citations, and a refusal when retrieval is weak
+  Q: I was charged twice for one order. What happens now?
+  A: If you were charged twice for one order, the duplicate payment is reversed automatically within 3 business days [pay-01#0]. If it is not reversed after 3 business days, raise a billing ticket with both transaction ids.
+     citations=[&#x27;pay-01#0&#x27;] all-cited-ids-were-retrieved=True
+  Q: Can I change my delivery address after the order has shipped?
+  A: No, you cannot change your delivery address after the order has shipped. According to [ship-03#0], the address can only be changed before the order is packed.
+     citations=[&#x27;ship-03#0&#x27;] all-cited-ids-were-retrieved=True
+  Q: Do you deliver to Antarctica by drone?
+  A: I don&#x27;t know based on our policies. (refused before calling the LLM: best cosine 0.27 &lt; 0.35)
+     citations=[] all-cited-ids-were-retrieved=True
+  Look: every factual sentence carries an id you can check; the off-topic question is refused
+  cheaply by the retrieval threshold, so the model never gets a chance to make something up.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/03_rag_local.txt">labs/outputs</a>. Source: <a href="../labs/03_rag_local.py">labs/03_rag_local.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> A conversation is at 9,000 tokens and your budget is 4,000. The last 8 turns are 2,400 tokens. How big can the running summary be, and what goes into it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>4,000 - 2,400 = 1,600 tokens, minus room for the system prompt and retrieved facts (say 600), leaves about <strong>1,000 tokens</strong> for the summary. Into it go decisions made, facts the user stated, open tasks and constraints ('budget under 50k', 'no flights before 9am'). Out go greetings, abandoned ideas and anything already captured as a long-term fact.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your support agent shares one vector store across tenants. A customer of company A sees a memory from company B. What failed, and how do you design it so it cannot happen again?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Retrieval relied on similarity alone with no hard tenant filter, so a semantically close memory from another tenant ranked high. Fix: every memory row carries tenant_id and user_id; the retrieval function takes those from the authenticated session (never from the model) and applies them as a mandatory filter before similarity ranking, or you use a separate index or namespace per tenant. Add a test that queries as tenant A for tenant B's unique strings and must return nothing. Treat this as a data breach: notify, purge, audit.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Design the memory write path for a personal assistant: what gets stored, when, and how stale or wrong memories are handled.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>After each session (not every turn, to save cost), run an extraction call that outputs candidate facts as JSON: subject, attribute, value, source turn, confidence. For each candidate, look up existing facts with the same subject and attribute: same value, refresh the timestamp; different value, supersede the old one and keep it as history; new attribute, insert. Skip low-confidence or sensitive categories unless the user asked to be remembered. Give facts a time-to-live by type (a preference lasts longer than a travel plan). Expose a 'what do you remember about me' view with delete. Evaluate with a set of conversations and expected final memory states.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is the difference between short-term and long-term memory in an agent?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Short-term memory is what is in the context window right now: recent turns, the current task's trace and any summary of earlier turns. It is fast but limited, and you pay for it on every call. Long-term memory lives outside the model, usually in a database or vector store; you write facts or episodes to it and retrieve the relevant ones into the prompt when needed. It is basically RAG over the agent's own history. Short-term memory is managed with trimming and summarisation; long-term memory with extraction, retrieval and updates.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> Context windows are now 1M tokens on some models. Why not just keep the whole history in context?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Cost, quality and privacy. Cost: you pay for every input token on every call, so a 200k-token history resent 50 times a day is real money even with prompt caching. Quality: models get worse at finding a specific fact as context grows, and old contradictory statements sit next to new ones with nothing marking which wins. Privacy: you are resending personal data in every request. A large window is useful headroom, but a curated memory with summaries and retrieval of a few relevant facts is cheaper, more accurate and easier to govern.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> How would you evaluate a memory system?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Build scripted multi-session conversations with known ground truth: facts stated, facts later changed, facts that should be forgotten. Measure write quality (did the store end up with the right facts and no contradictions), retrieval quality (recall@k of the needed fact for probe questions), and end-to-end answers (does the assistant use the current fact). Add negative tests: cross-user leakage must be zero, and deleted facts must never come back. Track memory size per user and retrieval latency over time, because memory stores grow without limit unless you prune them.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2310.08560" target="_blank" rel="noopener">MemGPT: Towards LLMs as Operating Systems — Packer et al., arXiv 2310.08560</a></li>
+      <li><a href="https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2" target="_blank" rel="noopener">all-MiniLM-L6-v2 model card — Hugging Face</a></li>
+      <li><a href="https://platform.claude.com/docs/en/about-claude/models/overview" target="_blank" rel="noopener">Models overview (pricing, context) — Claude Platform docs</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>Your agents can reason, act, plan, and remember. But wiring each tool and data source by hand is tedious and non-standard. A new protocol fixes that. Next: <strong>MCP (Model Context Protocol)</strong>.</p>
 

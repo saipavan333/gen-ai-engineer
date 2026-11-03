@@ -26,6 +26,13 @@
     <div class="box-label">Concept</div>
     <p><span class="term">PII</span> (personally identifiable information) is data that identifies a person — names, emails, phone numbers, addresses, government IDs, payment details. <span class="term">Redaction</span> (masking) replaces PII with placeholders before storing or sending. <span class="term">Data minimization</span> means collecting and retaining only what you actually need. <span class="term">Retention limits</span> mean deleting data after it’s served its purpose. Together these reduce both risk and regulatory exposure.</p>
   </div>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>Handling PII is like a school nurse keeping medical notes. She writes down only what she needs, keeps the notes in a locked drawer, blacks out names before sharing a report with the head teacher, and shreds old notes at the end of the year. Where it breaks: a paper note is in one place, but data in an LLM app gets copied into logs, caches, vector stores and maybe a model provider's servers, so 'shred it' means finding every copy.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <h2>Try a redactor</h2>
   <p>This catches common PII with simple patterns. Type (or use the sample) and watch it mask emails, phones, cards, and IDs before anything would be logged.</p>
@@ -58,6 +65,13 @@ log(<span class="f">redact</span>(raw))                 <span class="c"># "Email
 <span class="c"># For names/addresses and high accuracy, use Presidio (free) — a model-based detector.</span></code></pre>
     <p>Regex handles structured PII (emails, cards, IDs) well; names and addresses need a model-based detector like Presidio. The key habit is redacting at the <em>boundary</em> — the moment data would leave your control or land in a log.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Redacting 300,000 call-centre transcripts a day before they reach an LLM</div>
+    <p>Assumptions: an Indian insurer transcribes 300,000 calls a day, about 1,200 words each, and sends them to an LLM for summaries and quality scoring. Each call mentions on average 3 person names, plus phone numbers, policy numbers and sometimes card numbers.</p><ol><li><strong>Structured PII first.</strong> Regex for emails, phone numbers, policy IDs and cards. For cards, add a Luhn checksum test so a 16-digit policy number is not mislabelled as a card.</li><li><strong>Names and addresses need a model.</strong> Use a named-entity detector such as Microsoft Presidio (<a href="https://microsoft.github.io/presidio/">docs</a>). Name mentions per day: 300,000 x 3 = 900,000.</li><li><strong>Plan for misses.</strong> If your measured name recall is 95%, then 900,000 x 0.05 = 45,000 names a day still get through. Redaction lowers risk; it does not remove it. So the downstream stores still need access control and retention limits.</li><li><strong>Pseudonymise, do not just delete.</strong> Replace each name with a consistent token per call ([PERSON_1], [PERSON_2]) so the summary still reads sensibly. Keep the token-to-name map in a separate, tightly controlled store for 30 days in case an agent must follow up.</li><li><strong>Redaction points.</strong> Before the transcript is logged, before it is sent to the model provider, and on the model's output before it is stored, because the model can still echo values that slipped through.</li><li><strong>Measure it like a model.</strong> Hand-label 500 transcripts, report recall and precision per entity type each release, and track the missed-entity count per day as a risk number leadership understands.</li><li><strong>Deletion requests.</strong> Under GDPR Article 17 (<a href="https://gdpr-info.eu/art-17-gdpr/">text</a>) and similar laws, a customer may ask for erasure. Because every store is keyed by call ID, you can delete the transcript, its vectors, cached summaries and trace spans in one job.</li></ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -96,6 +110,35 @@ log(<span class="f">redact</span>(raw))                 <span class="c"># "Email
         <div class="why">Unrelated to privacy exposure.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Your regex redactor catches 99% of emails and cards. A privacy reviewer still flags the logs. What is the most likely gap?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Emails should be hashed instead of masked.</span>
+        <div class="why">Hashing can be useful for joins, but it does not address the categories regex misses entirely.</div></li>
+      <li data-correct="false"><span class="opt">B) The regex is too slow.</span>
+        <div class="why">Speed is not a privacy issue. The issue is what it cannot see.</div></li>
+      <li data-correct="false"><span class="opt">C) Logs should be stored as JSON.</span>
+        <div class="why">The format does not change whether PII is in them.</div></li>
+      <li data-correct="true"><span class="opt">D) Unstructured PII such as names, addresses and free-text health details, which regex cannot reliably detect.</span>
+        <div class="why">Correct. Structured identifiers have patterns; names and addresses do not. You need a model-based detector and still assume some misses.</div></li>
+    </ul>
+  </div>
+  <div class="quiz">
+    <p class="quiz-q">A customer asks you to delete their data. It was used to fine-tune a model last quarter. What is true?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Asking the model to forget the person works.</span>
+        <div class="why">A prompt cannot change weights. At best it hides outputs, unreliably.</div></li>
+      <li data-correct="false"><span class="opt">B) Fine-tuned models never memorise individual records.</span>
+        <div class="why">Models can memorise and reproduce rare strings from training data. You cannot assume they do not.</div></li>
+      <li data-correct="false"><span class="opt">C) Deleting the training file is enough.</span>
+        <div class="why">The model's weights were already updated from it. The file is only one copy.</div></li>
+      <li data-correct="true"><span class="opt">D) Removing it from the weights generally means retraining or re-fine-tuning without that data; deleting the source rows alone does not remove what the model learned.</span>
+        <div class="why">Correct. That is why personal data should be kept out of training sets in the first place, with clear lineage of what went in.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -120,6 +163,77 @@ log(<span class="f">redact</span>(raw))                 <span class="c"># "Email
     <p>Two broader points for production. First, the <strong>third-party question</strong> is often the biggest one: sending user data to an external model API means it leaves your infrastructure, so you must check the provider’s data-handling terms (do they train on it? how long do they retain it?), and for the most sensitive data, consider self-hosting an open model (the free local stack from this course) so nothing leaves at all.</p>
     <p>Second, <strong>privacy is a legal and trust issue, not just technical</strong> — regulations like GDPR/CCPA carry real penalties, and users’ trust is hard to win back once lost. Treat personal data as something you’re borrowing, not owning: collect the minimum, protect it in transit and at rest, redact it from logs and outputs, delete it when done, and be able to honor deletion requests. That posture keeps you both compliant and trustworthy.</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/08_llmops.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/08_llmops.py</code></pre>
+    <p><strong>What to look for:</strong> The lab's input and output guardrails include a simple redaction step before text is logged to the JSONL traces. Send a request containing an email address and a card-like number and check what lands in the trace file. Then try a name: a regex-based guard will usually miss it, which is exactly the gap this lesson describes.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  semantic similarity to the cached &#x27;track my order&#x27;: paraphrase=0.657  different intent (cancel)=0.523
+  semantic hits at threshold 0.9: 0
+  Look: a threshold low enough to catch the paraphrase would sit close to the wrong-intent score.
+  Serving &#x27;how to track&#x27; to someone who asked &#x27;how to cancel&#x27; is worse than a cache miss. Tune the
+  threshold on labelled pairs, scope caches per intent/tenant, and log every semantic hit for review.
+  traces written to traces.jsonl; first span:
+  {&quot;trace_id&quot;: &quot;54d669838c1f47758c9099aba0110b3f&quot;, &quot;name&quot;: &quot;chat qwen2.5:7b&quot;, &quot;gen_ai.operation.name&quot;: &quot;chat&quot;, &quot;gen_ai.provider.name&quot;: &quot;ollama&quot;, &quot;gen_ai.request.model&quot;: &quot;qwen2.5:7b&quot;, &quot;gen_ai.prompt.name&quot;: &quot;support_answer&quot;, &quot;gen_ai.prompt.version&quot;: 2, &quot;prompt.hash&quot;: &quot;5ab3d11ffb3b&quot;, &quot;user.id&quot;: &quot;u-123&quot;, 
+4) Prompt version rollout: v1 vs v2 on the same question, both traced
+  v1 hash=47ed77f326d6 -&gt; &quot;Yes, you can return innerwear as long as it meets your retailer&#x27;s return policy conditions, such as being unus&quot;
+  v2 hash=5ab3d11ffb3b -&gt; &#x27;Please contact support for specific return policies on innerwear.&#x27;
+  Check the facts too: store policy (labs/data/kb.json, ret-01) says innerwear cannot be returned. Neither
+  prompt has retrieval, so any &#x27;yes&#x27; is a hallucination; the version that defers to support is the safer one.
+  Look: the trace links every answer to an exact prompt hash and model, so a bad answer is debuggable,
+  and a rollout is a registry change you can roll back, not a code edit buried in a deploy.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/08_llmops.txt">labs/outputs</a>. Source: <a href="../labs/08_llmops.py">labs/08_llmops.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> List every place a single customer chat might be copied in a typical RAG support app.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>The chat database, application logs, trace spans (prompt and answer), the LLM provider's request logs (check their retention terms), any semantic or exact-match cache, analytics events, the eval or golden set if someone copied it there, support tickets created from the chat, backups of all of the above, and the vector store if conversations are indexed. Each is a place where redaction, access control and deletion must apply.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your team wants to send customer emails to a hosted LLM API. List the questions you must answer before turning it on.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>What data categories are in the emails (identifiers, financial, health)? Does the provider train on API data by default, and how long does it retain requests? In which region is data processed, and does that meet your legal requirements? Can you redact before sending without breaking the task? Do you have a data processing agreement? Can you delete or exclude a specific customer's data later? Is there a self-hosted or in-region option for the most sensitive subset? Write the answers down with links to the provider's terms, and review when the terms change.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Design a PII handling pipeline for an LLM-based analytics feature on a warehouse table with 50 million customer rows.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>1) Classify columns once with a scanner plus human review: direct identifiers, quasi-identifiers (pin code, birth date), free text. 2) Never send direct identifiers to the model; replace them with stable surrogate keys in a view. 3) For free-text columns, run batch redaction (regex plus NER) into a redacted copy, and log per-entity counts. 4) Grant the LLM job access only to the redacted view through a service account. 5) For aggregates, enforce minimum group sizes (for example, no group under 20 customers) to limit re-identification. 6) Outputs go through the same redactor before storage. 7) Deletion: a job keyed on customer ID removes rows from source, redacted copy, caches and indexes. 8) Measure redaction recall quarterly on a labelled sample.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> Where can PII leak in an LLM application?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>In logs and traces, which often store full prompts and answers. In calls to third-party model APIs, where data leaves your infrastructure. In model outputs, where the model may repeat sensitive input or reveal data retrieved for another user. In caches and vector stores that hold copies of conversations or documents. And in training or fine-tuning data, where it can be memorised. OWASP lists this as LLM02:2025 Sensitive Information Disclosure. The basic defences are data minimisation, redaction at each boundary, access control, retention limits and the ability to delete.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> How would you evaluate a PII redaction system?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Build a labelled set of realistic texts, with every PII span marked by type, including hard cases such as Indian names, addresses written in mixed scripts and numbers that look like cards but are not. Measure recall and precision per entity type, because missing a card number is worse than over-masking a city. Report misses as an expected count at production volume, for example 45,000 names a day, so the residual risk is clear. Re-run on each change to patterns or the NER model, and sample production output to check for drift.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> A multi-tenant SaaS RAG product must guarantee one customer's data never appears in another's answers. How do you design for that?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Enforce isolation in retrieval, not in the prompt. Every chunk carries a tenant ID, and every vector query includes a mandatory tenant filter applied by the server from the authenticated session, never from model output. Consider separate indexes or namespaces for large tenants. Caches are keyed by tenant. Traces and evals are partitioned by tenant with access control. Test it: automated cross-tenant probes in CI that query tenant A with tenant B's secrets and expect nothing. Monitor for any retrieved chunk whose tenant does not match the session, and treat one occurrence as an incident. Then add output scanning as a second layer.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://microsoft.github.io/presidio/" target="_blank" rel="noopener">Microsoft Presidio - data protection and de-identification SDK</a></li>
+      <li><a href="https://genai.owasp.org/llmrisk/llm022025-sensitive-information-disclosure/" target="_blank" rel="noopener">LLM02:2025 Sensitive Information Disclosure - OWASP Gen AI Security Project</a></li>
+      <li><a href="https://gdpr-info.eu/art-17-gdpr/" target="_blank" rel="noopener">Art. 17 GDPR - Right to erasure ('right to be forgotten')</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>We’ve protected your instructions and your data. Now we make sure the model doesn’t produce harmful content in the first place — or at least never ships it. Next: <strong>content safety</strong>.</p>
 

@@ -26,6 +26,13 @@
     <div class="box-label">Concept</div>
     <p><span class="term">Streaming</span> sends the model’s output token by token as it’s generated, rather than waiting for the whole response. <span class="term">Time to first token</span> (TTFT) is how long until the first word appears — the number users actually feel. <span class="term">Perceived latency</span> is the felt slowness, which streaming reduces even though total generation time is unchanged. Technically it’s delivered over a streaming transport (server-sent events or websockets).</p>
   </div>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>Imagine ordering a pizza where the shop waits until all eight slices are cut, boxed and driven over before you see anything. Now imagine the cook handing you each slice the moment it is ready. You get the whole pizza at the same time either way, but in the second case you are eating after one minute instead of staring at the door. Where it breaks: a pizza slice is useful alone, but a half-finished JSON object or SQL query is not, which is why machines usually want the whole box.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <h2>Feel the difference</h2>
   <div class="demo" id="st-demo">
@@ -54,6 +61,21 @@ stream <span class="o">=</span> ollama.<span class="f">chat</span>(
 <span class="c"># In a web app, push each chunk to the browser via Server-Sent Events (SSE) or a websocket.</span></code></pre>
     <p>Almost every model API and runtime supports a streaming mode like this. For any chat-style UI, it should be your default.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Streaming a chat assistant at 100,000 requests in the peak hour</div>
+    <p>Assumptions (ours, illustrative): 100,000 requests in the busiest hour, answers average 600 tokens, TTFT 0.8 s, decode 50 tokens/s per stream. Measure your own numbers; these are round figures to show the method.</p>
+<ol>
+<li><strong>Without streaming.</strong> Decode takes 600 / 50 = 12 s, plus 0.8 s TTFT. The user stares at a spinner for <strong>12.8 s</strong>, and many will assume it broke.</li>
+<li><strong>With streaming.</strong> First words at <strong>0.8 s</strong>. Total time is still 12.8 s, but the user is reading from 0.8 s on.</li>
+<li><strong>Does the stream outrun the reader?</strong> Assume a fast reader at about 250 words a minute, roughly 4 words or about 5-6 tokens a second. 50 tokens/s is about 9x faster than reading, so the reader never catches up with the text. Streaming hides almost all decode time.</li>
+<li><strong>How many open connections must the server hold?</strong> Use Little's law: concurrency = arrival rate x time in system. 100,000 / 3,600 s = 27.8 requests/s, each held open 12.8 s, so about <strong>356 concurrent streams</strong>. Your web tier, proxy and load balancer must allow that many long-lived SSE connections, and their idle timeouts must be longer than your slowest stream.</li>
+<li><strong>Safety checks need a plan.</strong> Output moderation wants full text. A common compromise: moderate each completed sentence before releasing it, which adds a buffer of one sentence (maybe 20-30 tokens, under 1 s at 50 tokens/s), and keep a retract path if the final check fails.</li>
+<li><strong>Measure the right number.</strong> Log TTFT and total time separately per request. On OpenTelemetry's GenAI conventions the streaming attribute is gen_ai.response.time_to_first_chunk; p95 TTFT is the number to alert on.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box note">
     <div class="box-label">When NOT to stream</div>
@@ -97,6 +119,22 @@ stream <span class="o">=</span> ollama.<span class="f">chat</span>(
         <div class="why">Same computation; only delivery changes.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Your streaming chat endpoint works on your laptop but in production long answers cut off after about a minute with no error from the model. What is the most likely cause?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) The model is slower when streaming.</span>
+        <div class="why">Generation speed is the same; only delivery changes.</div></li>
+      <li data-correct="false"><span class="opt">B) SSE only supports one message per connection.</span>
+        <div class="why">Server-sent events are designed for many messages over one open connection.</div></li>
+      <li data-correct="true"><span class="opt">C) A proxy or load balancer idle or request timeout is closing the long-lived streaming connection.</span>
+        <div class="why">Streams are long HTTP connections. Infrastructure between client and server often has timeouts tuned for short requests; raise them or send periodic keep-alive events.</div></li>
+      <li data-correct="false"><span class="opt">D) Streaming makes the model generate more tokens, which hits max_tokens.</span>
+        <div class="why">Streaming does not change how many tokens are generated. A max_tokens stop would show up as a finish reason, not a dropped connection.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -121,6 +159,77 @@ stream <span class="o">=</span> ollama.<span class="f">chat</span>(
     <p>There’s an engineering caveat to plan for: once you stream, you’ve started showing output before you’ve seen all of it — which complicates anything that needs the whole response. Output moderation (Track 7) and validation typically need the complete text, so a common pattern is to stream to the UI optimistically but be ready to retract/replace if a post-generation safety check fails, or to moderate in a way that can interrupt the stream.</p>
     <p>For structured output you simply don’t stream to the parser. So the rule of thumb: stream human-facing prose by default for the big UX win, but keep machine-consumed and safety-gated paths on a collect-then-process model. Used this way, streaming is the rare optimization that’s nearly free, dramatically improves the experience, and ships in an afternoon.</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/01_generate_and_sample.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/01_generate_and_sample.py</code></pre>
+    <p><strong>What to look for:</strong> The lab streams from Ollama and prints time-to-first-token and tokens/sec separately. Compare TTFT with total time: the gap between them is the wait streaming hides from the user. Ask for a 50-word answer and then a 500-word answer; TTFT barely moves while total time grows roughly in step with eval_count.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>2) Same prompt, temperature 1.0, three different seeds
+  seed=1: Bengaluru in July typically experiences warm to hot temperatures with occasional thunderstorms.
+  seed=2: Bengaluru in July typically experiences hot and humid weather with occasional thunderstorms.
+  seed=3: Bengaluru in July typically experiences hot and dry weather with temperatures often soaring above 30°C.
+  distinct outputs at T=1.0: 3  (sampling -&gt; usually 2-3)
+3) Same seed twice at T=1.0 -&gt; reproducible on the same machine
+  identical: True
+4) Tokens are what you pay for: prompt vs output token counts
+  short prompt: prompt_tokens=   36  output_tokens=  2  prefill_s=  0.52  answer=&#x27;Paris&#x27;
+  long prompt : prompt_tokens=  639  output_tokens=  2  prefill_s=  0.22  answer=&#x27;Paris&#x27;
+  Look: the long prompt costs many more input tokens and more prefill time for the same answer.
+5) Streaming: time-to-first-token (TTFT) vs total time
+  TTFT=0.36s  total=2.54s  chunks=16  decode_tokens_per_s=7.3
+  Look: streaming does not make generation faster; it shows the first words sooner.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/01_generate_and_sample.txt">labs/outputs</a>. Source: <a href="../labs/01_generate_and_sample.py">labs/01_generate_and_sample.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> An answer is 900 tokens, TTFT is 1.2 s and decode runs at 45 tokens/s. How long does the user wait before seeing anything, with and without streaming?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Decode: 900 / 45 = 20 s. Without streaming the user sees nothing for 1.2 + 20 = 21.2 s. With streaming the first words appear at 1.2 s. Same total, but the blank wait drops by about 94%.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> You expose a tool-calling agent to a browser. The model streams, but tool-call arguments arrive as partial JSON fragments. How do you stream to the user and still execute tools safely?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Split the stream by content type. Text deltas go straight to the browser. Tool-call deltas are buffered on the server until the provider signals the tool-use block is complete; only then parse the JSON, validate it against the tool's schema, and run the tool (with any approval gate). Meanwhile send the browser a status event like 'looking up your order' so the user sees progress. The why: humans can read partial text, but code cannot act on partial arguments, so you stream for people and collect-then-parse for machines inside the same response.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Using Little's law, size your streaming tier: peak 60 requests/s, average stream duration 15 s, and each server process can hold 500 open streams comfortably. How many processes do you need with 30% headroom, and what changes if you cut average answer length by a third?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Concurrency = 60 x 15 = 900 open streams. With 30% headroom: 900 x 1.3 = 1,170, so 1,170 / 500 = 2.34, round up to 3 processes. If answers are a third shorter and decode dominates duration, streams last about 10 s: 60 x 10 x 1.3 = 780, which still needs 2 processes (780 / 500 = 1.56). The lesson: output length drives not just cost and latency but how many connections you hold open, so it shapes infrastructure too.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is the difference between time to first token and total latency, and which does streaming improve?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Time to first token is how long until the first piece of the answer arrives; it is mostly the model reading the prompt (prefill) plus any queueing. Total latency adds the time to generate every output token (decode). Streaming does not change either number at the server. What it changes is when the user sees text: with streaming they start reading at TTFT instead of waiting for the full total. So streaming improves perceived latency, and if I want a lower TTFT itself I shorten the prompt, cache the prefix, or use a faster model.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> How would you implement streaming from an LLM through a FastAPI backend to a React front end?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>On the backend I call the provider with streaming on and wrap the iterator in a StreamingResponse with the text/event-stream media type, yielding one SSE event per text delta and a final event with usage and finish reason. I use an async client so one worker can hold many streams. On the front end I read the stream with EventSource or fetch and a reader, appending deltas to state. I handle disconnects by cancelling the upstream call so I stop paying for tokens nobody will read, and I log TTFT and total time per request.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> When would you deliberately not stream, even for a user-facing feature?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>When the output must be checked before anyone sees it, and a retraction would be worse than a wait. Examples: regulated advice where every answer must pass a compliance check, a reply that will be sent to a customer by email, or structured output a UI renders as a form. I also skip streaming for machine consumers: JSON, tool calls and SQL need the whole object. Middle grounds exist: stream a status or a progress bar, or release text sentence by sentence after a fast check. The decision is a trade between perceived speed and the cost of showing something wrong.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://platform.claude.com/docs/en/build-with-claude/streaming" target="_blank" rel="noopener">Streaming Messages - Anthropic</a></li>
+      <li><a href="https://docs.ollama.com/capabilities/streaming" target="_blank" rel="noopener">Streaming - Ollama docs</a></li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events" target="_blank" rel="noopener">Using server-sent events - MDN</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>Streaming makes responses feel instant. The next technique can make some responses <em>actually</em> instant — and free. Next: <strong>caching</strong>.</p>
 

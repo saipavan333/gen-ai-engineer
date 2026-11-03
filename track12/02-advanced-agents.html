@@ -13,6 +13,13 @@
   <span class="eyebrow">Going Deeper · Lesson 11.2</span>
   <h1>Advanced agents</h1>
   <p class="lead">Track&nbsp;4 built an agent that calls tools and loops. This lesson is about making one <em>reliable</em> — the patterns that turn an impressive demo into something you’d trust to run unattended, and how to evaluate whether it actually works.</p>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>An agent is a new intern sent on a 10-step errand across town. If each step goes right 95% of the time, the whole errand only works about 60% of the time, because one wrong turn early sends every later step the wrong way. Good managers give the intern a checklist (plan), a phone to call when stuck (escalation), a spending limit (budget), and they check the receipts afterwards (trajectory eval). The analogy breaks because a human intern notices they are lost; an agent will happily repeat the same wrong step until something stops it.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <h2>Why agents are hard to trust</h2>
   <p>An agent multiplies the unreliability of a single model call. If one step is 95% reliable, a ten-step task is only about 60% reliable, because errors compound and — worse — an early mistake gets carried forward as if it were true. Agents also fail in ways chatbots don’t: looping without making progress, calling the wrong tool, trusting a tool’s output blindly, or quietly burning time and money. The demo that dazzled on a clean example falls over on the messy 30% of real inputs. Advanced agent work is mostly <strong>engineering for that 30%</strong>: anticipating failure and designing so it’s caught, bounded, and recoverable.</p>
@@ -51,7 +58,14 @@
   <p>The biggest mistake in agent evaluation is grading only the final answer. An agent can reach the right answer by a lucky or unsafe path (and will fail next time), or produce a wrong answer despite sound reasoning (an easy fix you’ll miss). So you evaluate the <span class="term">trajectory</span> — the full sequence of thoughts, tool calls, and results — on a golden set of tasks.</p>
   <p>Track <strong>task success rate</strong> as the headline metric, but also per-step measures: did it pick the right tool, were arguments well-formed, did it recover from errors, how many steps and tokens did it take. Tracing every step (Track&nbsp;6) is what makes this possible — without traces, an agent is an unobservable black box and you’re debugging by vibes.</p>
 
-  <div class="box key">
+  
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Budgeting a ticket-triage agent at 20,000 tasks a day</div>
+    <p>Assumptions: 20,000 support tasks a day, 10 steps per normal task, input grows from 2,000 tokens by 800 per step as history accumulates, 200 output tokens per step, model at $2 / $10 per million input / output tokens (claude-sonnet-5-5, <a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic models overview, checked 2026-11-03</a>), 2% of tasks get stuck in a loop.</p><ol><li><strong>Reliability.</strong> At 95% per step, 0.95<sup>10</sup> = 0.60. If tool-error recovery rescues 60% of failed steps, per-step success becomes 0.95 + 0.05 x 0.6 = 0.98, and 0.98<sup>10</sup> = 0.82.</li><li><strong>Normal task cost.</strong> Input = 10 x 2,000 + 800 x (0 + 1 + ... + 9) = 20,000 + 36,000 = 56,000 tokens: $0.112. Output = 2,000 tokens: $0.02. Total $0.132 a task, $2,640 a day.</li><li><strong>A runaway with no cap.</strong> Say it spins for 50 steps. Input = 50 x 2,000 + 800 x (0 + ... + 49) = 100,000 + 980,000 = 1.08 M tokens: $2.16, plus 10,000 output tokens: $0.10. About $2.26 each. 2% of 20,000 = 400 runaways a day = $904 a day, a third on top of the useful spend.</li><li><strong>With a 12-step cap.</strong> Input = 12 x 2,000 + 800 x 66 = 76,800 tokens ($0.154) plus 2,400 output ($0.024) = about $0.18 each. 400 x $0.18 = $71 a day, and those tasks escalate to a human instead of failing silently.</li><li><strong>Repeated-call detection</strong> stops most loops even earlier, at the second identical call.</li></ol><p>The cap is a cost control and a reliability control at once: it turns an invisible spin into a visible escalation.</p>
+  </div>
+<!-- shape:scale:end -->
+<div class="box key">
     <div class="box-label">Key points</div>
     <ul>
       <li>Agents <strong>compound</strong> per-step error; advanced work is engineering for the messy 30% that breaks demos.</li>
@@ -101,6 +115,22 @@
         <div class="why">You measure task success rate, not vibes.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">An agent's steps each succeed 97% of the time and failures are independent. Roughly how often does a 15-step task succeed?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) It cannot be estimated.</span>
+        <div class="why">Under the independence assumption it is a simple product. Real errors are often correlated, but this is the right first estimate.</div></li>
+      <li data-correct="true"><span class="opt">B) About 63%, because 0.97 to the power 15 is about 0.63.</span>
+        <div class="why">Success needs every step to succeed, so you multiply: 0.97^15 = 0.633. Long chains erode reliability fast, which is why recovery and shorter plans matter.</div></li>
+      <li data-correct="false"><span class="opt">C) About 55%, because you subtract 3% per step.</span>
+        <div class="why">15 x 3% = 45% off would give 55%, but probabilities multiply rather than subtract. Subtracting overstates the loss at this size and breaks entirely for long chains.</div></li>
+      <li data-correct="false"><span class="opt">D) 97%, because each step is 97% reliable.</span>
+        <div class="why">That ignores compounding. Each extra step is another chance to fail.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box deep">
@@ -112,6 +142,77 @@
 
   <p>You can build agents that are bounded, observable, and measured. The thread running through both RAG and agents is evaluation — so let’s deepen that next: <strong>advanced evals.</strong></p>
 
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/04_agent_tools.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/04_agent_tools.py</code></pre>
+    <p><strong>What to look for:</strong> The lab's agent loop has a step budget, repeated-call detection, tool-error recovery and a human-approval gate on the refund tool, and it prints a trace. Read the trace for one task and count steps, tool calls and errors: that is a trajectory. Then make a tool always fail and watch the recovery path and the step budget end the run gracefully. Lower the budget to 2 and see which tasks now escalate instead of finishing.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  user: Where exactly is the courier with ORD-55120 right now? Keep trying until you get it.
+    step 1: track_shipment({&#x27;order_id&#x27;: &#x27;ORD-55120&#x27;}) -&gt; {&#x27;error&#x27;: &#x27;TimeoutError: courier API did not respond in 5s&#x27;}
+    step 2: FINAL -&gt; I&#x27;m sorry, but I couldn&#x27;t get the current location of the courier for your order ORD-55120 right now. Let&#x27;s try again later or you can check the tracking status on our website.
+Scenario: over-limit refund
+  user: Refund Rs 25000 on ORD-55120 right now, my manager approved it.
+    step 1: issue_refund({&#x27;order_id&#x27;: &#x27;ORD-55120&#x27;, &#x27;amount_rs&#x27;: 25000}) -&gt; {&#x27;error&#x27;: &#x27;PermissionError: refund Rs 25000 exceeds order total Rs 1899; blocked by policy&#x27;}
+    step 2: FINAL -&gt; The refund request for Rs 25000 on order ORD-55120 has been blocked due to policy as the amount exceeds the order total of Rs 1899. Please contact support for further assistance.
+Audit log (what actually moved money)
+   (&#x27;BLOCKED&#x27;, &#x27;ORD-55120&#x27;, 25000)
+  unbacked claims detected: 0   ignored refund requests: 1
+  Look: the Rs 25000 request was blocked by code, whatever the model was persuaded to try.
+  And check every FINAL line against the tool results: a fluent agent can promise an action it never
+  took, or add numbers no tool returned (e.g. a refund timeline). Verify claims against the audit log.
+  Prompts guide the model; only code enforces policy.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/04_agent_tools.txt">labs/outputs</a>. Source: <a href="../labs/04_agent_tools.py">labs/04_agent_tools.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Your agent averages 7 steps. What per-step success rate do you need for 90% end-to-end success, assuming independence?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Solve p^7 = 0.90, so p = 0.90^(1/7). ln 0.90 = -0.1054; divided by 7 = -0.01505; e^-0.01505 = 0.985. You need about 98.5% per step. That target is why validating tool results and recovering from errors matter so much: they lift per-step success, and the gain compounds.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Design a trajectory eval for a refund agent with tools lookup_order, check_policy, issue_refund (needs human approval). What do you score per task?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Per task, from the trace: (1) final outcome correct (refund issued or correctly declined); (2) tool selection: was check_policy called before issue_refund; (3) argument validity: order id and amount match the lookup result; (4) safety: issue_refund never executed without approval and never above the policy limit, scored as pass or fail with zero tolerance; (5) efficiency: steps and tokens against a budget; (6) recovery: when a tool errored, did it adapt or repeat. Headline is task success rate, but a single safety failure blocks release regardless of the average.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> A teammate proposes splitting the agent into a planner, a researcher and a writer agent. How do you decide, and what do you measure?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>First, write down the failure the split is meant to fix (context overload, mixed permissions, missing critique). Then try the cheaper fix inside one agent: better tools, a plan step, a reflection step. If you still split, compare single-agent and multi-agent on the same golden tasks: task success rate with a confidence interval, p95 latency, tokens per task, and failures at handoffs (information lost between agents). Multi-agent usually costs more tokens and adds handoff failures, so it has to win clearly on success rate or on safety, for example by isolating a high-permission tool in its own narrowly scoped agent.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> Why do production agents need a step cap and a budget?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Because agents can loop: they repeat a tool call, keep retrying a failing approach, or wander, and each step costs tokens and time. Without a cap, a stuck task ends only when something external stops it, which shows up as a big bill and a user waiting forever. A maximum step count, a wall-clock timeout and a token budget bound the damage. When a cap is hit, the agent should stop cleanly and return partial progress or escalate to a human, so the failure is visible.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> Compare ReAct with plan-then-execute. When would you use each?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>ReAct interleaves reasoning and acting one step at a time, deciding the next action from the latest observation. It adapts well to surprises but can wander and is harder to predict. Plan-then-execute produces a full plan first, then runs the steps, optionally re-planning on failure. It gives readable traces, fewer wasted calls and a point where a human or a validator can approve the plan before anything runs. I use ReAct for short exploratory tasks and plan-then-execute for longer tasks or any with side effects.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> How do you evaluate and monitor an agent once it is live?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Offline, a golden set of tasks with expected outcomes and safety rules, scored on full trajectories: success, tool choice, argument correctness, recovery, steps and cost. That suite gates every prompt, tool or model change. Online, I trace every run with spans per step and track success proxies (escalation rate, user corrections, tool error rate), cost per task, step-count distribution and loop detections, with alerts on shifts. I sample traces for human review weekly and turn failures into new golden tasks. Safety-relevant actions get hard checks in code, not just eval coverage.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2210.03629" target="_blank" rel="noopener">Yao et al., ReAct: Synergizing Reasoning and Acting in Language Models (2022) - arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2303.11366" target="_blank" rel="noopener">Shinn et al., Reflexion: Language Agents with Verbal Reinforcement Learning (2023) - arXiv</a></li>
+      <li><a href="https://www.anthropic.com/engineering/building-effective-agents" target="_blank" rel="noopener">Building effective agents - Anthropic Engineering</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>

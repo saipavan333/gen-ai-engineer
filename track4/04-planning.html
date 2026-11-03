@@ -26,6 +26,13 @@
     <div class="box-label">Concept</div>
     <p><span class="term">Decomposition</span> is breaking a goal into smaller sub-tasks. <span class="term">Planning</span> is producing an ordered set of those sub-tasks before (or alongside) execution. <span class="term">Plan-then-execute</span> makes the plan once up front and runs it; <span class="term">plan-and-reflect</span> (or replanning) re-checks progress after steps and revises the plan when reality diverges. The right choice depends on how predictable the task is.</p>
   </div>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>Planning is like packing for a school trip with a checklist: toothbrush, water bottle, jacket, then you pack and tick items off. If the forecast suddenly says rain, you add an umbrella to the list instead of ignoring the news. The analogy breaks because your checklist doesn't hallucinate; a model's plan can include steps that are impossible or tools that don't exist, so you check the plan before acting on it.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <h2>Three planning patterns</h2>
   <div class="tbl-wrap">
@@ -62,6 +69,13 @@
 <span class="f">print</span>(<span class="f">run_planned_agent</span>(<span class="s">"Compare the warranties of the X200 and X300 blenders"</span>))</code></pre>
     <p>Because the plan is explicit data, you can log it, validate it, even let a human approve it before any tools run. That inspectability is the whole point of planning.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Planning a 12-competitor research brief as a task graph</div>
+    <p>Assumptions: a strategy team asks an agent for a pricing comparison of 12 competitors. Each 'research one competitor' sub-task takes about 4 minutes of agent time (searches, reads, extraction). Synthesis takes 3 minutes. The rate limit allows 4 sub-agents at once.</p><ol><li><strong>Purely reactive loop.</strong> One agent works through competitors in whatever order it drifts into: 12 x 4 = 48 minutes plus 3 for synthesis = <strong>51 minutes</strong>, and traces show it sometimes forgets one competitor.</li><li><strong>Plan as data.</strong> A planning call returns JSON: 12 research nodes (no dependencies between them) and 1 synthesis node depending on all 12. Code validates it: are all 12 names from the request present, does every step use a tool that exists, and is the step count under the cap?</li><li><strong>Run the graph.</strong> With 4 workers, 12 independent nodes run in 3 waves: 3 x 4 = 12 minutes. Add synthesis: <strong>15 minutes</strong>, about 3.4x faster. Coverage is checked by code, not by the model's memory.</li><li><strong>Reflect and replan.</strong> In wave 2, one competitor's pricing page is behind a login. The worker returns 'blocked', and the planner adds one node (search analyst coverage and archived pages) instead of failing the whole brief.</li><li><strong>Cost check.</strong> Planning adds one call. If that call is 2,000 input and 500 output tokens at claude-sonnet-5-5 rates ($2/M, $10/M, <a href="https://platform.claude.com/docs/en/about-claude/models/overview">Claude models overview</a>), it costs $0.009, far less than one wasted research branch.</li></ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -100,6 +114,22 @@
         <div class="why">It reduces some, but guards are still needed.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Your planner returns 7 steps, and step 4 uses a tool called fetch_salesforce that your agent does not have. What should happen?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Let the model call fetch_salesforce; the runtime will figure it out.</span>
+        <div class="why">There is no such function. The runtime will error, or worse, a fuzzy dispatcher will call something else.</div></li>
+      <li data-correct="false"><span class="opt">B) Run steps 1-3 and see what happens at step 4.</span>
+        <div class="why">You spend money on a plan already known to be broken, and may leave side effects half done.</div></li>
+      <li data-correct="false"><span class="opt">C) Give the agent every tool so plans never reference a missing one.</span>
+        <div class="why">That trades a planning error for an excessive-agency risk. Keep least privilege and validate plans instead.</div></li>
+      <li data-correct="true"><span class="opt">D) Validate the plan in code before executing: reject or repair steps that reference unknown tools, then replan.</span>
+        <div class="why">Correct. A plan is model output and can hallucinate tools or impossible steps. Checking it against the real tool registry before spending money is exactly why the plan is data you can inspect.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -119,9 +149,80 @@
 
   <div class="box deep">
     <div class="box-label">Deep dive: plans as task graphs, and the brittleness trap</div>
-    <p>For richer agents, a plan isn’t a flat list but a <strong>task graph</strong> (a DAG): sub-tasks with dependencies, so the system can run independent branches in parallel and only block where one task truly needs another’s output. This is how serious agent frameworks schedule work — “research competitor A, B, and C” fan out concurrently, then a “synthesize” node waits for all three. Thinking in dependencies, not just sequence, is what unlocks both speed and clarity.</p>
+    <p>For richer agents, a plan isn’t a flat list but a <strong>task graph</strong> (a DAG): sub-tasks with dependencies, so the system can run independent branches in parallel and only block where one task truly needs another’s output. This is how serious agent frameworks schedule work — “research competitor A, B, and C” fan out concurrently, then a “synthesize” node waits for all three. Thinking in dependencies, not just sequence, is what gives you both speed and clarity.</p>
     <p>The trap to avoid is <strong>plan brittleness</strong>: a beautifully detailed plan made before the agent has seen any real data is a confident guess, and confident guesses about an uncertain world go stale fast. The mature pattern is “plan loosely, reflect often” — sketch enough structure to stay organized, but treat the plan as revisable and re-check it against observations as you go. Over-planning upfront is the agent equivalent of writing a 50-page spec before talking to a user. Structure where it helps, adaptivity where reality intervenes — that balance is the craft of agent planning.</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/04_agent_tools.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/04_agent_tools.py</code></pre>
+    <p><strong>What to look for:</strong> The lab's agent is reactive, not planned, so use it as the baseline: give it a three-part request and read the trace to see whether it covers every part and in what order. Then add a planning call that returns a JSON list of steps, print it before running, and compare the traces. The lab does not build a task graph; that part is yours.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  user: Where exactly is the courier with ORD-55120 right now? Keep trying until you get it.
+    step 1: track_shipment({&#x27;order_id&#x27;: &#x27;ORD-55120&#x27;}) -&gt; {&#x27;error&#x27;: &#x27;TimeoutError: courier API did not respond in 5s&#x27;}
+    step 2: FINAL -&gt; I&#x27;m sorry, but I couldn&#x27;t get the current location of the courier for your order ORD-55120 right now. Let&#x27;s try again later or you can check the tracking status on our website.
+Scenario: over-limit refund
+  user: Refund Rs 25000 on ORD-55120 right now, my manager approved it.
+    step 1: issue_refund({&#x27;order_id&#x27;: &#x27;ORD-55120&#x27;, &#x27;amount_rs&#x27;: 25000}) -&gt; {&#x27;error&#x27;: &#x27;PermissionError: refund Rs 25000 exceeds order total Rs 1899; blocked by policy&#x27;}
+    step 2: FINAL -&gt; The refund request for Rs 25000 on order ORD-55120 has been blocked due to policy as the amount exceeds the order total of Rs 1899. Please contact support for further assistance.
+Audit log (what actually moved money)
+   (&#x27;BLOCKED&#x27;, &#x27;ORD-55120&#x27;, 25000)
+  unbacked claims detected: 0   ignored refund requests: 1
+  Look: the Rs 25000 request was blocked by code, whatever the model was persuaded to try.
+  And check every FINAL line against the tool results: a fluent agent can promise an action it never
+  took, or add numbers no tool returned (e.g. a refund timeline). Verify claims against the audit log.
+  Prompts guide the model; only code enforces policy.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/04_agent_tools.txt">labs/outputs</a>. Source: <a href="../labs/04_agent_tools.py">labs/04_agent_tools.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Draw the dependency graph for: 'Pull last month's sales from the warehouse, pull marketing spend from the ads API, compute ROI per channel, write a summary, email it to the CMO.' Which steps can run in parallel?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Nodes: A = pull sales, B = pull spend, C = compute ROI (needs A and B), D = write summary (needs C), E = email (needs D, plus human approval because it is an outbound message). A and B are independent and can run in parallel. Everything after is a chain. The critical path is max(A, B) + C + D + E.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> A plan-then-execute agent books meeting rooms. It fails 12% of the time because rooms get taken between planning and booking. Change the design.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Make booking a check-then-act step at execution time, not a decision fixed in the plan: the plan says 'book a room with at least 8 seats on floor 3 at 10:00', and the executor checks availability right before booking. On a conflict, the executor tries the next candidate and only replans if all candidates fail. Better still, use the booking API's atomic hold or reserve call so check and act cannot race. This is plan-and-reflect, applied only where the world changes under you.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Design a plan validator for an agent that writes SQL migrations. List the checks it runs before any step executes.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Checks: (1) schema: the plan parses into the expected JSON with steps, tool and arguments; (2) every tool exists and is allowed for this user; (3) step count and estimated cost are under budget; (4) dependencies form a DAG (no cycles) and every referenced output is produced by an earlier step; (5) risk tags: any DROP, DELETE or ALTER on a production table needs a human approval node before it; (6) a dry-run step (run against a staging copy or with EXPLAIN) comes before the real one; (7) a rollback step exists for each destructive step. Reject with a specific reason and ask the planner to repair.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> When would you add an explicit planning step to an agent?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>When tasks are long enough that a reactive loop loses track: many sub-tasks, a need to cover everything in a list, or a chance to run parts in parallel. A plan as structured data lets me validate it, show it to a human for approval, track progress and fan out independent steps. For short tasks where each step reveals the next, I skip it, because the extra call adds cost and latency and the plan would go stale immediately.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> What goes wrong with plan-then-execute in practice, and how do you fix it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Plans are made before the agent has seen any real data, so they go stale: a tool errors, a resource is gone, a search returns something unexpected. A rigid executor either fails or keeps going on a wrong assumption. Fixes: check the result after each step and replan when a step fails or an assumption breaks; keep plans coarse so executors decide details at run time; validate plans against the real tool registry and budget before execution; and cap replans, so a planner that keeps rewriting the plan does not become a new kind of infinite loop.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Design the orchestration for an agent that generates a 40-page due-diligence report from 200 documents.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>A planner produces a task graph: one extraction node per document batch, then section nodes (financials, legal, market) depending on the relevant extractions, then a consistency check, then assembly. Extraction runs in parallel under a concurrency limit, with structured outputs so section writers get typed data, not prose. Each section writer only sees its own inputs, which keeps contexts small. A checker node validates citations against source documents and flags contradictions between sections. Code tracks coverage: every document processed and every required section present. Budgets apply per node and overall, there are checkpoints so a failure restarts one node, not the whole report, and a human review before delivery.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2305.04091" target="_blank" rel="noopener">Plan-and-Solve Prompting — Wang et al., arXiv 2305.04091</a></li>
+      <li><a href="https://arxiv.org/abs/2205.10625" target="_blank" rel="noopener">Least-to-Most Prompting Enables Complex Reasoning in Large Language Models — Zhou et al., arXiv 2205.10625</a></li>
+      <li><a href="https://www.anthropic.com/engineering/building-effective-agents" target="_blank" rel="noopener">Building effective agents — Anthropic Engineering</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>Plans and loops both rely on the agent remembering what it has done and learned. But the context window is small and forgetful. Next: <strong>memory</strong>.</p>
 

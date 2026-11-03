@@ -26,6 +26,13 @@
     <div class="box-label">Concept</div>
     <p><span class="term">Model routing</span> chooses which model handles each request. A <span class="term">router</span> can be rules (length, keywords, task type), a small classifier, or an LLM call itself. A <span class="term">cascade</span> is a common pattern: try the cheap model first, and escalate to a bigger one only if the cheap model is unsure or its output fails a check. The goal is to move along the <span class="term">cost/quality frontier</span> — getting most of the quality for a fraction of the cost.</p>
   </div>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>A hospital does not send every patient straight to the head surgeon. A nurse at the front desk checks each person: a scraped knee goes to the nurse practitioner, a broken arm goes to a doctor, and only the rare hard case goes to the surgeon. If the practitioner finds it is worse than it looked, they pass the patient up. Where it breaks: a triage nurse can examine the patient, while a router often only sees the words of the question, so it misjudges some hard cases as easy.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <div class="box example">
     <div class="box-label">Worked example — a simple router and a cascade (free)</div>
@@ -46,6 +53,20 @@
 <span class="c"># Measure: what % escalates, and is quality on the small path acceptable? (Track 6)</span></code></pre>
     <p>Even a crude router captures most of the savings, because the easy majority is genuinely easy. The art is tuning the threshold so you don’t send hard queries to the small model (quality drop) or easy ones to the big model (wasted money).</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Routing an e-commerce assistant at 1 million requests a day</div>
+    <p>Assumptions (ours): 1,000,000 requests a day, 1,500 input and 200 output tokens each, and an offline eval showing 75% of traffic (order status, returns, sizing) is answered at your quality bar by the small tier. Prices from <a href="https://platform.claude.com/docs/en/about-claude/models/overview" target="_blank" rel="noopener">Anthropic models overview</a>.</p>
+<ol>
+<li><strong>Everything on claude-sonnet-5-5 ($2 / $10).</strong> 1,500 x $2/M + 200 x $10/M = $0.003 + $0.002 = $0.005 a request, <strong>$5,000 a day</strong>.</li>
+<li><strong>Classifier routing.</strong> 75% to claude-haiku-5-5 (from $0.10 / $0.50): 1,500 x $0.10/M + 200 x $0.50/M = $0.00025 a request; 750,000 x $0.00025 = $187.50. 25% to Sonnet: 250,000 x $0.005 = $1,250. Total <strong>$1,437.50 a day</strong>, a 71% cut.</li>
+<li><strong>Cascade instead.</strong> Send everything to Haiku first, then escalate when a check fails (schema invalid, low retrieval score, refusal). Suppose 30% escalate. Haiku for all: 1,000,000 x $0.00025 = $250. Sonnet for 300,000: $1,500. Total <strong>$1,750 a day</strong> (65% cut), and escalated users pay a latency tax for the double call.</li>
+<li><strong>Price the router's mistakes.</strong> If the classifier wrongly sends 2% of all traffic (20,000 hard queries a day) to Haiku and each bad answer costs a $3 support contact (assumption), that is 20,000 x $3 = $60,000 a day, far more than the $3,562 saved. Routing only works if the misroute rate is measured and tiny, or if a cheap check catches misroutes.</li>
+<li><strong>What to measure every week.</strong> Escalation rate, quality on each path against the golden set, and cost per resolved conversation (not per call). Research systems like FrugalGPT and RouteLLM report large savings at similar quality, but on their benchmarks; your traffic decides yours.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <h2>Route by task, not by habit</h2>
   <p>Compare sending everything to your best model against routing each task to the cheapest one that can still do it.</p>
@@ -89,6 +110,22 @@
         <div class="why">That misses the cost savings routing provides.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">A router sends 70% of traffic to a cheap model and the average eval score drops only 1 point. Why can this still be a bad change?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) The average can hide a large drop on a small but important slice, such as refunds or legal questions, that the cheap model gets wrong.</span>
+        <div class="why">Always break quality down by intent or segment. A 1-point average dip can be a 30-point collapse on 3% of traffic that carries most of the business risk.</div></li>
+      <li data-correct="false"><span class="opt">B) A 1-point drop is always within noise, so the change is fine.</span>
+        <div class="why">Whether it is noise depends on sample size, and the real risk is how the drop is distributed, not its average.</div></li>
+      <li data-correct="false"><span class="opt">C) Routing increases latency for every request.</span>
+        <div class="why">A rules or small-classifier router adds little latency, and the cheap path is often faster. Cascades add latency only on escalation.</div></li>
+      <li data-correct="false"><span class="opt">D) Cheap models are always worse, so any routing is bad.</span>
+        <div class="why">For easy, well-defined tasks small models often meet the bar. The point is to measure where they do and do not.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -112,6 +149,77 @@
     <p>Two practical extensions. First, routing composes with everything else in this track — you cache first (skip the call), then route (right-size the call), then within the chosen model trim tokens and stream. Second, the router itself has a cost and an error rate: a cheap heuristic is free but coarse; an LLM-as-judge router is accurate but adds a call; a small trained classifier is a nice middle.</p>
     <p>Choose the router sophistication that pays for itself, and — as always — <em>measure</em>: track the escalation rate, the cost saved, and the quality on each path, so routing is a tuned, monitored system rather than a guess. Done well, model routing is frequently the second-biggest cost lever after caching, and it lets you offer frontier-grade quality where it matters while keeping the bill sane.</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/06_evals.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/06_evals.py</code></pre>
+    <p><strong>What to look for:</strong> The lab does not contain a router. What it gives you is the tool that decides whether routing is safe: the per-case regression gate comparing two variants. Point the two variants at two model sizes (for example qwen2.5:7b and a smaller local model if you have one) and count the cases where the small one fails; that per-case failure list is your misroute risk.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  against human labels before you trust it (report agreement and Cohen&#x27;s kappa, not vibes).
+5) Judge position bias: same pair, swapped order
+  How long do card refunds take?      order1 picked B, order2 picked B  -&gt; FLIPPED
+  Return window for electronics?      order1 picked B, order2 picked A  -&gt; consistent
+  Express shipping price?             order1 picked B, order2 picked A  -&gt; consistent
+  When is standard shipping free?     order1 picked A, order2 picked B  -&gt; consistent
+  Duplicate charge reversal time?     order1 picked A, order2 picked B  -&gt; consistent
+  consistent verdicts: 4/5   correct in both orders: 2/5
+  Look: with no reference passage in the judge prompt, the judge has to guess which number is right.
+  Always judge both orders and count a win only when both agree; give the judge the reference.
+6) How wide is the error bar on 12 cases?
+  v1 accuracy 92%, 95% normal-approx interval +/- 16%  (n=12)
+  At n=400 the same accuracy would be roughly +/- 2.7%
+{&quot;v1_correct&quot;: 0.917, &quot;regressions&quot;: 12, &quot;judge_consistent&quot;: 4}</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/06_evals.txt">labs/outputs</a>. Source: <a href="../labs/06_evals.py">labs/06_evals.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Requests average 2,000 input and 300 output tokens. What is the per-request saving of moving one request from claude-sonnet-5-5 to claude-haiku-5-5?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Sonnet: 2,000 x 2/M + 300 x 10/M = $0.004 + $0.003 = $0.007. Haiku (up-to-100K-token rate): 2,000 x 0.10/M + 300 x 0.50/M = $0.0002 + $0.00015 = $0.00035. Saving $0.00665 a request, about 95%.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your cascade escalates when the small model's JSON fails validation. Escalation rate is 8% in testing but 35% in production. List three things you would check, in order.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>1) The traffic mix: pull the escalated traces and group by intent; production may contain question types the test set lacked. 2) The check itself: is validation failing on harmless formatting (extra fields, trailing text) that a constrained-decoding schema or a lenient parser would fix? 3) The small model's inputs: are production prompts longer (more history or context) so the small model loses the instructions? Fixes follow from the finding: add the new intents to the golden set, use schema-constrained output, or route long-context requests straight to the big model.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Write the break-even condition for a cascade versus always using the big model, with c_s and c_b the per-request costs and e the escalation rate. With c_s = $0.00035 and c_b = $0.007, what escalation rate makes the cascade pointless?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Cascade cost per request = c_s + e x c_b. Big-only cost = c_b. The cascade wins when c_s + e x c_b < c_b, i.e. e < 1 - c_s / c_b. Here 1 - 0.00035 / 0.007 = 1 - 0.05 = 0.95. So on cost alone the cascade wins unless 95% of requests escalate. In practice the limit is latency and quality, not cost: escalated users wait for two calls, so you also cap e by your p95 latency target.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is model routing and why do teams use it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Routing picks which model handles each request. Most traffic is easy, like greetings, lookups and short classifications, and a small model handles it well at a fraction of the price and often faster. Hard requests, like multi-step reasoning or long documents, go to a bigger model. The router can be simple rules, a small trained classifier, or a cascade that tries the small model first and escalates on a failed check. Teams use it because it can cut cost a lot while keeping quality where it matters, as long as they measure quality per path.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> How do you build and validate a routing classifier?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>I label a few thousand real requests with the cheapest model that meets the bar, by running both models on them and judging the outputs against the golden-set rubric. That gives training labels. I train a small classifier on cheap features or embeddings, and I tune its threshold for low false-easy rate, because sending a hard query to the small model is the costly error. I validate on a held-out set by segment, then canary it on a slice of live traffic and compare thumbs-down, escalations and cost per resolved task against control before going wide.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Your provider releases a new small model that is cheaper and better. How do you adopt it without breaking the router?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>The router's thresholds were tuned for the old small model, so the routing boundary is now wrong in a safe direction: we are probably sending too much to the big model. I run the new model through the golden set by intent, relabel which intents it handles, and retune the threshold. Then I canary it with both quality and cost dashboards and keep the old route as instant rollback. I also pin model IDs rather than aliases so the switch is a deliberate change that goes through the eval gate, not a silent upgrade.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2305.05176" target="_blank" rel="noopener">FrugalGPT: How to Use Large Language Models While Reducing Cost and Improving Performance - arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2406.18665" target="_blank" rel="noopener">RouteLLM: Learning to Route LLMs with Preference Data - arXiv</a></li>
+      <li><a href="https://platform.claude.com/docs/en/about-claude/models/overview" target="_blank" rel="noopener">Models overview (tiers and prices) - Anthropic</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>So far we’ve optimized <em>around</em> the model. Now we make the model itself cheaper and faster to run — crucial when you self-host. Next: <strong>quantization</strong>.</p>
 

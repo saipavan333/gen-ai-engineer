@@ -26,6 +26,13 @@
     <div class="box-label">Concept</div>
     <p>A <span class="term">tool</span> is a function the model may invoke. You expose it with a <span class="term">tool schema</span>: a name, a plain-English description, and a typed parameter spec (JSON schema). When the model chooses a tool, it returns a <span class="term">tool call</span> — the chosen name plus arguments. Your code runs the function and returns a <span class="term">tool result</span>, which you append to the conversation so the model can use it. Modern model APIs (and runtimes like Ollama) support this natively, constraining the output so the tool call is always valid.</p>
   </div>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>Tool calling is like a kid filling in a request slip at a school library: 'Book: Harry Potter 3. Name: Asha. Class: 7B.' The kid can't walk into the back room; the librarian reads the slip, checks it, fetches the book and hands it over. The analogy breaks because a kid rarely makes up a book that doesn't exist, while a model will happily fill the slip with a plausible but invented order ID, so the librarian (your code) must check every field.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <figure class="diagram">
     <img src="../assets/diagrams/t4-tool-schema.svg" alt="The model picks from a tool registry: a list of tools get_weather(city), web_search(query), send_email(to, body) is shown to the LLM, which chooses one and fills its arguments, e.g. get_weather(city='Paris'). Each tool has a name, description, and typed parameters, and the model reads them and decides.">
@@ -77,6 +84,13 @@ final <span class="o">=</span> ollama.<span class="f">chat</span>(model<span cla
 <span class="f">print</span>(final[<span class="s">"message"</span>][<span class="s">"content"</span>])   <span class="c"># -> "It's 18°C and clear in Paris."</span></code></pre>
     <p>The <code>tool</code>-role message is how the result re-enters the conversation. From here, wrapping this in a <em>loop</em> (so the model can call tools repeatedly) gives you a full agent — exactly Lesson 4.3.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Tool-argument hallucination across 2 million calls a day</div>
+    <p>Assumptions: an e-commerce assistant makes 2,000,000 tool calls a day across tools like <code>get_order(order_id)</code> and <code>refund(order_id, amount)</code>. Offline replay shows 0.5% of calls carry bad arguments: invented order IDs, dates like 'next Tuesday', amounts as strings.</p><ol><li><strong>Size the problem.</strong> 2,000,000 x 0.005 = <strong>10,000 bad calls a day</strong>. Without validation, some hit your database with nonsense; worse, an invented-but-valid order ID can belong to another customer.</li><li><strong>Validate at the boundary.</strong> Check types and formats against the JSON schema, then check business rules in code: does this order exist, and does it belong to the logged-in customer? The model never gets to decide ownership.</li><li><strong>Return the error as the tool result.</strong> 'order_id A-99812 not found for this customer; ask the user for the order number.' Assume one retry fixes 90% of them: 9,000 recover, <strong>1,000 a day</strong> escalate to a clarifying question.</li><li><strong>Price the retries.</strong> A retry resends about 2,500 input tokens and produces 150 output tokens. At claude-sonnet-5-5 rates ($2/M in, $10/M out, <a href="https://platform.claude.com/docs/en/about-claude/models/overview">Claude models overview</a>): $0.005 + $0.0015 = $0.0065 per retry. 10,000 retries = <strong>$65 a day</strong>, cheap next to one wrong refund.</li><li><strong>Fix the cause.</strong> Group the 10,000 by tool and argument. If most bad dates come from one tool, change the schema to a strict ISO date with an example in the description. Anthropic calls this making tools harder to misuse (poka-yoke) in <a href="https://www.anthropic.com/engineering/building-effective-agents">Building effective agents</a>.</li></ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -115,6 +129,22 @@ final <span class="o">=</span> ollama.<span class="f">chat</span>(model<span cla
         <div class="why">Only your code, if it chooses to honor the call.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Your model calls get_order(order_id='A-10442') and that order exists, but it belongs to a different customer. Where should this be caught?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) In the system prompt: 'Only look up the user's own orders.'</span>
+        <div class="why">A prompt is a request to a probabilistic model and can be overridden by injection. Access control has to live outside the model.</div></li>
+      <li data-correct="true"><span class="opt">B) In your tool code, by checking the order's owner against the authenticated user before returning anything.</span>
+        <div class="why">Correct. The schema can only check shape. Ownership is a business rule that must be enforced in code using the session's identity, never the model's claim.</div></li>
+      <li data-correct="false"><span class="opt">C) In the JSON schema, by adding a regex for order IDs.</span>
+        <div class="why">A regex checks the format. A real ID with the right format still passes, so the leak still happens.</div></li>
+      <li data-correct="false"><span class="opt">D) Nowhere: the model only calls tools with IDs the user mentioned.</span>
+        <div class="why">Models invent plausible IDs and can be steered by injected text. 'The model won't do that' is not a control.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -143,6 +173,83 @@ final <span class="o">=</span> ollama.<span class="f">chat</span>(model<span cla
   </ul>
     <p>And treat tools as a serious security boundary. The model decides which tool to call and with what arguments, and that decision can be influenced by untrusted input (a malicious document, a crafted user message — prompt injection, Track 7). So: never expose a dangerous tool (delete data, send money, run shell commands) without validation and, for high-stakes actions, human approval (Lesson 4.8). Whitelist tools per context, validate every argument, and assume the model’s tool calls can be adversarially steered. The convenience of “the model can just call your functions” is also its risk — give it only capabilities you’d be comfortable a stranger triggering.</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/04_agent_tools.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/04_agent_tools.py</code></pre>
+    <p><strong>What to look for:</strong> Find the trace lines where a tool returns an error and the next model turn retries with corrected arguments: that is the tool result feeding back as a tool-role message. Then break a tool on purpose (make it raise for one input, or remove a required field from its schema) and watch how the trace changes from a clean call to an error and a recovery.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  user: Where exactly is the courier with ORD-55120 right now? Keep trying until you get it.
+    step 1: track_shipment({&#x27;order_id&#x27;: &#x27;ORD-55120&#x27;}) -&gt; {&#x27;error&#x27;: &#x27;TimeoutError: courier API did not respond in 5s&#x27;}
+    step 2: FINAL -&gt; I&#x27;m sorry, but I couldn&#x27;t get the current location of the courier for your order ORD-55120 right now. Let&#x27;s try again later or you can check the tracking status on our website.
+Scenario: over-limit refund
+  user: Refund Rs 25000 on ORD-55120 right now, my manager approved it.
+    step 1: issue_refund({&#x27;order_id&#x27;: &#x27;ORD-55120&#x27;, &#x27;amount_rs&#x27;: 25000}) -&gt; {&#x27;error&#x27;: &#x27;PermissionError: refund Rs 25000 exceeds order total Rs 1899; blocked by policy&#x27;}
+    step 2: FINAL -&gt; The refund request for Rs 25000 on order ORD-55120 has been blocked due to policy as the amount exceeds the order total of Rs 1899. Please contact support for further assistance.
+Audit log (what actually moved money)
+   (&#x27;BLOCKED&#x27;, &#x27;ORD-55120&#x27;, 25000)
+  unbacked claims detected: 0   ignored refund requests: 1
+  Look: the Rs 25000 request was blocked by code, whatever the model was persuaded to try.
+  And check every FINAL line against the tool results: a fluent agent can promise an action it never
+  took, or add numbers no tool returned (e.g. a refund timeline). Verify claims against the audit log.
+  Prompts guide the model; only code enforces policy.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/04_agent_tools.txt">labs/outputs</a>. Source: <a href="../labs/04_agent_tools.py">labs/04_agent_tools.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Write a JSON schema for a tool search_flights(origin, destination, date, max_price). Make origin and destination 3-letter IATA codes and date an ISO date.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p><pre><code>{"type":"object",
+ "properties":{
+  "origin":{"type":"string","pattern":"^[A-Z]{3}$","description":"IATA code, e.g. HYD"},
+  "destination":{"type":"string","pattern":"^[A-Z]{3}$"},
+  "date":{"type":"string","format":"date","description":"YYYY-MM-DD"},
+  "max_price":{"type":"number","minimum":0}},
+ "required":["origin","destination","date"]}</code></pre>max_price is optional. The patterns and the example in the description cut format errors, but you still validate in code: 'format' is not enforced by every runtime, and a valid-looking date can be in the past.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your agent has two tools, search_kb and search_tickets, and picks the wrong one 15% of the time. Rewrite their descriptions to fix it and say how you would prove the fix worked.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>search_kb: 'Search published help-centre articles. Use for how-to and policy questions. Do not use for a specific customer's history.' search_tickets: 'Search this customer's past support tickets. Use when the user refers to an earlier issue or a ticket number. Do not use for general how-to questions.' Each says when and when not. Prove it with a labelled set of 200 queries with the correct tool, and measure tool-selection accuracy before and after. Keep the set as a regression test, because every new tool can reintroduce confusion.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Your refund tool times out sometimes after the payment provider has already processed the refund. The agent retries and the customer is refunded twice. Fix it.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Make the action idempotent. Generate an idempotency key in your code (for example a hash of ticket_id + order_id + amount), not by the model, and send it with the refund request. Payment providers that support idempotency keys return the original result for a repeated key instead of charging again. Also record the refund intent in your own database before calling out, and on timeout check status before retrying. Return 'refund pending, status unknown' to the model instead of a bare error so it does not decide to try again.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> Walk me through what happens in one tool call, end to end.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>I send the model the conversation plus a list of tool schemas: name, description and JSON-schema parameters. The model replies with a tool call instead of text: the tool name and arguments as JSON. My code parses that, validates the arguments, runs the real function and appends the result to the conversation as a tool-role message tied to that call. Then I call the model again, and it either calls another tool or writes the answer. The model never executes anything. It only asks, and my code decides whether to honour the request.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> How do you handle tool errors so the agent recovers instead of crashing or looping?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Catch the exception at the tool boundary and return a short, specific error as the tool result: what failed and what the model can do about it, like 'date must be YYYY-MM-DD' or 'customer not found, ask for their email'. Vague errors like 'error 500' make models retry the same call. I cap retries per tool and detect repeated identical calls, so a permanently broken tool ends the run with a clear message instead of burning the step budget. For transient errors such as timeouts, I retry in code with backoff before the model ever sees them, but only for idempotent tools.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> You are exposing 40 internal APIs as tools to one agent. How do you design the tool layer?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>I would not expose 40 tools at once. Selection accuracy drops and every schema costs tokens on every call. I would group by task and load a small toolset per context, with a router or a tool-search step for the rest. Each tool gets a sharp description with when-not-to-use guidance and strict typed parameters; I prefer enums and IDs over free text. Business rules and authorisation live in the tool code, using the session's identity. Write tools are separated from read tools and gated by risk, and side-effecting tools take idempotency keys. Then I build a labelled tool-selection eval and run it on every change to schemas or descriptions.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://docs.ollama.com/capabilities/tool-calling" target="_blank" rel="noopener">Tool calling — Ollama docs</a></li>
+      <li><a href="https://www.anthropic.com/engineering/building-effective-agents" target="_blank" rel="noopener">Building effective agents — Anthropic Engineering</a></li>
+      <li><a href="https://genai.owasp.org/llmrisk/llm062025-excessive-agency/" target="_blank" rel="noopener">LLM06:2025 Excessive Agency — OWASP GenAI Security Project</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>One tool call is useful; the real power comes from <em>repeating</em> — letting the model call tools, see results, and decide again until the goal is met. That’s the agent loop. Next: <strong>the agent loop (ReAct)</strong>.</p>
 

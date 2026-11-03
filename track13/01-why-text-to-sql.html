@@ -13,6 +13,13 @@
   <span class="eyebrow">Structured Data &amp; Text-to-SQL · Lesson 9.1</span>
   <h1>Why text-to-SQL (and where it breaks)</h1>
   <p class="lead">Most of the world’s valuable data lives in databases, and most of the people who need answers can’t write SQL. Text-to-SQL closes that gap — and it’s the single most natural place for a data engineer to shine in GenAI. This lesson frames the problem, the payoff, and the honest failure modes.</p>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>Text-to-SQL is a translator between a manager and a filing clerk. The manager says "how much did Canada spend?"; the translator turns it into the clerk's exact instructions: which drawer, which folders, how to add up. A good translator knows the filing system cold. The analogy breaks because a human translator who is unsure asks "which Canada figure, gross or net?"; a model will usually just pick one and hand back a confident number.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <h2>The problem it kills</h2>
   <p>In every company there’s a queue: a marketer wants “revenue by region last quarter,” a support lead wants “tickets reopened more than twice,” an exec wants “top 10 customers by lifetime value.” Each of these is a five-minute SQL query — but only for the handful of people who know SQL and the schema. Everyone else waits on that bottleneck. <span class="term">Text-to-SQL</span> is a system that takes a plain-English question, writes the SQL for it, runs it against the database, and returns the answer in words. It turns “ask the data team and wait two days” into “ask and get an answer now.”</p>
@@ -54,7 +61,14 @@
   <p><strong>Wrong-but-runs.</strong> The scariest case: the SQL executes without error but computes the wrong thing (e.g., double-counts through a bad join), returning a confident, wrong number. <strong>Scale &amp; dialect.</strong> Hundreds of tables won’t fit in the prompt, and SQL dialects differ (SQLite vs Postgres vs BigQuery).</p>
   <p>Each of these has a mitigation you’ll learn — schema selection, validation, self-correction, and evaluation — but a system that ignores them is a liability, because <em>a wrong number that looks right is worse than an error</em>.</p>
 
-  <div class="box key">
+  
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Is text-to-SQL worth it for a 1,500-person company's analyst queue?</div>
+    <p>Assumptions: 1,500 employees, 300 ad-hoc data questions a week, 20 analyst minutes each, a model at $2 / $10 per million input / output tokens (claude-sonnet-5-5, <a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic models overview, checked 2026-11-03</a>), 4,000 tokens of schema context and 200 output tokens per call, 1.3 calls per question on average (retries).</p><ol><li><strong>Today's cost in people.</strong> 300 x 20 min = 6,000 min = 100 hours a week, about 2.5 full-time analysts doing nothing but queue work.</li><li><strong>Model cost.</strong> One call = 4,000 x $2 / 1 M + 200 x $10 / 1 M = $0.008 + $0.002 = $0.01. With 1.3 calls, $0.013 a question, about $3.90 a week. Cost is not the decision.</li><li><strong>Correctness is.</strong> Suppose your golden set shows 85% execution accuracy. That leaves 15% x 300 = 45 wrong answers a week. Some fail loudly (errors, empty results); the rest are wrong-but-runs, confident numbers in someone's slide deck.</li><li><strong>Design for the 45.</strong> Show the SQL and row count with every answer, send ambiguous questions back with a clarifying question, restrict the model to curated views, and route anything feeding finance or board reporting to an analyst for review.</li><li><strong>Realistic payoff.</strong> If 70% of questions are simple lookups the system handles well and analysts review the rest, the queue drops by about 70 hours a week, and analysts spend their time on the hard 30% and on the semantic layer that makes the easy 70% safe.</li></ol>
+  </div>
+<!-- shape:scale:end -->
+<div class="box key">
     <div class="box-label">Key points</div>
     <ul>
       <li><strong>Text-to-SQL</strong> = English question → generated SQL → safe run → worded answer. It removes the analyst bottleneck.</li>
@@ -106,6 +120,22 @@
         <div class="why">Plain-English questions are exactly the use case.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">The model answers "total revenue per customer" with SUM(o.amount) after joining orders to order_items (several items per order). What goes wrong?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) The database raises an error because amount is ambiguous.</span>
+        <div class="why">With the o. prefix the column is not ambiguous. The query is valid SQL; its logic is wrong.</div></li>
+      <li data-correct="false"><span class="opt">B) Nothing; joins never change sums.</span>
+        <div class="why">Joins to a finer-grained table multiply rows. Aggregating a coarse-grained column after that join double counts.</div></li>
+      <li data-correct="false"><span class="opt">C) Only the row order changes.</span>
+        <div class="why">The totals change, not just the order. That is why understanding table grain matters.</div></li>
+      <li data-correct="true"><span class="opt">D) Each order's amount is repeated once per item row, so revenue is inflated; the query runs fine and returns a confident wrong number.</span>
+        <div class="why">This is join fan-out. An order of $120 with 3 items becomes 3 rows of $120 and sums to $360. No error is raised, which makes it the wrong-but-runs failure.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box deep">
@@ -113,6 +143,77 @@
     <p>Text-to-SQL sits precisely at the intersection of LLMs and data engineering, and the LLM half is the easy half. Anyone can call a model and ask for SQL; almost no one applying for these roles can reason about join fan-out, null handling, date-boundary bugs, dialect differences, indexing, or how to give a model just the relevant slice of a 400-table warehouse without blowing the context window. Those are the things that decide whether the generated SQL is <em>correct at scale</em> — and they’re your bread and butter from a decade of pipelines.</p>
     <p>There’s also a strategic idea worth carrying into interviews: the best text-to-SQL systems don’t point the model at raw tables. They put a <strong>semantic layer</strong> in between — curated views, clear column names, documented metrics (“revenue means SUM(amount) on paid orders”), and example query pairs. That turns an ambiguous natural-language problem into a constrained, well-labeled one the model rarely gets wrong. Designing that layer is data modeling, which is exactly what you already do. So when you frame text-to-SQL as “a data-modeling and correctness problem with an LLM on top,” you’re not learning a new field — you’re applying your field to a new interface.</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/09_text_to_sql_duckdb.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/09_text_to_sql_duckdb.py</code></pre>
+    <p><strong>What to look for:</strong> The lab runs text-to-SQL on DuckDB with schema grounding, a SELECT-only validator, a row limit, a self-correction loop and execution-accuracy scoring over a small question set. For this lesson, look at the failures in the scoring output and sort them into this page's buckets: ambiguity, schema misunderstanding, wrong-but-runs, dialect. Pay most attention to any question where the SQL ran but the result did not match the expected answer: that is the dangerous class.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  Q: What share of orders were returned? Give a fraction between 0 and 1.
+     SQL: SELECT SUM(CASE WHEN status = &#x27;returned&#x27; THEN 1 ELSE 0 END) / COUNT(*) AS return_share FROM orders;
+     PASS fixes=0 got=[(0.09483333333333334,)] gold=[(0.09483333333333334,)]
+  Q: Average delivered order value for Plus members vs non-members.
+     SQL: SELECT AVG(CASE WHEN c.is_plus THEN o.amount_rs ELSE NULL END) AS avg_plus, AVG(CASE WHEN NOT c.is_plus THEN o.amount_rs ELSE NULL END) AS avg_non_plu
+     FAIL fixes=0 got=[(4945.648507917174, 5045.7609119496865)] gold=[(False, 5045.760911949686), (True, 4945.648507917174)]
+  Q: How many customers placed no orders at all?
+     SQL: SELECT COUNT(*) FROM customers WHERE customer_id NOT IN (SELECT customer_id FROM orders WHERE status = &#x27;delivered&#x27;)
+     PASS fixes=0 got=[(50,)] gold=[(50,)]
+  execution accuracy: 5/6
+3) A user asks for something destructive
+  blocked by the gate: DELETE is not allowed (SELECT only)
+  Look: safety comes from the parser + read-only principal + row cap, not from asking the model nicely.
+  Wrong-but-valid SQL (a FAIL above) is the harder problem; only an eval set with gold answers catches it.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/09_text_to_sql_duckdb.txt">labs/outputs</a>. Source: <a href="../labs/09_text_to_sql_duckdb.py">labs/09_text_to_sql_duckdb.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Which of these questions are ambiguous, and what clarifying question would you ask? (a) "Orders last month" (b) "Our best customers" (c) "Revenue in Canada in 2025"</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>(a) Slightly: calendar month or last 30 days, and count or value? Ask "Do you mean the number of orders in October 2026?" (b) Very: best by revenue, order count, margin or recency? Ask "Best by total paid revenue, by number of orders, or something else?" (c) Mostly clear, but gross or net of refunds and by billing or shipping country. A semantic layer that defines revenue once removes most of the doubt.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> orders(id, customer_id, amount) has order 55 with amount 120.00, and order_items(order_id, product_id, qty) has 3 rows for order 55. Write the wrong query a model might produce for "revenue from order 55", give its result, and write the correct one.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Wrong: <code>SELECT SUM(o.amount) FROM orders o JOIN order_items i ON i.order_id = o.id WHERE o.id = 55;</code> returns 360.00, because the join produces 3 rows each carrying 120.00. Correct: <code>SELECT amount FROM orders WHERE id = 55;</code> returning 120.00. If you need item data too, aggregate items in a subquery first, then join one row per order. The rule: aggregate at the grain where the measure lives.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Design the accuracy evaluation for a text-to-SQL system before launch. What do you compare, and what are the traps?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Build a golden set of 150+ real questions with a reference SQL written by an analyst. Score by execution accuracy: run both queries and compare result sets, not SQL text, because many different queries are correct. Traps: (1) row order, so compare as multisets unless the question asks for an order; (2) floats, so compare with a tolerance; (3) extra columns, so decide whether to compare only the requested columns; (4) a query that matches on today's data by accident, so run against a second database snapshot or perturbed data; (5) ambiguous questions, so either rewrite them or accept several references. Slice results by difficulty (single table, joins, nested, date logic). Public benchmarks such as Spider and BIRD use execution-based scoring for the same reasons.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is text-to-SQL and what is its biggest risk?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Text-to-SQL takes a natural-language question, generates SQL against a known schema, runs it and returns the answer in words. It removes the bottleneck of waiting for someone who knows SQL and the schema. The biggest risk is not an error, which is visible, but a query that runs and returns a plausible wrong number, for example through a join that double counts or a filter that misses rows. Those get trusted and acted on, so validation, transparency (showing the SQL) and evaluation matter as much as generation.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> How do you measure text-to-SQL accuracy?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Execution accuracy on a golden set: for each question, run the generated SQL and a reference SQL and compare the result sets, allowing for row order and float tolerance. Comparing SQL text (exact match) is too strict, because many queries are equivalent. I also track how often the query errors, how often it needed a retry, and latency. And I slice by question type, since joins and date logic usually fail more than single-table lookups. Spider and BIRD are the public benchmarks to know, but my own schema's golden set is what decides.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Leadership wants a "chat with the warehouse" tool across 400 tables next quarter. How do you scope it to succeed?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Narrow it first. Pick one domain, say sales, with 10 to 20 curated views in a semantic layer: clear names, documented metric definitions, joins baked in. Build a golden set of 150 real questions from that team's queue and measure execution accuracy before launch. Ship with guardrails: read-only role, timeouts, cost caps, SQL shown with each answer, clarifying questions for ambiguous asks, and analyst review for anything feeding finance. Expand domain by domain, each with its own views and golden set. The model is the easy part; the semantic layer and evaluation are the project.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/1809.08887" target="_blank" rel="noopener">Yu et al., Spider: A Large-Scale Human-Labeled Dataset for Complex and Cross-Domain Text-to-SQL (2018) - arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2305.03111" target="_blank" rel="noopener">Li et al., Can LLM Already Serve as A Database Interface? (BIRD, 2023) - arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2411.07763" target="_blank" rel="noopener">Lei et al., Spider 2.0: Evaluating Language Models on Real-World Enterprise Text-to-SQL Workflows (2024) - arXiv</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>The whole system rises or falls on how well the model understands your schema. So that’s where we start building. Next: <strong>schema-aware prompting.</strong></p>
 

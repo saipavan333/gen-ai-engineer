@@ -26,6 +26,13 @@
     <div class="box-label">Concept</div>
     <p><span class="term">Batching</span> processes multiple requests simultaneously on the GPU. <span class="term">Throughput</span> is how many requests (or tokens) you can serve per second; <span class="term">latency</span> is how long one request takes. These trade off: waiting to fill a batch can add a little latency to each request but greatly raises throughput. <span class="term">Continuous batching</span> (used by serving engines like <span class="term">vLLM</span>) is the modern approach — it dynamically adds and removes requests from the running batch as they arrive and finish, keeping the GPU maximally busy without making requests wait for a fixed batch to fill.</p>
   </div>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>A school bus can carry 40 kids, but imagine the driver taking one kid at a time. The bus is always moving and the road is busy, yet almost nobody gets to school. Batching fills the seats, and continuous batching is a bus that lets kids hop on and off at every stop instead of waiting until all 40 seats are full. Where it breaks: a bus has a fixed number of seats, while a GPU's limit is memory for each passenger's notes (the KV cache), which grows as their conversation gets longer.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <div class="box note">
     <div class="box-label">Mostly the serving engine’s job</div>
@@ -37,7 +44,22 @@
 
   <div class="lab" data-lab="batching"></div>
 
-  <div class="box key">
+  
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: How many GPUs a self-hosted 7B model needs at 50,000 requests a day</div>
+    <p>Assumptions (ours, illustrative): 50,000 requests a day, 300 output tokens each, 15% of daily traffic in the peak hour. Throughput figures are round illustrative numbers for a 7B model on one 24 GB GPU; benchmark your own engine and hardware.</p>
+<ol>
+<li><strong>Peak demand.</strong> 50,000 x 15% = 7,500 requests in the peak hour = 2.08 requests/s. Output needed: 2.08 x 300 = <strong>625 tokens/s</strong>.</li>
+<li><strong>One request at a time.</strong> Say a single stream decodes at 40 tokens/s. You would need 625 / 40 = 15.6, so <strong>16 GPUs</strong>, each mostly idle because decode at batch size 1 is limited by memory bandwidth, not compute.</li>
+<li><strong>Continuous batching.</strong> Say the engine sustains 800 tokens/s aggregate at 32 concurrent sequences. 625 / 800 = 78% of <strong>one GPU</strong>; plan 2 for headroom and failover. That is an 8x cut in hardware.</li>
+<li><strong>What each user feels.</strong> 800 / 32 = 25 tokens/s per stream, slower than 40 but still faster than anyone reads. The trade is visible: throughput up 20x, per-user speed down 38%.</li>
+<li><strong>Memory check.</strong> 32 sequences x 4,000 tokens x 56 KB (Qwen2.5-7B KV per token, from Lesson 8.5) = 7.3 GB of KV, plus 4.7 GB of Q4 weights, fits in 24 GB. Paged KV allocation, as in vLLM's PagedAttention, is what lets the engine pack this many sequences without wasting memory on fragmentation.</li>
+<li><strong>The hosted equivalent.</strong> On an API you do not batch the GPU, but you can batch the bill: Anthropic's Message Batches API is 50% off, takes up to 100,000 requests or 256 MB per batch, and finishes within 24 hours, with most batches done in under an hour (<a href="https://platform.claude.com/docs/en/build-with-claude/batch-processing" target="_blank" rel="noopener">Anthropic batch docs</a>). Nightly evals and backfills belong there.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+<div class="box key">
     <div class="box-label">Key points</div>
     <ul>
       <li>A GPU serving one request is mostly idle; <strong>batching</strong> runs many requests together to use its parallelism.</li>
@@ -74,6 +96,22 @@
         <div class="why">Batching doesn't change output quality.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">You must classify 2 million support tickets by tomorrow morning using a hosted Claude model. Nobody waits on individual results. What is the most cost-effective choice?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Send them through the normal API as fast as possible with high concurrency.</span>
+        <div class="why">That pays full price and will hit rate limits. You gain speed nobody needs.</div></li>
+      <li data-correct="false"><span class="opt">B) Quantize the hosted model.</span>
+        <div class="why">You cannot quantize a provider's hosted model; quantization is a self-hosting lever.</div></li>
+      <li data-correct="false"><span class="opt">C) Stream every response to save time.</span>
+        <div class="why">Streaming improves perceived latency for a human reader; it does nothing for an offline job's cost.</div></li>
+      <li data-correct="true"><span class="opt">D) Submit them through the Message Batches API, which is 50% off and completes within 24 hours.</span>
+        <div class="why">Offline work with a deadline measured in hours is what batch APIs are for. 2 million requests is 20 batches at the 100,000-request limit.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -98,6 +136,77 @@
     <p>If you <strong>self-host</strong>, you additionally own the hardware efficiency — quantize to fit cheap GPUs and batch to keep them full — which is what makes self-hosting’s “no per-token fee” economics actually pay off. In both cases the meta-skill is the same as Track 6 preached: measure cost and latency as first-class metrics, find the real bottleneck, and apply the lever that targets it.</p>
     <p>Throughput is just the self-hosting corner of that discipline — and continuous batching is the single biggest reason a self-hosted model can be cost-competitive at scale.</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/01_generate_and_sample.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/01_generate_and_sample.py</code></pre>
+    <p><strong>What to look for:</strong> The lab sends one request at a time, so it shows single-stream tokens/sec, the 'one kid on the bus' number. To see batching, restart Ollama with OLLAMA_NUM_PARALLEL=4 (documented in the Ollama FAQ; RAM grows with parallel x context length) and fire four lab calls at once from four terminals. Compare per-call tokens/sec with total tokens per second across all four. On a laptop CPU the gain is small; on a GPU it is large.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>2) Same prompt, temperature 1.0, three different seeds
+  seed=1: Bengaluru in July typically experiences warm to hot temperatures with occasional thunderstorms.
+  seed=2: Bengaluru in July typically experiences hot and humid weather with occasional thunderstorms.
+  seed=3: Bengaluru in July typically experiences hot and dry weather with temperatures often soaring above 30°C.
+  distinct outputs at T=1.0: 3  (sampling -&gt; usually 2-3)
+3) Same seed twice at T=1.0 -&gt; reproducible on the same machine
+  identical: True
+4) Tokens are what you pay for: prompt vs output token counts
+  short prompt: prompt_tokens=   36  output_tokens=  2  prefill_s=  0.52  answer=&#x27;Paris&#x27;
+  long prompt : prompt_tokens=  639  output_tokens=  2  prefill_s=  0.22  answer=&#x27;Paris&#x27;
+  Look: the long prompt costs many more input tokens and more prefill time for the same answer.
+5) Streaming: time-to-first-token (TTFT) vs total time
+  TTFT=0.36s  total=2.54s  chunks=16  decode_tokens_per_s=7.3
+  Look: streaming does not make generation faster; it shows the first words sooner.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/01_generate_and_sample.txt">labs/outputs</a>. Source: <a href="../labs/01_generate_and_sample.py">labs/01_generate_and_sample.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> A nightly eval run is 40,000 requests averaging 3,000 input and 400 output tokens on claude-sonnet-5-5 ($2 / $10). What does it cost on the normal API and through the Batch API?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Per request: 3,000 x 2/M + 400 x 10/M = $0.006 + $0.004 = $0.010. Normal: 40,000 x $0.010 = $400. Batch at 50% off: $200 a night, about $6,000 a month saved for one config change.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your vLLM server shows high throughput but users complain that responses sometimes stall for a few seconds mid-answer at peak. What is happening and which knobs do you look at?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>At peak the engine admits so many sequences that KV memory runs out, and it must pause or preempt some sequences (swap or recompute their KV) to make room; those users see a stall. Long prompts arriving and being prefilled can also delay decode steps for everyone. Knobs: cap max concurrent sequences, limit max model length, reserve a larger share of GPU memory for KV, enable chunked prefill if the engine supports it, and add replicas. Then watch p95 time-per-output-token, not just aggregate throughput.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Using Little's law, how many concurrent sequences must your engine hold at 5 requests/s if each request spends 0.5 s in prefill and generates 300 tokens at 25 tokens/s per stream? Does a 32-sequence engine cope?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Time in system per request = 0.5 + 300 / 25 = 12.5 s. Concurrency = 5 x 12.5 = 62.5 sequences. A 32-sequence engine cannot hold that: requests queue, TTFT climbs, and the queue grows without limit because arrivals exceed service. You need about 2 engines of 32 (and more with headroom), or shorter outputs: at 150 tokens, time in system is 6.5 s and concurrency 32.5, which just about fits one engine. Output length is a capacity lever as well as a cost lever.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> Why does batching increase throughput on a GPU?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>During decode, each step must read all the model's weights from GPU memory to produce one token. With one request, that big read produces one token, so the GPU's compute units mostly wait on memory. With 32 requests in a batch, the same weight read produces 32 tokens, one for each sequence. So tokens per second across all users rises a lot, and cost per request falls. The catch is that each user's own speed can drop a bit and memory for each sequence's KV cache limits how big the batch can get.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> What is continuous batching and how is it different from static batching?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Static batching collects N requests, runs them together until the longest one finishes, then starts the next batch. Short requests sit idle waiting for long ones, and new requests wait for the batch to drain. Continuous batching schedules at the level of each decode step: when a sequence finishes, its slot is filled immediately by a waiting request. GPU utilisation stays high and queueing delay drops. Engines like vLLM combine it with paged KV-cache management so many variable-length sequences share memory without fragmentation.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> How do you decide between a hosted API and self-hosting an open model for a high-volume workload?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>I compare cost per 1,000 requests at our real traffic shape. Hosted: list price, minus caching and batch discounts. Self-hosted: GPU cost divided by measured throughput at our concurrency and latency target, plus idle capacity at off-peak, redundancy and engineering time to run it. Then I add non-cost factors: data residency and privacy, the quality gap on our eval set, need for fine-tuning, and the provider's rate limits. Self-hosting tends to win at sustained high volume with a model we can tune; hosted wins for spiky traffic, frontier quality and small teams.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2309.06180" target="_blank" rel="noopener">Efficient Memory Management for Large Language Model Serving with PagedAttention (vLLM) - arXiv</a></li>
+      <li><a href="https://platform.claude.com/docs/en/build-with-claude/batch-processing" target="_blank" rel="noopener">Batch processing (Message Batches API) - Anthropic</a></li>
+      <li><a href="https://docs.ollama.com/faq" target="_blank" rel="noopener">Ollama FAQ (OLLAMA_NUM_PARALLEL) - Ollama docs</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>We’ve optimized the calls and the hardware. The last lever is the most universal: spend fewer tokens per call, on every call, forever. Next: <strong>budgeting tokens</strong>.</p>
 

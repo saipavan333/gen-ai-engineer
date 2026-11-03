@@ -21,6 +21,13 @@
     <div class="box-label">Concept</div>
     <p>A <span class="term">bi-encoder</span> embeds query and document separately, so similarity is a fast vector comparison (this is your retriever). A <span class="term">cross-encoder</span> feeds the query and a document <em>together</em> through a model to produce a single relevance score — far more accurate, but far slower (you must run it per candidate). The standard design is <span class="term">two-stage retrieval</span>: use the fast bi-encoder to fetch many candidates (high <span class="term">recall</span>), then the slow cross-encoder to rerank them down to the best few (high <span class="term">precision</span>).</p>
   </div>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>Hiring with two rounds: a recruiter skims 500 CVs in an afternoon by keywords and picks 50, then the hiring manager actually reads those 50 against the job and picks 5. The recruiter is fast and rough (the bi-encoder); the manager is slow and careful (the cross-encoder). The analogy breaks because a manager can ask the recruiter for more CVs; a reranker can only reorder what stage 1 handed it, so if the best candidate was not in the 50, it is gone.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <figure class="diagram">
     <img src="../assets/diagrams/t3-rerank.svg" alt="Two-stage retrieval: a Query goes to Vector search (bi-encoder, fast) which returns top 50 candidates, then to Rerank (cross-encoder, slow, scores each pair) which returns the Top 5, best in order. Stage 1 casts a wide cheap net; stage 2 carefully reorders the shortlist.">
@@ -63,6 +70,13 @@ index <span class="o">=</span> bi.<span class="f">encode</span>(chunks, normaliz
     <span class="k">return</span> reranked[:keep]</code></pre>
     <p>You only run the expensive cross-encoder on the 50 candidates, not the whole corpus — that’s what makes two-stage affordable. Reranking often improves answer quality more than swapping to a bigger LLM, for a fraction of the cost.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Adding a cross-encoder to search over 30 M manual chunks at 120 QPS</div>
+    <p>Assumptions: 30 M chunks, 120 queries per second at peak, a MiniLM-size cross-encoder that scores about 2,000 (query, chunk) pairs per second on one GPU at your chunk length (an assumption: benchmark it yourself, it varies with hardware and sequence length).</p><ol><li><strong>Why not cross-encode everything?</strong> One query against all 30 M chunks = 30 M pairs / 2,000 per second = 15,000 s, over four hours per query. That is why stage 1 exists.</li><li><strong>Rerank 50 per query.</strong> 120 QPS x 50 = 6,000 pairs per second, so 6,000 / 2,000 = 3 GPUs at peak, with no headroom. Latency per query: 50 / 2,000 = 25 ms if the batch gets a GPU to itself.</li><li><strong>Rerank 20 per query.</strong> 120 x 20 = 2,400 pairs per second, 1.2 GPUs, so 2 with headroom; latency 20 / 2,000 = 10 ms.</li><li><strong>Is 20 enough?</strong> Check recall@20 and recall@50 of stage 1 on your golden set. If recall@20 = 0.93 and recall@50 = 0.96, reranking 50 can at best recover 3 more points of questions. Decide whether 3 points is worth one extra GPU.</li><li><strong>Keep narrow.</strong> After reranking, send the top 5 into the prompt. 5 chunks x 400 tokens = 2,000 tokens instead of 20,000 if you had stuffed all 50: at $2 per million input tokens (<a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic models overview, checked 2026-11-03</a>) that saves 18,000 x $2 / 1 M = $0.036 per query, about $15,500 an hour at a sustained 120 QPS (120 x 3,600 = 432,000 queries). The reranker pays for itself.</li></ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -101,6 +115,22 @@ index <span class="o">=</span> bi.<span class="f">encode</span>(chunks, normaliz
         <div class="why">It runs after embedding-based retrieval, not instead of it.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Stage-1 recall@50 is 0.97 and recall@5 is 0.71. You add a cross-encoder over the top 50 and keep 5. What is the best possible recall@5 after reranking?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) 0.97, because a reranker can only reorder the 50 candidates it is given.</span>
+        <div class="why">Reranking can promote any of the 50 into the top 5, so the ceiling is the stage-1 recall at the depth you rerank. It cannot recover the 3% of questions whose answer never made the shortlist.</div></li>
+      <li data-correct="false"><span class="opt">B) 1.0, because the cross-encoder reads the query and chunk together.</span>
+        <div class="why">The cross-encoder only sees the 50 candidates. Chunks outside the shortlist are never scored.</div></li>
+      <li data-correct="false"><span class="opt">C) 0.71, because reranking does not change recall.</span>
+        <div class="why">Reranking does not change recall at the shortlist depth (50), but it can raise recall at the smaller depth you keep (5) by promoting relevant chunks.</div></li>
+      <li data-correct="false"><span class="opt">D) It depends only on the size of the LLM.</span>
+        <div class="why">The LLM comes after retrieval and has no effect on which chunks are ranked into the top 5.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -123,6 +153,77 @@ index <span class="o">=</span> bi.<span class="f">encode</span>(chunks, normaliz
     <p>Two refinements make reranking even better. First, <strong>diversity</strong>: top results are often near-duplicates (three chunks saying the same thing), wasting prompt space. <span class="term">Maximal Marginal Relevance</span> (MMR) re-ranks to balance relevance with novelty, so your top-k covers more distinct information — valuable when a question needs facts from several places. Second, <strong>fetch wide, keep narrow</strong>: the most common tuning is increasing how many candidates stage 1 returns (raising the chance the right chunk is <em>somewhere</em> in the shortlist) while keeping the number you actually put in the prompt small (so the model isn’t diluted). Recall is stage 1’s job; precision is stage 2’s.</p>
     <p>The strategic insight: in most RAG systems, <em>retrieval</em> is the bottleneck, not generation. Teams reflexively reach for a bigger, pricier LLM when their real problem is that the right evidence isn’t making it into the prompt. Adding a reranker, fetching more candidates, and (next lesson) blending in keyword search usually buys more answer quality per dollar than any model upgrade. Fix what reaches the model before you upgrade the model.</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/03_rag_local.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/03_rag_local.py</code></pre>
+    <p><strong>What to look for:</strong> Honest note: the lab has no cross-encoder stage; it does dense retrieval, BM25 and RRF fusion. Use it to see the precondition for reranking: print the top-20 from dense retrieval for a few golden questions and note at which rank the correct chunk sits. If it is in the top 20 but below rank 3, a reranker would help; if it is missing from the top 20, no reranker can. To try a real reranker, add sentence-transformers' CrossEncoder (the worked example above) on top of the lab's top-20 list.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  out of the top 3. On this tiny corpus dense already wins; hybrid earns its keep on big corpora full of
+  near-identical codes (SKUs, error ids) that embeddings blur. Never assume: measure hit@k (lab 06).
+5) Grounded answers with citations, and a refusal when retrieval is weak
+  Q: I was charged twice for one order. What happens now?
+  A: If you were charged twice for one order, the duplicate payment is reversed automatically within 3 business days [pay-01#0]. If it is not reversed after 3 business days, raise a billing ticket with both transaction ids.
+     citations=[&#x27;pay-01#0&#x27;] all-cited-ids-were-retrieved=True
+  Q: Can I change my delivery address after the order has shipped?
+  A: No, you cannot change your delivery address after the order has shipped. According to [ship-03#0], the address can only be changed before the order is packed.
+     citations=[&#x27;ship-03#0&#x27;] all-cited-ids-were-retrieved=True
+  Q: Do you deliver to Antarctica by drone?
+  A: I don&#x27;t know based on our policies. (refused before calling the LLM: best cosine 0.27 &lt; 0.35)
+     citations=[] all-cited-ids-were-retrieved=True
+  Look: every factual sentence carries an id you can check; the off-topic question is refused
+  cheaply by the retrieval threshold, so the model never gets a chance to make something up.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/03_rag_local.txt">labs/outputs</a>. Source: <a href="../labs/03_rag_local.py">labs/03_rag_local.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Your reranker scores 1,500 pairs per second. You rerank 40 candidates per query. What is the reranking latency per query and the maximum QPS on one instance?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Latency = 40 / 1,500 = 0.0267 s, about 27 ms. Max QPS = 1,500 / 40 = 37.5 queries per second per instance, assuming perfect batching. Real systems leave 30-50% headroom, so plan for about 25 QPS per instance.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your top 5 after reranking are often three near-duplicate chunks from copies of the same FAQ. Answers miss facts that live elsewhere. What do you add, and where?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Two fixes. Upstream, dedupe at indexing time with a content hash or near-duplicate detection so copies are not indexed separately. At query time, apply Maximal Marginal Relevance (MMR) after reranking: pick the top chunk, then repeatedly pick the chunk that balances high relevance with low similarity to those already chosen, controlled by a lambda weight. That spends the 5 prompt slots on distinct facts. Measure with an eval that includes multi-fact questions, since single-fact questions will not show the gain.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> You have a budget of 15 ms for reranking at 300 QPS. Propose two architectures and the evidence you would collect to choose.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Option A: a smaller cross-encoder over fewer candidates (say 20) on GPUs sized for 300 x 20 = 6,000 pairs per second at under 15 ms per batch. Option B: a late-interaction model (ColBERT-style) or a distilled reranker that precomputes token vectors for documents so query-time scoring is cheaper, at the price of more storage. A third, cheap option is caching rerank results for frequent queries. Evidence: on the golden set, nDCG@5 and recall@5 for each option; p95 latency under a load test at 300 QPS; GPU count and storage cost. Pick the cheapest option that meets the quality bar and the 15 ms budget.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is the difference between a bi-encoder and a cross-encoder?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>A bi-encoder embeds the query and each document separately into vectors and compares them with cosine similarity. Document vectors are computed once in advance, so search is fast. A cross-encoder takes the query and one document together as a single input and outputs a relevance score. It sees how the words interact, so it is more accurate, but it must run once per pair at query time. That is why we use the bi-encoder to shortlist and the cross-encoder to rerank the shortlist.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> How do you choose how many candidates to retrieve and how many to keep?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Fetch depth is about recall: I plot stage-1 recall@k for k = 10, 20, 50, 100 on the golden set and see where it flattens. Rerank depth costs latency and compute linearly, so I pick the point where extra candidates stop adding recall. Keep depth is about the prompt: few enough that the model is not diluted and tokens stay cheap, enough to cover multi-fact questions, usually 3 to 8. Then I verify end to end with faithfulness and answer correctness, because the best retrieval depth is the one that gives the best answers.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> A team wants to upgrade from a mid-size LLM to a frontier model to fix bad RAG answers. How do you decide whether a reranker is the better spend?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>I look at where the failures are. On a few hundred failing cases I check whether the answer-bearing chunk was in the prompt. If it is usually missing from the prompt but present in stage 1's top 50, the fault is ranking, and a reranker fixes it for a fraction of the cost of a bigger model. If the chunk is in the prompt and the answer is still wrong, it is a generation issue, and the bigger model or better grounding may help. I also price both: model upgrade is per-token on every call; a reranker is fixed GPU cost and often reduces prompt size. The eval decides, not the hype.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://www.sbert.net/docs/cross_encoder/usage/usage.html" target="_blank" rel="noopener">Cross-Encoder usage - Sentence Transformers documentation</a></li>
+      <li><a href="https://arxiv.org/abs/1908.10084" target="_blank" rel="noopener">Reimers and Gurevych, Sentence-BERT (2019) - arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2104.08663" target="_blank" rel="noopener">Thakur et al., BEIR: A Heterogeneous Benchmark for Zero-shot Evaluation of IR Models (2021) - arXiv</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>Semantic search has a blind spot: exact terms, codes, and rare words that embeddings smear together. Keyword search nails those. Combine them and you get the best of both. Next: <strong>hybrid search</strong>.</p>
 

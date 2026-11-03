@@ -21,6 +21,13 @@
     <div class="box-label">Concept</div>
     <p>A <span class="term">vector database</span> stores records of <em>(id, vector, metadata, text)</em> and supports fast nearest-neighbor search over the vectors. Because exact nearest-neighbor is slow at scale, vector DBs use <span class="term">approximate nearest neighbor</span> (ANN) indexes — data structures that find <em>almost</em> the closest vectors while checking only a small fraction of them. The trade you control: a little accuracy (<span class="term">recall</span>) for a lot of speed.</p>
   </div>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>Brute-force search is looking for your friend in a stadium by checking every seat. An ANN index is asking the ushers: they know roughly which section your friend's group sits in, so you check two or three sections and usually find them in a minute. Metadata filters are the ticket check: some sections you are simply not allowed into. The analogy breaks because ushers who are wrong say so; an ANN index that misses the best match gives no warning, which is why you measure recall.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <figure class="diagram">
     <img src="../assets/diagrams/t3-ann.svg" alt="Finding nearest vectors, exact versus approximate. Brute force (exact, slow): the query is compared to all N vectors via lines to every point. ANN index — graph (fast, approximate): the query hops along graph links through a few nodes to reach the neighborhood of the nearest vector, doing far fewer comparisons.">
@@ -77,6 +84,13 @@ res <span class="o">=</span> col.<span class="f">query</span>(
 <span class="f">print</span>(res[<span class="s">"documents"</span>][<span class="n">0</span>])   <span class="c"># -> ["The X200 has a 3-year warranty.", ...]</span></code></pre>
     <p>The filter means even if an account-billing chunk were similar, it could never be returned for an X200 query — that’s your permission/scoping boundary, enforced at search time. Swap Chroma for FAISS, Qdrant, Weaviate, or Postgres’s <code>pgvector</code> later; the concepts are identical.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Serving 50 M vectors for a multi-tenant document search</div>
+    <p>Assumptions: 50 M chunks, 768-dimension float32 embeddings, 200 queries per second, 3,000 tenants, a latency target of p95 under 50 ms.</p><ol><li><strong>Raw size.</strong> 768 x 4 bytes = 3,072 bytes per vector. 50 M x 3,072 = 153.6 GB. That does not fit in a 64 GB server's RAM, so either shard or compress.</li><li><strong>Brute force cost.</strong> One query compares against all 50 M vectors: 50 M x 768 = 38.4 billion multiply-adds per query. At 200 QPS that is 7.7 trillion per second, far past one machine. Flat search is out.</li><li><strong>IVF sizing.</strong> The <a href="https://github.com/facebookresearch/faiss/wiki/Guidelines-to-choose-an-index">FAISS index guidelines</a> suggest about 262,144 (2<sup>18</sup>) clusters for 10 M-100 M vectors. Average list length = 50 M / 262,144 = about 191 vectors. With nprobe = 64 you scan 64 x 191 = about 12,200 vectors per query, roughly 0.02% of the corpus.</li><li><strong>Compression.</strong> Product quantization at 96 bytes per vector (8 dimensions per sub-quantizer) gives 50 M x 96 = 4.8 GB, a 32x cut from 153.6 GB. You re-rank the top few hundred candidates with full vectors kept on disk to recover accuracy.</li><li><strong>Tenancy.</strong> The average tenant owns 50 M / 3,000 = about 16,700 chunks, 0.03% of the index. A post-filter after ANN would usually return zero of that tenant's chunks. Use a store with filtered ANN, or route large tenants to their own index; for a 16,700-vector tenant, flat search over just their vectors is only 12.8 M multiply-adds and is fast.</li><li><strong>Tune to a target.</strong> Raise nprobe until recall@10 against exact search reaches, say, 0.95 on a sample of queries, and stop there.</li></ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <h2>Exact or approximate?</h2>
   <p>Drag the corpus size. This one curve explains why small projects need no vector database at all, and why large ones cannot live without an index.</p>
@@ -120,6 +134,22 @@ res <span class="o">=</span> col.<span class="f">query</span>(
         <div class="why">It still searches embedding vectors.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">A tenant owns 0.05% of a 20 M-vector shared index. Their searches use "retrieve top 10 by ANN, then filter to tenant_id". What usually happens?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Results leak from other tenants.</span>
+        <div class="why">The filter does stop leaks; the problem is the opposite, recall collapses for the small tenant. (Without any filter, leaks would be the risk.)</div></li>
+      <li data-correct="false"><span class="opt">B) The search becomes exact because the filter narrows the space.</span>
+        <div class="why">The filter runs after the ANN step here, so it narrows nothing during search. It only throws results away.</div></li>
+      <li data-correct="true"><span class="opt">C) The top 10 neighbours almost never belong to that tenant, so the filter removes everything and they get few or no results.</span>
+        <div class="why">Post-filtering only keeps matches that survived the unfiltered top-k. With 0.05% selectivity, the chance any of 10 global neighbours is theirs is tiny. Use filtered ANN, pre-filtering, or a per-tenant index.</div></li>
+      <li data-correct="false"><span class="opt">D) They get the same 10 results they would have from their own index.</span>
+        <div class="why">That is only true if filtering happens inside the search. Filtering after the fact discards candidates and cannot replace them.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -144,6 +174,78 @@ res <span class="o">=</span> col.<span class="f">query</span>(
     <p>Good vector DBs implement <em>filtered ANN</em> to handle this, but you should test retrieval quality <em>with your real filters applied</em>, not just on the open index. And for strict isolation (regulated data, hard multi-tenancy), consider separate collections/indexes per tenant rather than relying on a filter — defense in depth beats a single <code>where</code> clause.</p>
     <p>As always: the data and access model around the vectors is where production RAG is won or lost.</p>
   </div>
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/03_rag_local.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/03_rag_local.py</code></pre>
+    <p><strong>What to look for:</strong> The lab runs the same vector search twice, in DuckDB with array_cosine_similarity and in FAISS, and cross-checks that the top-k ids agree. On a corpus this small both are exact searches, so they should match perfectly. Use that as your ground truth habit: whenever you switch to an approximate index, compare its results to an exact search on a sample of queries and report the overlap as recall@k. The lab does not exercise HNSW or IVF tuning at scale; that you measure on your own data.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  out of the top 3. On this tiny corpus dense already wins; hybrid earns its keep on big corpora full of
+  near-identical codes (SKUs, error ids) that embeddings blur. Never assume: measure hit@k (lab 06).
+5) Grounded answers with citations, and a refusal when retrieval is weak
+  Q: I was charged twice for one order. What happens now?
+  A: If you were charged twice for one order, the duplicate payment is reversed automatically within 3 business days [pay-01#0]. If it is not reversed after 3 business days, raise a billing ticket with both transaction ids.
+     citations=[&#x27;pay-01#0&#x27;] all-cited-ids-were-retrieved=True
+  Q: Can I change my delivery address after the order has shipped?
+  A: No, you cannot change your delivery address after the order has shipped. According to [ship-03#0], the address can only be changed before the order is packed.
+     citations=[&#x27;ship-03#0&#x27;] all-cited-ids-were-retrieved=True
+  Q: Do you deliver to Antarctica by drone?
+  A: I don&#x27;t know based on our policies. (refused before calling the LLM: best cosine 0.27 &lt; 0.35)
+     citations=[] all-cited-ids-were-retrieved=True
+  Look: every factual sentence carries an id you can check; the off-topic question is refused
+  cheaply by the retrieval threshold, so the model never gets a chance to make something up.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/03_rag_local.txt">labs/outputs</a>. Source: <a href="../labs/03_rag_local.py">labs/03_rag_local.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> How much RAM do 5 M vectors of 1,024 dimensions need in float32, and in int8?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>float32: 1,024 x 4 = 4,096 bytes per vector. 5 M x 4,096 = 20.48 GB. int8: 1,024 bytes per vector, 5.12 GB. Index structures (HNSW links, IVF lists) add more on top, so budget headroom. This arithmetic decides early whether one box is enough.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your HNSW index returns results in 8 ms but recall@10 against exact search is 0.88 on a 500-query sample. Product wants 0.95 and 30 ms is acceptable. What do you do?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Raise the search-time candidate list (ef_search in most HNSW implementations) step by step, rerunning the same 500 queries against exact results each time and plotting recall@10 against p95 latency. Stop at the first setting that reaches 0.95 inside 30 ms. If ef_search alone cannot get there, rebuild with a higher M or ef_construction (more links, more memory, slower build). The point is that you fix the target and let measurement pick the parameter.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> A regulated customer demands that no query can ever return another customer's chunk, even under a bug in your filter code. Design the storage layout and justify it.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Physical isolation: one collection (or index, or database) per customer, with the collection chosen from the authenticated identity on the server side, never from a request parameter. Then a missing or wrong filter cannot cross tenants because the other tenant's vectors are not in the search space. Add defence in depth: keep tenant_id in metadata and assert it on every returned chunk before it reaches the prompt, and log any mismatch as a security event. Trade-offs: many small indexes cost more memory overhead and operational work, so shared indexes with filtered ANN stay fine for low-risk tenants. Regulated data gets the separate index.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What does a vector database give you that a NumPy array does not?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Four things. An approximate nearest-neighbour index, so search stays fast at millions of vectors instead of scanning all of them. Metadata filtering, so you can restrict results by tenant, permissions, product or date. Persistence, updates and deletes, so the index survives restarts and changes without a full rebuild. And operational features such as replication and concurrent access. For a few thousand vectors a NumPy array is fine; past that, or when you need filtering, use a real store.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> Explain the recall-latency trade-off in HNSW or IVF and how you tune it.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Both indexes avoid comparing against every vector. HNSW walks a graph and explores a candidate list whose size is set by ef_search; IVF scans only the nprobe nearest clusters. Exploring more candidates or clusters finds the true neighbours more often (higher recall) but costs more time. I tune by sampling a few hundred real queries, computing exact top-k with flat search as ground truth, then sweeping the parameter and measuring recall@k and p95 latency. I pick the cheapest setting that hits the recall target, and I re-check after big corpus changes because the right value drifts.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> How would you design retrieval for 3,000 tenants of very different sizes in one product?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Tiered. Small tenants share an index with a tenant_id field and a store that supports filtered ANN, so selective filters do not destroy recall. Large tenants, or anyone regulated, get a dedicated index, which also gives them independent scaling and deletes. Tenant routing comes from the authenticated session server-side. I enforce isolation twice: by search scope and by asserting tenant_id on results. I evaluate recall per tenant tier, not just globally, because a global recall number hides the small tenants that post-filtering hurts most. Re-indexing, quotas and cost are tracked per tenant.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">Malkov and Yashunin, Efficient and robust approximate nearest neighbor search using HNSW graphs - arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2401.08281" target="_blank" rel="noopener">Douze et al., The Faiss library (2024) - arXiv</a></li>
+      <li><a href="https://github.com/facebookresearch/faiss/wiki/Guidelines-to-choose-an-index" target="_blank" rel="noopener">Guidelines to choose an index - FAISS wiki</a></li>
+      <li><a href="https://docs.trychroma.com/" target="_blank" rel="noopener">Chroma documentation</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 
   <p>Even a great index returns an <em>approximate</em>, similarity-only ranking. To squeeze out real precision, you add a second pass that reads each candidate carefully. Next: <strong>retrieval &amp; reranking</strong>.</p>
 

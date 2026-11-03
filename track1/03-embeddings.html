@@ -22,6 +22,13 @@
     <div class="box-label">Concept</div>
     <p>An <span class="term">embedding</span> is a list of numbers (a <span class="term">vector</span>) that represents a piece of text’s meaning. Each position in the list is a <span class="term">dimension</span>; real text embeddings have hundreds to thousands of them (e.g. 384, 768, 1536). An <span class="term">embedding model</span> is a neural network trained so that texts with similar meaning get vectors that point in similar directions. You can picture each vector as a <strong>point in a high-dimensional “meaning space.”</strong></p>
   </div>
+<!-- shape:analogy:start -->
+  <div class="box note shape-analogy">
+    <div class="box-label">School-kid picture</div>
+    <p>Imagine a giant school hall where every sentence is a student, and students stand closer together the more alike their meaning is. 'My flight was cancelled' and 'The airline scrapped my trip' stand shoulder to shoulder, while 'I like pizza' is across the room. Searching becomes 'walk to where the question stands and look at who is nearby'. The analogy breaks because the real hall has hundreds of directions, not just left, right, forward and back, so 'nearby' can mean close in one sense and far in another.</p>
+  </div>
+<!-- shape:analogy:end -->
+
 
   <figure class="diagram">
     <img src="../assets/diagrams/t1-embedding-pipeline.svg" alt="Embedding pipeline: the text 'a fluffy kitten' goes into an embedding model (a neural net), which outputs one vector, a list like [0.12, -0.44, 0.91, ...], often 384 to 3072 numbers. An embedding turns text into a point in meaning space.">
@@ -86,6 +93,21 @@ emb <span class="o">=</span> model.<span class="f">encode</span>(sentences)
 <span class="f">print</span>(<span class="s">"0 vs 2 (unrelated):"</span>,  <span class="f">float</span>(util.<span class="f">cos_sim</span>(emb[<span class="n">0</span>], emb[<span class="n">2</span>])))   <span class="c"># ~0.1, low</span></code></pre>
     <p>Notice sentence 0 and 1 share almost no words, yet score high — because the model captures <em>meaning</em>, not word overlap. That single property is why embedding search beats old keyword search for questions phrased in the user’s own words.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Embedding 1.2 million help-centre articles for semantic search</div>
+    <p>Assume a software company has <strong>1,200,000 help articles</strong> and splits each into about <strong>5 chunks</strong>. You embed each chunk with <code>all-MiniLM-L6-v2</code>, which outputs <strong>384-dimensional</strong> vectors (<a href="https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2">model card</a>).</p>
+<ol>
+<li><strong>Vector count.</strong> 1.2M x 5 = <strong>6,000,000 vectors</strong>.</li>
+<li><strong>Raw storage.</strong> 6,000,000 x 384 dimensions x 4 bytes (float32) = 9,216,000,000 bytes, about <strong>9.2 GB</strong>. Stored as int8 it is about 2.3 GB, usually with a small recall loss you should measure.</li>
+<li><strong>Brute-force search cost.</strong> One query against every vector is 6,000,000 x 384 = about <strong>2.3 billion multiply-adds</strong>. Fine for a batch job, too slow for thousands of queries a second. This is why vector databases use approximate nearest-neighbour indexes (HNSW, IVF) that check only a small slice.</li>
+<li><strong>Normalise once.</strong> Scale every vector to length 1 at ingest. Then cosine similarity equals the dot product and the index can use the cheaper operation.</li>
+<li><strong>Embedding time.</strong> At an assumed 1,000 chunks/second on one GPU, 6M chunks take 6,000 seconds, about <strong>1.7 hours</strong>. Re-embedding happens every time you change the embedding model, so version your vectors with the model name.</li>
+<li><strong>Sanity check.</strong> Take 200 real user questions with known correct articles and measure recall@10 before launch. A paraphrase test like the lesson's password example is the quickest smoke test.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box note">
     <div class="box-label">This is the heart of RAG</div>
@@ -129,6 +151,22 @@ emb <span class="o">=</span> model.<span class="f">encode</span>(sentences)
         <div class="why">It's the intended behavior — the point of embeddings.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">You switch from embedding model A to model B for new documents but keep the old vectors from model A in the same index. What happens?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Nothing, because cosine similarity ignores vector length.</span>
+        <div class="why">Cosine ignores length but not direction. The directions themselves mean different things in two different models.</div></li>
+      <li data-correct="false"><span class="opt">B) It works as long as both models output 384 dimensions.</span>
+        <div class="why">Matching dimension counts only means the maths runs. Dimension 17 in model A and dimension 17 in model B encode unrelated things.</div></li>
+      <li data-correct="false"><span class="opt">C) Search gets faster because the index is bigger.</span>
+        <div class="why">Index size does not make mixed vectors meaningful, and bigger indexes are not faster.</div></li>
+      <li data-correct="true"><span class="opt">D) Search quality breaks, because vectors from two different models live in different spaces and their cosine scores are not comparable.</span>
+        <div class="why">Right. Each embedding model learns its own coordinate system. Mixing them is like comparing GPS coordinates with street numbers. Re-embed the whole corpus when you change models.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -165,6 +203,77 @@ best <span class="o">=</span> <span class="f">int</span>(scores.<span class="f">
 
   <p>You’ve now got tokens (the units), embeddings (their meaning), and next-token prediction (the engine). The remaining question about the engine is one of <em>capacity</em>: how much can a model hold in mind at once, and how does it decide which earlier words matter? That’s <strong>context windows and attention</strong>.</p>
 
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/03_rag_local.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/03_rag_local.py</code></pre>
+    <p><strong>What to look for:</strong> Watch the MiniLM vectors being created and the DuckDB array_cosine_similarity scores next to the FAISS scores for the same query; they should match, which shows cosine on normalised vectors is just a dot product. Rephrase a question with no shared words and see the right chunk still rank high, then compare with the hand-rolled BM25 ranking, which needs word overlap.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  out of the top 3. On this tiny corpus dense already wins; hybrid earns its keep on big corpora full of
+  near-identical codes (SKUs, error ids) that embeddings blur. Never assume: measure hit@k (lab 06).
+5) Grounded answers with citations, and a refusal when retrieval is weak
+  Q: I was charged twice for one order. What happens now?
+  A: If you were charged twice for one order, the duplicate payment is reversed automatically within 3 business days [pay-01#0]. If it is not reversed after 3 business days, raise a billing ticket with both transaction ids.
+     citations=[&#x27;pay-01#0&#x27;] all-cited-ids-were-retrieved=True
+  Q: Can I change my delivery address after the order has shipped?
+  A: No, you cannot change your delivery address after the order has shipped. According to [ship-03#0], the address can only be changed before the order is packed.
+     citations=[&#x27;ship-03#0&#x27;] all-cited-ids-were-retrieved=True
+  Q: Do you deliver to Antarctica by drone?
+  A: I don&#x27;t know based on our policies. (refused before calling the LLM: best cosine 0.27 &lt; 0.35)
+     citations=[] all-cited-ids-were-retrieved=True
+  Look: every factual sentence carries an id you can check; the off-topic question is refused
+  cheaply by the retrieval threshold, so the model never gets a chance to make something up.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/03_rag_local.txt">labs/outputs</a>. Source: <a href="../labs/03_rag_local.py">labs/03_rag_local.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Normalise the vector [3, 4] to length 1, then compute its cosine similarity with [1, 0].</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Length = sqrt(9 + 16) = 5, so normalised = [0.6, 0.8]. Cosine with [1, 0] = 0.6 x 1 + 0.8 x 0 = 0.6 (both have length 1, so cosine is just the dot product). That angle is about 53 degrees.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your semantic search returns 'How do I reset my password?' for the query 'reset my router'. Why might that happen and what would you add?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Both share the 'reset' intent, and a small general model can weight that shared action more than the object. Fixes: add keyword search (BM25) and fuse the two rankings so the word 'router' counts; add metadata filters (product = networking); try a stronger or domain-tuned embedding model; and measure on a golden set so you know the fix helped. Embeddings capture meaning, but not always the meaning you care about.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Estimate the memory for 50 million 1,024-dimension float32 vectors, then propose two ways to make it fit on a 64 GB machine.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>50M x 1,024 x 4 bytes = 204.8 GB. Options: (1) quantise, int8 gives about 51 GB and product quantisation can go far lower; (2) use a model or setting with fewer dimensions (some models support shortened Matryoshka-style embeddings), for example 256 dimensions in float32 = 51 GB; (3) keep the index on disk with a disk-based ANN index. Whatever you pick, measure recall@k against the full-precision baseline before switching.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is an embedding and how is it used in search?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>An embedding is a vector of numbers that represents the meaning of a text. An embedding model is trained so similar meanings get vectors pointing in similar directions. For search, you embed all documents once and store the vectors. At query time you embed the question and find the stored vectors with the highest cosine similarity. That finds paraphrases with no shared words, which keyword search misses.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> Cosine similarity, dot product, or Euclidean distance: which do you use and why?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>For text embeddings the default is cosine, because it compares direction and ignores length. In practice I normalise vectors to length 1 at ingest; then cosine and dot product give identical rankings and the dot product is cheaper, and Euclidean distance ranks the same way too. The real rule is to use the metric the embedding model was trained with, which the model card usually states, and to keep it consistent between ingest and query.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> How would you choose and roll out a new embedding model for a production RAG system with 100 million chunks?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>First build a golden set from real queries with labelled relevant chunks, and score candidates offline on recall@k and nDCG, plus latency and cost per million chunks. Check language coverage and max input length against our chunk size. If a new model wins, re-embed into a new versioned index in the background, dual-write new documents, shadow-query both indexes and compare, then switch traffic gradually. Vectors from different models cannot be mixed, so the cutover is index by index, with the old one kept for rollback.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/1908.10084" target="_blank" rel="noopener">Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks (Reimers and Gurevych, 2019) — arXiv</a></li>
+      <li><a href="https://www.sbert.net/" target="_blank" rel="noopener">Sentence Transformers documentation — SBERT</a></li>
+      <li><a href="https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2" target="_blank" rel="noopener">all-MiniLM-L6-v2 model card — Hugging Face</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
 </main>
 
 <script>
