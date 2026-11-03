@@ -1,0 +1,350 @@
+[
+ {
+  "n": "17.1",
+  "analogy": "An AI function in SQL is like hiring a reader who charges per page. You can hand them the whole library, or you can first throw out the duplicate copies and the pages you already read last week. The reader is equally good either way; your bill is not. The analogy breaks because a human reader would notice the duplicates and tell you; the warehouse will happily pay for every one.",
+  "scale": {
+   "title": "Tagging 12 M product reviews at a large Indian marketplace",
+   "html": "<p>Assumptions (a scenario, not a real company): 12 M historical reviews, 25% exact duplicates, 60,000 new reviews a day; each prompt is about 120 input tokens and the label about 5 output tokens. For a price we use <a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\">Claude Haiku 5.5 list price, checked 2026-11-03</a>: from $0.10 per million input tokens and $0.50 per million output tokens. Your warehouse's model prices will differ; the arithmetic will not.</p><ol><li><strong>Naive back-fill.</strong> 12 M calls x 120 tokens = 1.44 B input tokens = $144, plus 12 M x 5 = 60 M output tokens = $30. About $174 once.</li><li><strong>Dedupe first.</strong> 25% duplicates leaves 9 M distinct texts: $130. Small saving, but it also cuts runtime by a quarter.</li><li><strong>The real trap: a view.</strong> If the AI column is a view and 40 dashboards each scan it 5 times a day, that is 200 full passes: 200 x $174 = <strong>$34,800 a day</strong>. Materialise the column once.</li><li><strong>Daily incremental.</strong> 60,000 new reviews, about 45,000 after dedupe: 45,000 x 125 tokens = 5.6 M tokens: 45,000 x 120 x $0.10/M + 45,000 x 5 x $0.50/M = about $0.65 a day.</li><li><strong>Runtime.</strong> If your quota allows, say, 500 calls a second, the 9 M back-fill takes 9,000,000 / 500 = 18,000 s, 5 hours. Plan it as a one-off job, not part of the nightly run.</li></ol><p>The lesson: the model choice moves cost by a factor of a few; where you put the AI function (view vs table, before vs after dedupe) moves it by a factor of thousands.</p>"
+  },
+  "lab": {
+   "id": "10_ai_sql_udf",
+   "look_for": "Section 1 prints llm_calls and cache_hits for 6 rows and 2 AI columns: review 6 duplicates review 1, so two calls are saved. Section 2 aggregates the AI column with GROUP BY and costs nothing extra because identical prompts hit the cache. Add 20 duplicate rows to the reviews table and watch llm_calls stay flat while rows grow."
+  },
+  "quiz": [
+   {
+    "q": "Which of these belongs BEFORE the AI function in the query, not after?",
+    "options": [
+     {
+      "t": "Filters on date and status, and SELECT DISTINCT on the text being sent.",
+      "correct": true,
+      "why": "Correct. Anything that reduces the rows reaching the function reduces cost and runtime linearly. Filters and dedupe applied after the call only hide rows you already paid for."
+     },
+     {
+      "t": "Mapping the model's answer onto the allowed label set.",
+      "correct": false,
+      "why": "That has to come after: it processes the model's output."
+     },
+     {
+      "t": "The GROUP BY that counts labels.",
+      "correct": false,
+      "why": "Aggregation needs the labels, so it runs after the function."
+     },
+     {
+      "t": "Writing the result into the gold table.",
+      "correct": false,
+      "why": "Persisting happens last; what matters is not calling the model on rows you will discard."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "A table has 2 M rows and you add two AI columns. How many model calls does a full refresh make, and how many if 30% of the texts are duplicates and you dedupe first?",
+    "a": "Two columns means two calls per row: 2 M x 2 = 4 M calls. After dedupe 1.4 M distinct texts x 2 = 2.8 M calls. The saving is exactly the duplicate fraction, applied to every AI column."
+   },
+   {
+    "level": "Transfer",
+    "q": "Design a dbt-style incremental model for an AI label column. What is the key, what triggers a re-label, and where do you store the prompt version?",
+    "a": "Key on the source row id (or a hash of the text if many rows share text). Re-label when the text changes (compare a hash) or when you deliberately bump the prompt or model version. Store prompt_version and model as columns next to the label, so a version bump selects exactly the rows to redo and you can compare old vs new labels on your eval sample before switching."
+   },
+   {
+    "level": "Stretch",
+    "q": "Your AI label column feeds a revenue dashboard. How do you make sure a silent change in the provider's default model does not shift the numbers?",
+    "a": "Pin the model or endpoint explicitly instead of relying on a default (BigQuery picks a recent stable Gemini when no endpoint is given, per its docs). Keep a labelled sample of a few hundred rows and score it on every run; alert when accuracy or the label distribution moves beyond a threshold. Version the prompt, log model and prompt per row, and treat a model change as a deploy with an eval gate."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What is an AI function in a data warehouse, and why would a data team use one?",
+    "a": "It is a SQL function that calls a hosted language model for each row, for example AI.GENERATE in BigQuery, AI_COMPLETE in Snowflake or ai_query in Databricks. Data teams use it for batch enrichment such as classifying tickets or extracting fields, because it runs where the data lives, on the existing scheduler, with the existing access controls, and lands results in a table analysts can query."
+   },
+   {
+    "level": "Mid",
+    "q": "An AI enrichment job costs ten times what you estimated. Where do you look first?",
+    "a": "Count how many calls it actually made versus rows you expected. The usual causes: the AI function sits in a view or a CTE that is re-evaluated by many queries; it runs before filters and dedupe; a retry loop resends the whole table; or prompts are far longer than planned because a big text column was concatenated in. Fix by materialising, filtering and deduping before the call, trimming the prompt, and making retries row-level."
+   },
+   {
+    "level": "Senior",
+    "q": "How would you govern AI columns across a company's warehouse?",
+    "a": "Treat each AI column as a model in production. Require a pinned model or endpoint, a versioned prompt, row-level lineage (prompt version, model, run id), and a labelled eval sample with an accuracy threshold before the column is used in reporting. Put cost guardrails in place: incremental processing, quotas per job, and alerts on call volume. Use the platform's access controls so only approved roles can call models, and document which columns are model-generated so consumers know they carry error rates."
+   }
+  ],
+  "sources": [
+   {
+    "t": "The AI.GENERATE function - BigQuery docs",
+    "u": "https://docs.cloud.google.com/bigquery/docs/reference/standard-sql/bigqueryml-syntax-ai-generate"
+   },
+   {
+    "t": "AI_COMPLETE - Snowflake docs",
+    "u": "https://docs.snowflake.com/en/sql-reference/functions/ai_complete"
+   },
+   {
+    "t": "ai_query function - Databricks docs",
+    "u": "https://docs.databricks.com/aws/en/sql/language-manual/functions/ai_query"
+   },
+   {
+    "t": "Python function API (create_function) - DuckDB docs",
+    "u": "https://duckdb.org/docs/stable/clients/python/function"
+   }
+  ]
+ },
+ {
+  "n": "17.2",
+  "analogy": "BigQuery RAG is like a school library where every book already has a sticky note saying what it is about. When you ask a question, the librarian writes your question on a sticky note too, finds the books whose notes are most alike, and hands those pages to a helper who writes your answer using only them. The analogy breaks because the sticky notes are lists of numbers, not words, so two books can look alike to the librarian for reasons no human would pick.",
+  "scale": {
+   "title": "Policy search over 3 M chunks for a bank's internal assistant",
+   "html": "<p>Assumptions (scenario): 150,000 policy documents split into 3 M chunks of about 300 tokens; 2% of documents change each week; 20,000 questions a day.</p><ol><li><strong>Initial embedding.</strong> 3 M chunks x 300 tokens = 900 M tokens through AI.GENERATE_EMBEDDING, run once as a batch job into kb.chunk_emb.</li><li><strong>Weekly refresh.</strong> 2% of 150,000 documents = 3,000 documents, about 60,000 chunks: re-embed only those, keyed on a content hash. That is 2% of the original work.</li><li><strong>Search.</strong> Brute force compares each question with 3 M vectors: 20,000 x 3 M = 60 B comparisons a day. A vector index makes each search approximate and touches a small fraction of them; measure recall@10 on your golden set before and after creating it.</li><li><strong>Generation.</strong> Each answer prompt holds 5 chunks x 300 tokens plus about 200 tokens of instructions: about 1,700 input tokens. 20,000 x 1,700 = 34 M input tokens a day into AI.GENERATE.</li><li><strong>Failures.</strong> If 0.5% of requests fail or are blocked, that is 100 NULL answers a day. Log them with the question id and retry or route to a human.</li></ol><p>The architecture choice: the embeddings and index are scheduled batch jobs, while search and generation are per question. Keeping those two lifecycles separate is what keeps the bill predictable.</p>"
+  },
+  "lab": {
+   "id": "10_ai_sql_udf",
+   "look_for": "Section 3 embeds a column once and ranks rows with array_cosine_similarity in SQL: the same shape as AI.GENERATE_EMBEDDING into a stored column followed by VECTOR_SEARCH. Section 4 prints the BigQuery AI.GENERATE query to run on your own project. The lab does not exercise a real vector index; on 6 rows a scan is the right choice anyway."
+  },
+  "quiz": [
+   {
+    "q": "Your AI.GENERATE_EMBEDDING call errors because the input has no 'content' column. What is the fix?",
+    "options": [
+     {
+      "t": "Alias the text column: SELECT chunk_id, text AS content FROM kb.chunks.",
+      "correct": true,
+      "why": "Correct. The docs require a STRING column named content in the input table or query; aliasing an existing column is the standard fix."
+     },
+     {
+      "t": "Rename the table to content.",
+      "correct": false,
+      "why": "The requirement is on a column name, not the table name."
+     },
+     {
+      "t": "Pass the text column name as a model parameter.",
+      "correct": false,
+      "why": "There is no such parameter in the documented syntax; the column must be named content."
+     },
+     {
+      "t": "Switch to AI.GENERATE.",
+      "correct": false,
+      "why": "AI.GENERATE produces text, not embeddings; you would lose the vectors you need for VECTOR_SEARCH."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "List the four BigQuery steps of a RAG answer in order, naming the function used in each.",
+    "a": "1. Embed the corpus once into a table with AI.GENERATE_EMBEDDING. 2. Embed the question with AI.GENERATE_EMBEDDING. 3. Retrieve the nearest chunks with VECTOR_SEARCH (top_k, distance_type). 4. Build a grounded prompt from the retrieved content and call AI.GENERATE. Optionally a vector index between steps 1 and 3 for large tables."
+   },
+   {
+    "level": "Transfer",
+    "q": "Write SQL that computes hit@3 for a golden table golden(question_id, question, gold_chunk_id) using VECTOR_SEARCH. Describe the shape rather than exact syntax if unsure.",
+    "a": "Embed the golden questions into a query table (AI.GENERATE_EMBEDDING over SELECT question_id, question AS content). Run VECTOR_SEARCH with that query table and top_k => 3; the output has query.question_id and base.chunk_id. Then SELECT AVG(CASE WHEN hit THEN 1 ELSE 0 END) over a grouping by question_id where hit = LOGICAL_OR(base.chunk_id = gold_chunk_id). Join back to golden on question_id."
+   },
+   {
+    "level": "Stretch",
+    "q": "Your bank's assistant must not show chunks from documents a user is not allowed to read. How do you enforce that in the BigQuery design?",
+    "a": "Store an access attribute (department, classification) on each chunk row and filter the base table to the user's allowed set before or during VECTOR_SEARCH, for example by searching over a filtered subquery or a row-level-secured view. Set the filter in your service code from the authenticated user, never from the model. Test it with a golden case where the most similar chunk is forbidden and assert it never appears."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What does VECTOR_SEARCH return in BigQuery?",
+    "a": "For each query row it returns the nearest rows from the base table: a query struct with the query columns, a base struct with the base table's columns, and a distance. You choose how many with top_k and the metric with distance_type, such as cosine."
+   },
+   {
+    "level": "Mid",
+    "q": "When would you add a vector index, and what do you check after adding it?",
+    "a": "When the base table is large enough that brute-force search is slow or expensive, typically millions of rows queried often. An index makes search approximate, so afterwards you check recall@k on a golden set against the brute-force baseline, plus latency and cost per query. If recall drops too far, tune the index options or retrieve more candidates and rerank."
+   },
+   {
+    "level": "Senior",
+    "q": "Would you build a customer-facing chatbot entirely in BigQuery SQL?",
+    "a": "Usually not end to end. BigQuery is excellent for owning the corpus, chunking, embeddings and batch evaluation as governed tables. A customer chat needs low latency, streaming, conversation state, rate limiting and tool calls, which belong in a service. I would keep embeddings and evals in BigQuery, serve retrieval from an index the service can query quickly, and run AI.GENERATE-style batch jobs for offline evaluation and enrichment."
+   }
+  ],
+  "sources": [
+   {
+    "t": "The AI.GENERATE function - BigQuery docs",
+    "u": "https://docs.cloud.google.com/bigquery/docs/reference/standard-sql/bigqueryml-syntax-ai-generate"
+   },
+   {
+    "t": "The AI.GENERATE_EMBEDDING function - BigQuery docs",
+    "u": "https://docs.cloud.google.com/bigquery/docs/reference/standard-sql/bigqueryml-syntax-ai-generate-embedding"
+   },
+   {
+    "t": "Search functions (VECTOR_SEARCH) - BigQuery docs",
+    "u": "https://docs.cloud.google.com/bigquery/docs/reference/standard-sql/search_functions"
+   }
+  ]
+ },
+ {
+  "n": "17.3",
+  "analogy": "Databricks is like a school where the library, the teachers and the rule book are all run by the same office. The library (Delta tables and the Vector Search index), the helper who writes answers (a model endpoint called by ai_query) and the rules about who may read what (Unity Catalog) live together. The analogy breaks because in a school the office notices a rule being broken; here the rules only apply if you actually put the tables, index and endpoints under them.",
+  "scale": {
+   "title": "Classifying 800 K support tickets a night on Databricks",
+   "html": "<p>Assumptions (scenario): 800,000 tickets a day, average 180 tokens of text, a 60-token instruction, and a JSON answer of about 25 tokens. For a price we use <a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\">Claude Haiku 5.5 list price, checked 2026-11-03</a> so the numbers are concrete; Databricks endpoint pricing is different and set by your contract.</p><ol><li><strong>Calls.</strong> One ai_query call per ticket: 800,000 calls a night.</li><li><strong>Tokens.</strong> Input 800,000 x 240 = 192 M tokens; output 800,000 x 25 = 20 M tokens. At the reference price: 192 x $0.10 + 20 x $0.50 = $19.20 + $10 = about $29 a night.</li><li><strong>Failures.</strong> If 0.1% of calls time out, that is 800 rows. With the default failOnError true, one of them fails the whole statement and you lose the night's work. With failOnError => false each row returns a struct with the response and an error; you write all 800,000, then retry the 800.</li><li><strong>Structured output.</strong> responseFormat (Databricks Runtime 15.4 LTS or above, per the docs) asks for JSON with your schema; you still validate it in SQL and map invalid rows to 'unparsed' so they show up in a count, not as broken dashboards.</li><li><strong>Hybrid retrieval for the agent.</strong> Agents answering about part codes use vector_search with query_type => 'HYBRID'; check recall@k on a golden set of code-heavy questions before and after switching.</li></ol><p>The operational rule: at 800,000 rows, rare failures are certain. Design every batch AI job so one bad row costs one row, not the night.</p>"
+  },
+  "lab": {
+   "id": "10_ai_sql_udf",
+   "look_for": "Section 1 shows the ai_query pattern locally: a SQL function that calls a model per row, with ai_classify mapping free text onto allowed labels so nothing unexpected lands in the column. Section 4 prints the ai_query query to run in your workspace. The lab has no failOnError equivalent; add a try/except in ai_generate that returns NULL and count NULLs to feel it."
+  },
+  "quiz": [
+   {
+    "q": "Where do you run vector_search() if your workspace only has a classic SQL warehouse?",
+    "options": [
+     {
+      "t": "Not on it: the docs say vector_search is not available on classic SQL warehouses, so use a serverless or pro warehouse (or the Python/REST API).",
+      "correct": true,
+      "why": "Correct. It is a documented restriction; planning the warehouse type up front avoids a confusing failure later."
+     },
+     {
+      "t": "It works on any warehouse.",
+      "correct": false,
+      "why": "The docs list classic SQL warehouses as unsupported."
+     },
+     {
+      "t": "Only inside a notebook with a GPU.",
+      "correct": false,
+      "why": "vector_search is a SQL function; it needs the right warehouse type, not a GPU."
+     },
+     {
+      "t": "Only through ai_query.",
+      "correct": false,
+      "why": "ai_query calls model endpoints; vector_search queries a Vector Search index."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "Name the two required and four optional arguments of ai_query as given in the docs.",
+    "a": "Required: endpoint and request. Optional: returnType, failOnError, modelParameters and responseFormat (there is also files for image input). The endpoint is a string literal naming a Foundation Model, external or custom serving endpoint."
+   },
+   {
+    "level": "Transfer",
+    "q": "Rewrite a nightly ai_query job so a single timeout cannot fail the run, and so you can tell which rows to retry.",
+    "a": "Call ai_query with failOnError => false; it returns a struct with the response and an error message. Write ticket_id, the response, the error, prompt_version and run_id into a results table. A second job selects rows where the error is not null and re-runs only those, with a retry cap. Alert if the error rate passes a threshold."
+   },
+   {
+    "level": "Stretch",
+    "q": "Your Vector Search index serves three business units that must never see each other's documents. Design the access control.",
+    "a": "Keep a business_unit column on the source Delta table and in the index, and filter on it in every search, with the filter value derived in your service from the authenticated user rather than from the model. Back it with Unity Catalog grants so each unit's service principal can only query what it should, and test with a golden case where the nearest neighbour belongs to another unit. If isolation must be absolute, separate indexes per unit."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What does ai_query do?",
+    "a": "It is a Databricks SQL function that calls a model serving endpoint for each row and returns the response. The endpoint can be a Databricks-hosted foundation model, an external model or your own model. You give it the endpoint name and a request built from columns, and optionally a return type, failOnError, model parameters and a response format for structured output."
+   },
+   {
+    "level": "Mid",
+    "q": "When does hybrid search beat pure vector search, and how would you prove it on Databricks?",
+    "a": "When queries contain exact tokens embeddings blur, such as part numbers, error codes or names. Prove it with a golden set of real queries labelled with the right documents: run vector_search with the default and with query_type HYBRID, compute recall@k and MRR, and look at the per-query differences, especially code-heavy queries. Keep whichever wins on your traffic mix."
+   },
+   {
+    "level": "Senior",
+    "q": "How would you take a Databricks RAG prototype to production?",
+    "a": "Make the corpus a governed Delta table with chunking as a pipeline, build the Vector Search index from it so it stays in sync, and serve the agent behind an endpoint. Trace every request with MLflow (inputs, retrieved ids, model, prompt version, latency, cost), and gate releases on an evaluation set with retrieval and answer-quality metrics. Put access control in Unity Catalog and filters set by code, add failOnError-style row handling for batch paths, and monitor cost and error rates."
+   }
+  ],
+  "sources": [
+   {
+    "t": "ai_query function - Databricks docs",
+    "u": "https://docs.databricks.com/aws/en/sql/language-manual/functions/ai_query"
+   },
+   {
+    "t": "vector_search function - Databricks docs",
+    "u": "https://docs.databricks.com/aws/en/sql/language-manual/functions/vector_search"
+   }
+  ]
+ },
+ {
+  "n": "17.4",
+  "analogy": "Cortex Search is like a school library that re-shelves itself every night: you tell it how fresh the shelves must be, and it keeps them that fresh. AI_COMPLETE is the helper who reads the books it finds and writes the answer. The analogy breaks because 'every night' is a setting you pay for: ask for every minute and the library re-shelves constantly, whether or not any book changed.",
+  "scale": {
+   "title": "A contact-centre assistant over 5 M call transcripts",
+   "html": "<p>Assumptions (scenario): 5 M transcripts, 40,000 new ones a day, agents in 4 regions, 15,000 assistant questions a day, 4 retrieved transcript snippets of 250 tokens each per answer.</p><ol><li><strong>Service design.</strong> One Cortex Search service ON transcript_text with ATTRIBUTES region, so each query filters to the agent's region. Filtering cuts both leakage risk and the candidate set.</li><li><strong>Freshness.</strong> New transcripts matter within hours, not seconds: TARGET_LAG = '1 hour' picks up the 40,000 daily additions in about 24 refreshes. A one-minute lag would refresh 1,440 times a day for little gain.</li><li><strong>Prompt size.</strong> 4 x 250 = 1,000 tokens of context plus 200 of instructions: about 1,200 input tokens per answer, 15,000 x 1,200 = 18 M input tokens a day into AI_COMPLETE.</li><li><strong>Model choice.</strong> At the <a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\">Claude Haiku 5.5 list price, checked 2026-11-03</a> of from $0.10 per million input tokens that would be about $1.80 a day of input; Snowflake bills Cortex models in its own credits, so check your rate card. Whatever the price, model choice is a smaller lever than prompt size and call count.</li><li><strong>Batch summaries.</strong> Summarising all 40,000 new transcripts nightly with AI_COMPLETE is a separate batch job; enable error handling so one failing row does not stop the statement.</li></ol><p>Two dials decide this design: TARGET_LAG for freshness cost, and attribute filters for who can see what.</p>"
+  },
+  "lab": {
+   "id": "10_ai_sql_udf",
+   "look_for": "Section 3 is a tiny Cortex Search stand-in: embeddings in a column and a cosine ranking in SQL (no keyword leg or reranker, which Cortex adds). Section 4 prints the AI_COMPLETE query to run in your account. Add a region column to the reviews table and a WHERE region = ... filter to see attribute scoping."
+  },
+  "quiz": [
+   {
+    "q": "What three retrieval components does each Cortex Search query combine, according to Snowflake's docs?",
+    "options": [
+     {
+      "t": "Vector search, keyword search, and semantic reranking of the top results.",
+      "correct": true,
+      "why": "Correct. That is the hybrid design from Lessons 3.5 and 3.6, run as a managed service."
+     },
+     {
+      "t": "Only vector search over embeddings.",
+      "correct": false,
+      "why": "The docs describe it as hybrid: vector plus keyword, then a rerank."
+     },
+     {
+      "t": "Keyword search and a SQL LIKE filter.",
+      "correct": false,
+      "why": "There is a vector leg and a semantic reranker too."
+     },
+     {
+      "t": "An LLM that reads every row.",
+      "correct": false,
+      "why": "That would be far too slow; the reranker only sees the top candidates."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "Read the CREATE CORTEX SEARCH SERVICE example and name what each clause controls: ON, ATTRIBUTES, WAREHOUSE, TARGET_LAG, EMBEDDING_MODEL, AS.",
+    "a": "ON: the text column that is searched. ATTRIBUTES: columns you can filter on at query time. WAREHOUSE: the compute that builds and refreshes the service. TARGET_LAG: how stale the service may get relative to the source. EMBEDDING_MODEL: which model creates the vectors. AS: the query defining the source rows and returned columns."
+   },
+   {
+    "level": "Transfer",
+    "q": "A batch AI_COMPLETE over 300 K rows must not stop on one failure. Give two ways the docs offer.",
+    "a": "Set the session parameter AI_SQL_ERROR_HANDLING_USE_FAIL_ON_ERROR to false so failing rows return NULL or an error object while others continue, or pass return_error_details => TRUE as the last argument so each row returns an object with value and error. Store both, and retry only the errored rows."
+   },
+   {
+    "level": "Stretch",
+    "q": "Compare Cortex Search with building your own index from embeddings in a table. When does each win?",
+    "a": "Cortex Search wins when you want hybrid retrieval with reranking and scheduled freshness without running anything yourself, and the corpus already lives in Snowflake. Your own index wins when you need a specific embedding model, custom chunking or reranking, very tight latency control, or the same index across clouds. Decide with recall@k on your golden set, cost at your query and refresh volume, and the operational load your team can carry."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What is AI_COMPLETE?",
+    "a": "A Snowflake SQL function that generates a completion from a prompt (text or images) using a model hosted in Snowflake. You pass a model name and a prompt, and optionally model parameters, a response_format for structured output and a flag for details. It is the newer form of SNOWFLAKE.CORTEX.COMPLETE, and callers need the SNOWFLAKE.CORTEX_USER database role."
+   },
+   {
+    "level": "Mid",
+    "q": "How do you choose TARGET_LAG for a Cortex Search service?",
+    "a": "From how quickly the data changes and how stale an answer may be. A live support queue may need minutes; policy documents changing weekly are fine with hours or a day. Lower lag means more frequent refresh work and cost. Measure: track the age of the newest indexed row and set the lag just under the staleness your users notice."
+   },
+   {
+    "level": "Senior",
+    "q": "How do you stop a Snowflake RAG assistant from leaking one customer's data to another?",
+    "a": "Enforce scope in the system, not the prompt. Put the tenant or region in ATTRIBUTES and apply the filter in every search request from the authenticated identity in service code. Back it with role-based access on the source tables and service, so a misconfigured filter still cannot read forbidden data. Add golden tests where the most similar document belongs to another tenant, and log retrieved ids per request so you can audit."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Cortex Search overview - Snowflake docs",
+    "u": "https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-search/cortex-search-overview"
+   },
+   {
+    "t": "AI_COMPLETE - Snowflake docs",
+    "u": "https://docs.snowflake.com/en/sql-reference/functions/ai_complete"
+   },
+   {
+    "t": "AI_COMPLETE (single string) - Snowflake docs",
+    "u": "https://docs.snowflake.com/en/sql-reference/functions/ai_complete-single-string"
+   }
+  ]
+ }
+]

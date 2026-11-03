@@ -1,0 +1,1389 @@
+[
+ {
+  "n": "3.1",
+  "analogy": "A bare LLM is a student taking a closed-book exam: it answers from memory, and when memory fails it bluffs. RAG turns it into an open-book exam where a librarian hands the student the three right pages before each question, and the student must point to the line they used. The analogy breaks because a real librarian understands the question; the retriever only matches meaning numerically, so it can hand over the wrong pages with full confidence.",
+  "scale": {
+   "title": "Long context vs RAG for a bank's 40,000-document policy bot",
+   "html": "<p>Assumptions: 40,000 policy and product documents, about 2,500 tokens each, 50,000 questions a day, model priced at $2 per million input tokens and $10 per million output (claude-sonnet-5-5 list price, <a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\">Anthropic models overview, checked 2026-11-03</a>).</p><ol><li><strong>Size the knowledge.</strong> 40,000 x 2,500 = 100 M tokens. The model's window is 1 M tokens, so \"paste it all in\" is not even possible: the corpus is 100 times the window.</li><li><strong>Pretend it fit anyway.</strong> A 1 M-token prompt costs 1 x $2 = $2 per question. At 50,000 questions that is $100,000 a day, before output.</li><li><strong>Now RAG.</strong> Retrieve 8 chunks of 400 tokens = 3,200 tokens, plus about 300 tokens of instructions and question = 3,500 input tokens. 3,500 / 1,000,000 x $2 = $0.007 per question, or $350 a day.</li><li><strong>Output is the same either way.</strong> 300 output tokens x $10 / 1 M = $0.003 per answer, $150 a day.</li><li><strong>Freshness.</strong> Say 500 documents change each week. You re-chunk and re-embed only those: 500 x 2,500 = 1.25 M tokens through a free local embedder. With fine-tuning you would retrain; with RAG you re-index a sliver.</li></ol><p>Result: RAG is about $500 a day all-in against an impossible (or $100,000) long-context design, and every answer can cite the policy it came from. The catch, which the rest of this track handles, is that the bot is now only as good as the 8 chunks it fetched.</p>"
+  },
+  "lab": {
+   "id": "03_rag_local",
+   "look_for": "Run the lab end to end and find the grounded answer with its [doc-id] citations, then ask a question the corpus cannot answer and watch the refusal fire because the top retrieval score falls below the threshold. That pair (cited answer, honest refusal) is the whole promise of this lesson. Delete the relevant document from the corpus and rerun: the same question should flip from answered to refused, which shows the answer came from retrieval, not from the model's memory."
+  },
+  "quiz": [
+   {
+    "q": "A teammate says: \"Our new model has a 1 M-token window, so we can drop RAG and paste the whole 100 M-token knowledge base.\" What is the best reply?",
+    "options": [
+     {
+      "t": "The corpus is 100 times the window, and even content that fits costs far more per question and suffers lost-in-the-middle; retrieve the relevant few chunks instead.",
+      "correct": true,
+      "why": "Window size is a hard ceiling (100 M tokens will not fit in 1 M), and below the ceiling you still pay for every pasted token on every call. RAG sends a few thousand tokens and keeps citations."
+     },
+     {
+      "t": "Fine, as long as you use prompt caching.",
+      "correct": false,
+      "why": "Caching makes repeated prefixes cheaper but cannot make 100 M tokens fit in a 1 M window, and it does nothing for changing content or citations."
+     },
+     {
+      "t": "Fine-tune the model on the knowledge base instead.",
+      "correct": false,
+      "why": "Fine-tuning is for behaviour and format. It is slow to update, cannot cite, and is the wrong tool for a large, changing set of facts."
+     },
+     {
+      "t": "It works if you raise the temperature so the model explores more of the context.",
+      "correct": false,
+      "why": "Temperature only changes how tokens are sampled. It does not change what the model can read or how much fits."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "Write the four steps of the RAG loop for one query, naming what goes in and out of each step.",
+    "a": "<ol><li><strong>Embed the query</strong>: text in, one vector out (same model as the documents).</li><li><strong>Retrieve</strong>: query vector in, top-k chunk ids plus scores out.</li><li><strong>Build the prompt</strong>: numbered chunks, instructions (answer only from context, cite, abstain), and the question.</li><li><strong>Generate</strong>: prompt in, answer with citations out.</li></ol>Why it matters: when an answer is wrong, these boundaries tell you where to look. Wrong chunks in step 2 is a retrieval bug; right chunks but wrong answer in step 4 is a grounding bug."
+   },
+   {
+    "level": "Transfer",
+    "q": "An HR team has 30 policy PDFs (about 90,000 tokens in total) that change twice a year, and wants answers with page references. A colleague proposes a full vector-database RAG stack. Is that the right call?",
+    "a": "Probably not at first. 90,000 tokens fits comfortably in a 1 M-token window, so the simplest version is long context: paste all 30 PDFs with page markers and ask for page citations. Do the cost check: 90,000 tokens x $2 per million = $0.18 per question on a $2/M model, so at 2,000 questions a month that is $360 a month, and prompt caching can cut repeated-prefix cost further. Move to RAG when (a) the corpus grows past what is cheap to paste, (b) questions get frequent enough that $0.18 each hurts, or (c) quality suffers from lost-in-the-middle. The senior point: RAG is a tool for large or fast-changing knowledge, not a default."
+   },
+   {
+    "level": "Stretch",
+    "q": "Your RAG bot answers \"What is the overdraft fee?\" with \"$35 [2]\", but chunk [2] says the fee is $25. List every place in the pipeline this could have gone wrong and the one check that tells you which.",
+    "a": "Candidates: (1) <strong>Generation</strong> blended chunk [2] with the model's prior (a common US fee figure), (2) <strong>stale index</strong>: the document changed to $25 but another chunk still says $35 and the model cited the wrong number, (3) <strong>chunking</strong> split a table so the $35 belongs to a different product row, (4) <strong>citation slip</strong>: the claim came from chunk [3] but was tagged [2]. The deciding check is to print the full prompt that was sent (all chunks) and search it for \"$35\". If $35 is nowhere in the context, it is a faithfulness failure in generation: tighten grounding and add a claim-vs-source check. If $35 is in some chunk, it is a data problem (stale or mis-chunked content) and the fix is upstream. Logging the exact retrieved context per answer is what makes this a two-minute diagnosis instead of a guessing game."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What is RAG and why would you use it instead of just asking the model?",
+    "a": "RAG, retrieval-augmented generation, fetches relevant passages from your own data at question time and puts them in the prompt, so the model answers from evidence instead of memory. You use it because a bare model has a training cutoff, has never seen your private documents, and guesses when it does not know. RAG fixes all three: the knowledge is current because you re-index when documents change, private because it lives in your store, and checkable because each answer can cite the passage it used. It changes the model's input, not its weights, so updating knowledge is cheap."
+   },
+   {
+    "level": "Mid",
+    "q": "How do you decide between long context, RAG and fine-tuning for a new use case?",
+    "a": "I ask what kind of thing the model is missing. If it is knowledge that is small, I paste it (long context) because it is simplest. If it is knowledge that is large, changing, private or must be cited, I use RAG. If it is behaviour (a format, a tone, a classification style) I consider fine-tuning, or first just a strong system prompt and few-shot examples. Then I do the arithmetic: corpus tokens against the context window, tokens per call times call volume times price, and how often content changes. Often the answer is a mix: RAG for facts plus a light fine-tune or prompt for style."
+   },
+   {
+    "level": "Senior",
+    "q": "A RAG prototype looks great in demos but users complain it is wrong 20% of the time. How do you run the investigation?",
+    "a": "First I stop changing things and build a labeled set: 200 to 300 real user questions, each with the passage that should answer it and a reference answer. Then I split the failure in two. Retrieval metrics (recall@k, MRR) tell me whether the right passage reached the prompt; generation metrics (faithfulness, answer relevance) tell me whether the model used it. If recall is low I work on chunking, embeddings, hybrid search and reranking. If recall is high but faithfulness is low I work on grounding, context order and citation checks. I also slice by query type, because the 20% is usually concentrated: identifiers, multi-hop questions, or stale documents. Every fix goes through the same eval before it ships."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Lewis et al., Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks (2020) - arXiv",
+    "u": "https://arxiv.org/abs/2005.11401"
+   },
+   {
+    "t": "Liu et al., Lost in the Middle: How Language Models Use Long Contexts (2023) - arXiv",
+    "u": "https://arxiv.org/abs/2307.03172"
+   },
+   {
+    "t": "Gao et al., Retrieval-Augmented Generation for Large Language Models: A Survey (2023) - arXiv",
+    "u": "https://arxiv.org/abs/2312.10997"
+   },
+   {
+    "t": "Models overview and pricing - Anthropic docs",
+    "u": "https://platform.claude.com/docs/en/about-claude/models/overview"
+   }
+  ]
+ },
+ {
+  "n": "3.2",
+  "analogy": "Chunking is cutting a long recipe book into index cards so you can pull out just the card you need. Cut too small and the card says \"add the eggs\" without saying which dish; cut too big and you pull out a whole chapter when you wanted one step. Overlap is writing the last line of each card again at the top of the next, so a step that ran across two cards is still whole on one of them. The analogy breaks because a person reading cards can flip to the next one; a retriever only sees the cards it scored highest.",
+  "scale": {
+   "title": "Chunking 200,000 support articles under a 256-token embedder limit",
+   "html": "<p>Assumptions: 200,000 help-centre articles, about 1,800 tokens each (360 M tokens total), embedded with all-MiniLM-L6-v2, which truncates input longer than 256 word pieces (<a href=\"https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2\">model card</a>). Token counts below are in that model's word pieces.</p><ol><li><strong>Check the ceiling first.</strong> The lesson's common 200-500 token range does not apply blindly: a 500-token chunk would lose its last 244 tokens (about half) silently. So chunk size must be at most 256.</li><li><strong>Pick size 240, overlap 40.</strong> Step = 240 - 40 = 200. Start positions 0, 200, ..., 1,600; the chunk starting at 1,600 would end at 1,840, past the end, so it is the last (and only 200 tokens long). That is 9 chunks per article.</li><li><strong>Count.</strong> 200,000 x 9 = 1.8 M chunks. Tokens embedded = 8 x 240 + 200 = 2,120 per article, about 18% more than the 1,800 raw tokens. That 18% is the price of overlap.</li><li><strong>Storage.</strong> 384 dimensions x 4 bytes (float32) = 1,536 bytes per vector. 1.8 M x 1,536 = 2.76 GB of vectors, plus the chunk text itself (about 360 M tokens x roughly 4 bytes per token of English, around 1.4 GB, an estimate).</li><li><strong>Compare a tiny-chunk design.</strong> Size 120, overlap 20 gives step 100 and 18 chunks per article: 3.6 M vectors, 5.5 GB, and each chunk is so short that a question like \"how do I reset 2FA on a new phone\" may need three of them.</li></ol><p>Decision: 240/40 with structure-aware splits (never cut inside a numbered procedure), then check recall@k on a golden set (Lesson 3.8) before believing it.</p>"
+  },
+  "lab": {
+   "id": "03_rag_local",
+   "look_for": "The lab chunks the same corpus two ways, fixed-size and sentence-aware with overlap, and prints the chunk counts. Pick one question whose answer sits across a sentence boundary and compare which chunking strategy retrieves it in the top-k. Then set overlap to 0 and rerun: watch the chunk count drop and, on boundary questions, the right chunk fall out of the results."
+  },
+  "quiz": [
+   {
+    "q": "You use an embedding model with a 256-token input limit and chunk your documents at 600 tokens. What happens?",
+    "options": [
+     {
+      "t": "Each chunk is silently truncated to 256 tokens, so facts in the last 344 tokens of every chunk can never be matched.",
+      "correct": true,
+      "why": "Embedding models cut input at their maximum sequence length without raising an error. The tail of every chunk is invisible to search, which shows up as mysteriously low recall for facts that sit late in sections."
+     },
+     {
+      "t": "The model raises an error and you notice immediately.",
+      "correct": false,
+      "why": "Most sentence-transformer models truncate quietly. That silence is exactly why this bug survives into production."
+     },
+     {
+      "t": "The model averages the chunk into a lower-quality vector but still sees all 600 tokens.",
+      "correct": false,
+      "why": "Tokens past the limit are dropped before the model runs. They contribute nothing to the vector."
+     },
+     {
+      "t": "Nothing; bigger chunks always give more context to the embedder.",
+      "correct": false,
+      "why": "Bigger chunks only help up to the model limit. Past it you pay to store text that the vector does not represent."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "A 3,000-token document is chunked at size 500 with overlap 100. How many chunks do you get, and what percentage of extra tokens do you embed?",
+    "a": "Step = 500 - 100 = 400. Starts at 0, 400, 800, 1,200, 1,600, 2,000, 2,400; the chunk at 2,400 ends at 2,900 which is short of 3,000, so one more starts at 2,800 and ends at 3,300 (past the end, so it is the last). That is 8 chunks. Embedded tokens: 7 full chunks x 500 = 3,500, plus the last chunk 2,800-3,000 = 200, total 3,700. Extra = 700 / 3,000 = 23%. Overlap is cheap insurance, but it is not free: you pay it in storage, embedding time and duplicate hits."
+   },
+   {
+    "level": "Transfer",
+    "q": "You are chunking a pricing page that is mostly an HTML table: 40 rows, columns Plan, Region, Monthly price, Seats. Users ask things like \"What does Pro cost in the EU?\" How do you chunk it?",
+    "a": "Chunk by row (or small groups of rows) and repeat the header in every chunk, for example \"Plan: Pro | Region: EU | Monthly price: ... | Seats: ...\". A fixed-size cut would produce chunks of bare numbers with no column names, which embed as number soup and match nothing. Add metadata (source page, table name, plan, region) so you can also filter on region. This is the general rule for structured content: each chunk must make sense read alone."
+   },
+   {
+    "level": "Stretch",
+    "q": "Retrieval on a legal corpus is weak because clauses say things like \"the Supplier shall indemnify the Customer\" without naming the contract. Design a chunking change and say how you would prove it helped.",
+    "a": "Use contextual chunking: before embedding, prepend a short header to each chunk built from document metadata, e.g. \"Contract: Acme-Globex MSA 2025, Section 12 Indemnification\". Keep the original chunk text for display and citation. Better still, combine it with parent-document retrieval: search on small clause-sized chunks, return the whole section to the model. To prove it, build a golden set of 100+ real questions with the clause that answers each, then compare recall@5 and MRR before and after on the same embedder and k. Also track chunk count and storage, since headers add tokens. Ship only if recall moves by more than the noise of a set that size (Lesson 3.8 shows how to size that)."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What is chunk overlap and why use it?",
+    "a": "Overlap repeats the end of one chunk at the start of the next, for example the last 50 tokens. Without it, a sentence or step that straddles a boundary is split in half, and neither half may match a query well enough to be retrieved. With overlap the full idea appears intact in at least one chunk. The cost is extra storage and embedding work, roughly overlap divided by step, and some duplicate results, which you can dedupe after retrieval. It does not guarantee recall; you still measure it."
+   },
+   {
+    "level": "Mid",
+    "q": "How do you choose a chunk size for a new corpus?",
+    "a": "I start from constraints, not a magic number. The embedding model's max sequence length is a hard ceiling, because anything past it is silently cut. Then the content: FAQ pairs, procedures and table rows have natural units, so I split on those. For prose I start with a recursive splitter around one coherent idea per chunk with modest overlap. Then I make it empirical: build a golden set of real questions with labelled answer passages, try two or three sizes, and compare recall@k and MRR, plus token cost per query. Whichever wins on my data wins."
+   },
+   {
+    "level": "Senior",
+    "q": "Your company wants one chunking pipeline for PDFs, Confluence pages, code repos and Slack threads. How do you design it?",
+    "a": "One pipeline, several splitters behind a common interface. Each source type gets a structure-aware splitter: headings and paragraphs for docs, functions and classes for code, threads or time windows for Slack, rows with repeated headers for tables. Every chunk gets the same metadata contract: source id, URL, section path, timestamps, ACL fields and a content hash, so citations, permission filters and incremental re-indexing work the same everywhere. The hash lets me re-embed only changed chunks. I version the chunker config alongside the index, because changing chunking means re-embedding. Finally, I evaluate per source type, since a size that works for docs can fail for Slack."
+   }
+  ],
+  "sources": [
+   {
+    "t": "sentence-transformers/all-MiniLM-L6-v2 model card (256 word-piece limit) - Hugging Face",
+    "u": "https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2"
+   },
+   {
+    "t": "Lewis et al., Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks - arXiv",
+    "u": "https://arxiv.org/abs/2005.11401"
+   },
+   {
+    "t": "Gao et al., Retrieval-Augmented Generation for Large Language Models: A Survey - arXiv",
+    "u": "https://arxiv.org/abs/2312.10997"
+   }
+  ]
+ },
+ {
+  "n": "3.3",
+  "analogy": "Embedding is like giving every sentence a spot on a giant map where sentences about the same thing live in the same neighbourhood. \"Cancel my plan\" and \"stop paying\" end up on the same street even though they share no words. Searching is dropping a pin for the question and looking at the nearest houses. The analogy breaks because every embedding model draws its own map: an address from one map means nothing on another, which is why documents and queries must use the same model.",
+  "scale": {
+   "title": "Embedding 1.8 M insurance-manual chunks, and what a model switch costs",
+   "html": "<p>Assumptions: 1.8 M chunks, a 16-core CPU box that embeds about 500 chunks per second with all-MiniLM-L6-v2 (measure yours; throughput varies a lot with chunk length and hardware), 20 queries per second at peak.</p><ol><li><strong>Indexing time.</strong> 1.8 M / 500 = 3,600 s, about one hour on one box. That is a batch job you can schedule nightly for changed chunks only.</li><li><strong>Storage.</strong> MiniLM gives 384 dimensions (<a href=\"https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2\">model card</a>). 384 x 4 bytes = 1,536 bytes per vector, x 1.8 M = 2.76 GB in float32.</li><li><strong>A bigger model.</strong> Suppose a 1,024-dimension model scores better on your golden set. 1,024 x 4 = 4,096 bytes, x 1.8 M = 7.37 GB, and if it embeds at, say, 100 chunks per second, re-indexing takes 1.8 M / 100 = 18,000 s, five hours.</li><li><strong>Quantize to claw it back.</strong> Storing int8 instead of float32 cuts each value to 1 byte: 1,024 x 1.8 M = 1.84 GB. Measure recall before and after; the drop is usually small but it is your data that decides.</li><li><strong>Query side.</strong> Each query is one short embedding plus a search. At 20 QPS that is trivial next to indexing, which is the whole reason for the index-once, query-cheap split.</li><li><strong>The switch rule.</strong> Changing the model means re-embedding all 1.8 M chunks before you flip the query side. Run old and new indexes side by side, compare recall@k, then cut over.</li></ol>"
+  },
+  "lab": {
+   "id": "03_rag_local",
+   "look_for": "The lab embeds every chunk with all-MiniLM-L6-v2 and searches by cosine similarity in both DuckDB (array_cosine_similarity) and FAISS, and the two result lists should match. Look at the printed scores for a paraphrased question that shares no words with the answer: it should still rank first. Then, as an experiment, embed the queries with a different model while keeping the stored vectors: the rankings turn to noise, which is the number-one retrieval bug from this lesson."
+  },
+  "quiz": [
+   {
+    "q": "You embed with normalize_embeddings=True and rank with a plain dot product. Why is that correct?",
+    "options": [
+     {
+      "t": "For unit-length vectors the dot product equals cosine similarity, so the cheaper operation gives the same ranking.",
+      "correct": true,
+      "why": "Cosine = dot(a, b) / (|a| |b|). When both lengths are 1, the denominator is 1 and cosine is just the dot product."
+     },
+     {
+      "t": "Normalizing makes the vectors shorter, which speeds up the model.",
+      "correct": false,
+      "why": "Normalizing rescales each vector to length 1 after encoding. It does not change the dimension or the model's speed."
+     },
+     {
+      "t": "Dot product and cosine always give the same ranking, normalized or not.",
+      "correct": false,
+      "why": "Without normalization the dot product rewards long vectors, so a long chunk can outrank a more relevant short one. Normalization is what makes them equal."
+     },
+     {
+      "t": "Normalizing removes the need to use the same model for queries and documents.",
+      "correct": false,
+      "why": "Normalization does not align two different models' spaces. Vectors from different models remain incomparable."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "Two unit vectors in 3 dimensions: q = (0.6, 0.8, 0) and d = (0.8, 0.6, 0). Compute their cosine similarity, then the cosine for d2 = (0, 0.6, 0.8).",
+    "a": "q . d = 0.6 x 0.8 + 0.8 x 0.6 + 0 = 0.48 + 0.48 = 0.96. Both vectors have length 1 (0.36 + 0.64 = 1), so cosine = 0.96. q . d2 = 0 + 0.8 x 0.6 + 0 = 0.48, so cosine 0.48. d ranks above d2. Real embeddings do the same sum over 384 or more dimensions."
+   },
+   {
+    "level": "Transfer",
+    "q": "Your support bot serves English and Hindi users, but all documents are in English. Hindi questions retrieve garbage. What do you change, and how do you check it worked?",
+    "a": "Switch to a multilingual embedding model trained to map the same meaning in different languages to nearby vectors, and re-embed the whole corpus with it (same model on both sides). Alternatively, translate the query to English before retrieval, which keeps your current index but adds an LLM call and its latency. Check with a golden set that has the same questions in both languages: recall@5 for Hindi queries should approach the English number. Pick the model on that eval, not on its leaderboard rank."
+   },
+   {
+    "level": "Stretch",
+    "q": "You want to swap embedding models on a live system with 1.8 M chunks and zero downtime. Write the rollout plan.",
+    "a": "(1) Build a second index with the new model in the background, chunk by chunk, keyed by the same chunk ids. (2) Dual-write: new and changed chunks go to both indexes until cutover. (3) Offline eval: run the golden set against both and compare recall@k, MRR and latency. (4) Shadow traffic: send a slice of live queries to the new index and log both result lists, compare overlap and judged relevance. (5) Cut over the query path and the index together, behind a flag, so you never query new-model vectors with old-model queries. (6) Keep the old index for a rollback window, then delete it. The rule that ties it together: model id is part of the index identity, stored in metadata, and the query code refuses to search an index built by a different model."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "Why must the query and the documents use the same embedding model?",
+    "a": "Each embedding model learns its own vector space. The numbers in one model's vectors have no relationship to another model's, so comparing a query vector from model A against document vectors from model B gives meaningless similarity scores. Retrieval quality collapses without any error message. So you embed documents and queries with the same model and version, and if you change the model you re-embed the whole corpus. I also store the model name in the index metadata so the code can refuse a mismatch."
+   },
+   {
+    "level": "Mid",
+    "q": "How would you pick an embedding model for a domain-specific corpus?",
+    "a": "I use public leaderboards such as MTEB only as a shortlist. Then I build a golden set from my own data, a few hundred real queries with labelled relevant chunks, and measure recall@k and MRR for three or four candidates. I also check practical limits: max sequence length against my chunk size, dimension and therefore storage, embedding throughput for re-indexing, languages, and whether the model expects query and passage prefixes. A small model that wins on my data beats a famous one that does not."
+   },
+   {
+    "level": "Senior",
+    "q": "Vector storage is becoming a big cost line. What levers do you have and how do you choose?",
+    "a": "Four levers. Smaller dimension: some models support truncating dimensions; storage drops linearly, measure the recall cost. Quantization: float32 to int8 is a 4x cut, binary is 32x, usually with a rescoring step on the top candidates using full-precision vectors. Fewer vectors: dedupe near-identical chunks and stop indexing boilerplate. Index choice: compressed indexes like IVF-PQ trade recall for memory. I choose by fixing a quality bar first, say recall@10 within one point of baseline on the golden set, then take the cheapest combination that holds it, and I recheck after every corpus or model change."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Reimers and Gurevych, Sentence-BERT (2019) - arXiv",
+    "u": "https://arxiv.org/abs/1908.10084"
+   },
+   {
+    "t": "Muennighoff et al., MTEB: Massive Text Embedding Benchmark (2022) - arXiv",
+    "u": "https://arxiv.org/abs/2210.07316"
+   },
+   {
+    "t": "sentence-transformers/all-MiniLM-L6-v2 model card - Hugging Face",
+    "u": "https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2"
+   }
+  ]
+ },
+ {
+  "n": "3.4",
+  "analogy": "Brute-force search is looking for your friend in a stadium by checking every seat. An ANN index is asking the ushers: they know roughly which section your friend's group sits in, so you check two or three sections and usually find them in a minute. Metadata filters are the ticket check: some sections you are simply not allowed into. The analogy breaks because ushers who are wrong say so; an ANN index that misses the best match gives no warning, which is why you measure recall.",
+  "scale": {
+   "title": "Serving 50 M vectors for a multi-tenant document search",
+   "html": "<p>Assumptions: 50 M chunks, 768-dimension float32 embeddings, 200 queries per second, 3,000 tenants, a latency target of p95 under 50 ms.</p><ol><li><strong>Raw size.</strong> 768 x 4 bytes = 3,072 bytes per vector. 50 M x 3,072 = 153.6 GB. That does not fit in a 64 GB server's RAM, so either shard or compress.</li><li><strong>Brute force cost.</strong> One query compares against all 50 M vectors: 50 M x 768 = 38.4 billion multiply-adds per query. At 200 QPS that is 7.7 trillion per second, far past one machine. Flat search is out.</li><li><strong>IVF sizing.</strong> The <a href=\"https://github.com/facebookresearch/faiss/wiki/Guidelines-to-choose-an-index\">FAISS index guidelines</a> suggest about 262,144 (2<sup>18</sup>) clusters for 10 M-100 M vectors. Average list length = 50 M / 262,144 = about 191 vectors. With nprobe = 64 you scan 64 x 191 = about 12,200 vectors per query, roughly 0.02% of the corpus.</li><li><strong>Compression.</strong> Product quantization at 96 bytes per vector (8 dimensions per sub-quantizer) gives 50 M x 96 = 4.8 GB, a 32x cut from 153.6 GB. You re-rank the top few hundred candidates with full vectors kept on disk to recover accuracy.</li><li><strong>Tenancy.</strong> The average tenant owns 50 M / 3,000 = about 16,700 chunks, 0.03% of the index. A post-filter after ANN would usually return zero of that tenant's chunks. Use a store with filtered ANN, or route large tenants to their own index; for a 16,700-vector tenant, flat search over just their vectors is only 12.8 M multiply-adds and is fast.</li><li><strong>Tune to a target.</strong> Raise nprobe until recall@10 against exact search reaches, say, 0.95 on a sample of queries, and stop there.</li></ol>"
+  },
+  "lab": {
+   "id": "03_rag_local",
+   "look_for": "The lab runs the same vector search twice, in DuckDB with array_cosine_similarity and in FAISS, and cross-checks that the top-k ids agree. On a corpus this small both are exact searches, so they should match perfectly. Use that as your ground truth habit: whenever you switch to an approximate index, compare its results to an exact search on a sample of queries and report the overlap as recall@k. The lab does not exercise HNSW or IVF tuning at scale; that you measure on your own data."
+  },
+  "quiz": [
+   {
+    "q": "A tenant owns 0.05% of a 20 M-vector shared index. Their searches use \"retrieve top 10 by ANN, then filter to tenant_id\". What usually happens?",
+    "options": [
+     {
+      "t": "The top 10 neighbours almost never belong to that tenant, so the filter removes everything and they get few or no results.",
+      "correct": true,
+      "why": "Post-filtering only keeps matches that survived the unfiltered top-k. With 0.05% selectivity, the chance any of 10 global neighbours is theirs is tiny. Use filtered ANN, pre-filtering, or a per-tenant index."
+     },
+     {
+      "t": "They get the same 10 results they would have from their own index.",
+      "correct": false,
+      "why": "That is only true if filtering happens inside the search. Filtering after the fact discards candidates and cannot replace them."
+     },
+     {
+      "t": "The search becomes exact because the filter narrows the space.",
+      "correct": false,
+      "why": "The filter runs after the ANN step here, so it narrows nothing during search. It only throws results away."
+     },
+     {
+      "t": "Results leak from other tenants.",
+      "correct": false,
+      "why": "The filter does stop leaks; the problem is the opposite, recall collapses for the small tenant. (Without any filter, leaks would be the risk.)"
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "How much RAM do 5 M vectors of 1,024 dimensions need in float32, and in int8?",
+    "a": "float32: 1,024 x 4 = 4,096 bytes per vector. 5 M x 4,096 = 20.48 GB. int8: 1,024 bytes per vector, 5.12 GB. Index structures (HNSW links, IVF lists) add more on top, so budget headroom. This arithmetic decides early whether one box is enough."
+   },
+   {
+    "level": "Transfer",
+    "q": "Your HNSW index returns results in 8 ms but recall@10 against exact search is 0.88 on a 500-query sample. Product wants 0.95 and 30 ms is acceptable. What do you do?",
+    "a": "Raise the search-time candidate list (ef_search in most HNSW implementations) step by step, rerunning the same 500 queries against exact results each time and plotting recall@10 against p95 latency. Stop at the first setting that reaches 0.95 inside 30 ms. If ef_search alone cannot get there, rebuild with a higher M or ef_construction (more links, more memory, slower build). The point is that you fix the target and let measurement pick the parameter."
+   },
+   {
+    "level": "Stretch",
+    "q": "A regulated customer demands that no query can ever return another customer's chunk, even under a bug in your filter code. Design the storage layout and justify it.",
+    "a": "Physical isolation: one collection (or index, or database) per customer, with the collection chosen from the authenticated identity on the server side, never from a request parameter. Then a missing or wrong filter cannot cross tenants because the other tenant's vectors are not in the search space. Add defence in depth: keep tenant_id in metadata and assert it on every returned chunk before it reaches the prompt, and log any mismatch as a security event. Trade-offs: many small indexes cost more memory overhead and operational work, so shared indexes with filtered ANN stay fine for low-risk tenants. Regulated data gets the separate index."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What does a vector database give you that a NumPy array does not?",
+    "a": "Four things. An approximate nearest-neighbour index, so search stays fast at millions of vectors instead of scanning all of them. Metadata filtering, so you can restrict results by tenant, permissions, product or date. Persistence, updates and deletes, so the index survives restarts and changes without a full rebuild. And operational features such as replication and concurrent access. For a few thousand vectors a NumPy array is fine; past that, or when you need filtering, use a real store."
+   },
+   {
+    "level": "Mid",
+    "q": "Explain the recall-latency trade-off in HNSW or IVF and how you tune it.",
+    "a": "Both indexes avoid comparing against every vector. HNSW walks a graph and explores a candidate list whose size is set by ef_search; IVF scans only the nprobe nearest clusters. Exploring more candidates or clusters finds the true neighbours more often (higher recall) but costs more time. I tune by sampling a few hundred real queries, computing exact top-k with flat search as ground truth, then sweeping the parameter and measuring recall@k and p95 latency. I pick the cheapest setting that hits the recall target, and I re-check after big corpus changes because the right value drifts."
+   },
+   {
+    "level": "Senior",
+    "q": "How would you design retrieval for 3,000 tenants of very different sizes in one product?",
+    "a": "Tiered. Small tenants share an index with a tenant_id field and a store that supports filtered ANN, so selective filters do not destroy recall. Large tenants, or anyone regulated, get a dedicated index, which also gives them independent scaling and deletes. Tenant routing comes from the authenticated session server-side. I enforce isolation twice: by search scope and by asserting tenant_id on results. I evaluate recall per tenant tier, not just globally, because a global recall number hides the small tenants that post-filtering hurts most. Re-indexing, quotas and cost are tracked per tenant."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Malkov and Yashunin, Efficient and robust approximate nearest neighbor search using HNSW graphs - arXiv",
+    "u": "https://arxiv.org/abs/1603.09320"
+   },
+   {
+    "t": "Douze et al., The Faiss library (2024) - arXiv",
+    "u": "https://arxiv.org/abs/2401.08281"
+   },
+   {
+    "t": "Guidelines to choose an index - FAISS wiki",
+    "u": "https://github.com/facebookresearch/faiss/wiki/Guidelines-to-choose-an-index"
+   },
+   {
+    "t": "Chroma documentation",
+    "u": "https://docs.trychroma.com/"
+   }
+  ]
+ },
+ {
+  "n": "3.5",
+  "analogy": "Hiring with two rounds: a recruiter skims 500 CVs in an afternoon by keywords and picks 50, then the hiring manager actually reads those 50 against the job and picks 5. The recruiter is fast and rough (the bi-encoder); the manager is slow and careful (the cross-encoder). The analogy breaks because a manager can ask the recruiter for more CVs; a reranker can only reorder what stage 1 handed it, so if the best candidate was not in the 50, it is gone.",
+  "scale": {
+   "title": "Adding a cross-encoder to search over 30 M manual chunks at 120 QPS",
+   "html": "<p>Assumptions: 30 M chunks, 120 queries per second at peak, a MiniLM-size cross-encoder that scores about 2,000 (query, chunk) pairs per second on one GPU at your chunk length (an assumption: benchmark it yourself, it varies with hardware and sequence length).</p><ol><li><strong>Why not cross-encode everything?</strong> One query against all 30 M chunks = 30 M pairs / 2,000 per second = 15,000 s, over four hours per query. That is why stage 1 exists.</li><li><strong>Rerank 50 per query.</strong> 120 QPS x 50 = 6,000 pairs per second, so 6,000 / 2,000 = 3 GPUs at peak, with no headroom. Latency per query: 50 / 2,000 = 25 ms if the batch gets a GPU to itself.</li><li><strong>Rerank 20 per query.</strong> 120 x 20 = 2,400 pairs per second, 1.2 GPUs, so 2 with headroom; latency 20 / 2,000 = 10 ms.</li><li><strong>Is 20 enough?</strong> Check recall@20 and recall@50 of stage 1 on your golden set. If recall@20 = 0.93 and recall@50 = 0.96, reranking 50 can at best recover 3 more points of questions. Decide whether 3 points is worth one extra GPU.</li><li><strong>Keep narrow.</strong> After reranking, send the top 5 into the prompt. 5 chunks x 400 tokens = 2,000 tokens instead of 20,000 if you had stuffed all 50: at $2 per million input tokens (<a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\">Anthropic models overview, checked 2026-11-03</a>) that saves 18,000 x $2 / 1 M = $0.036 per query, about $15,500 an hour at a sustained 120 QPS (120 x 3,600 = 432,000 queries). The reranker pays for itself.</li></ol>"
+  },
+  "lab": {
+   "id": "03_rag_local",
+   "look_for": "Honest note: the lab has no cross-encoder stage; it does dense retrieval, BM25 and RRF fusion. Use it to see the precondition for reranking: print the top-20 from dense retrieval for a few golden questions and note at which rank the correct chunk sits. If it is in the top 20 but below rank 3, a reranker would help; if it is missing from the top 20, no reranker can. To try a real reranker, add sentence-transformers' CrossEncoder (the worked example above) on top of the lab's top-20 list."
+  },
+  "quiz": [
+   {
+    "q": "Stage-1 recall@50 is 0.97 and recall@5 is 0.71. You add a cross-encoder over the top 50 and keep 5. What is the best possible recall@5 after reranking?",
+    "options": [
+     {
+      "t": "0.97, because a reranker can only reorder the 50 candidates it is given.",
+      "correct": true,
+      "why": "Reranking can promote any of the 50 into the top 5, so the ceiling is the stage-1 recall at the depth you rerank. It cannot recover the 3% of questions whose answer never made the shortlist."
+     },
+     {
+      "t": "1.0, because the cross-encoder reads the query and chunk together.",
+      "correct": false,
+      "why": "The cross-encoder only sees the 50 candidates. Chunks outside the shortlist are never scored."
+     },
+     {
+      "t": "0.71, because reranking does not change recall.",
+      "correct": false,
+      "why": "Reranking does not change recall at the shortlist depth (50), but it can raise recall at the smaller depth you keep (5) by promoting relevant chunks."
+     },
+     {
+      "t": "It depends only on the size of the LLM.",
+      "correct": false,
+      "why": "The LLM comes after retrieval and has no effect on which chunks are ranked into the top 5."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "Your reranker scores 1,500 pairs per second. You rerank 40 candidates per query. What is the reranking latency per query and the maximum QPS on one instance?",
+    "a": "Latency = 40 / 1,500 = 0.0267 s, about 27 ms. Max QPS = 1,500 / 40 = 37.5 queries per second per instance, assuming perfect batching. Real systems leave 30-50% headroom, so plan for about 25 QPS per instance."
+   },
+   {
+    "level": "Transfer",
+    "q": "Your top 5 after reranking are often three near-duplicate chunks from copies of the same FAQ. Answers miss facts that live elsewhere. What do you add, and where?",
+    "a": "Two fixes. Upstream, dedupe at indexing time with a content hash or near-duplicate detection so copies are not indexed separately. At query time, apply Maximal Marginal Relevance (MMR) after reranking: pick the top chunk, then repeatedly pick the chunk that balances high relevance with low similarity to those already chosen, controlled by a lambda weight. That spends the 5 prompt slots on distinct facts. Measure with an eval that includes multi-fact questions, since single-fact questions will not show the gain."
+   },
+   {
+    "level": "Stretch",
+    "q": "You have a budget of 15 ms for reranking at 300 QPS. Propose two architectures and the evidence you would collect to choose.",
+    "a": "Option A: a smaller cross-encoder over fewer candidates (say 20) on GPUs sized for 300 x 20 = 6,000 pairs per second at under 15 ms per batch. Option B: a late-interaction model (ColBERT-style) or a distilled reranker that precomputes token vectors for documents so query-time scoring is cheaper, at the price of more storage. A third, cheap option is caching rerank results for frequent queries. Evidence: on the golden set, nDCG@5 and recall@5 for each option; p95 latency under a load test at 300 QPS; GPU count and storage cost. Pick the cheapest option that meets the quality bar and the 15 ms budget."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What is the difference between a bi-encoder and a cross-encoder?",
+    "a": "A bi-encoder embeds the query and each document separately into vectors and compares them with cosine similarity. Document vectors are computed once in advance, so search is fast. A cross-encoder takes the query and one document together as a single input and outputs a relevance score. It sees how the words interact, so it is more accurate, but it must run once per pair at query time. That is why we use the bi-encoder to shortlist and the cross-encoder to rerank the shortlist."
+   },
+   {
+    "level": "Mid",
+    "q": "How do you choose how many candidates to retrieve and how many to keep?",
+    "a": "Fetch depth is about recall: I plot stage-1 recall@k for k = 10, 20, 50, 100 on the golden set and see where it flattens. Rerank depth costs latency and compute linearly, so I pick the point where extra candidates stop adding recall. Keep depth is about the prompt: few enough that the model is not diluted and tokens stay cheap, enough to cover multi-fact questions, usually 3 to 8. Then I verify end to end with faithfulness and answer correctness, because the best retrieval depth is the one that gives the best answers."
+   },
+   {
+    "level": "Senior",
+    "q": "A team wants to upgrade from a mid-size LLM to a frontier model to fix bad RAG answers. How do you decide whether a reranker is the better spend?",
+    "a": "I look at where the failures are. On a few hundred failing cases I check whether the answer-bearing chunk was in the prompt. If it is usually missing from the prompt but present in stage 1's top 50, the fault is ranking, and a reranker fixes it for a fraction of the cost of a bigger model. If the chunk is in the prompt and the answer is still wrong, it is a generation issue, and the bigger model or better grounding may help. I also price both: model upgrade is per-token on every call; a reranker is fixed GPU cost and often reduces prompt size. The eval decides, not the hype."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Cross-Encoder usage - Sentence Transformers documentation",
+    "u": "https://www.sbert.net/docs/cross_encoder/usage/usage.html"
+   },
+   {
+    "t": "Reimers and Gurevych, Sentence-BERT (2019) - arXiv",
+    "u": "https://arxiv.org/abs/1908.10084"
+   },
+   {
+    "t": "Thakur et al., BEIR: A Heterogeneous Benchmark for Zero-shot Evaluation of IR Models (2021) - arXiv",
+    "u": "https://arxiv.org/abs/2104.08663"
+   }
+  ]
+ },
+ {
+  "n": "3.6",
+  "analogy": "Two friends help you find a song. One remembers lyrics exactly but only if you say the precise words. The other understands \"that sad song about a long drive\" but mixes up titles. Ask both and combine their lists, and you find almost anything. RRF is the rule \"a song both friends put near the top wins\". The analogy breaks because friends can talk to each other and agree; RRF just adds up positions and never knows why either list ranked something.",
+  "scale": {
+   "title": "Fusing BM25 and dense results for 4 M developer-docs chunks",
+   "html": "<p>Assumptions: 4 M chunks of API docs, a large share of queries containing identifiers like <code>ERR_2043</code> or <code>useEffect</code>, dense ANN p95 = 12 ms, BM25 p95 = 8 ms, top 100 from each.</p><ol><li><strong>Run both in parallel.</strong> Wall-clock is the slower of the two, 12 ms, not 20 ms. Fusion over at most 200 ids is microseconds.</li><li><strong>RRF with k = 60, ranks starting at 1</strong> (the form in Cormack et al., 2009). Three chunks:<ul><li>A: dense rank 1, BM25 rank 4. Score = 1/61 + 1/64 = 0.016393 + 0.015625 = 0.032018.</li><li>B: dense rank 2, not in BM25's top 100. Score = 1/62 = 0.016129.</li><li>C: BM25 rank 1 (exact error code match), dense rank 30. Score = 1/61 + 1/90 = 0.016393 + 0.011111 = 0.027504.</li></ul>Fused order: A, C, B. The exact-code chunk C jumps above B, which only dense liked.</li><li><strong>Why not add raw scores?</strong> Suppose A's cosine is 0.82 and BM25 gives C a score of 17.4. Adding them lets BM25's unbounded scale drown cosine completely. Ranks are comparable; raw scores are not.</li><li><strong>What k does.</strong> With k = 60, rank 1 scores 1/61 and rank 10 scores 1/70, only 13% less, so being in both lists matters more than being first in one. A small k such as 5 makes rank 1 (1/6) worth 2.5 times rank 10 (1/15), trusting each list's top more.</li><li><strong>Then rerank.</strong> Send the fused top 50 to the cross-encoder from Lesson 3.5 and keep 5.</li></ol><p>(The page's code counts ranks from 0, so its scores are 1/60, 1/61, ...; the ordering effect is negligible.)</p>"
+  },
+  "lab": {
+   "id": "03_rag_local",
+   "look_for": "The lab runs a hand-rolled BM25 and a dense search on the same chunks, then fuses them with RRF and prints all three rankings. Find a query with an exact token (a code, a product name) and note where the right chunk sits in dense, BM25 and fused lists. Then try a paraphrased question with no shared words: dense should win and BM25 miss. Change RRF's k from 60 to 5 and see how much the fused order shifts toward each list's top results."
+  },
+  "quiz": [
+   {
+    "q": "With RRF (k = 60, ranks from 1), chunk X is rank 1 in BM25 only. Chunk Y is rank 5 in both dense and BM25. Which ranks higher after fusion?",
+    "options": [
+     {
+      "t": "Y: 1/65 + 1/65 = 0.0308 beats X's 1/61 = 0.0164.",
+      "correct": true,
+      "why": "RRF rewards agreement. Being fairly high in both lists beats being first in one, which is exactly why it is robust when one retriever is fooled."
+     },
+     {
+      "t": "X, because rank 1 always wins.",
+      "correct": false,
+      "why": "Rank 1 in one list gives 1/61. Two appearances at rank 5 give almost twice that."
+     },
+     {
+      "t": "They tie, because RRF ignores ranks.",
+      "correct": false,
+      "why": "RRF uses only ranks; it ignores raw scores. The ranks give different totals here."
+     },
+     {
+      "t": "You cannot tell without the raw BM25 and cosine scores.",
+      "correct": false,
+      "why": "That is the point of RRF: it needs only ranks, so raw scores are not required."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "Compute RRF scores (k = 60, ranks from 1) for: P = dense 3, BM25 2; Q = dense 1 only; R = BM25 1 only. Give the fused order.",
+    "a": "P = 1/63 + 1/62 = 0.015873 + 0.016129 = 0.032002. Q = 1/61 = 0.016393. R = 1/61 = 0.016393. Order: P first, then Q and R tied. P wins because both retrievers agree on it."
+   },
+   {
+    "level": "Transfer",
+    "q": "Your BM25 tokenizer lowercases and splits on whitespace. Users search for \"ERR_2043\" and \"X200-BLK\", and docs write \"err 2043\" and \"X200 BLK\". BM25 misses them. Fix it without hurting normal words.",
+    "a": "Normalize identifiers the same way on both sides. Options: split on punctuation as well as spaces, so ERR_2043 becomes err, 2043 and X200-BLK becomes x200, blk; also index the joined form (err2043, x200blk) as an extra token so exact searches still match strongly. Apply the identical analyzer to queries and documents. Test on a golden set of identifier queries and a set of normal language queries, and check recall moves up on the first without dropping on the second. Sparse retrieval is only as good as its tokenizer."
+   },
+   {
+    "level": "Stretch",
+    "q": "Hybrid search improved identifier queries but worsened conversational ones by 4 points of recall@10. Design a fix and how you will tune it without overfitting.",
+    "a": "Make fusion weighted or query-aware. Weighted RRF multiplies each list's contribution, e.g. score = w_dense/(k + r_dense) + w_bm25/(k + r_bm25). Alternatively classify the query (contains identifier-like tokens or not, by a regex) and choose weights per class. Tune the weights on a training split of the golden set, then report on a held-out split that was never used for tuning, sliced by query type. Keep the change only if the held-out conversational slice recovers and the identifier slice keeps its gain."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "When does keyword search beat embedding search?",
+    "a": "When the query depends on exact strings that carry little meaning: error codes, SKUs, function names, version numbers, rare names. Embeddings place ERR_2043 and ERR_2044 very close together, so dense search returns a near miss. BM25 scores documents by the exact terms they share with the query, weighted by how rare the terms are, so it nails the literal match. Embeddings win on paraphrase, where the user's words differ from the document's. That is why we often run both."
+   },
+   {
+    "level": "Mid",
+    "q": "Explain Reciprocal Rank Fusion and why it is popular.",
+    "a": "RRF combines several ranked lists by giving each document 1/(k + rank) for every list it appears in, then sorting by the sum. k is a constant, 60 in the original paper. It is popular because it needs no score calibration: BM25 scores are unbounded and cosine sits in a small range, so adding raw scores lets one scale dominate. Ranks are always comparable. It also rewards agreement between retrievers, which is a strong relevance signal. It is a few lines of code and a good default before trying learned fusion."
+   },
+   {
+    "level": "Senior",
+    "q": "Would you build hybrid search for every RAG system? How do you decide?",
+    "a": "No. Hybrid adds a second index, a tokenizer to maintain, fusion weights to tune, and more to monitor. I decide from the query log and the eval. I tag a sample of real queries by type, and if identifiers or exact phrases are common, or if dense recall is weak on that slice, hybrid is worth it, which for technical or enterprise search it nearly always is. For a consumer FAQ of plain-language questions, dense plus a reranker may be enough. I also check whether my vector store offers native hybrid, which cuts the operational cost. Either way, it ships only if the sliced eval shows a real gain."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Cormack, Clarke and Buettcher, Reciprocal Rank Fusion outperforms Condorcet and individual rank learning methods (SIGIR 2009) - University of Waterloo",
+    "u": "https://plg.uwaterloo.ca/~gvcormac/cormacksigir09-rrf.pdf"
+   },
+   {
+    "t": "Formal et al., SPLADE: Sparse Lexical and Expansion Model for First Stage Ranking (2021) - arXiv",
+    "u": "https://arxiv.org/abs/2107.05720"
+   },
+   {
+    "t": "Thakur et al., BEIR benchmark (BM25 vs dense across domains) - arXiv",
+    "u": "https://arxiv.org/abs/2104.08663"
+   }
+  ]
+ },
+ {
+  "n": "3.7",
+  "analogy": "Grounding is a school report where the teacher says: every sentence needs a footnote to a page in the books on your desk, and if the books do not say it, write \"not in my sources\". A student who adds a fact from memory without a footnote loses marks even if the fact is true. The analogy breaks because a teacher checks the footnotes by reading the page; your system only checks footnotes if you write code or a judge to do it.",
+  "scale": {
+   "title": "Grounded answers and faithfulness checks for a 60,000-employee HR bot",
+   "html": "<p>Assumptions: 60,000 employees, 9,000 questions a day, about 6% of questions not covered by any policy, each answer built from 3,000 tokens of context, judged by claude-sonnet-5-5 at $2 / $10 per million input / output tokens (<a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\">Anthropic models overview, checked 2026-11-03</a>).</p><ol><li><strong>Expected abstentions.</strong> 9,000 x 6% = 540 questions a day should end in \"Not in the provided documents\". Track the abstain rate daily: if it drops to 1%, the bot has started guessing.</li><li><strong>Citation validity check.</strong> A regex that every [n] points to a real chunk costs nothing and runs on all 9,000 answers.</li><li><strong>Faithfulness judge on everything.</strong> Per answer: 3,000 context + 300 answer + 200 instructions = 3,500 input tokens and about 150 output tokens. Daily input: 9,000 x 3,500 = 31.5 M tokens x $2 = $63. Daily output: 9,000 x 150 = 1.35 M x $10 = $13.50. Total about $76.50 a day.</li><li><strong>Or sample.</strong> Judging a 10% random sample costs about $7.65 a day. With 900 judged answers a day, a faithfulness rate near 0.9 has a 95% margin of about 1.96 x sqrt(0.9 x 0.1 / 900) = 0.0196, roughly 2 points, which is enough to catch a regression within a day.</li><li><strong>Escalate the risky ones.</strong> Judge 100% of answers on high-stakes topics (pay, leave, disciplinary) and sample the rest.</li></ol><p>The lesson: citations make answers checkable, but only the checks (regex, judge, abstain rate) tell you the bot is actually behaving.</p>"
+  },
+  "lab": {
+   "id": "03_rag_local",
+   "look_for": "Look at the final step of the lab: the grounded answer with [doc-id] citations, and the refusal when the best retrieval score is below the threshold. Check that each cited id is one of the retrieved chunks. Then raise the threshold until a question you know is answerable gets refused, and lower it until an off-topic question gets an answer: that range is the precision-versus-coverage dial for abstention. Note the refusal here is a retrieval-score gate, not a judge-based faithfulness check."
+  },
+  "quiz": [
+   {
+    "q": "An answer says \"Parental leave is 26 weeks [1] and can be split into two blocks [2].\" Chunk [2] does not mention splitting. Which check catches this?",
+    "options": [
+     {
+      "t": "A claim-level support check (string match or LLM judge) comparing each claim to its cited chunk.",
+      "correct": true,
+      "why": "The citation format is valid, so only checking whether the cited text supports the claim exposes it. That is what faithfulness measures."
+     },
+     {
+      "t": "Checking that every [n] refers to a chunk that was supplied.",
+      "correct": false,
+      "why": "[2] was supplied, so this check passes. Valid citation ids do not mean the content supports the claim."
+     },
+     {
+      "t": "Lowering the temperature.",
+      "correct": false,
+      "why": "Sampling settings do not verify anything, and many current hosted models no longer let you change temperature at all."
+     },
+     {
+      "t": "Retrieving more chunks.",
+      "correct": false,
+      "why": "More context does not test whether the existing claim is supported, and can add more material to blend wrongly."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "An answer has 5 claims. 4 are supported by the cited chunks; 1 is not supported by any retrieved chunk. What is its faithfulness score?",
+    "a": "Faithfulness = supported claims / total claims = 4 / 5 = 0.8. This is the definition used by RAGAS: split the answer into claims and check each against the retrieved context. One unsupported claim in five is a serious problem in a policy bot, so you look at which claim and why."
+   },
+   {
+    "level": "Transfer",
+    "q": "Users complain the bot abstains too much: 25% of questions get \"Not in the provided documents\" even though the policy exists. Where do you look first?",
+    "a": "At retrieval, not the prompt. Take a sample of the abstentions and check whether the answering chunk was in the retrieved context. If it was missing, it is a recall problem (chunking, embedder, hybrid search, k too small, or a too-strict score threshold); fix retrieval and the abstentions turn into answers. If the chunk was present and the model still abstained, the instruction is too strict or the chunk is phrased indirectly, so adjust the prompt or add an example. Measure the abstain rate split into \"correct abstention\" and \"wrong abstention\" on a labelled set."
+   },
+   {
+    "level": "Stretch",
+    "q": "Design a citation format and verification step for answers that combine two sources, e.g. \"Contractors get 10 days of leave [3], prorated for part-time [5].\" How do you make the check cheap at 9,000 answers a day?",
+    "a": "Format: one or more citations at the end of each sentence, and require each sentence to be one claim where possible. Verification in two tiers. Tier 1, free: parse sentences and their citation ids, check ids exist, and do a lexical check that key numbers and named entities in the sentence (10, part-time) appear in the cited chunks. Most bad citations fail this. Tier 2, paid: send only sentences that fail or are ambiguous, plus a random sample, to an LLM judge that returns supported or unsupported for each (sentence, cited chunks) pair. Log per-sentence verdicts so you can compute faithfulness and find which document types cause slips."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "How do you make a RAG answer grounded?",
+    "a": "Number the retrieved chunks in the prompt and tell the model to answer only from them, cite the chunk number for each claim, and say it does not know if the answer is not there. Put the question after the context. Then verify in code that each cited number refers to a chunk you actually supplied. Grounding reduces hallucination a lot but does not remove it, so you also measure faithfulness on a sample."
+   },
+   {
+    "level": "Mid",
+    "q": "What is the difference between faithfulness and answer correctness?",
+    "a": "Faithfulness asks whether every claim in the answer is supported by the retrieved context; it does not care whether the context itself is right. Answer correctness compares the answer against a reference answer or the truth. You can be faithful and wrong if retrieval fetched an outdated policy, and correct but unfaithful if the model answered from memory and got lucky. In RAG you want both, and measuring them separately tells you whether to fix generation or fix the data and retrieval."
+   },
+   {
+    "level": "Senior",
+    "q": "Legal wants a guarantee that the bot never states anything unsupported. What can you honestly promise, and what do you build?",
+    "a": "I cannot promise zero; models can paraphrase a source into something subtly different. I can promise layered controls and measured rates. Build: strict grounding prompt with abstention; per-sentence citations; automated support checks (lexical then LLM judge) on high-stakes answers, blocking or flagging any sentence that fails; showing sources to users with quotes so they can verify; and a monitored faithfulness rate on a daily sample with a confidence interval and alerting. I would also calibrate the judge against lawyer-labelled examples so its verdicts mean something. Then the promise is a measured, monitored number, not a hope."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Gao et al., Enabling Large Language Models to Generate Text with Citations (ALCE, 2023) - arXiv",
+    "u": "https://arxiv.org/abs/2305.14627"
+   },
+   {
+    "t": "Es et al., Ragas: Automated Evaluation of Retrieval Augmented Generation (2023) - arXiv",
+    "u": "https://arxiv.org/abs/2309.15217"
+   },
+   {
+    "t": "Faithfulness metric - Ragas documentation",
+    "u": "https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/faithfulness/"
+   },
+   {
+    "t": "Models overview and pricing - Anthropic docs",
+    "u": "https://platform.claude.com/docs/en/about-claude/models/overview"
+   }
+  ]
+ },
+ {
+  "n": "3.8",
+  "analogy": "Grading a treasure hunt team. Recall asks: of the 3 treasures hidden, how many did they bring back? Precision asks: of the 5 things in their bag, how many are treasure and how many are rocks? MRR asks: how many steps until they found the first treasure? nDCG gives more points for treasure found early and for the gold over the silver. The analogy breaks because in a treasure hunt you know where every treasure is; in retrieval your labels are often incomplete, so a \"rock\" might be an unlabelled treasure.",
+  "scale": {
+   "title": "Scoring a telco support RAG: one query by hand, then 400 queries with error bars",
+   "html": "<p>Assumptions: 2 M chunks, a 400-query golden set labelled by support leads, a judge priced at $2 / $10 per million input / output tokens (<a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\">Anthropic models overview, checked 2026-11-03</a>).</p><ol><li><strong>One query by hand.</strong> Relevant chunks {A, B, C}. Top 5 returned: [X, A, Y, B, Z].<ul><li>recall@5 = 2/3 = 0.667; precision@5 = 2/5 = 0.40; hit@5 = 1.</li><li>Reciprocal rank = 1/2 = 0.5 (first relevant at rank 2).</li><li>nDCG@5 (binary gains, log2 discount): DCG = 1/log2(3) + 1/log2(5) = 0.631 + 0.431 = 1.062. Ideal DCG (A, B, C at ranks 1-3) = 1 + 0.631 + 0.5 = 2.131. nDCG = 1.062 / 2.131 = 0.498.</li><li>Context precision as Ragas defines it (mean of precision@k at each relevant rank, <a href=\"https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/context_precision/\">Ragas context precision docs</a>): (P@2 + P@4) / 2 = (0.5 + 0.5) / 2 = 0.50.</li></ul></li><li><strong>Average over 400 queries.</strong> Say recall@10 = 0.85. Standard error = sqrt(0.85 x 0.15 / 400) = 0.0179, so the 95% interval is about 0.85 plus or minus 0.035. A change to 0.87 is inside the noise.</li><li><strong>How many queries for plus or minus 1 point?</strong> n = 1.96<sup>2</sup> x 0.1275 / 0.01<sup>2</sup> = about 4,900. You rarely need that: compare old and new on the same queries (a paired test) and only the queries that flipped carry signal.</li><li><strong>Labelling cost.</strong> At about 3 minutes per query, 400 queries is 20 hours of expert time. Budget it like any other dataset.</li><li><strong>Generation side.</strong> Faithfulness judging per run: 400 x 3,500 input tokens = 1.4 M x $2 = $2.80, plus 400 x 200 output = 80,000 x $10 / 1 M = $0.80. About $3.60, cheap enough to run on every pull request.</li></ol>"
+  },
+  "lab": {
+   "id": "06_evals",
+   "look_for": "The lab computes recall@k, MRR and nDCG@k over a golden set and an LLM-as-judge faithfulness score, then runs a regression gate between two prompt versions. Check one query's metrics by hand against the printout using the formulas above. Then shrink k from 5 to 1 and watch recall@k fall while MRR stays the same (MRR only cares about the first hit). Finally, remove one label from the golden set: a correct chunk now counts as a miss, which shows how incomplete labels pull every metric down."
+  },
+  "quiz": [
+   {
+    "q": "Two retrievers return the same 3 relevant chunks in the top 10. Retriever P puts them at ranks 1, 2, 3; retriever Q at ranks 1, 8, 9. Which metric tells them apart?",
+    "options": [
+     {
+      "t": "nDCG@10, because it discounts every relevant result by its rank, not just the first one.",
+      "correct": true,
+      "why": "P and Q have the same recall@10 (3/3), the same precision@10 (0.3) and the same MRR (first hit at rank 1). Only nDCG rewards P for placing all three high."
+     },
+     {
+      "t": "MRR, because it rewards good ordering.",
+      "correct": false,
+      "why": "MRR only looks at the first relevant result. Both have it at rank 1, so both get RR = 1."
+     },
+     {
+      "t": "recall@10, because P found more.",
+      "correct": false,
+      "why": "Both found all three relevant chunks in the top 10, so recall@10 is 1.0 for both."
+     },
+     {
+      "t": "None; they are equally good.",
+      "correct": false,
+      "why": "If you keep only the top 3 for the prompt, P gives the model all three facts and Q gives one. That difference is real and nDCG captures it."
+     }
+    ]
+   },
+   {
+    "q": "A team cuts retrieved chunks from 10 to 2. Context precision rises from 0.61 to 0.83 and faithfulness holds at 0.90, yet users say answers are now incomplete. Which metric should have warned them?",
+    "options": [
+     {
+      "t": "Context recall, which drops when answer-bearing chunks are no longer retrieved.",
+      "correct": true,
+      "why": "Fewer chunks means less noise (precision up) but missing facts (recall down). Faithfulness stays high because the model only says what the 2 chunks support. Watch precision and recall together."
+     },
+     {
+      "t": "Faithfulness, which should have dropped.",
+      "correct": false,
+      "why": "Faithfulness checks that claims are supported by the context given. Saying less from less context is still faithful, which is exactly why it missed the problem."
+     },
+     {
+      "t": "Context precision, which should have dropped.",
+      "correct": false,
+      "why": "Precision rewards a clean context. Returning fewer, more relevant chunks raises it, so it cannot see missing information."
+     },
+     {
+      "t": "None; incomplete answers cannot be measured.",
+      "correct": false,
+      "why": "Context recall measures exactly this, and answer correctness against a reference answer would also catch it."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "Relevant chunks {B, D}. Ranked top 5: [B, X, Y, D, Z]. Compute recall@5, precision@5, reciprocal rank, nDCG@5 (binary) and Ragas-style context precision.",
+    "a": "recall@5 = 2/2 = 1.0. precision@5 = 2/5 = 0.4. RR = 1/1 = 1.0. DCG = 1/log2(2) + 1/log2(5) = 1 + 0.431 = 1.431. Ideal DCG with B and D at ranks 1-2 = 1 + 1/log2(3) = 1 + 0.631 = 1.631. nDCG@5 = 1.431 / 1.631 = 0.877. Context precision = mean of precision@k at relevant ranks = (P@1 + P@4) / 2 = (1.0 + 0.5) / 2 = 0.75. Notice recall and MRR are perfect but nDCG and context precision are not, because D sits at rank 4 behind two irrelevant chunks."
+   },
+   {
+    "level": "Transfer",
+    "q": "Your RAG report reads: context recall 0.92, context precision 0.41, faithfulness 0.88, answer relevance 0.62. Diagnose and name the first two fixes.",
+    "a": "Context recall 0.92: the needed facts usually reach the prompt, so retrieval coverage is fine. Context precision 0.41: they are buried among irrelevant chunks, often ranked below them. Faithfulness 0.88: the model mostly sticks to the context. Answer relevance 0.62: answers drift or pad, which fits a noisy context, since the model talks about the irrelevant chunks too. Fix 1: add a reranker and keep fewer chunks, which should lift context precision without hurting recall (check that it does). Fix 2: tighten the prompt to answer the question directly and briefly, and re-measure answer relevance. Leave the embedder alone; recall says it is not the problem."
+   },
+   {
+    "level": "Stretch",
+    "q": "For each metric, name one way it can look good while the system is bad, and the guard you add: recall@k, MRR, nDCG, context precision, context recall, faithfulness, answer relevance.",
+    "a": "<ul><li><strong>recall@k</strong>: high at k = 50 while the prompt only gets 5. Guard: report recall at the k you actually feed the model.</li><li><strong>MRR</strong>: perfect when the first hit is at rank 1 even if the other needed chunks are missing. Guard: pair with recall or nDCG for multi-fact questions.</li><li><strong>nDCG</strong>: computed against incomplete labels, so a relevant but unlabelled chunk counts as a miss, and the ideal ranking only knows the labelled items. Guard: pool top results from several systems and label them.</li><li><strong>context precision</strong>: rises by returning fewer chunks. Guard: always read it next to context recall.</li><li><strong>context recall</strong> (Ragas): needs a reference answer and an LLM to attribute its claims, so a wrong reference or a sloppy judge corrupts it. Guard: spot-check attributions by hand.</li><li><strong>faithfulness</strong>: an answer that says little, or copies context verbatim, scores high, and a refusal has no claims at all, so depending on the implementation it is undefined or trivially perfect. Guard: track abstention rate and answer correctness separately.</li><li><strong>answer relevance</strong>: Ragas scores it by generating questions from the answer and comparing their embeddings to the user question, and its docs state it does not evaluate factual accuracy. An answer that restates the question scores well. Guard: pair it with faithfulness and correctness.</li></ul>"
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "Explain recall@k, precision@k and MRR in one sentence each, and when each matters.",
+    "a": "Recall@k is the fraction of the relevant chunks that appear in the top k; it matters when the model needs every piece of evidence. Precision@k is the fraction of the top k that are relevant; it matters because irrelevant chunks cost tokens and distract the model. MRR is the average of 1 over the rank of the first relevant result; it matters when you mostly need one good chunk near the top, as in single-fact FAQ answers. I report them at the k that actually goes into the prompt."
+   },
+   {
+    "level": "Mid",
+    "q": "What is nDCG and when would you use it over MRR?",
+    "a": "nDCG sums the relevance of each result divided by log2(rank + 1), so results lower down count less, then divides by the best possible score for that query so it lands between 0 and 1. Unlike MRR, it counts every relevant result, not just the first, and it supports graded relevance, for example 2 for the exact answer and 1 for useful background. I use it when questions need several chunks, when I have graded labels, or when comparing rerankers, since they change the order of all candidates. BEIR uses nDCG@10 as its headline metric for that reason."
+   },
+   {
+    "level": "Senior",
+    "q": "Design the evaluation for a production RAG system, including the generation side. What are the failure modes of the metrics themselves?",
+    "a": "Two layers. Retrieval: a labelled golden set from real queries, recall@k and nDCG@k at the k fed to the model, sliced by query type. Generation: the Ragas set, which are faithfulness, answer relevance, and context precision and recall, plus answer correctness against references for a subset. The Ragas paper (arXiv 2309.15217) shows these can run without human labels, but they are only as good as the judge, so I calibrate the judge against 50 to 100 human labels and pin the judge model and prompt. Known failure modes: incomplete labels deflate retrieval metrics; context precision games itself by returning less; faithfulness rewards saying nothing; answer relevance ignores correctness; and judges carry position, verbosity and self-preference biases. I report confidence intervals and compare versions on the same queries."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Es et al., Ragas: Automated Evaluation of Retrieval Augmented Generation (2023) - arXiv",
+    "u": "https://arxiv.org/abs/2309.15217"
+   },
+   {
+    "t": "Context Precision - Ragas documentation",
+    "u": "https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/context_precision/"
+   },
+   {
+    "t": "Context Recall - Ragas documentation",
+    "u": "https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/context_recall/"
+   },
+   {
+    "t": "Thakur et al., BEIR benchmark (nDCG@10 as the standard retrieval metric) - arXiv",
+    "u": "https://arxiv.org/abs/2104.08663"
+   }
+  ]
+ },
+ {
+  "n": "11.1",
+  "analogy": "A good librarian does not just search for the exact words you said. If you ask \"that book about the boy wizard's school\", they try a few phrasings, guess the title, check two shelves, then hand you only the two pages that matter instead of the whole stack. That is query rewriting, multi-query, HyDE, reranking and compression. The analogy breaks because the librarian knows when a guess is silly; HyDE's made-up answer can confidently point the search in the wrong direction.",
+  "scale": {
+   "title": "Pricing multi-query and context compression at 200,000 questions a day",
+   "html": "<p>Assumptions: 200,000 questions a day, a rewrite model at $2 / $10 per million input / output tokens (claude-sonnet-5-5, <a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\">Anthropic models overview, checked 2026-11-03</a>), retrieval at about 15 ms per search, 10 retrieved chunks of 400 tokens each.</p><ol><li><strong>Multi-query cost.</strong> One rewrite call returns 3 variants: about 250 input and 90 output tokens. 250 x $2 / 1 M = $0.0005; 90 x $10 / 1 M = $0.0009. Total $0.0014 per question, $280 a day.</li><li><strong>Multi-query latency.</strong> The 4 searches (original + 3) run in parallel, so retrieval stays near 15 ms. The real cost is the rewrite call itself, which adds a model round trip, typically hundreds of milliseconds (measure it). That is often the deciding factor for chat UX.</li><li><strong>Compression saving.</strong> 10 chunks x 400 = 4,000 context tokens. An extractive step that keeps only the sentences relevant to the question, say down to 1,200 tokens, saves 2,800 tokens per call: 2,800 x $2 / 1 M = $0.0056 per question, $1,120 a day.</li><li><strong>Net.</strong> Compression with a local extractive model pays for multi-query four times over: $1,120 saved versus $280 spent, net about $840 a day.</li><li><strong>The risk to measure.</strong> Compression can cut the one sentence that held the answer. Re-run context recall after compression on the golden set; if it drops from 0.91 to 0.84, the saving is buying wrong answers.</li></ol><p>Each technique is a line in a spreadsheet and a line in the eval. Turn on one at a time.</p>"
+  },
+  "lab": {
+   "id": "03_rag_local",
+   "look_for": "The lab fuses dense and BM25 results with Reciprocal Rank Fusion, which is the same fusion step multi-query uses. To see multi-query, write two or three rephrasings of a golden question by hand, retrieve for each, and fuse with the lab's RRF function: check whether the right chunk ranks higher than with the original wording alone. The lab does not do HyDE or compression; for metrics on any change, run 06_evals before and after."
+  },
+  "quiz": [
+   {
+    "q": "When is HyDE (embedding a hypothetical answer instead of the question) most likely to hurt retrieval?",
+    "options": [
+     {
+      "t": "When the model does not know the domain and invents a plausible but wrong answer, pulling the search toward the wrong documents, or when the query hinges on an exact identifier.",
+      "correct": true,
+      "why": "HyDE works because a fake answer often looks more like real documents than a short question does. If the fake answer is wrong in substance, or turns a code like ERR_2043 into prose, the embedding lands in the wrong neighbourhood."
+     },
+     {
+      "t": "When the question is short and vague.",
+      "correct": false,
+      "why": "Short, vague questions are where HyDE tends to help most, because the hypothetical answer adds the vocabulary the documents use."
+     },
+     {
+      "t": "When documents are long.",
+      "correct": false,
+      "why": "Document length is a chunking concern. HyDE changes only the query side."
+     },
+     {
+      "t": "HyDE never hurts; it only adds latency.",
+      "correct": false,
+      "why": "It can lower recall when the hypothetical answer misleads. Measure it on your golden set like any other change."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "You have 6 reranked chunks, scores 0.95, 0.91, 0.80, 0.62, 0.55, 0.41. Given lost-in-the-middle, in what order do you place them in the prompt, and would you include all six?",
+    "a": "Put the strongest at the edges and the weakest in the middle: for example 0.95 first, 0.91 last, then 0.80 second and 0.62 second-to-last, leaving 0.55 and 0.41 in the middle. Better still, test dropping the last two: a chunk scoring 0.41 is often noise that lowers faithfulness. Keep or drop based on the eval, not on the rule of thumb."
+   },
+   {
+    "level": "Transfer",
+    "q": "In a chat, the user first asks about the Pro plan and then says \"what about the EU one?\" Retrieval for that second message returns junk. Fix it.",
+    "a": "Add conversational query rewriting: before retrieval, send the last few turns plus the new message to a model and ask for a standalone search query, here something like \"Pro plan pricing in the EU region\". Retrieve with that, answer with the full conversation. Log both the raw and rewritten query so you can debug. Evaluate with a multi-turn golden set; a single-turn set will never show this failure."
+   },
+   {
+    "level": "Stretch",
+    "q": "You have time to try four upgrades: multi-query, HyDE, a reranker and compression. Design the experiment so you know which helped.",
+    "a": "Fix the golden set (300+ queries, sliced by type) and the judge. Measure the baseline: context recall, context precision, faithfulness, answer relevance, latency p95, cost per query. Then add one technique at a time on top of the baseline and measure each alone, followed by the best combination. Record a confidence interval per metric and only count a change as a win if it clears the noise. Expect interactions: the reranker raises context precision, compression can lower context recall, multi-query raises recall but costs latency. The output is a table of metric deltas against cost and latency, from which you pick, rather than shipping all four because each sounded good."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What is query rewriting in RAG and why does it help?",
+    "a": "Query rewriting uses a model to turn the user's raw message into a better search query before retrieval. Users write messy, conversational or context-dependent questions like \"why is it broken since the update\", while documents use formal terms. Rewriting can expand abbreviations, resolve references to earlier turns, and match document vocabulary, so the embedding lands nearer the right chunks. The cost is one extra model call, so you check that recall goes up enough to justify the latency."
+   },
+   {
+    "level": "Mid",
+    "q": "Explain the four RAGAS-style metrics and what each tells you to fix.",
+    "a": "Context recall: did retrieval fetch the information needed to answer? Low means fix chunking, embeddings, query transformation or k. Context precision: was what we fetched relevant and ranked high? Low means add a reranker or retrieve fewer chunks. Faithfulness: is each claim in the answer supported by the context? Low means fix grounding, prompt and context order. Answer relevance: does the answer address the question? Low means the prompt or the context is pulling the answer off topic. The pair recall-plus-faithfulness localizes whether a fault is retrieval or generation."
+   },
+   {
+    "level": "Senior",
+    "q": "Retrieval quality is good in offline evals but poor in production. What could explain the gap?",
+    "a": "Usually the golden set does not look like production. Real queries are shorter, multi-turn, misspelled, or use internal jargon the set lacks. The index may be stale or missing sources that production users ask about. Permission filters run in production but not offline, and selective filters can tank recall. Latency budgets may force a smaller k or skip the reranker in production. I sample and label recent production queries, slice metrics by type and tenant, compare offline and online configs line by line, and fold the failures into the golden set so the gap closes."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Gao et al., Precise Zero-Shot Dense Retrieval without Relevance Labels (HyDE, 2022) - arXiv",
+    "u": "https://arxiv.org/abs/2212.10496"
+   },
+   {
+    "t": "Liu et al., Lost in the Middle: How Language Models Use Long Contexts (2023) - arXiv",
+    "u": "https://arxiv.org/abs/2307.03172"
+   },
+   {
+    "t": "Es et al., Ragas: Automated Evaluation of Retrieval Augmented Generation (2023) - arXiv",
+    "u": "https://arxiv.org/abs/2309.15217"
+   },
+   {
+    "t": "Gao et al., Retrieval-Augmented Generation for Large Language Models: A Survey - arXiv",
+    "u": "https://arxiv.org/abs/2312.10997"
+   }
+  ]
+ },
+ {
+  "n": "11.2",
+  "analogy": "An agent is a new intern sent on a 10-step errand across town. If each step goes right 95% of the time, the whole errand only works about 60% of the time, because one wrong turn early sends every later step the wrong way. Good managers give the intern a checklist (plan), a phone to call when stuck (escalation), a spending limit (budget), and they check the receipts afterwards (trajectory eval). The analogy breaks because a human intern notices they are lost; an agent will happily repeat the same wrong step until something stops it.",
+  "scale": {
+   "title": "Budgeting a ticket-triage agent at 20,000 tasks a day",
+   "html": "<p>Assumptions: 20,000 support tasks a day, 10 steps per normal task, input grows from 2,000 tokens by 800 per step as history accumulates, 200 output tokens per step, model at $2 / $10 per million input / output tokens (claude-sonnet-5-5, <a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\">Anthropic models overview, checked 2026-11-03</a>), 2% of tasks get stuck in a loop.</p><ol><li><strong>Reliability.</strong> At 95% per step, 0.95<sup>10</sup> = 0.60. If tool-error recovery rescues 60% of failed steps, per-step success becomes 0.95 + 0.05 x 0.6 = 0.98, and 0.98<sup>10</sup> = 0.82.</li><li><strong>Normal task cost.</strong> Input = 10 x 2,000 + 800 x (0 + 1 + ... + 9) = 20,000 + 36,000 = 56,000 tokens: $0.112. Output = 2,000 tokens: $0.02. Total $0.132 a task, $2,640 a day.</li><li><strong>A runaway with no cap.</strong> Say it spins for 50 steps. Input = 50 x 2,000 + 800 x (0 + ... + 49) = 100,000 + 980,000 = 1.08 M tokens: $2.16, plus 10,000 output tokens: $0.10. About $2.26 each. 2% of 20,000 = 400 runaways a day = $904 a day, a third on top of the useful spend.</li><li><strong>With a 12-step cap.</strong> Input = 12 x 2,000 + 800 x 66 = 76,800 tokens ($0.154) plus 2,400 output ($0.024) = about $0.18 each. 400 x $0.18 = $71 a day, and those tasks escalate to a human instead of failing silently.</li><li><strong>Repeated-call detection</strong> stops most loops even earlier, at the second identical call.</li></ol><p>The cap is a cost control and a reliability control at once: it turns an invisible spin into a visible escalation.</p>"
+  },
+  "lab": {
+   "id": "04_agent_tools",
+   "look_for": "The lab's agent loop has a step budget, repeated-call detection, tool-error recovery and a human-approval gate on the refund tool, and it prints a trace. Read the trace for one task and count steps, tool calls and errors: that is a trajectory. Then make a tool always fail and watch the recovery path and the step budget end the run gracefully. Lower the budget to 2 and see which tasks now escalate instead of finishing."
+  },
+  "quiz": [
+   {
+    "q": "An agent's steps each succeed 97% of the time and failures are independent. Roughly how often does a 15-step task succeed?",
+    "options": [
+     {
+      "t": "About 63%, because 0.97 to the power 15 is about 0.63.",
+      "correct": true,
+      "why": "Success needs every step to succeed, so you multiply: 0.97^15 = 0.633. Long chains erode reliability fast, which is why recovery and shorter plans matter."
+     },
+     {
+      "t": "97%, because each step is 97% reliable.",
+      "correct": false,
+      "why": "That ignores compounding. Each extra step is another chance to fail."
+     },
+     {
+      "t": "About 55%, because you subtract 3% per step.",
+      "correct": false,
+      "why": "15 x 3% = 45% off would give 55%, but probabilities multiply rather than subtract. Subtracting overstates the loss at this size and breaks entirely for long chains."
+     },
+     {
+      "t": "It cannot be estimated.",
+      "correct": false,
+      "why": "Under the independence assumption it is a simple product. Real errors are often correlated, but this is the right first estimate."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "Your agent averages 7 steps. What per-step success rate do you need for 90% end-to-end success, assuming independence?",
+    "a": "Solve p^7 = 0.90, so p = 0.90^(1/7). ln 0.90 = -0.1054; divided by 7 = -0.01505; e^-0.01505 = 0.985. You need about 98.5% per step. That target is why validating tool results and recovering from errors matter so much: they lift per-step success, and the gain compounds."
+   },
+   {
+    "level": "Transfer",
+    "q": "Design a trajectory eval for a refund agent with tools lookup_order, check_policy, issue_refund (needs human approval). What do you score per task?",
+    "a": "Per task, from the trace: (1) final outcome correct (refund issued or correctly declined); (2) tool selection: was check_policy called before issue_refund; (3) argument validity: order id and amount match the lookup result; (4) safety: issue_refund never executed without approval and never above the policy limit, scored as pass or fail with zero tolerance; (5) efficiency: steps and tokens against a budget; (6) recovery: when a tool errored, did it adapt or repeat. Headline is task success rate, but a single safety failure blocks release regardless of the average."
+   },
+   {
+    "level": "Stretch",
+    "q": "A teammate proposes splitting the agent into a planner, a researcher and a writer agent. How do you decide, and what do you measure?",
+    "a": "First, write down the failure the split is meant to fix (context overload, mixed permissions, missing critique). Then try the cheaper fix inside one agent: better tools, a plan step, a reflection step. If you still split, compare single-agent and multi-agent on the same golden tasks: task success rate with a confidence interval, p95 latency, tokens per task, and failures at handoffs (information lost between agents). Multi-agent usually costs more tokens and adds handoff failures, so it has to win clearly on success rate or on safety, for example by isolating a high-permission tool in its own narrowly scoped agent."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "Why do production agents need a step cap and a budget?",
+    "a": "Because agents can loop: they repeat a tool call, keep retrying a failing approach, or wander, and each step costs tokens and time. Without a cap, a stuck task ends only when something external stops it, which shows up as a big bill and a user waiting forever. A maximum step count, a wall-clock timeout and a token budget bound the damage. When a cap is hit, the agent should stop cleanly and return partial progress or escalate to a human, so the failure is visible."
+   },
+   {
+    "level": "Mid",
+    "q": "Compare ReAct with plan-then-execute. When would you use each?",
+    "a": "ReAct interleaves reasoning and acting one step at a time, deciding the next action from the latest observation. It adapts well to surprises but can wander and is harder to predict. Plan-then-execute produces a full plan first, then runs the steps, optionally re-planning on failure. It gives readable traces, fewer wasted calls and a point where a human or a validator can approve the plan before anything runs. I use ReAct for short exploratory tasks and plan-then-execute for longer tasks or any with side effects."
+   },
+   {
+    "level": "Senior",
+    "q": "How do you evaluate and monitor an agent once it is live?",
+    "a": "Offline, a golden set of tasks with expected outcomes and safety rules, scored on full trajectories: success, tool choice, argument correctness, recovery, steps and cost. That suite gates every prompt, tool or model change. Online, I trace every run with spans per step and track success proxies (escalation rate, user corrections, tool error rate), cost per task, step-count distribution and loop detections, with alerts on shifts. I sample traces for human review weekly and turn failures into new golden tasks. Safety-relevant actions get hard checks in code, not just eval coverage."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Yao et al., ReAct: Synergizing Reasoning and Acting in Language Models (2022) - arXiv",
+    "u": "https://arxiv.org/abs/2210.03629"
+   },
+   {
+    "t": "Shinn et al., Reflexion: Language Agents with Verbal Reinforcement Learning (2023) - arXiv",
+    "u": "https://arxiv.org/abs/2303.11366"
+   },
+   {
+    "t": "Building effective agents - Anthropic Engineering",
+    "u": "https://www.anthropic.com/engineering/building-effective-agents"
+   }
+  ]
+ },
+ {
+  "n": "11.3",
+  "analogy": "An LLM judge is a new referee. Before you let them run the final, you watch them call 50 recorded plays and compare their calls with a panel of experienced referees. If they agree far more often than chance, you trust them; if they always favour the team on the left side of the screen, you swap the sides and see if the call changes. The analogy breaks because a human referee can explain each call; an LLM judge's reasons can sound good and still be wrong, so you check agreement in numbers, not in explanations.",
+  "scale": {
+   "title": "Validating a faithfulness judge before it gates releases of a 500-question RAG suite",
+   "html": "<p>Assumptions: a 500-question RAG golden set, an LLM judge that labels each answer faithful or not, and 50 answers hand-labelled by two engineers.</p><ol><li><strong>Agreement table on the 50.</strong> Both say faithful: 27. Human yes, judge no: 3. Human no, judge yes: 5. Both no: 15.</li><li><strong>Raw agreement.</strong> (27 + 15) / 50 = 0.84.</li><li><strong>Chance agreement.</strong> Humans say yes 30/50 = 0.60, the judge 32/50 = 0.64. p_e = 0.60 x 0.64 + 0.40 x 0.36 = 0.384 + 0.144 = 0.528.</li><li><strong>Cohen's kappa.</strong> (0.84 - 0.528) / (1 - 0.528) = 0.312 / 0.472 = 0.66. Usable, but look at the 5 cases where the judge passed answers humans failed: those are the dangerous ones for a faithfulness gate. Tighten the rubric (\"any number not in the context is unsupported\") and re-measure.</li><li><strong>Compare v1 and v2 on 500.</strong> Net score moved from 80.0% to 82.4%. But only the flipped questions carry signal: v2 fixed 31, broke 19. McNemar's test: (|31 - 19| - 1)<sup>2</sup> / (31 + 19) = 121 / 50 = 2.42, below the 3.84 needed for p &lt; 0.05. Not yet a proven win.</li><li><strong>RAG metrics follow the same rule.</strong> Faithfulness, answer relevance and context precision and recall in the Ragas style are all judge outputs (<a href=\"https://arxiv.org/abs/2309.15217\">Es et al., arXiv 2309.15217</a>), so each needs this calibration, and the judge model and prompt must stay fixed when you compare versions. Change the judge and you changed the ruler.</li></ol>"
+  },
+  "lab": {
+   "id": "06_evals",
+   "look_for": "The lab's position-bias test swaps the A/B order and counts how many verdicts flip; that flip rate is your judge's position bias in one number. The regression gate compares two prompt versions per case, so list the cases that flipped in each direction and run the McNemar arithmetic above on them. Also look at the LLM-as-judge faithfulness score: hand-label 20 of its verdicts yourself and compute kappa before you trust it."
+  },
+  "quiz": [
+   {
+    "q": "Your judge agrees with humans on 90% of items, but 90% of all answers are good. Why is 90% agreement not impressive here?",
+    "options": [
+     {
+      "t": "A judge that says \"good\" to everything would also agree about 90% of the time; kappa corrects for this chance agreement.",
+      "correct": true,
+      "why": "With skewed classes, raw agreement is inflated. If both rate 90% as good independently, chance agreement is 0.9 x 0.9 + 0.1 x 0.1 = 0.82, so 90% observed gives kappa = (0.90 - 0.82) / 0.18 = 0.44, only moderate."
+     },
+     {
+      "t": "Because 90% is below the 95% industry standard.",
+      "correct": false,
+      "why": "There is no universal 95% bar. The issue is that raw agreement ignores how much agreement chance alone would produce."
+     },
+     {
+      "t": "Because humans are always right, so any disagreement is fatal.",
+      "correct": false,
+      "why": "Humans disagree with each other too; you often measure human-human kappa as the ceiling. The problem here is chance agreement, not human infallibility."
+     },
+     {
+      "t": "It is impressive; 90% agreement means the judge is reliable.",
+      "correct": false,
+      "why": "Not with a 90% base rate. The judge may be useless at catching the 10% of bad answers, which are the ones you built it to catch."
+     }
+    ]
+   },
+   {
+    "q": "After switching the judge to a newer model, your RAG system's faithfulness score jumps from 0.78 to 0.86 with no change to the system. What is the right conclusion?",
+    "options": [
+     {
+      "t": "The ruler changed, not the system: re-calibrate the new judge against human labels and re-score the old baseline with it before comparing anything.",
+      "correct": true,
+      "why": "A judge-scored metric is the judge's opinion. A new judge may be more lenient. Scores are comparable only when produced by the same judge, prompt and rubric."
+     },
+     {
+      "t": "The system got better; newer judges are more accurate.",
+      "correct": false,
+      "why": "Nothing about the system changed. A newer judge may be more lenient or stricter, and neither is accuracy until you check it against humans."
+     },
+     {
+      "t": "Average the two scores to get the true value.",
+      "correct": false,
+      "why": "Averaging two uncalibrated rulers gives a third uncalibrated number."
+     },
+     {
+      "t": "Faithfulness cannot be measured by LLMs at all.",
+      "correct": false,
+      "why": "It can, as in the Ragas paper, once the judge is validated. The mistake is comparing scores across judges."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "On 100 items: both pass 70, human pass and judge fail 5, human fail and judge pass 10, both fail 15. Compute raw agreement and Cohen's kappa.",
+    "a": "Raw agreement = (70 + 15) / 100 = 0.85. Human pass rate = (70 + 5) / 100 = 0.75; judge pass rate = (70 + 10) / 100 = 0.80. Chance agreement = 0.75 x 0.80 + 0.25 x 0.20 = 0.60 + 0.05 = 0.65. Kappa = (0.85 - 0.65) / (1 - 0.65) = 0.20 / 0.35 = 0.57. Moderate. The 10 items the judge passed but humans failed are the risk; read them and fix the rubric."
+   },
+   {
+    "level": "Transfer",
+    "q": "Prompt v2 beats v1 on a 300-question set: 74% vs 70%. Per question, v2 fixed 22 and broke 10. Is this a real improvement at the 5% level?",
+    "a": "Net gain = 22 - 10 = 12 questions = 4 points of 300. McNemar with continuity correction: (|22 - 10| - 1)^2 / (22 + 10) = 121 / 32 = 3.78. The 5% critical value for 1 degree of freedom is 3.84, so it is just short. Call it promising, not proven: add questions or repeat runs, and read the 10 regressions, since a fix that breaks a safety-critical case may not be worth 22 small wins."
+   },
+   {
+    "level": "Stretch",
+    "q": "You run Ragas-style faithfulness, answer relevance, context precision and context recall in CI on every pull request. Design the safeguards so the numbers deserve trust.",
+    "a": "<ul><li><strong>Calibrate each judged metric.</strong> Hand-label 50-100 items per metric, compute kappa (or correlation for scores), and keep the labels as a regression test for the judge itself.</li><li><strong>Pin the ruler.</strong> Version the judge model, prompt and rubric. When any changes, re-score the baseline before comparing.</li><li><strong>Know what each metric cannot see.</strong> Faithfulness ignores whether the context was right; answer relevance (Ragas uses generated-question similarity) does not check factual accuracy; context recall needs reference answers; context precision rises if you return less. So pair them, and add answer correctness on a referenced subset.</li><li><strong>Quantify noise.</strong> Bootstrap confidence intervals or paired tests on the same questions; gate on \"significantly worse\", not \"any drop\".</li><li><strong>Avoid self-preference.</strong> Use a judge from a different model family from the generator where possible.</li><li><strong>Watch for gaming.</strong> Track abstention rate and answer length so a system cannot raise faithfulness by saying less.</li></ul>"
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What is position bias in an LLM judge and how do you handle it?",
+    "a": "Position bias is when a judge comparing two answers tends to prefer whichever it sees first (or second), regardless of quality. You handle it by judging each pair twice with the order swapped and only counting a win when both orders agree; disagreement becomes a tie. You can also measure it directly: the fraction of pairs whose verdict flips when swapped is the judge's position-bias rate, and it should be low before you trust the judge."
+   },
+   {
+    "level": "Mid",
+    "q": "How do you validate an LLM-as-judge for RAG faithfulness before using it?",
+    "a": "I sample 50 to 100 real answers with their retrieved context and have two people label each claim or answer as supported or not, using the same rubric the judge gets. I check human-human agreement first, which is my ceiling. Then I run the judge and compute Cohen's kappa against the consensus, and I read the confusion matrix, because for a gate the key number is how often the judge passes answers humans failed. If kappa is weak I fix the rubric, add examples, or try a stronger judge, and re-measure. I keep the labelled set to re-check whenever the judge changes."
+   },
+   {
+    "level": "Senior",
+    "q": "A dashboard shows faithfulness 0.91 and answer relevancy 0.88 from Ragas, and leadership wants to ship. What might these numbers hide?",
+    "a": "Several things. Both are reference-free, so neither says whether answers are correct: faithfulness only checks support by the retrieved context, which may be stale, and Ragas's answer relevancy scores how well questions generated from the answer match the user question, and its docs say it does not evaluate factual accuracy. Neither measures retrieval coverage; context recall needs references. A system that abstains or says little can score high faithfulness. Judges have position, verbosity and self-preference bias, so I need kappa against human labels and a judge from a different family from the generator. And I want confidence intervals, slices by query type, and a check that the golden set matches production traffic. Then decide."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Zheng et al., Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena (2023) - arXiv",
+    "u": "https://arxiv.org/abs/2306.05685"
+   },
+   {
+    "t": "Es et al., Ragas: Automated Evaluation of Retrieval Augmented Generation (2023) - arXiv",
+    "u": "https://arxiv.org/abs/2309.15217"
+   },
+   {
+    "t": "Answer Relevancy - Ragas documentation",
+    "u": "https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/answer_relevance/"
+   },
+   {
+    "t": "Saad-Falcon et al., ARES: An Automated Evaluation Framework for RAG Systems (2023) - arXiv",
+    "u": "https://arxiv.org/abs/2311.09476"
+   }
+  ]
+ },
+ {
+  "n": "9.1",
+  "analogy": "Text-to-SQL is a translator between a manager and a filing clerk. The manager says \"how much did Canada spend?\"; the translator turns it into the clerk's exact instructions: which drawer, which folders, how to add up. A good translator knows the filing system cold. The analogy breaks because a human translator who is unsure asks \"which Canada figure, gross or net?\"; a model will usually just pick one and hand back a confident number.",
+  "scale": {
+   "title": "Is text-to-SQL worth it for a 1,500-person company's analyst queue?",
+   "html": "<p>Assumptions: 1,500 employees, 300 ad-hoc data questions a week, 20 analyst minutes each, a model at $2 / $10 per million input / output tokens (claude-sonnet-5-5, <a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\">Anthropic models overview, checked 2026-11-03</a>), 4,000 tokens of schema context and 200 output tokens per call, 1.3 calls per question on average (retries).</p><ol><li><strong>Today's cost in people.</strong> 300 x 20 min = 6,000 min = 100 hours a week, about 2.5 full-time analysts doing nothing but queue work.</li><li><strong>Model cost.</strong> One call = 4,000 x $2 / 1 M + 200 x $10 / 1 M = $0.008 + $0.002 = $0.01. With 1.3 calls, $0.013 a question, about $3.90 a week. Cost is not the decision.</li><li><strong>Correctness is.</strong> Suppose your golden set shows 85% execution accuracy. That leaves 15% x 300 = 45 wrong answers a week. Some fail loudly (errors, empty results); the rest are wrong-but-runs, confident numbers in someone's slide deck.</li><li><strong>Design for the 45.</strong> Show the SQL and row count with every answer, send ambiguous questions back with a clarifying question, restrict the model to curated views, and route anything feeding finance or board reporting to an analyst for review.</li><li><strong>Realistic payoff.</strong> If 70% of questions are simple lookups the system handles well and analysts review the rest, the queue drops by about 70 hours a week, and analysts spend their time on the hard 30% and on the semantic layer that makes the easy 70% safe.</li></ol>"
+  },
+  "lab": {
+   "id": "09_text_to_sql_duckdb",
+   "look_for": "The lab runs text-to-SQL on DuckDB with schema grounding, a SELECT-only validator, a row limit, a self-correction loop and execution-accuracy scoring over a small question set. For this lesson, look at the failures in the scoring output and sort them into this page's buckets: ambiguity, schema misunderstanding, wrong-but-runs, dialect. Pay most attention to any question where the SQL ran but the result did not match the expected answer: that is the dangerous class."
+  },
+  "quiz": [
+   {
+    "q": "The model answers \"total revenue per customer\" with SUM(o.amount) after joining orders to order_items (several items per order). What goes wrong?",
+    "options": [
+     {
+      "t": "Each order's amount is repeated once per item row, so revenue is inflated; the query runs fine and returns a confident wrong number.",
+      "correct": true,
+      "why": "This is join fan-out. An order of $120 with 3 items becomes 3 rows of $120 and sums to $360. No error is raised, which makes it the wrong-but-runs failure."
+     },
+     {
+      "t": "The database raises an error because amount is ambiguous.",
+      "correct": false,
+      "why": "With the o. prefix the column is not ambiguous. The query is valid SQL; its logic is wrong."
+     },
+     {
+      "t": "Nothing; joins never change sums.",
+      "correct": false,
+      "why": "Joins to a finer-grained table multiply rows. Aggregating a coarse-grained column after that join double counts."
+     },
+     {
+      "t": "Only the row order changes.",
+      "correct": false,
+      "why": "The totals change, not just the order. That is why understanding table grain matters."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "Which of these questions are ambiguous, and what clarifying question would you ask? (a) \"Orders last month\" (b) \"Our best customers\" (c) \"Revenue in Canada in 2025\"",
+    "a": "(a) Slightly: calendar month or last 30 days, and count or value? Ask \"Do you mean the number of orders in October 2026?\" (b) Very: best by revenue, order count, margin or recency? Ask \"Best by total paid revenue, by number of orders, or something else?\" (c) Mostly clear, but gross or net of refunds and by billing or shipping country. A semantic layer that defines revenue once removes most of the doubt."
+   },
+   {
+    "level": "Transfer",
+    "q": "orders(id, customer_id, amount) has order 55 with amount 120.00, and order_items(order_id, product_id, qty) has 3 rows for order 55. Write the wrong query a model might produce for \"revenue from order 55\", give its result, and write the correct one.",
+    "a": "Wrong: <code>SELECT SUM(o.amount) FROM orders o JOIN order_items i ON i.order_id = o.id WHERE o.id = 55;</code> returns 360.00, because the join produces 3 rows each carrying 120.00. Correct: <code>SELECT amount FROM orders WHERE id = 55;</code> returning 120.00. If you need item data too, aggregate items in a subquery first, then join one row per order. The rule: aggregate at the grain where the measure lives."
+   },
+   {
+    "level": "Stretch",
+    "q": "Design the accuracy evaluation for a text-to-SQL system before launch. What do you compare, and what are the traps?",
+    "a": "Build a golden set of 150+ real questions with a reference SQL written by an analyst. Score by execution accuracy: run both queries and compare result sets, not SQL text, because many different queries are correct. Traps: (1) row order, so compare as multisets unless the question asks for an order; (2) floats, so compare with a tolerance; (3) extra columns, so decide whether to compare only the requested columns; (4) a query that matches on today's data by accident, so run against a second database snapshot or perturbed data; (5) ambiguous questions, so either rewrite them or accept several references. Slice results by difficulty (single table, joins, nested, date logic). Public benchmarks such as Spider and BIRD use execution-based scoring for the same reasons."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What is text-to-SQL and what is its biggest risk?",
+    "a": "Text-to-SQL takes a natural-language question, generates SQL against a known schema, runs it and returns the answer in words. It removes the bottleneck of waiting for someone who knows SQL and the schema. The biggest risk is not an error, which is visible, but a query that runs and returns a plausible wrong number, for example through a join that double counts or a filter that misses rows. Those get trusted and acted on, so validation, transparency (showing the SQL) and evaluation matter as much as generation."
+   },
+   {
+    "level": "Mid",
+    "q": "How do you measure text-to-SQL accuracy?",
+    "a": "Execution accuracy on a golden set: for each question, run the generated SQL and a reference SQL and compare the result sets, allowing for row order and float tolerance. Comparing SQL text (exact match) is too strict, because many queries are equivalent. I also track how often the query errors, how often it needed a retry, and latency. And I slice by question type, since joins and date logic usually fail more than single-table lookups. Spider and BIRD are the public benchmarks to know, but my own schema's golden set is what decides."
+   },
+   {
+    "level": "Senior",
+    "q": "Leadership wants a \"chat with the warehouse\" tool across 400 tables next quarter. How do you scope it to succeed?",
+    "a": "Narrow it first. Pick one domain, say sales, with 10 to 20 curated views in a semantic layer: clear names, documented metric definitions, joins baked in. Build a golden set of 150 real questions from that team's queue and measure execution accuracy before launch. Ship with guardrails: read-only role, timeouts, cost caps, SQL shown with each answer, clarifying questions for ambiguous asks, and analyst review for anything feeding finance. Expand domain by domain, each with its own views and golden set. The model is the easy part; the semantic layer and evaluation are the project."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Yu et al., Spider: A Large-Scale Human-Labeled Dataset for Complex and Cross-Domain Text-to-SQL (2018) - arXiv",
+    "u": "https://arxiv.org/abs/1809.08887"
+   },
+   {
+    "t": "Li et al., Can LLM Already Serve as A Database Interface? (BIRD, 2023) - arXiv",
+    "u": "https://arxiv.org/abs/2305.03111"
+   },
+   {
+    "t": "Lei et al., Spider 2.0: Evaluating Language Models on Real-World Enterprise Text-to-SQL Workflows (2024) - arXiv",
+    "u": "https://arxiv.org/abs/2411.07763"
+   }
+  ]
+ },
+ {
+  "n": "9.2",
+  "analogy": "Asking someone to find a book in a library they have never visited is hopeless; giving them the floor map, the section labels and two example call numbers makes it easy. The schema is the map, column descriptions are the labels, and few-shot examples are the sample call numbers. For a huge library you give them only the map of the right floor. The analogy breaks because a visitor who reaches the wrong shelf notices; a model given the wrong tables will still write a query, just against the wrong data.",
+  "scale": {
+   "title": "400 tables: dump the schema or retrieve it?",
+   "html": "<p>Assumptions: a warehouse with 400 tables, 25 columns each on average, about 12 tokens per column line including a short comment and 20 tokens per table header (estimate; count with your tokenizer), 5,000 questions a day, a model at $2 per million input tokens (<a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\">Anthropic models overview, checked 2026-11-03</a>).</p><ol><li><strong>Full schema size.</strong> 400 x (20 + 25 x 12) = 400 x 320 = 128,000 tokens. It fits in a 1 M-token window, so the limit is not the window. It is cost and focus.</li><li><strong>Full schema cost.</strong> 128,000 x $2 / 1 M = $0.256 per question, $1,280 a day, and the model has 394 tables it should ignore, several with similar names.</li><li><strong>Retrieved schema.</strong> Embed one card per table (name, description, column names, grain, join keys). Retrieve the top 6: 6 x 320 = 1,920 tokens, plus about 1,000 for sample rows and value notes, 600 for two few-shot examples and 200 for instructions = about 3,700 tokens. 3,700 x $2 / 1 M = $0.0074, about $37 a day.</li><li><strong>The new failure.</strong> If retrieval misses a needed table (often a bridge table such as order_items), the SQL either fails or quietly answers a different question. So measure table recall@6 on a golden set of questions labelled with the tables their reference SQL uses.</li><li><strong>Close the gap.</strong> After retrieval, add foreign-key neighbours of the retrieved tables (one hop). If that brings the prompt to 10 tables, it is still only about 5,000 tokens.</li></ol><p>Result: about 35 times cheaper and usually more accurate, provided table recall is measured, not assumed.</p>"
+  },
+  "lab": {
+   "id": "09_text_to_sql_duckdb",
+   "look_for": "Find where the lab builds the schema context for the prompt (schema grounding). Run the question set once as-is, then remove the column descriptions or sample values from the context and run again: execution accuracy should drop, typically on questions that depend on value formats or which column holds what. Put them back and add one few-shot example matching a failing question's pattern to see it recover."
+  },
+  "quiz": [
+   {
+    "q": "A user asks for \"revenue from Germany\". The model writes WHERE country = 'DE' but the column stores 'Germany'. The query returns 0 rows. What prevents this most directly?",
+    "options": [
+     {
+      "t": "Sample rows or a value note in the schema context showing that country holds full names like 'Germany'.",
+      "correct": true,
+      "why": "The model could not know the value format from the column name alone. One sample row or a short comment fixes it, and it is cheap."
+     },
+     {
+      "t": "A larger model.",
+      "correct": false,
+      "why": "No model can know your data's value conventions without being shown them. Bigger models guess better on average, but they still guess."
+     },
+     {
+      "t": "A self-correction loop.",
+      "correct": false,
+      "why": "The query does not error; it returns 0 rows. An error-driven loop never fires unless you also treat empty results as a signal."
+     },
+     {
+      "t": "Lower temperature.",
+      "correct": false,
+      "why": "Deterministic sampling makes the same wrong guess every time. The missing piece is information, not randomness."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "A mart has 60 tables averaging 18 columns. Using 12 tokens per column and 20 per table header, estimate the full schema in tokens and the cost per question at $2 per million input tokens.",
+    "a": "Per table: 20 + 18 x 12 = 236 tokens. 60 x 236 = 14,160 tokens. Cost = 14,160 x $2 / 1 M = $0.028 per question. At this size dumping the whole schema can be reasonable; retrieval pays off as tables grow or when similar tables confuse the model."
+   },
+   {
+    "level": "Transfer",
+    "q": "Write the schema-context lines for a hostile table: <code>f_txn_d(cid INT, amt_c BIGINT, st SMALLINT, dt INT)</code>, where amt_c is amount in cents, st 1 = paid and 2 = refunded, dt is a date as YYYYMMDD.",
+    "a": "<pre><code>Table f_txn_d(cid INT, amt_c BIGINT, st SMALLINT, dt INT)\n  -- one row per transaction. cid joins customers.id.\n  -- amt_c is the amount in CENTS: divide by 100.0 for currency.\n  -- st: 1 = paid, 2 = refunded. Revenue uses st = 1 only.\n  -- dt is an integer date YYYYMMDD, e.g. 20250603. Filter 2025 with dt BETWEEN 20250101 AND 20251231.\nSample: (42, 12000, 1, 20250603)</code></pre>Better long-term: a view <code>transactions(customer_id, amount_usd, status, txn_date DATE)</code> so the model never sees the raw encoding."
+   },
+   {
+    "level": "Stretch",
+    "q": "Design schema retrieval for 400 tables and the eval that proves it works.",
+    "a": "Index one card per table: name, a human-written description, column names with short meanings, grain, primary and foreign keys, and two or three questions it answers. Optionally index metric definitions and example Q-to-SQL pairs as separate searchable items. At query time, use hybrid retrieval (BM25 catches exact column or table names, dense catches meaning), take the top 6, then add one-hop foreign-key neighbours. Eval: a golden set of 150+ questions, each with the set of tables in its reference SQL. Report table recall@k (all needed tables retrieved), prompt size, and end-to-end execution accuracy. If execution accuracy fails while table recall is high, the problem is the prompt or examples, not retrieval."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What do you put in a text-to-SQL prompt?",
+    "a": "The SQL dialect, an instruction to use only the listed tables and columns and to return a single SELECT, the schema for the relevant tables with column types and join keys, short descriptions of non-obvious columns, a sample row or value notes so the model sees formats like 'Canada' versus 'CA', and two or three example question-and-SQL pairs showing house conventions such as filtering paid orders. Then the question. Each part removes a specific guessing failure."
+   },
+   {
+    "level": "Mid",
+    "q": "How do you handle a schema too big for the prompt?",
+    "a": "Schema retrieval, which is RAG over metadata. I index each table with a description, columns, grain and keys, retrieve the few most relevant tables for each question, and add their foreign-key neighbours so join bridges are not lost. I measure table recall on a golden set because a missed table silently breaks the query. Hybrid search helps, since users often mention exact column or table names. Where possible I also point retrieval at curated views rather than raw tables, which shrinks the search space and removes ambiguity."
+   },
+   {
+    "level": "Senior",
+    "q": "Accuracy plateaued at 78% despite better prompts. Where would you invest next?",
+    "a": "In the data surface, not the prompt. I read the failures and usually find ambiguous metrics, cryptic columns, encoded statuses and multi-hop joins. So I build a semantic layer: views with readable names and joins baked in, documented metric definitions, and a library of verified example queries retrieved as few-shot examples per question. I add clarifying questions for ambiguous asks rather than guessing. Then re-run the golden set by slice. Prompt tweaks give a few points; a good semantic layer often moves accuracy far more, because it turns the problem into one the model rarely gets wrong."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Pourreza and Rafiei, DIN-SQL: Decomposed In-Context Learning of Text-to-SQL with Self-Correction (2023) - arXiv",
+    "u": "https://arxiv.org/abs/2304.11015"
+   },
+   {
+    "t": "Li et al., BIRD: Can LLM Already Serve as A Database Interface? (2023) - arXiv",
+    "u": "https://arxiv.org/abs/2305.03111"
+   },
+   {
+    "t": "Lei et al., Spider 2.0: Real-World Enterprise Text-to-SQL Workflows (2024) - arXiv",
+    "u": "https://arxiv.org/abs/2411.07763"
+   }
+  ]
+ },
+ {
+  "n": "9.3",
+  "analogy": "Letting a model write SQL is like letting a new driver take the family car. You tell them to drive carefully (the prompt), but you also give them a car with a speed limiter (timeout), a small fuel tank (row and cost caps), and no keys to the truck (a read-only account). If they ignore your advice, the car itself still will not do the dangerous thing. The analogy breaks because a new driver is not being actively tricked; a model can be prompt-injected by text hidden in the very data it reads.",
+  "scale": {
+   "title": "Guarding a 2 TB fact table on Postgres, BigQuery and Snowflake",
+   "html": "<p>Assumptions: a 2 TB orders fact table, a scan rate of about 1 GB/s on the read replica (measure yours), rows of about 200 bytes, and a model that occasionally forgets a WHERE clause.</p><ol><li><strong>The runaway.</strong> A full scan of 2 TB at 1 GB/s is 2,000 s, about 33 minutes of replica time per bad query. Ten users retrying makes the replica useless for everyone.</li><li><strong>Postgres: timeout.</strong> statement_timeout aborts any statement that runs longer than the value; the default 0 disables it (<a href=\"https://www.postgresql.org/docs/current/runtime-config-client.html\">Postgres docs</a>). Set it on the text-to-SQL role, e.g. 15 s, so the 33-minute scan dies after 15 seconds.</li><li><strong>Postgres: permissions.</strong> GRANT only SELECT on the analytics schema to that role. default_transaction_read_only = on adds a second layer, but a session can change it, so the GRANT is the real wall.</li><li><strong>Row cap.</strong> 1,000 rows x 200 bytes = 200 KB to the app. An uncapped SELECT * of 10 M rows is 2 GB pulled into your API process.</li><li><strong>BigQuery is different.</strong> Google's docs say a LIMIT clause does not reduce compute cost on non-clustered tables; use the maximum bytes billed setting, which fails the query before it runs if the estimate is over the limit, without a charge (<a href=\"https://cloud.google.com/bigquery/docs/best-practices-costs\">BigQuery cost best practices</a>). A row LIMIT protects your app, not your bill.</li><li><strong>Snowflake.</strong> STATEMENT_TIMEOUT_IN_SECONDS defaults to two days (<a href=\"https://docs.snowflake.com/en/sql-reference/parameters\">Snowflake parameters</a>). Set it low on the warehouse or user that serves the tool.</li></ol><p>Same idea in every engine: the limits live in the database, configured for the model's account, not in the prompt.</p>"
+  },
+  "lab": {
+   "id": "09_text_to_sql_duckdb",
+   "look_for": "Find the lab's SELECT-only validation and row limit. Feed it a few hostile strings by hand: a DELETE, a SELECT followed by a semicolon and DROP TABLE, and a CTE that ends in a DELETE (WITH x AS (SELECT 1) DELETE FROM t), which starts with WITH and so passes a naive prefix check. Note which layer stops each one. Then ask a question whose correct answer has its own LIMIT 3 and confirm the row-limit wrapper does not break it."
+  },
+  "quiz": [
+   {
+    "q": "Your text-to-SQL tool on BigQuery appends LIMIT 1000 to every query. A user's question triggers a SELECT over a 5 TB non-clustered table. What does the LIMIT do for cost?",
+    "options": [
+     {
+      "t": "Nothing for compute cost; the table is still scanned. Use maximum bytes billed to fail the query before it runs.",
+      "correct": true,
+      "why": "Google's cost docs state that LIMIT does not reduce compute cost on non-clustered tables. Maximum bytes billed checks the estimated bytes up front and fails the query without a charge."
+     },
+     {
+      "t": "It cuts the scan to 1,000 rows' worth of bytes.",
+      "correct": false,
+      "why": "BigQuery's on-demand cost depends on bytes read, and LIMIT does not reduce bytes read on non-clustered tables."
+     },
+     {
+      "t": "It makes the query read-only.",
+      "correct": false,
+      "why": "LIMIT has nothing to do with permissions. Read-only access comes from the IAM roles of the account running the query."
+     },
+     {
+      "t": "It blocks the query because 5 TB is above the limit.",
+      "correct": false,
+      "why": "LIMIT counts output rows, not bytes scanned. It never blocks a query for scanning too much."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "In SQLite, <code>WITH x AS (SELECT 1) DELETE FROM orders</code> starts with WITH. Does the page's validate() let it through, and what stops it?",
+    "a": "validate() lets it through: there is no semicolon and it starts with \"with\". SQLite does allow a WITH clause in front of INSERT, UPDATE and DELETE (<a href=\"https://www.sqlite.org/lang_with.html\">SQLite WITH docs</a>). What stops it: the read-only connection (mode=ro) would reject the write, and the row-limit wrapper SELECT * FROM (...) is a syntax error for a DELETE. This is why the page has several layers; the prefix check alone is not enough."
+   },
+   {
+    "level": "Transfer",
+    "q": "Write the Postgres setup for a text-to-SQL role that can only read the analytics schema, times out after 15 s and defaults to read-only transactions.",
+    "a": "<pre><code>CREATE ROLE nl2sql LOGIN PASSWORD '...';  -- store it in a secret manager\nGRANT USAGE ON SCHEMA analytics TO nl2sql;\nGRANT SELECT ON ALL TABLES IN SCHEMA analytics TO nl2sql;\nALTER DEFAULT PRIVILEGES IN SCHEMA analytics GRANT SELECT ON TABLES TO nl2sql;\nALTER ROLE nl2sql SET statement_timeout = '15s';\nALTER ROLE nl2sql SET default_transaction_read_only = on;</code></pre>The GRANTs are the hard guarantee; the role settings are defaults that the session could override, so they are a second layer. Point the role at a read replica so even an allowed heavy query cannot slow production writes."
+   },
+   {
+    "level": "Stretch",
+    "q": "A support agent uses the tool and asks \"show me all employees and their salaries\". The role can read the HR schema. Nothing technical stops it. Redesign access so the tool respects who is asking.",
+    "a": "Make the database enforce the user's permissions, not the tool's. Options: run each query under the end user's identity (or a role mapped to their group) so existing grants apply; expose only curated views that exclude sensitive columns, with column-level grants; add row-level security policies for per-team data. Keep the tool's own account at the minimum: views only, no raw HR tables. Then add a policy check before execution that blocks queries touching tagged sensitive columns for non-authorized users, and log every query with the requesting user. The model should never be the component deciding who may see salaries."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "Why is \"only write SELECT statements\" in the prompt not enough?",
+    "a": "Because a prompt is a request, not a control. The model usually follows it, but a prompt injection, hidden in a question or in data the model reads, can override it, and models also make plain mistakes. If the code runs whatever comes back on a read-write connection, one bad output can delete data. The real protection is a read-only database account, plus validation, a timeout and a row cap in code. The prompt instruction stays, as a way to reduce bad generations, not as the safety mechanism."
+   },
+   {
+    "level": "Mid",
+    "q": "List the layers you would put around generated SQL, strongest first.",
+    "a": "One: a least-privilege database account, SELECT only, ideally on curated views and a read replica, which makes writes impossible. Two: a statement timeout and, on BigQuery, maximum bytes billed, which bound cost and load in the engine. Three: code validation, using a SQL parser to allow only a single SELECT rather than string matching. Four: a row cap by wrapping the query. Five: parameterizing any user-supplied literals. Six: logging every query with the user. Each layer assumes the others can fail."
+   },
+   {
+    "level": "Senior",
+    "q": "How do prompt injection risks differ for text-to-SQL compared with a RAG chatbot?",
+    "a": "In RAG, injected text mostly corrupts the answer or tries to exfiltrate data through the output. In text-to-SQL the model's output is executed, so injection can become an action: a write, a huge scan, or a query reading data the user should not see. Sources of injection include the question, column comments and data values pulled into few-shot examples or result summaries. The defence is to treat generated SQL as untrusted code: least-privilege execution under the user's own permissions, engine-level limits, parser-based allowlists, and never feeding raw result data back to the model without care. OWASP lists prompt injection as the top LLM risk for this reason."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Client connection defaults (statement_timeout, default_transaction_read_only) - PostgreSQL documentation",
+    "u": "https://www.postgresql.org/docs/current/runtime-config-client.html"
+   },
+   {
+    "t": "Best practices for controlling costs (LIMIT and maximum bytes billed) - BigQuery documentation",
+    "u": "https://cloud.google.com/bigquery/docs/best-practices-costs"
+   },
+   {
+    "t": "Parameters (STATEMENT_TIMEOUT_IN_SECONDS) - Snowflake documentation",
+    "u": "https://docs.snowflake.com/en/sql-reference/parameters"
+   },
+   {
+    "t": "LLM01: Prompt Injection - OWASP GenAI Security Project",
+    "u": "https://genai.owasp.org/llmrisk/llm01-prompt-injection/"
+   }
+  ]
+ },
+ {
+  "n": "9.4",
+  "analogy": "It is like a spelling test where the teacher circles the exact wrong letter and lets you try again twice. With the circle you fix it almost every time; if the teacher just said \"wrong, try again\", you would probably make the same mistake. The analogy breaks because the database only circles mistakes that break the rules of SQL; a query that is valid but answers the wrong question gets no circle at all.",
+  "scale": {
+   "title": "What a 3-try loop buys on 1,000 questions, and what it cannot fix",
+   "html": "<p>Assumptions (measure your own): 82% of first-try queries run without error, each retry fixes 70% of the remaining errors, max_tries = 3 (one try plus two retries), 4,000 input and 200 output tokens per call, about 4,400 input on retries because they carry the error and the failed SQL, prices of $2 / $10 per million input / output tokens (<a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\">Anthropic models overview, checked 2026-11-03</a>).</p><ol><li><strong>After try 1:</strong> 820 of 1,000 run; 180 error.</li><li><strong>After try 2:</strong> 180 x 0.7 = 126 fixed, 946 run (94.6%); 54 still failing.</li><li><strong>After try 3:</strong> 54 x 0.7 = 37.8 fixed, about 984 run (98.4%); about 16 give up gracefully with a message.</li><li><strong>Calls per question.</strong> 1 + 0.18 + 0.054 = 1.234 on average.</li><li><strong>Cost.</strong> First call = 4,000 x $2 / 1 M + 200 x $10 / 1 M = $0.010. Retry = 4,400 x $2 / 1 M + $0.002 = $0.0108. Average = $0.010 + 0.234 x $0.0108 = about $0.0125 a question, $12.50 per 1,000.</li><li><strong>The ceiling.</strong> Suppose execution accuracy against reference answers is 86%. Then 984 - 860 = 124 queries ran fine and returned the wrong result. The error loop cannot touch those: there was no error. They need result-shape checks, clarifying questions and the semantic layer.</li></ol><p>So the loop takes \"runs\" from 82% to 98%, cheaply. \"Correct\" is a separate number that you must measure separately.</p>"
+  },
+  "lab": {
+   "id": "09_text_to_sql_duckdb",
+   "look_for": "The lab's self-correction loop feeds the SQL error back to the model and retries. Count, from its output, how many questions succeeded on the first try, how many needed a retry, and how many gave up. Then compare \"ran without error\" with the execution-accuracy score: the gap between them is the wrong-but-runs share that error feedback cannot fix. Try setting the retry cap to 1 to see the first-try rate on its own."
+  },
+  "quiz": [
+   {
+    "q": "Your loop sees the same error three times in a row: the model keeps producing identical SQL. What is the best change?",
+    "options": [
+     {
+      "t": "Detect a repeated query or error and stop early, or change the feedback (add the real column list for the table named in the error) before retrying.",
+      "correct": true,
+      "why": "Retrying with the same input usually gets the same output. Either give the model new information, such as the actual columns, or stop and fail gracefully instead of paying for identical failures."
+     },
+     {
+      "t": "Raise max_tries to 10.",
+      "correct": false,
+      "why": "If the model is stuck, more identical retries just cost more and delay the user."
+     },
+     {
+      "t": "Raise the temperature on retries.",
+      "correct": false,
+      "why": "More randomness may change the SQL but not toward correctness, and many hosted models no longer accept temperature changes. New information is what helps."
+     },
+     {
+      "t": "Remove the schema from retries to save tokens.",
+      "correct": false,
+      "why": "The schema is exactly what the model needs to fix a wrong column. Removing it makes the fix less likely."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "First-try success is 75% and each retry fixes 60% of remaining errors. With max_tries = 3, what fraction of queries end up running, and how many calls per question on average?",
+    "a": "After try 1: 75% run, 25% fail. Try 2 fixes 25% x 0.6 = 15%, total 90%, 10% fail. Try 3 fixes 10% x 0.6 = 6%, total 96%, 4% give up. Average calls = 1 + 0.25 + 0.10 = 1.35."
+   },
+   {
+    "level": "Transfer",
+    "q": "Write three result-shape checks that would catch wrong-but-runs answers, and the feedback you would send to the model for each.",
+    "a": "(1) The question asks for one number (\"how many\", \"total\") but the result has many rows: \"The question expects a single value but the query returned 4,210 rows. Aggregate it.\" (2) A count or sum is far larger than the table's row count or known totals, a sign of fan-out: \"The sum is larger than the total of all orders; check for a join that duplicates rows.\" (3) An empty result for a question that names a value: \"No rows matched country = 'DE'. Sample values for country are 'Germany', 'Canada'.\" Each turns a silent wrong answer into an observation the loop can act on, still bounded by max_tries."
+   },
+   {
+    "level": "Stretch",
+    "q": "Design an experiment to show leadership what the self-correction loop is worth, honestly.",
+    "a": "Use the golden set (150+ questions with reference SQL). Run three configurations on the same questions and the same model: (A) single shot, (B) error feedback with max_tries = 3, (C) B plus result-shape checks and clarifying questions for flagged ambiguous ones. Report for each: ran-without-error rate, execution accuracy, average calls, p95 latency and cost per 1,000 questions. Use a paired comparison on the same questions (count questions fixed and broken between configs) to see whether gains beat noise. Expect B to raise the run rate a lot and execution accuracy less; C to close part of the remaining gap. Presenting both numbers stops anyone confusing \"it runs\" with \"it is right\"."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "How does a self-correcting SQL agent work?",
+    "a": "It runs the generated SQL with a safe read-only runner. If the database returns an error, the agent sends the exact error message and the failed query back to the model and asks for a fix, then tries again, up to a small limit such as three tries. On success it returns the rows and the SQL for transparency; on repeated failure it stops and tells the user. It works because databases give precise errors like \"no such column\", which tell the model exactly what to change."
+   },
+   {
+    "level": "Mid",
+    "q": "Why cap retries, and what else should stop the loop early?",
+    "a": "Some questions cannot be answered from the schema at all, and a stuck model will produce the same failure again, so an uncapped loop burns time and money with no gain. Two or three tries catch most fixable errors. Stop earlier when the same SQL or the same error repeats, when a per-request token or time budget runs out, or when the error is not fixable by rewriting, such as a permission denied or timeout, which should go to the user or an operator rather than back to the model."
+   },
+   {
+    "level": "Senior",
+    "q": "Error-driven self-correction raised your run rate to 98% but users still find wrong numbers. What do you do next?",
+    "a": "Recognize the loop only fixes queries that fail, so I measure execution accuracy separately and read the runs-but-wrong cases. Typical causes: fan-out joins, wrong filters, wrong metric definitions, and ambiguous questions. Fixes in order of leverage: a semantic layer with canonical metric views; result-shape and sanity checks fed back into the same bounded loop; clarifying questions when the question maps to several plausible queries; showing SQL and row counts in the UI; and a growing golden set from user-reported errors, gated in CI. The Self-Debugging and DIN-SQL papers show the feedback idea; the semantic layer is what makes answers right."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Chen et al., Teaching Large Language Models to Self-Debug (2023) - arXiv",
+    "u": "https://arxiv.org/abs/2304.05128"
+   },
+   {
+    "t": "Pourreza and Rafiei, DIN-SQL: Decomposed In-Context Learning of Text-to-SQL with Self-Correction (2023) - arXiv",
+    "u": "https://arxiv.org/abs/2304.11015"
+   },
+   {
+    "t": "Yao et al., ReAct: Synergizing Reasoning and Acting in Language Models (2022) - arXiv",
+    "u": "https://arxiv.org/abs/2210.03629"
+   },
+   {
+    "t": "sqlite3 module documentation - Python",
+    "u": "https://docs.python.org/3/library/sqlite3.html"
+   }
+  ]
+ }
+]
