@@ -182,21 +182,22 @@ golden <span class="o">=</span> {
     <div class="box-label">Run it locally: <code>labs/06_evals.py</code></div>
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/06_evals.py</code></pre>
-    <p><strong>What to look for:</strong> The lab computes recall@k, MRR and nDCG@k over a golden set and an LLM-as-judge faithfulness score, then runs a regression gate between two prompt versions. Check one query's metrics by hand against the printout using the formulas above. Then shrink k from 5 to 1 and watch recall@k fall while MRR stays the same (MRR only cares about the first hit). Finally, remove one label from the golden set: a correct chunk now counts as a miss, which shows how incomplete labels pull every metric down.</p>
+    <p><strong>What to look for:</strong> The lab computes recall@3, MRR and nDCG@3 on 10 answerable golden questions, an LLM-judge agreement count, and a per-case regression gate between two prompts. Check one query by hand with the formulas above. Then change k from 3 to 1 in metrics() and watch recall@k fall while MRR stays the same (MRR only cares about the first hit). Finally, remove one gold doc id: a correct chunk now counts as a miss, which shows how incomplete labels pull every metric down. With 12 cases, every number has a wide interval (section 6 prints it).</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
-      <div class="sol-body"><pre><code>  against human labels before you trust it (report agreement and Cohen&#x27;s kappa, not vibes).
-5) Judge position bias: same pair, swapped order
+      <div class="sol-body"><pre><code>5) Judge position bias: same pair, swapped order
   How long do card refunds take?      order1 picked B, order2 picked B  -&gt; FLIPPED
   Return window for electronics?      order1 picked B, order2 picked A  -&gt; consistent
   Express shipping price?             order1 picked B, order2 picked A  -&gt; consistent
   When is standard shipping free?     order1 picked A, order2 picked B  -&gt; consistent
   Duplicate charge reversal time?     order1 picked A, order2 picked B  -&gt; consistent
-  consistent verdicts: 4/5   correct in both orders: 2/5
+  consistent verdicts: 4/5 = 80% (95% CI 38%-96%)   correct in both orders: 2/5 = 40% (95% CI 12%-77%)
+  n=5 pairs is a demo, not a measurement of this judge&#x27;s bias: the intervals span most of 0-100%.
   Look: with no reference passage in the judge prompt, the judge has to guess which number is right.
   Always judge both orders and count a win only when both agree; give the judge the reference.
 6) How wide is the error bar on 12 cases?
-  v1 accuracy 92%, 95% normal-approx interval +/- 16%  (n=12)
+  v1 accuracy 11/12 = 92% (95% CI 65%-99%)  (Wilson interval)
   At n=400 the same accuracy would be roughly +/- 2.7%
 {&quot;v1_correct&quot;: 0.917, &quot;regressions&quot;: 12, &quot;judge_consistent&quot;: 4}</code></pre>
       <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/06_evals.txt">labs/outputs</a>. Source: <a href="../labs/06_evals.py">labs/06_evals.py</a>.</p></div>

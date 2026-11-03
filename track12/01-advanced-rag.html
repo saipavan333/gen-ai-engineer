@@ -145,6 +145,7 @@ top <span class="o">=</span> <span class="f">sorted</span>(scores, key<span clas
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/03_rag_local.py</code></pre>
     <p><strong>What to look for:</strong> The lab fuses dense and BM25 results with Reciprocal Rank Fusion, which is the same fusion step multi-query uses. To see multi-query, write two or three rephrasings of a golden question by hand, retrieve for each, and fuse with the lab's RRF function: check whether the right chunk ranks higher than with the original wording alone. The lab does not do HyDE or compression; for metrics on any change, run 06_evals before and after.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>  out of the top 3. On this tiny corpus dense already wins; hybrid earns its keep on big corpora full of

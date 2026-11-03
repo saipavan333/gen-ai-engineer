@@ -162,6 +162,7 @@
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/09_text_to_sql_duckdb.py</code></pre>
     <p><strong>What to look for:</strong> Find the SELECT-only validation and the row limit in the lab. Ask a question phrased to tempt a write (for example 'delete the test orders and then count orders') and confirm the validator rejects the generated SQL before DuckDB runs it. For the markdown-URL side of output validation, the 07_injection_exfiltration lab shows the allowlist step.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>  Q: What share of orders were returned? Give a fraction between 0 and 1.

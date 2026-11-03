@@ -169,7 +169,8 @@ log(<span class="f">redact</span>(raw))                 <span class="c"># "Email
     <div class="box-label">Run it locally: <code>labs/08_llmops.py</code></div>
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/08_llmops.py</code></pre>
-    <p><strong>What to look for:</strong> The lab's input and output guardrails include a simple redaction step before text is logged to the JSONL traces. Send a request containing an email address and a card-like number and check what lands in the trace file. Then try a name: a regex-based guard will usually miss it, which is exactly the gap this lesson describes.</p>
+    <p><strong>What to look for:</strong> Two things to look at. Section 2 masks a PAN number before the prompt reaches the model (input_guard), and the spans in traces.jsonl store no prompt text at all, so nothing personal is logged. Then add a request containing a person's name: the regex guards do not catch names, which is exactly the gap this lesson describes.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>  semantic similarity to the cached &#x27;track my order&#x27;: paraphrase=0.657  different intent (cancel)=0.523

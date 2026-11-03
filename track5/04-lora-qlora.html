@@ -46,16 +46,21 @@
 model_id <span class="o">=</span> <span class="s">"Qwen/Qwen2.5-0.5B"</span>                 <span class="c"># small + free; scale up later</span>
 
 bnb <span class="o">=</span> <span class="f">BitsAndBytesConfig</span>(load_in_4bit<span class="o">=</span><span class="kc">True</span>,      <span class="c"># QLoRA: 4-bit frozen base</span>
-        bnb_4bit_quant_type<span class="o">=</span><span class="s">"nf4"</span>, bnb_4bit_compute_dtype<span class="o">=</span>torch.bfloat16)
+        bnb_4bit_quant_type<span class="o">=</span><span class="s">"nf4"</span>, bnb_4bit_compute_dtype<span class="o">=</span>torch.float16)  <span class="c"># free Colab T4 has no bf16; use torch.bfloat16 on A100/L4</span>
 model <span class="o">=</span> AutoModelForCausalLM.<span class="f">from_pretrained</span>(model_id, quantization_config<span class="o">=</span>bnb, device_map<span class="o">=</span><span class="s">"auto"</span>)
 tok <span class="o">=</span> AutoTokenizer.<span class="f">from_pretrained</span>(model_id)
+
+<span class="k">from</span> datasets <span class="k">import</span> load_dataset
+train_ds <span class="o">=</span> <span class="f">load_dataset</span>(<span class="s">"json"</span>, data_files<span class="o">=</span><span class="s">"train.jsonl"</span>, split<span class="o">=</span><span class="s">"train"</span>)  <span class="c"># one {"messages": [...]} chat per line (Lesson 5.3)</span>
 
 lora <span class="o">=</span> <span class="f">LoraConfig</span>(r<span class="o">=</span><span class="n">16</span>, lora_alpha<span class="o">=</span><span class="n">32</span>,            <span class="c"># the tiny trainable adapter</span>
         target_modules<span class="o">=</span><span class="s">"all-linear"</span>, lora_dropout<span class="o">=</span><span class="n">0.05</span>, task_type<span class="o">=</span><span class="s">"CAUSAL_LM"</span>)
 
-trainer <span class="o">=</span> <span class="f">SFTTrainer</span>(model<span class="o">=</span>model, train_dataset<span class="o">=</span>train_ds, peft_config<span class="o">=</span>lora,
+trainer <span class="o">=</span> <span class="f">SFTTrainer</span>(model<span class="o">=</span>model, train_dataset<span class="o">=</span>train_ds, processing_class<span class="o">=</span>tok, peft_config<span class="o">=</span>lora,
         args<span class="o">=</span><span class="f">SFTConfig</span>(output_dir<span class="o">=</span><span class="s">"out"</span>, num_train_epochs<span class="o">=</span><span class="n">2</span>,
-              per_device_train_batch_size<span class="o">=</span><span class="n">2</span>, learning_rate<span class="o">=</span><span class="n">2e-4</span>))
+              per_device_train_batch_size<span class="o">=</span><span class="n">2</span>, learning_rate<span class="o">=</span><span class="n">2e-4</span>,
+              fp16<span class="o">=</span><span class="kc">True</span>,                  <span class="c"># SFTConfig defaults to bf16; a T4 needs fp16</span>
+              eos_token<span class="o">=</span><span class="s">"&lt;|im_end|&gt;"</span>))   <span class="c"># Qwen base models: align EOS with the chat template (TRL docs)</span>
 trainer.<span class="f">train</span>()
 trainer.<span class="f">save_model</span>(<span class="s">"my-adapter"</span>)               <span class="c"># tens of MB (~8.8M LoRA params for 0.5B at r=16, per its <a href="https://huggingface.co/Qwen/Qwen2.5-0.5B/blob/main/config.json">config</a>), not GB — the whole "fine-tune"</span></code></pre>
     <p>The output isn’t a new multi-gigabyte model — it’s a tiny adapter you load on top of the base at inference. That’s why teams can serve many fine-tunes cheaply: one base model, many small adapters swapped in as needed.</p>
@@ -169,6 +174,7 @@ trainer.<span class="f">save_model</span>(<span class="s">"my-adapter"</span>)  
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/11_lora_tiny.py</code></pre>
     <p><strong>What to look for:</strong> The first half prints the LoRA parameter math for the real Qwen2.5-7B config; check that its totals match this page's 40,370,176 at r = 16 on all linear layers, then change r to 8 and target modules to q and v only and watch the count drop. The second half trains a real adapter on a tiny model: note the 'trainable %' line and the adapter's size on disk next to the base model's.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>  base model: 798,848 params. Pre-training it on &#x27;count UP&#x27; sequences (0123456789012...)

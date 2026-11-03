@@ -156,7 +156,8 @@ trainer.<span class="f">train</span>()
     <div class="box-label">Run it locally: <code>labs/11_lora_tiny.py</code></div>
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/11_lora_tiny.py</code></pre>
-    <p><strong>What to look for:</strong> Print one tokenised training example and find where the prompt ends and the response begins; check which positions have label -100 (ignored) and which carry loss. Then generate from the trained adapter with the same template and with a different one, and compare: the mismatch is this lesson's chat-template gotcha at toy scale.</p>
+    <p><strong>What to look for:</strong> The lab does not use a chat template or -100 label masking: its tiny model learns plain counting sequences, so it shows LoRA mechanics, not instruction formatting. For this lesson's template gotcha, use the worked example above with a real tokenizer: print tokenizer.apply_chat_template(messages, tokenize=False) and compare it with the template you will use at inference.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>  base model: 798,848 params. Pre-training it on &#x27;count UP&#x27; sequences (0123456789012...)

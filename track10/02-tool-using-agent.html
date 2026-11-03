@@ -25,7 +25,7 @@
   <div class="box concept">
     <div class="box-label">Setup (free)</div>
 <pre><code><span class="o">$</span> pip install ollama wikipedia
-<span class="o">$</span> ollama pull llama3.2          <span class="c"># supports tool calling, runs locally</span></code></pre>
+<span class="o">$</span> ollama pull qwen2.5:7b          <span class="c"># supports tool calling, runs locally</span></code></pre>
   </div>
 
   <h2>Step 1 — Define tools (and mark the risky one)</h2>
@@ -68,7 +68,7 @@ SCHEMAS <span class="o">=</span> [
     msgs <span class="o">=</span> [{<span class="s">"role"</span>: <span class="s">"system"</span>, <span class="s">"content"</span>: <span class="s">"Use tools to solve the task. Think, then act. Answer when sure."</span>},
             {<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: goal}]
     <span class="k">for</span> step <span class="k">in</span> <span class="f">range</span>(max_steps):                        <span class="c"># GUARD: bounded loop</span>
-        m <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"llama3.2"</span>, messages<span class="o">=</span>msgs, tools<span class="o">=</span>SCHEMAS)[<span class="s">"message"</span>]
+        m <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"qwen2.5:7b"</span>, messages<span class="o">=</span>msgs, tools<span class="o">=</span>SCHEMAS)[<span class="s">"message"</span>]
         msgs.<span class="f">append</span>(m)
         calls <span class="o">=</span> m.<span class="f">get</span>(<span class="s">"tool_calls"</span>)
         <span class="k">if</span> <span class="k">not</span> calls:

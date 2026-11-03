@@ -140,6 +140,7 @@ result <span class="o">=</span> model.<span class="f">transcribe</span>(<span cl
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/01_generate_and_sample.py</code></pre>
     <p><strong>What to look for:</strong> No lab processes audio (no speech model is installed). The closest is the generation lab, because the middle stage of every voice pipeline is an LLM call and its TTFT and tokens/sec are the numbers in the latency budget. Note the lab's TTFT and tokens/sec for qwen2.5:7b on your machine, then compute how long the first 8-token clause would take; that is your LLM slice of the budget. If you want the audio halves, faster-whisper and a local TTS install with pip, but they are not part of this course's verified labs.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>2) Same prompt, temperature 1.0, three different seeds

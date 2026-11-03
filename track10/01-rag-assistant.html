@@ -24,7 +24,7 @@
 
   <div class="box concept">
     <div class="box-label">Setup (one time, free)</div>
-    <p>Install <strong>Ollama</strong> from <code>ollama.com</code> and run <code>ollama pull llama3.2</code>. Then:</p>
+    <p>Install <strong>Ollama</strong> from <code>ollama.com</code> and run <code>ollama pull qwen2.5:7b</code>. Then:</p>
 <pre><code><span class="o">$</span> pip install chromadb ollama
 <span class="c"># Chroma's default embedder (all-MiniLM-L6-v2) is free and downloads automatically.</span>
 <span class="c"># Put a few .txt/.md files in a ./docs folder (your notes, a manual, FAQs…).</span></code></pre>
@@ -74,7 +74,7 @@ Context:
 {context}
 
 Question: {question}"""</span>
-    out <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"llama3.2"</span>,
+    out <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"qwen2.5:7b"</span>,
             messages<span class="o">=</span>[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: prompt}],
             options<span class="o">=</span>{<span class="s">"temperature"</span>: <span class="n">0</span>})[<span class="s">"message"</span>][<span class="s">"content"</span>]
     <span class="k">return</span> {<span class="s">"answer"</span>: out, <span class="s">"sources"</span>: sources}

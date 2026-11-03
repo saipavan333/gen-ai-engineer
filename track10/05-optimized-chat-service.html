@@ -25,8 +25,8 @@
   <div class="box concept">
     <div class="box-label">Setup (free)</div>
 <pre><code><span class="o">$</span> pip install ollama
-<span class="o">$</span> ollama pull llama3.2:1b      <span class="c"># small/fast (cheap path)</span>
-<span class="o">$</span> ollama pull llama3.1:8b      <span class="c"># larger/capable (hard path)</span></code></pre>
+<span class="o">$</span> ollama pull qwen2.5:1.5b      <span class="c"># small/fast (cheap path)</span>
+<span class="o">$</span> ollama pull qwen2.5:7b      <span class="c"># larger/capable (hard path)</span></code></pre>
   </div>
 
   <h2>The optimized service</h2>
@@ -38,7 +38,7 @@ metrics <span class="o">=</span> {<span class="s">"requests"</span>: <span class
 
 <span class="k">def</span> <span class="f">route</span>(msg):                                     <span class="c"># model routing (Track 8.4)</span>
     hard <span class="o">=</span> any(w <span class="k">in</span> msg.<span class="f">lower</span>() <span class="k">for</span> w <span class="k">in</span> [<span class="s">"analyze"</span>, <span class="s">"explain why"</span>, <span class="s">"design"</span>, <span class="s">"prove"</span>, <span class="s">"compare"</span>])
-    <span class="k">return</span> <span class="s">"llama3.1:8b"</span> <span class="k">if</span> hard <span class="k">or</span> <span class="f">len</span>(msg) <span class="o">&gt;</span> <span class="n">300</span> <span class="k">else</span> <span class="s">"llama3.2:1b"</span>
+    <span class="k">return</span> <span class="s">"qwen2.5:7b"</span> <span class="k">if</span> hard <span class="k">or</span> <span class="f">len</span>(msg) <span class="o">&gt;</span> <span class="n">300</span> <span class="k">else</span> <span class="s">"qwen2.5:1.5b"</span>
 
 <span class="k">def</span> <span class="f">trim_history</span>(history, keep<span class="o">=</span><span class="n">6</span>):                  <span class="c"># token budgeting (Track 8.7)</span>
     <span class="k">return</span> history[<span class="o">-</span>keep:]                            <span class="c"># keep recent turns (or summarize older — Track 4.5)</span>

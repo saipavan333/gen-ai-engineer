@@ -48,15 +48,16 @@
 <!-- shape:scale:start -->
   <div class="box example shape-scale">
     <div class="box-label">At real scale: Routing 1 million requests a day between a fast model and a reasoning model</div>
-    <p>Assume an assistant gets <strong>1,000,000 requests a day</strong>, of which <strong>5%</strong> are genuinely hard (multi-step debugging, calculations). A hard request uses about <strong>4,000 thinking tokens</strong> when extended thinking is on. All numbers except prices are assumptions.</p>
+    <p>Assume an assistant gets <strong>1,000,000 requests a day</strong>, of which <strong>5%</strong> are genuinely hard (multi-step debugging, calculations), and a hard request uses about <strong>4,000 thinking tokens</strong> when the model thinks hard. All numbers except prices and API behaviour are assumptions.</p>
 <ol>
-<li><strong>Thinking is billed as output.</strong> Anthropic reports thinking as part of billed output tokens, visible in <code>usage.output_tokens_details.thinking_tokens</code> (<a href="https://platform.claude.com/docs/en/build-with-claude/extended-thinking">extended thinking docs</a>).</li>
-<li><strong>Think on everything.</strong> On Claude Sonnet 5.5 at $10 per million output tokens (<a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic models overview</a>): 1,000,000 x 4,000 = 4 billion tokens = <strong>$40,000/day</strong> just for thinking.</li>
-<li><strong>Think only on hard requests.</strong> 50,000 x 4,000 = 200M tokens = <strong>$2,000/day</strong>. Routing cuts the thinking bill by 95%.</li>
-<li><strong>Price the router.</strong> A small classifier, or a cheap model call of about 200 input tokens, decides "hard or not". On a model priced from $0.10 per million input tokens, 1M x 200 = 200M tokens = about $20/day.</li>
-<li><strong>Measure the misroutes.</strong> On a labelled set of 1,000 requests, suppose the router sends 15% of hard requests to the fast model. Those 7,500 a day get weaker answers. Add an escalation rule: if the fast model's answer fails a check (tests fail, numbers disagree), retry on the reasoning model.</li>
-<li><strong>Latency.</strong> 4,000 thinking tokens at an assumed 80 tokens/second is about 50 seconds. Show progress, or move hard jobs to an async queue.</li>
+<li><strong>How you control thinking now.</strong> On current Claude models you no longer set a token budget: <code>thinking: {type: "enabled", budget_tokens: N}</code> returns a 400 error on Claude 4.7 and later. You use adaptive thinking (the model decides whether and how much to think) and steer it with <code>output_config.effort</code>: <code>low</code>, <code>medium</code>, <code>high</code>, <code>xhigh</code> or <code>max</code>. The default is <code>high</code> on Claude Sonnet 5.5 and <code>medium</code> on Claude Opus 5.5 and Haiku 5.5 (<a href="https://platform.claude.com/docs/en/build-with-claude/effort">effort docs</a>; <a href="https://platform.claude.com/docs/en/build-with-claude/extended-thinking">extended thinking, now legacy</a>). Effort is a behavioural signal, not a hard cap; <code>max_tokens</code> is the hard limit on thinking plus answer.</li>
+<li><strong>Thinking is billed as output.</strong> Thinking tokens count as billed output tokens, visible in <code>usage.output_tokens_details.thinking_tokens</code>.</li>
+<li><strong>High effort on everything.</strong> On Claude Sonnet 5.5 at $10 per million output tokens (<a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic models overview</a>): 1,000,000 x 4,000 = 4 billion tokens = <strong>$40,000/day</strong> if every request thought that hard.</li>
+<li><strong>Route by difficulty.</strong> Send easy requests at <code>low</code> effort (where the model may skip thinking on easy inputs) and hard ones at <code>high</code>. If only the 50,000 hard requests think at about 4,000 tokens: 200M tokens = <strong>$2,000/day</strong>. Measure the real thinking tokens per effort level on your traffic; do not assume.</li>
+<li><strong>Price the router.</strong> A small classifier, or a cheap model call of about 200 input tokens, decides 'hard or not'. On a model priced from $0.10 per million input tokens, 1M x 200 = 200M tokens = about $20/day.</li>
+<li><strong>Measure the misroutes and the latency.</strong> On a labelled set of 1,000 requests, suppose the router sends 15% of hard requests to low effort: add an escalation rule (retry at higher effort if a check fails). And 4,000 thinking tokens at an assumed 80 tokens/second is about 50 seconds, so show progress or move hard jobs to an async queue.</li>
 </ol>
+<p><strong>History note:</strong> earlier Claude models used manual extended thinking with a <code>budget_tokens</code> number; it still works on some older models (for example Claude Sonnet 4.5 and Haiku 4.5) and is deprecated on the 4.6 models. Code written that way must migrate to adaptive thinking plus effort when it moves to a current model.</p>
   </div>
 <!-- shape:scale:end -->
 <div class="box key">
@@ -113,8 +114,8 @@
   <div class="quiz">
     <p class="quiz-q">You give a reasoning model a 'think step by step, list every assumption' prompt on top of its built-in thinking. Tokens double, accuracy is unchanged. What is the best reading?</p>
     <ul class="quiz-options">
-      <li data-correct="false"><span class="opt">A) Double the thinking budget again until accuracy improves.</span>
-        <div class="why">If accuracy is flat, more tokens is likely to keep spending without gain. Find where the curve flattens first.</div></li>
+      <li data-correct="false"><span class="opt">A) Raise the effort level again until accuracy improves.</span>
+        <div class="why">If accuracy is flat, more thinking is likely to keep spending without gain. Find where the curve flattens on an eval first.</div></li>
       <li data-correct="false"><span class="opt">B) Reasoning models cannot follow instructions.</span>
         <div class="why">They follow instructions; the issue is redundant prompting.</div></li>
       <li data-correct="false"><span class="opt">C) The model ignored the prompt, which means it is broken.</span>
@@ -140,20 +141,21 @@
     <div class="box-label">Run it locally: <code>labs/12_self_consistency.py</code></div>
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/12_self_consistency.py</code></pre>
-    <p><strong>What to look for:</strong> Self-consistency is test-time compute you can control by hand: more samples, more tokens, better accuracy up to a point. Read the accuracy-vs-N table next to tokens spent and find where the curve flattens. That knee is the same trade a reasoning model makes internally. The lab does not run a trained reasoning model; qwen2.5:7b is a standard model.</p>
+    <p><strong>What to look for:</strong> Self-consistency is test-time compute you control by hand: N samples and a vote. On our run accuracy stayed at 4 of 5 for every N while tokens grew linearly, and one vote went wrong because the most common answer was wrong. With n=5 problems this shows the mechanism and its failure, not a curve. The lab does not run a trained reasoning model or Claude's effort setting; qwen2.5:7b is a standard model.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
-      <div class="sol-body"><pre><code>1) Sample 7 chains per problem at temperature 0.8 (different seeds)
-  P1 gold=348    answers=[348.0, None, 348.0, 348.0, 348.0, 348.0, None]
-  P2 gold=215    answers=[265.0, None, 215.0, 195.0, 195.0, 215.0, 195.0]
+      <div class="sol-body"><pre><code>  P2 gold=215    answers=[265.0, None, 215.0, 195.0, 195.0, 215.0, 195.0]
   P3 gold=17     answers=[17.0, 17.0, 17.0, 17.0, 17.0, 17.0, 17.0]
   P4 gold=540    answers=[540.0, 5.0, 540.0, 540.0, 540.0, 540.0, 540.0]
   P5 gold=676.5  answers=[676.5, 676.5, 676.5, 676.5, 676.5, 676.5, 676.5]
 2) Accuracy vs number of samples (majority vote over the first N)
-  N=1: accuracy 4/5   ~200 output tokens per problem
-  N=3: accuracy 4/5   ~601 output tokens per problem
-  N=5: accuracy 4/5   ~1,002 output tokens per problem
-  N=7: accuracy 4/5   ~1,403 output tokens per problem
+  N=1: accuracy 4/5 = 80% (95% CI 38%-96%)   ~196 output tokens per problem
+  N=3: accuracy 4/5 = 80% (95% CI 38%-96%)   ~588 output tokens per problem
+  N=5: accuracy 4/5 = 80% (95% CI 38%-96%)   ~980 output tokens per problem
+  N=7: accuracy 4/5 = 80% (95% CI 38%-96%)   ~1,373 output tokens per problem
+  With n=5 problems these intervals are far too wide to compare N values: treat this as a demo of the
+  mechanism (and of a vote going wrong), not a measured accuracy curve. Real curves need hundreds of problems.
   Look: more samples cost tokens linearly; accuracy gains are bumpy and flatten out. A vote only helps
   when the model is right more often than any single wrong answer. Measure the curve on YOUR task before
   paying for N=7 (or for a reasoning model&#x27;s long thinking) in production.</code></pre>
@@ -188,12 +190,12 @@
     <p><span class="shape-lvl">Mid</span> How do you decide whether a feature should use a reasoning model?</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Model answer</summary>
-      <div class="sol-body"><p>Run an eval on representative cases with both options and compare accuracy, cost per request including thinking tokens, and latency. Reasoning tends to pay off on multi-step tasks with a clear right answer and low to moderate volume. For high-volume simple tasks, use a fast model. Often the answer is both: route by difficulty, or try the fast model first and escalate when a check fails. Set thinking budgets and watch the usage field so cost does not surprise you.</p></div>
+      <div class="sol-body"><p>Run an eval on representative cases with both options and compare accuracy, cost per request including thinking tokens, and latency. Reasoning tends to pay off on multi-step tasks with a clear right answer and low to moderate volume. For high-volume simple tasks, use a fast model or a low effort level. Often the answer is both: route by difficulty, or try low effort first and escalate when a check fails. On current Claude models you steer thinking with output_config.effort rather than a token budget, and you watch usage.output_tokens_details.thinking_tokens so cost does not surprise you.</p></div>
     </details>
     <p><span class="shape-lvl">Senior</span> How does test-time compute change system design compared with the 'just pick a bigger model' era?</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Model answer</summary>
-      <div class="sol-body"><p>Compute becomes a per-request decision, not a fixed property of the deployed model. So you design routing, budgets and verification: a difficulty classifier or cascade, thinking budgets per feature, verifiers such as tests or rule checks to decide when more compute is worth it, and async flows for long jobs. Observability must track thinking tokens and latency separately. Some agent scaffolding gets simpler because the model plans more by itself, but tools, grounding, bounded loops and evals stay essential.</p></div>
+      <div class="sol-body"><p>Compute becomes a per-request decision, not a fixed property of the deployed model. So you design routing, effort levels and verification: a difficulty classifier or cascade, an effort level per feature (low, medium, high and up, with max_tokens as the hard cap on thinking plus answer), verifiers such as tests or rule checks to decide when more compute is worth it, and async flows for long jobs. Run an effort sweep on your evals instead of carrying settings over between model versions, because levels are recalibrated. Observability must track thinking tokens and latency separately. Tools, grounding, bounded loops and evals stay essential.</p></div>
     </details>
   </div>
   <div class="box key shape-sources">
@@ -201,8 +203,11 @@
     <ul>
       <li><a href="https://arxiv.org/abs/2408.03314" target="_blank" rel="noopener">Scaling LLM Test-Time Compute Optimally can be More Effective than Scaling Model Parameters (Snell et al., 2024) — arXiv</a></li>
       <li><a href="https://arxiv.org/abs/2501.12948" target="_blank" rel="noopener">DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning (2025) — arXiv</a></li>
-      <li><a href="https://platform.claude.com/docs/en/build-with-claude/extended-thinking" target="_blank" rel="noopener">Extended thinking — Anthropic docs</a></li>
+      <li><a href="https://platform.claude.com/docs/en/build-with-claude/effort" target="_blank" rel="noopener">Effort parameter (adaptive thinking) - Anthropic docs</a></li>
       <li><a href="https://arxiv.org/abs/2203.11171" target="_blank" rel="noopener">Self-Consistency Improves Chain of Thought Reasoning (Wang et al., 2022) — arXiv</a></li>
+      <li><a href="https://platform.claude.com/docs/en/build-with-claude/effort" target="_blank" rel="noopener">Effort parameter (adaptive thinking) - Anthropic docs</a></li>
+      <li><a href="https://platform.claude.com/docs/en/build-with-claude/effort" target="_blank" rel="noopener">Effort parameter (adaptive thinking) - Anthropic docs</a></li>
+      <li><a href="https://platform.claude.com/docs/en/build-with-claude/extended-thinking" target="_blank" rel="noopener">Extended thinking (legacy budget_tokens) - Anthropic docs</a></li>
     </ul>
   </div>
 <!-- shape:tail:end -->

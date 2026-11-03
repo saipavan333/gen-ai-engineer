@@ -167,7 +167,8 @@ A: SELECT p.name, SUM(i.qty) AS units
     <div class="box-label">Run it locally: <code>labs/09_text_to_sql_duckdb.py</code></div>
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/09_text_to_sql_duckdb.py</code></pre>
-    <p><strong>What to look for:</strong> Find where the lab builds the schema context for the prompt (schema grounding). Run the question set once as-is, then remove the column descriptions or sample values from the context and run again: execution accuracy should drop, typically on questions that depend on value formats or which column holds what. Put them back and add one few-shot example matching a failing question's pattern to see it recover.</p>
+    <p><strong>What to look for:</strong> Find SCHEMA in the lab: the tables, a comment on what is_plus means, the allowed status values, and a definition of revenue. Remove the status values and the revenue definition, rerun, and watch execution accuracy on the revenue questions. Put them back and add one few-shot example matching a failing question's pattern to see it recover. With 6 questions, one change is one question: read the cases, not the score.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>  Q: What share of orders were returned? Give a fraction between 0 and 1.

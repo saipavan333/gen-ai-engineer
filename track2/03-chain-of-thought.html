@@ -179,20 +179,21 @@ final <span class="o">=</span> out.<span class="f">strip</span>().<span class="f
     <div class="box-label">Run it locally: <code>labs/12_self_consistency.py</code></div>
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/12_self_consistency.py</code></pre>
-    <p><strong>What to look for:</strong> The lab samples N reasoning chains from qwen2.5:7b on arithmetic word problems and takes a majority vote. Look at the accuracy-vs-N table next to tokens spent: accuracy should rise and then flatten while tokens grow linearly. Read a few individual chains that reached a wrong answer with neat-looking steps, which is the faithfulness warning from the lesson.</p>
+    <p><strong>What to look for:</strong> The lab samples 7 reasoning chains per problem from qwen2.5:7b on 5 word problems and majority-votes the first N. On our run accuracy was 4 of 5 at every N while tokens grew linearly, and on the clock-arithmetic problem the most common answer was wrong. With n=5 problems that is a demo of the mechanism, not an accuracy curve. Read the individual answers for that problem: neat-looking steps that reach a wrong number are the faithfulness warning from this lesson.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
-      <div class="sol-body"><pre><code>1) Sample 7 chains per problem at temperature 0.8 (different seeds)
-  P1 gold=348    answers=[348.0, None, 348.0, 348.0, 348.0, 348.0, None]
-  P2 gold=215    answers=[265.0, None, 215.0, 195.0, 195.0, 215.0, 195.0]
+      <div class="sol-body"><pre><code>  P2 gold=215    answers=[265.0, None, 215.0, 195.0, 195.0, 215.0, 195.0]
   P3 gold=17     answers=[17.0, 17.0, 17.0, 17.0, 17.0, 17.0, 17.0]
   P4 gold=540    answers=[540.0, 5.0, 540.0, 540.0, 540.0, 540.0, 540.0]
   P5 gold=676.5  answers=[676.5, 676.5, 676.5, 676.5, 676.5, 676.5, 676.5]
 2) Accuracy vs number of samples (majority vote over the first N)
-  N=1: accuracy 4/5   ~200 output tokens per problem
-  N=3: accuracy 4/5   ~601 output tokens per problem
-  N=5: accuracy 4/5   ~1,002 output tokens per problem
-  N=7: accuracy 4/5   ~1,403 output tokens per problem
+  N=1: accuracy 4/5 = 80% (95% CI 38%-96%)   ~196 output tokens per problem
+  N=3: accuracy 4/5 = 80% (95% CI 38%-96%)   ~588 output tokens per problem
+  N=5: accuracy 4/5 = 80% (95% CI 38%-96%)   ~980 output tokens per problem
+  N=7: accuracy 4/5 = 80% (95% CI 38%-96%)   ~1,373 output tokens per problem
+  With n=5 problems these intervals are far too wide to compare N values: treat this as a demo of the
+  mechanism (and of a vote going wrong), not a measured accuracy curve. Real curves need hundreds of problems.
   Look: more samples cost tokens linearly; accuracy gains are bumpy and flatten out. A vote only helps
   when the model is right more often than any single wrong answer. Measure the curve on YOUR task before
   paying for N=7 (or for a reasoning model&#x27;s long thinking) in production.</code></pre>

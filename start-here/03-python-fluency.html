@@ -83,7 +83,7 @@ prompt <span class="o">=</span> <span class="s">f"""Answer using ONLY the contex
   <h2>4 · Functions with sensible defaults</h2>
   <p>A <span class="term">default argument</span> lets a function be called simply <em>or</em> with extra control. You set a value with <code>=</code> in the definition; callers can skip it or override it.</p>
   <div class="code-label"><span class="dot"></span><span class="fname">defaults.py</span></div>
-<pre><code><span class="k">def</span> <span class="f">ask</span>(question, model<span class="o">=</span><span class="s">"llama3.2"</span>, temperature<span class="o">=</span><span class="n">0.0</span>):
+<pre><code><span class="k">def</span> <span class="f">ask</span>(question, model<span class="o">=</span><span class="s">"qwen2.5:7b"</span>, temperature<span class="o">=</span><span class="n">0.0</span>):
     <span class="k">return</span> <span class="s">f"[</span>{model}<span class="s"> @ temp </span>{temperature}<span class="s">] "</span> <span class="o">+</span> question
 
 <span class="f">print</span>(<span class="f">ask</span>(<span class="s">"What is RAG?"</span>))                       <span class="c"># uses the defaults</span>

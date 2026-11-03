@@ -159,7 +159,8 @@ parts <span class="o">=</span> {
     <div class="box-label">Run it locally: <code>labs/08_llmops.py</code></div>
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/08_llmops.py</code></pre>
-    <p><strong>What to look for:</strong> The lab's per-request cost accounting prints tokens and cost for each call. Run it once as is, then shorten the system prompt or retrieved context and run again: the per-request line should fall by exactly the removed tokens x price. The lab prices with configurable numbers; plug in the Claude list prices to see real dollars. It does not simulate a multi-step agent's growing history, so use the arithmetic in the worked example for that.</p>
+    <p><strong>What to look for:</strong> Section 3 sums tokens and hosted-equivalent cost across the requests that reached the model (prices set at the top of the file from Claude Haiku 5.5 list prices) and scales it to 2 M requests a day; each span in traces.jsonl also carries its own token counts and cost. Shorten the prompt template and rerun: the cost falls by exactly the removed tokens times the price. The lab does not simulate an agent's growing history; use the worked example's arithmetic for that.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>  semantic similarity to the cached &#x27;track my order&#x27;: paraphrase=0.657  different intent (cancel)=0.523

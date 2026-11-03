@@ -43,6 +43,10 @@
     <p>Both techniques, minimal. Summarize to fit; store and retrieve to recall.</p>
 <pre><code><span class="k">import</span> numpy <span class="k">as</span> np, ollama
 <span class="k">from</span> sentence_transformers <span class="k">import</span> SentenceTransformer
+
+<span class="k">def</span> <span class="f">ask</span>(prompt, system<span class="o">=</span><span class="kc">None</span>, model<span class="o">=</span><span class="s">"qwen2.5:7b"</span>):   <span class="c"># one chat call; returns the reply text</span>
+    msgs <span class="o">=</span> ([{<span class="s">"role"</span>: <span class="s">"system"</span>, <span class="s">"content"</span>: system}] <span class="k">if</span> system <span class="k">else</span> []) <span class="o">+</span> [{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: prompt}]
+    <span class="k">return</span> ollama.<span class="f">chat</span>(model<span class="o">=</span>model, messages<span class="o">=</span>msgs)[<span class="s">"message"</span>][<span class="s">"content"</span>]
 embed <span class="o">=</span> <span class="f">SentenceTransformer</span>(<span class="s">"all-MiniLM-L6-v2"</span>)
 
 <span class="c"># --- short-term: summarize old turns when the convo gets long ---</span>
@@ -64,7 +68,7 @@ memory, mem_vecs <span class="o">=</span> [], <span class="kc">None</span>
 
 <span class="f">remember</span>(<span class="s">"User prefers metric units and replies in the morning."</span>)
 <span class="f">remember</span>(<span class="s">"User is based in Bengaluru (IST)."</span>)
-<span class="f">print</span>(<span class="f">recall</span>(<span class="s">"what timezone should I schedule for?"</span>))   <span class="c"># -> ["User is based in Bengaluru (IST)."]</span></code></pre>
+<span class="f">print</span>(<span class="f">recall</span>(<span class="s">"what timezone should I schedule for?"</span>))   <span class="c"># -> both facts (k=2 and there are only 2 memories); use k=1 for just the closest</span></code></pre>
     <p>That’s the whole idea: <em>summarize</em> to keep the window lean, <em>store and retrieve</em> to recall the right thing later. Long-term memory is just RAG whose corpus is the agent’s experience.</p>
   </div>
 <!-- shape:scale:start -->
@@ -162,6 +166,7 @@ memory, mem_vecs <span class="o">=</span> [], <span class="kc">None</span>
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/03_rag_local.py</code></pre>
     <p><strong>What to look for:</strong> Long-term memory is RAG over the agent's own history, so the RAG lab is the closest fit. Replace the documents with a list of 'memories' (user facts with dates), ask a question, and look at the retrieved chunks and their scores. Add a newer fact that contradicts an older one and see whether both come back. The lab does not do summarisation or memory updates; that is the part you would add.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>  out of the top 3. On this tiny corpus dense already wins; hybrid earns its keep on big corpora full of

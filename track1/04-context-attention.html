@@ -208,7 +208,8 @@ WINDOW, RESERVE_FOR_ANSWER <span class="o">=</span> <span class="n">8000</span>,
     <div class="box-label">Run it locally: <code>labs/01_generate_and_sample.py</code></div>
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/01_generate_and_sample.py</code></pre>
-    <p><strong>What to look for:</strong> The lab prints prompt_eval_count and time-to-first-token. Paste a long block of text into the prompt and watch both grow: more input tokens means a longer prefill before the first output token. Then shorten the prompt to only the relevant paragraph and compare. The 03_rag_local lab shows the retrieve-instead side of the same trade.</p>
+    <p><strong>What to look for:</strong> Section 4 sends the same question with a short prompt and with about 640 tokens of padding, and prints prompt_eval_count and prefill seconds for each (36 vs 639 tokens and 0.55 s vs 1.49 s on our run) for the same one-word answer. That is the cost of context in one line. Lab 03 shows the other side of the trade: retrieve the relevant paragraph instead of pasting everything.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>2) Same prompt, temperature 1.0, three different seeds

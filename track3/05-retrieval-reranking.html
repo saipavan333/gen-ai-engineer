@@ -160,6 +160,7 @@ index <span class="o">=</span> bi.<span class="f">encode</span>(chunks, normaliz
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/03_rag_local.py</code></pre>
     <p><strong>What to look for:</strong> Honest note: the lab has no cross-encoder stage; it does dense retrieval, BM25 and RRF fusion. Use it to see the precondition for reranking: print the top-20 from dense retrieval for a few golden questions and note at which rank the correct chunk sits. If it is in the top 20 but below rank 3, a reranker would help; if it is missing from the top 20, no reranker can. To try a real reranker, add sentence-transformers' CrossEncoder (the worked example above) on top of the lab's top-20 list.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>  out of the top 3. On this tiny corpus dense already wins; hybrid earns its keep on big corpora full of

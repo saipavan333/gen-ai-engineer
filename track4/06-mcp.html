@@ -167,7 +167,8 @@ mcp <span class="o">=</span> <span class="f">MCPServer</span>(<span class="s">"w
     <div class="box-label">Run it locally: <code>labs/05_mcp/client_agent.py</code></div>
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/05_mcp/client_agent.py</code></pre>
-    <p><strong>What to look for:</strong> Watch the client list the server's tools and print the tool schemas it converts for Ollama: the docstring and type hints from the FastMCP server become the description and parameters the model reads. Add a second tool to the server, rerun, and see it appear in the model's toolset with no client changes. That is the reuse MCP buys.</p>
+    <p><strong>What to look for:</strong> Watch the client list the server's tools and print each input schema: the type hints and docstrings in store_server.py (an MCPServer on SDK 2.x) become the description and parameters the model reads. Add a second @server.tool() function, rerun, and see it appear in the model's toolset with no client changes. That is the reuse MCP buys.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>  resource policies://index -&gt; 14 lines, e.g. [&#x27;ship-01: Standard shipping&#x27;, &#x27;ship-02: Express shipping&#x27;, &#x27;ship-03: Address changes&#x27;]
@@ -228,7 +229,7 @@ mcp <span class="o">=</span> <span class="f">MCPServer</span>(<span class="s">"w
     <ul>
       <li><a href="https://modelcontextprotocol.io/specification/latest" target="_blank" rel="noopener">MCP specification (latest revision, 2026-07-28) — modelcontextprotocol.io</a></li>
       <li><a href="https://modelcontextprotocol.io/specification/latest/basic/security_best_practices" target="_blank" rel="noopener">MCP Security Best Practices — modelcontextprotocol.io</a></li>
-      <li><a href="https://github.com/modelcontextprotocol/python-sdk" target="_blank" rel="noopener">MCP Python SDK (FastMCP) — GitHub</a></li>
+      <li><a href="https://github.com/modelcontextprotocol/python-sdk" target="_blank" rel="noopener">MCP Python SDK (MCPServer in 2.x) — GitHub</a></li>
     </ul>
   </div>
 <!-- shape:tail:end -->

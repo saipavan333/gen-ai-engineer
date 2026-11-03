@@ -38,12 +38,12 @@
     <div class="box-label">Worked example — quantized models, free (Ollama)</div>
     <p>You’ve been using quantization all along — Ollama ships quantized models so they run on everyday hardware.</p>
 <pre><code><span class="c"># Ollama serves quantized models by default — this is why it fits on a laptop:</span>
-<span class="o">$</span> ollama pull llama3.1:8b          <span class="c"># downloads a ~4-bit quantized build (~4-5 GB, not ~16 GB)</span>
-<span class="o">$</span> ollama run llama3.1:8b           <span class="c"># runs fast on CPU/modest GPU thanks to quantization</span>
+<span class="o">$</span> ollama pull qwen2.5:7b          <span class="c"># downloads a ~4-bit quantized build (~4-5 GB, not ~16 GB)</span>
+<span class="o">$</span> ollama run qwen2.5:7b           <span class="c"># runs fast on CPU/modest GPU thanks to quantization</span>
 
 <span class="c"># You can choose a quant level when available (higher q = more bits = better quality, more memory):</span>
-<span class="o">$</span> ollama pull llama3.1:8b-instruct-q4_K_M    <span class="c"># 4-bit (small, fast)</span>
-<span class="o">$</span> ollama pull llama3.1:8b-instruct-q8_0       <span class="c"># 8-bit (bigger, closer to full quality)</span></code></pre>
+<span class="o">$</span> ollama pull qwen2.5:7b-instruct-q4_K_M    <span class="c"># 4-bit (small, fast)</span>
+<span class="o">$</span> ollama pull qwen2.5:7b-instruct-q8_0       <span class="c"># 8-bit (bigger, closer to full quality)</span></code></pre>
     <p>The lesson: quantization isn’t exotic — it’s the default that makes free local models practical. When self-hosting, choosing a quant level is one of your main cost/quality dials.</p>
   </div>
 <!-- shape:scale:start -->
@@ -150,6 +150,7 @@
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/01_generate_and_sample.py</code></pre>
     <p><strong>What to look for:</strong> No lab compares quant levels, because that would need a second multi-GB download. What you can see: run <code>ollama show qwen2.5:7b</code> (it prints quantization Q4_K_M) and the lab's tokens/sec for that 4.7 GB build on your machine. If you have disk to spare, pull a q8_0 tag of a small model, rerun, and compare tokens/sec and answers on the same seeds.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>2) Same prompt, temperature 1.0, three different seeds

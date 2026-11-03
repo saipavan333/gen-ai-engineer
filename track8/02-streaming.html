@@ -52,7 +52,7 @@
 <pre><code><span class="k">import</span> ollama
 
 stream <span class="o">=</span> ollama.<span class="f">chat</span>(
-    model<span class="o">=</span><span class="s">"llama3.2"</span>,
+    model<span class="o">=</span><span class="s">"qwen2.5:7b"</span>,
     messages<span class="o">=</span>[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: <span class="s">"Explain streaming in two sentences."</span>}],
     stream<span class="o">=</span><span class="kc">True</span>,                              <span class="c"># the whole trick</span>
 )
@@ -166,6 +166,7 @@ stream <span class="o">=</span> ollama.<span class="f">chat</span>(
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/01_generate_and_sample.py</code></pre>
     <p><strong>What to look for:</strong> The lab streams from Ollama and prints time-to-first-token and tokens/sec separately. Compare TTFT with total time: the gap between them is the wait streaming hides from the user. Ask for a 50-word answer and then a 500-word answer; TTFT barely moves while total time grows roughly in step with eval_count.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>2) Same prompt, temperature 1.0, three different seeds

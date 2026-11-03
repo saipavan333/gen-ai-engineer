@@ -156,6 +156,7 @@
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/08_llmops.py</code></pre>
     <p><strong>What to look for:</strong> The lab writes one JSONL tracing record per request with fields such as prompt version, latency and cost. That per-request, version-tagged log is the raw material of online eval. Run it with two prompt versions and group the records by version to compare latency and cost; the lab does not run a real A/B test with users, so the 'outcome' column is something you would add in production.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>  semantic similarity to the cached &#x27;track my order&#x27;: paraphrase=0.657  different intent (cancel)=0.523

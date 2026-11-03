@@ -38,7 +38,7 @@
   <div class="code-label"><span class="dot"></span><span class="fname">config.py</span></div>
 <pre><code><span class="k">import</span> os
 
-MODEL <span class="o">=</span> os.<span class="f">environ</span>.<span class="f">get</span>(<span class="s">"MODEL"</span>, <span class="s">"llama3.2"</span>)      <span class="c"># default for local</span>
+MODEL <span class="o">=</span> os.<span class="f">environ</span>.<span class="f">get</span>(<span class="s">"MODEL"</span>, <span class="s">"qwen2.5:7b"</span>)      <span class="c"># default for local</span>
 DB_URL <span class="o">=</span> os.<span class="f">environ</span>.<span class="f">get</span>(<span class="s">"DB_URL"</span>, <span class="s">"sqlite:///local.db"</span>)
 API_KEY <span class="o">=</span> os.<span class="f">environ</span>.<span class="f">get</span>(<span class="s">"API_KEY"</span>)          <span class="c"># NEVER a literal in code</span></code></pre>
   <p>This matters for two reasons. First, <strong>secrets</strong>: a hardcoded API key committed to a repo is a leak — anyone with the code has your credentials, and public GitHub repos get scraped for keys within minutes. Keep secrets in environment variables (or a secret manager), and add files like <code>.env</code> to <code>.gitignore</code> so they’re never committed. Second, <strong>portability</strong>: the same image runs against your local SQLite in dev and a real database in production, just by changing environment variables — no code change, no rebuild.</p>
@@ -147,6 +147,7 @@ API_KEY <span class="o">=</span> os.<span class="f">environ</span>.<span class="
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/08_llmops.py</code></pre>
     <p><strong>What to look for:</strong> Look at the lab's versioned prompt registry: each prompt is identified by a content hash, and every trace line records which version ran. Edit one word of a prompt and rerun; the hash and the version stamped in the trace both change. The lab does not build a Docker image or deploy anything; those steps are the commands on this page.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>  semantic similarity to the cached &#x27;track my order&#x27;: paraphrase=0.657  different intent (cancel)=0.523

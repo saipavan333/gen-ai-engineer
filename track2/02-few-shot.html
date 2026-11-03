@@ -190,21 +190,22 @@ Output: {"name": "Sam", "date": "March 3"}</code></pre>
     <div class="box-label">Run it locally: <code>labs/02_structured_output.py</code></div>
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/02_structured_output.py</code></pre>
-    <p><strong>What to look for:</strong> The lab's prompts for the messy support emails are where you can add or remove example pairs. Add two worked examples to the free-text prompt and rerun the batch: watch the parse-failure rate change without touching the schema. The lab does not test label bias; to see it, make all your examples share one label and count how the outputs shift.</p>
+    <p><strong>What to look for:</strong> The lab's SYSTEM prompt has no examples. Add two example email-to-ticket pairs to it and rerun: with 8 of 8 already valid you will not see a parse-rate change, but watch section D's category accuracy against the gold labels (7 of 8 on our run; the compliment was filed as delivery). The lab does not test label bias; to see it, make all your examples share one label and count how the outputs shift.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
-      <div class="sol-body"><pre><code>  #5: valid  {&#x27;category&#x27;: &#x27;refund&#x27;, &#x27;order_id&#x27;: &#x27;ORD-90011&#x27;, &#x27;urgency&#x27;: &#x27;high&#x27;, &#x27;summary&#x27;: &#x27;Refund for ORD-90011, 3 weeks overdue&#x27;}
-  #6: valid  {&#x27;category&#x27;: &#x27;delivery&#x27;, &#x27;order_id&#x27;: &#x27;ORD-31337&#x27;, &#x27;urgency&#x27;: &#x27;medium&#x27;, &#x27;summary&#x27;: &#x27;Request to change delivery address before shipment&#x27;}
-  #7: valid  {&#x27;category&#x27;: &#x27;refund&#x27;, &#x27;order_id&#x27;: None, &#x27;urgency&#x27;: &#x27;high&#x27;, &#x27;summary&#x27;: &#x27;Cancel subscription, refund last month&#x27;}
-C) Schema-valid is not business-valid: validate rules, retry with the error
+      <div class="sol-body"><pre><code>C) Schema-valid is not business-valid: validate rules, retry with the error
   rule violations repaired by retry: 0
 D) Content check against gold labels (shape-valid does not mean right)
   #4: model said &#x27;delivery&#x27;, a human would file &#x27;other&#x27;: &#x27;Just wanted to say the delivery guy was very polite. thanks!&#x27;
   category accuracy: 7/8
 Summary
-  vague-prompt valid:       0/4
-  prompt-only valid:        8/8
-  schema-constrained valid: 8/8
+  vague-prompt valid:       0/4 = 0% (95% CI 0%-49%)
+  prompt-only valid:        8/8 = 100% (95% CI 68%-100%)
+  schema-constrained valid: 8/8 = 100% (95% CI 68%-100%)
+  category accuracy (gold): 7/8 = 88% (95% CI 53%-98%)
+  On this model and these 8 emails a clear prompt already gives valid JSON every time, so the schema shows
+  NO measurable advantage here. Its value is the guarantee on the inputs you have not tested yet.
   Look: constrained decoding guarantees the SHAPE. It does not guarantee the CONTENT is right;
   that is what the business-rule check + retry (and your eval set) are for.</code></pre>
       <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/02_structured_output.txt">labs/outputs</a>. Source: <a href="../labs/02_structured_output.py">labs/02_structured_output.py</a>.</p></div>

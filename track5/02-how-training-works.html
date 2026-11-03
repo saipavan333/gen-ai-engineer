@@ -154,7 +154,8 @@ lr <span class="o">=</span> <span class="n">0.1</span>            <span class="c
     <div class="box-label">Run it locally: <code>labs/11_lora_tiny.py</code></div>
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/11_lora_tiny.py</code></pre>
-    <p><strong>What to look for:</strong> Watch the printed loss fall step by step during the tiny fine-tune: that's this lesson's loop running for real. Raise the learning rate by 10x and rerun to see the loss jump around or blow up; set epochs high on the tiny dataset to see training loss go near zero, which is memorisation. The lab's model and data are toy on purpose, so the numbers show the mechanism, not real-world quality.</p>
+    <p><strong>What to look for:</strong> Watch the printed losses at 0, 100, 200 and 300 LoRA steps: count-down loss falls from about 10.9 to 0.1, which is this lesson's loop running for real. Edit train() to use lr=3e-2 instead of 3e-3 and rerun to see the loss jump around or blow up. The data is generated on the fly and the model is toy on purpose, so the numbers show the mechanism, not real-world quality.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>  base model: 798,848 params. Pre-training it on &#x27;count UP&#x27; sequences (0123456789012...)

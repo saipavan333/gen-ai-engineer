@@ -185,7 +185,8 @@ records <span class="o">=</span> [{<span class="s">"text"</span>: c, <span class
     <div class="box-label">Run it locally: <code>labs/03_rag_local.py</code></div>
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/03_rag_local.py</code></pre>
-    <p><strong>What to look for:</strong> The lab chunks the same corpus two ways, fixed-size and sentence-aware with overlap, and prints the chunk counts. Pick one question whose answer sits across a sentence boundary and compare which chunking strategy retrieves it in the top-k. Then set overlap to 0 and rerun: watch the chunk count drop and, on boundary questions, the right chunk fall out of the results.</p>
+    <p><strong>What to look for:</strong> Section 1 chunks one refund policy two ways and prints both: fixed 12-word chunks split 'Card refunds take 5 to 7 business days' across two chunks, while sentence-aware chunks with one sentence of overlap keep it whole. The index in section 2 uses only the sentence-aware chunker. To compare retrieval, edit build_chunks in raglib.py (or set overlap_sentences=0 in chunk_sentences) and rerun section 4's gold queries.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>  out of the top 3. On this tiny corpus dense already wins; hybrid earns its keep on big corpora full of

@@ -25,7 +25,7 @@
   <div class="box concept">
     <div class="box-label">Setup (free)</div>
 <pre><code><span class="o">$</span> pip install ollama
-<span class="o">$</span> ollama pull llama3.2          <span class="c"># used both as the judge and (optionally) the system under test</span></code></pre>
+<span class="o">$</span> ollama pull qwen2.5:7b          <span class="c"># used both as the judge and (optionally) the system under test</span></code></pre>
   </div>
 
   <h2>Step 1 — The golden set (data is the product)</h2>
@@ -47,7 +47,7 @@ Return JSON: {{"score": &lt;1-5&gt;}}.
 QUESTION: {question}
 EXPECTED: {expected}
 ANSWER: {answer}"""</span>
-    out <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"llama3.2"</span>, messages<span class="o">=</span>[{<span class="s">"role"</span>:<span class="s">"user"</span>,<span class="s">"content"</span>:p}],
+    out <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"qwen2.5:7b"</span>, messages<span class="o">=</span>[{<span class="s">"role"</span>:<span class="s">"user"</span>,<span class="s">"content"</span>:p}],
             format<span class="o">=</span><span class="s">"json"</span>, options<span class="o">=</span>{<span class="s">"temperature"</span>: <span class="n">0</span>})[<span class="s">"message"</span>][<span class="s">"content"</span>]
     <span class="k">try</span>: <span class="k">return</span> <span class="f">int</span>(json.<span class="f">loads</span>(out)[<span class="s">"score"</span>])
     <span class="k">except</span>: <span class="k">return</span> <span class="n">1</span>

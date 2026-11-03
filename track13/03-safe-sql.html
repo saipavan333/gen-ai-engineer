@@ -52,8 +52,10 @@
     <span class="c"># open the DB in read-only mode — a second, hard guarantee</span>
     con <span class="o">=</span> sqlite3.<span class="f">connect</span>(<span class="s">f"file:</span>{db_path}<span class="s">?mode=ro"</span>, uri<span class="o">=</span><span class="k">True</span>)
     <span class="k">try</span>:
-        <span class="c"># wrap, don't append: "... LIMIT 3" + " LIMIT 1000" is a syntax error</span>
-        rows <span class="o">=</span> con.<span class="f">execute</span>(<span class="s">f"SELECT * FROM (</span>{q}<span class="s">) LIMIT 1000"</span>).<span class="f">fetchall</span>()   <span class="c"># bound the result</span>
+        <span class="c"># wrap, don't append: "... LIMIT 3" + " LIMIT 1000" is a syntax error.</span>
+        <span class="c"># Newlines around q matter: a trailing "-- comment" would otherwise swallow ") LIMIT 1000".</span>
+        q <span class="o">=</span> q.<span class="f">strip</span>().<span class="f">rstrip</span>(<span class="s">";"</span>)
+        rows <span class="o">=</span> con.<span class="f">execute</span>(<span class="s">f"SELECT * FROM (\n</span>{q}<span class="s">\n) LIMIT 1000"</span>).<span class="f">fetchall</span>()   <span class="c"># bound the result</span>
     <span class="k">finally</span>:
         con.<span class="f">close</span>()
     <span class="k">return</span> rows</code></pre>
@@ -150,6 +152,7 @@
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/09_text_to_sql_duckdb.py</code></pre>
     <p><strong>What to look for:</strong> Find the lab's SELECT-only validation and row limit. Feed it a few hostile strings by hand: a DELETE, a SELECT followed by a semicolon and DROP TABLE, and a CTE that ends in a DELETE (WITH x AS (SELECT 1) DELETE FROM t), which starts with WITH and so passes a naive prefix check. Note which layer stops each one. Then ask a question whose correct answer has its own LIMIT 3 and confirm the row-limit wrapper does not break it.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>  Q: What share of orders were returned? Give a fraction between 0 and 1.

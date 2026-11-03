@@ -145,7 +145,8 @@
     <div class="box-label">Run it locally: <code>labs/08_llmops.py</code></div>
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/08_llmops.py</code></pre>
-    <p><strong>What to look for:</strong> The lab wraps the model with input and output guardrails and logs each decision. Send one clearly unsafe request and one edgy-but-fine one (for example a biology homework question about how viruses spread) and check both decisions. If the second is blocked, you are looking at a false positive, which is the cost side of this lesson's threshold trade-off.</p>
+    <p><strong>What to look for:</strong> The lab's guards are narrow: input_guard blocks a few injection phrases, masks PII and caps length; output_guard replaces any answer containing a link. There is no safety classifier, so an unsafe request that avoids those phrases passes. Send one clearly unsafe request and one edgy-but-fine one (a biology homework question) and see that neither guard reacts: a concrete picture of why this lesson's moderation layer is a separate component.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>  semantic similarity to the cached &#x27;track my order&#x27;: paraphrase=0.657  different intent (cancel)=0.523

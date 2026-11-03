@@ -142,6 +142,7 @@ hits <span class="o">=</span> util.<span class="f">cos_sim</span>(q_vec, img_vec
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/03_rag_local.py</code></pre>
     <p><strong>What to look for:</strong> No lab embeds images (CLIP and a VLM are not part of the verified local stack). The RAG lab is the same pipeline with text: chunk, embed with MiniLM, search in DuckDB and FAISS, fuse BM25 and vector results with RRF, cite [doc-id]s and refuse below a score threshold. Watch how RRF merges the two ranked lists; in multimodal RAG one list would come from CLIP image vectors and the other from caption text. To try CLIP itself, load the sentence-transformers clip-ViT-B-32 model (check free disk first; it is a separate download).</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>  out of the top 3. On this tiny corpus dense already wins; hybrid earns its keep on big corpora full of

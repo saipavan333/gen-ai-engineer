@@ -178,7 +178,8 @@ sem_q, sem_v, sem_a <span class="o">=</span> [], <span class="kc">None</span>, [
     <div class="box-label">Run it locally: <code>labs/08_llmops.py</code></div>
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/08_llmops.py</code></pre>
-    <p><strong>What to look for:</strong> The lab runs exact-match and semantic caching over a batch of queries and prints hit rate and latency saved. Lower the semantic threshold and watch the hit rate rise, then read the matched pairs to spot the wrong hits. It does not show provider prompt caching: there is no cache_read_input_tokens field locally, so price that part with the Anthropic table instead.</p>
+    <p><strong>What to look for:</strong> Section 2 runs exact-match and semantic caching over 7 requests and prints the cache result and latency per request: exact hits take about 0.1 ms against about 6 s for a model call. Section 3 prints the paraphrase similarity (0.657) next to a different-intent question (0.523) and the semantic hit count at threshold 0.90 (0 on our run). Lower the threshold and check each new hit is the same intent. Provider prompt caching is not shown locally; price it with the Anthropic table instead.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>  semantic similarity to the cached &#x27;track my order&#x27;: paraphrase=0.657  different intent (cancel)=0.523

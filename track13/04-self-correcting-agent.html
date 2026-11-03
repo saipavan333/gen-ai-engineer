@@ -135,7 +135,8 @@
     <div class="box-label">Run it locally: <code>labs/09_text_to_sql_duckdb.py</code></div>
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/09_text_to_sql_duckdb.py</code></pre>
-    <p><strong>What to look for:</strong> The lab's self-correction loop feeds the SQL error back to the model and retries. Count, from its output, how many questions succeeded on the first try, how many needed a retry, and how many gave up. Then compare "ran without error" with the execution-accuracy score: the gap between them is the wrong-but-runs share that error feedback cannot fix. Try setting the retry cap to 1 to see the first-try rate on its own.</p>
+    <p><strong>What to look for:</strong> The lab's self-correction loop feeds the SQL error back to the model once (max_fixes=1). On our run one question needed a fix. Compare 'ran without error' with execution accuracy (5 of 6): the failing question ran fine but returned a different shape, so error feedback cannot catch it. Set max_fixes=0 to see the first-try rate on its own.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>  Q: What share of orders were returned? Give a fraction between 0 and 1.

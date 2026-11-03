@@ -67,7 +67,7 @@ Context:
 {context}
 
 Question: {question}"""</span>
-    ans <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"llama3.2"</span>,
+    ans <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"qwen2.5:7b"</span>,
                       messages<span class="o">=</span>[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: prompt}])[<span class="s">"message"</span>][<span class="s">"content"</span>]
 
     <span class="c"># VERIFY: every cited number must be a real chunk we supplied</span>
@@ -171,6 +171,7 @@ out <span class="o">=</span> <span class="f">grounded_answer</span>(<span class=
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/03_rag_local.py</code></pre>
     <p><strong>What to look for:</strong> Look at the final step of the lab: the grounded answer with [doc-id] citations, and the refusal when the best retrieval score is below the threshold. Check that each cited id is one of the retrieved chunks. Then raise the threshold until a question you know is answerable gets refused, and lower it until an off-topic question gets an answer: that range is the precision-versus-coverage dial for abstention. Note the refusal here is a retrieval-score gate, not a judge-based faithfulness check.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>  out of the top 3. On this tiny corpus dense already wins; hybrid earns its keep on big corpora full of

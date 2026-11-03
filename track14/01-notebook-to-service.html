@@ -43,7 +43,7 @@ app <span class="o">=</span> FastAPI()
 
 <span class="nd">@app.post</span>(<span class="s">"/ask"</span>)
 <span class="k">def</span> <span class="f">ask</span>(body: Ask):
-    reply <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"llama3.2"</span>,
+    reply <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"qwen2.5:7b"</span>,
         messages<span class="o">=</span>[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: body.question}])
     <span class="k">return</span> {<span class="s">"answer"</span>: reply[<span class="s">"message"</span>][<span class="s">"content"</span>]}</code></pre>
   <p>Run it with <code>uvicorn main:app --reload</code>, and you have a live service. Anyone on your machine can now POST a question:</p>
@@ -155,6 +155,7 @@ app <span class="o">=</span> FastAPI()
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/08_llmops.py</code></pre>
     <p><strong>What to look for:</strong> The lab is not a web server, but it shows the operational ring this lesson ends on: each request becomes a traced span with timing and tokens, input and output guardrails run around the model call, and a cache sits in front of it. Read one JSONL trace line and map each field to where it would live in your FastAPI handler (request ID, latency, tokens, guardrail verdict). The lab does not show concurrency or async handling; use the Little's law arithmetic for that.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>  semantic similarity to the cached &#x27;track my order&#x27;: paraphrase=0.657  different intent (cancel)=0.523

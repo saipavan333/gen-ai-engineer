@@ -128,7 +128,8 @@
     <div class="box-label">Run it locally: <code>labs/03_rag_local.py</code></div>
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/03_rag_local.py</code></pre>
-    <p><strong>What to look for:</strong> The whole RAG lab runs on an open-weight model (qwen2.5:7b) and an open embedding model on your own machine, so no document leaves it. That is the open/local side of this lesson's trade-off. Watch how few tokens the grounded answer needs compared with pasting every document; the lab does not benchmark a closed API, so the quality comparison is yours to run.</p>
+    <p><strong>What to look for:</strong> The whole RAG lab runs on an open-weight model (qwen2.5:7b) and an open embedding model on your own machine, so no document leaves it. That is the open/local side of this lesson's trade-off. Each grounded answer is built from 3 retrieved chunks instead of the whole corpus. The lab prints no token counts and does not benchmark a closed API, so add up the chunk sizes yourself and run the quality comparison on your own data.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>  out of the top 3. On this tiny corpus dense already wins; hybrid earns its keep on big corpora full of

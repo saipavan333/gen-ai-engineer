@@ -143,6 +143,7 @@
     <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
 <pre><code>python labs/01_generate_and_sample.py</code></pre>
     <p><strong>What to look for:</strong> The lab sends one request at a time, so it shows single-stream tokens/sec, the 'one kid on the bus' number. To see batching, restart Ollama with OLLAMA_NUM_PARALLEL=4 (documented in the Ollama FAQ; RAM grows with parallel x context length) and fire four lab calls at once from four terminals. Compare per-call tokens/sec with total tokens per second across all four. On a laptop CPU the gain is small; on a GPU it is large.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
     <details class="sol">
       <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
       <div class="sol-body"><pre><code>2) Same prompt, temperature 1.0, three different seeds
