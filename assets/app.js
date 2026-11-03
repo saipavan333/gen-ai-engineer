@@ -309,6 +309,20 @@
     quizzes.forEach(function (q) {
       if (!q.querySelector(".quiz-tag")) { q.insertBefore(el("div", "quiz-tag", "Check yourself"), q.firstChild); }
       var opts = Array.prototype.slice.call(q.querySelectorAll(".quiz-options > li"));
+      /* Most authored quizzes list the right answer first. Shuffle once per page view so the
+         position gives nothing away, and re-letter "A) B) ..." prefixes to match the new order. */
+      var list = q.querySelector(".quiz-options");
+      if (list && !list.hasAttribute("data-shuffled") && opts.length > 1) {
+        for (var si = opts.length - 1; si > 0; si--) { var sj = Math.floor(Math.random() * (si + 1)); var tmp = opts[si]; opts[si] = opts[sj]; opts[sj] = tmp; }
+        opts.forEach(function (li, k) {
+          list.appendChild(li);
+          var span = li.querySelector(".opt");
+          if (span && span.firstChild && span.firstChild.nodeType === 3) {
+            span.firstChild.nodeValue = span.firstChild.nodeValue.replace(/^\s*[A-D]\)\s*/, String.fromCharCode(65 + k) + ") ");
+          }
+        });
+        list.setAttribute("data-shuffled", "1");
+      }
       opts.forEach(function (li) {
         if (!li.querySelector(".badge")) {
           li.insertAdjacentHTML("beforeend", '<span class="badge ok">&#10003;</span><span class="badge no">&#10007;</span>');
