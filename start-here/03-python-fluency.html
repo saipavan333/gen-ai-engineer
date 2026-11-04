@@ -12,6 +12,37 @@
 
   <span class="eyebrow">Start Here · Lesson 0.4</span>
   <h1>Python fluency: the next layer</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Real AI code keeps doing the same few small moves.</p>
+    <p>It turns one list into another, like raw documents into clean chunks.</p>
+    <p>It reads a field out of a model's reply, which usually arrives as JSON (text shaped like a dictionary).</p>
+    <p>It builds a prompt from pieces, and it survives a call that goes wrong.</p>
+    <p>This lesson teaches those moves, and then real code stops looking scary.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Picture a post office sorting room. Every letter goes through the same stamping machine, and letters that are too small drop into a reject bin. Clerks open envelopes and copy one box off the form inside. A torn letter goes to a 'problems' tray instead of stopping the whole line.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The stamping machine with a reject bin</td><td>A list comprehension with an if filter</td></tr>
+      <tr><td>Opening the envelope and reading the form</td><td>json.loads() turns the reply text into a dictionary</td></tr>
+      <tr><td>Copying one box, or writing 'blank' if it's empty</td><td>reply.get("answer", ""): a default instead of a crash</td></tr>
+      <tr><td>The 'problems' tray</td><td>try / except: catch the error and carry on</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A torn letter is obvious at a glance. Broken JSON from a model looks like normal text until json.loads() fails, so you only find out by trying to parse it.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 306" role="img" aria-label="Three things a model reply can be, and the Python move that handles each" preserveAspectRatio="xMidYMid meet"><rect x="20" y="120.5" width="230" height="65" rx="10" class="bx tn-c" /><g class="vzb"><text x="135" y="145.75" text-anchor="middle" class="b">A model reply arrives</text><text x="135" y="171.75" text-anchor="middle" class="s" style="font-size:13px">it is just text</text></g><rect x="440" y="18" width="300" height="82" rx="10" class="bx tn-g" /><g class="vzb"><text x="590" y="43.25" text-anchor="middle" class="b">It is valid JSON</text><text x="590" y="69.25" text-anchor="middle" class="s" style="font-size:13px">json.loads() gives a dict; .get() reads</text><text x="590" y="86.25" text-anchor="middle" class="s" style="font-size:13px">the field you need</text></g><polyline points="252,153 310,153 380,59 428,59" class="ln "/><polygon points="437,59 428,54.05 428,63.95" class="hd "/><rect x="440" y="112" width="300" height="82" rx="10" class="bx tn-k" /><g class="vzb"><text x="590" y="137.25" text-anchor="middle" class="b">A field is missing</text><text x="590" y="163.25" text-anchor="middle" class="s" style="font-size:13px">.get(&quot;answer&quot;, &quot;&quot;) returns your default</text><text x="590" y="180.25" text-anchor="middle" class="s" style="font-size:13px">instead of a KeyError</text></g><polyline points="252,153 310,153 380,153 428,153" class="ln "/><polygon points="437,153 428,148.05 428,157.95" class="hd "/><rect x="440" y="206" width="300" height="82" rx="10" class="bx tn-w" /><g class="vzb"><text x="590" y="231.25" text-anchor="middle" class="b">The JSON is broken</text><text x="590" y="257.25" text-anchor="middle" class="s" style="font-size:13px">json.loads() raises; except catches it,</text><text x="590" y="274.25" text-anchor="middle" class="s" style="font-size:13px">then retry or use a fallback</text></g><polyline points="252,153 310,153 380,247 428,247" class="ln "/><polygon points="437,247 428,242.05 428,251.95" class="hd "/></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 405" role="img" aria-label="Three things a model reply can be, and the Python move that handles each" preserveAspectRatio="xMidYMid meet"><rect x="12" y="14" width="336" height="65" rx="10" class="bx tn-c" /><g class="vzb"><text x="180" y="39.25" text-anchor="middle" class="b">A model reply arrives</text><text x="180" y="65.25" text-anchor="middle" class="s" style="font-size:13px">it is just text</text></g><line x1="26" y1="79" x2="26" y2="93" class="ln"/><rect x="56" y="113" width="292" height="82" rx="10" class="bx tn-g" /><g class="vzb"><text x="202" y="138.25" text-anchor="middle" class="b">It is valid JSON</text><text x="202" y="164.25" text-anchor="middle" class="s" style="font-size:13px">json.loads() gives a dict; .get() reads</text><text x="202" y="181.25" text-anchor="middle" class="s" style="font-size:13px">the field you need</text></g><line x1="26" y1="154" x2="44" y2="154" class="ln "/><polygon points="53,154 44,149.05 44,158.95" class="hd "/><rect x="56" y="209" width="292" height="82" rx="10" class="bx tn-k" /><g class="vzb"><text x="202" y="234.25" text-anchor="middle" class="b">A field is missing</text><text x="202" y="260.25" text-anchor="middle" class="s" style="font-size:13px">.get(&quot;answer&quot;, &quot;&quot;) returns your default</text><text x="202" y="277.25" text-anchor="middle" class="s" style="font-size:13px">instead of a KeyError</text></g><line x1="26" y1="250" x2="44" y2="250" class="ln "/><polygon points="53,250 44,245.05 44,254.95" class="hd "/><rect x="56" y="305" width="292" height="82" rx="10" class="bx tn-w" /><g class="vzb"><text x="202" y="330.25" text-anchor="middle" class="b">The JSON is broken</text><text x="202" y="356.25" text-anchor="middle" class="s" style="font-size:13px">json.loads() raises; except catches it,</text><text x="202" y="373.25" text-anchor="middle" class="s" style="font-size:13px">then retry or use a fallback</text></g><line x1="26" y1="346" x2="44" y2="346" class="ln "/><polygon points="53,346 44,341.05 44,350.95" class="hd "/><line x1="26" y1="79" x2="26" y2="346" class="ln"/></svg>
+    <figcaption>Most crashes in early AI code come from assuming the reply is perfect. These three moves cover the three cases.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">The primer gave you the eight basics. This lesson adds the next handful of moves that show up in almost every piece of real GenAI code — comprehensions, dictionary tricks, multi-line prompts, safe JSON, and graceful error handling. Still beginner-paced, still <code>$0</code>.</p>
 
   <h2>Why this, and why now</h2>
@@ -220,6 +251,10 @@ long_chunks <span class="o">=</span> [c <span class="k">for</span> c <span class
 
   <p>That’s the toolkit that makes real code legible. Next, lock it in with a short set of <strong>hands-on drills</strong> — small problems with worked solutions, so the patterns move from “I read it” to “I can write it.”</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Expect the model's reply to be messy, and use .get(), try/except and comprehensions to handle it calmly.</p>
+<!-- ease:line:end -->
 </main>
 
 <script>

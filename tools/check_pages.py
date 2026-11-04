@@ -22,7 +22,7 @@ ROOT = Path(__file__).resolve().parent.parent
 BROWSERS = [r"C:\Program Files\Google\Chrome\Application\chrome.exe",
             r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"]
 BROWSER = next((b for b in BROWSERS if os.path.exists(b)), None)
-PROFILE = tempfile.mkdtemp(prefix="pagecheck-")
+PROFILE = tempfile.mkdtemp(prefix="pagecheck-", dir=os.environ.get("PAGECHECK_TMP"))  # throwaway profile; set PAGECHECK_TMP to keep it in a scratch folder
 
 
 class Links(HTMLParser):
@@ -44,7 +44,8 @@ def changed_pages():
 
 def check(rel):
     path = ROOT / rel
-    r = subprocess.run([BROWSER, "--headless=new", "--disable-gpu", "--no-first-run", f"--user-data-dir={PROFILE}/w{threading.get_ident()}",
+    r = subprocess.run([BROWSER, "--headless=new", "--disable-gpu", "--no-first-run", "--disable-component-update",
+                        "--disable-features=OptimizationGuideModelDownloading,OptimizationHints", f"--user-data-dir={PROFILE}/w{threading.get_ident()}",
                         "--enable-logging=stderr", "--v=0", "--virtual-time-budget=6000", "--dump-dom", path.as_uri()],
                        capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120)
     dom = r.stdout

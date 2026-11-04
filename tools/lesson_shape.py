@@ -136,6 +136,8 @@ def wrap(name, body):
 def inject(s: str, parts: dict) -> str:
     s = strip_regions(s)
     main_end = s.index("</main>")
+    if "\n<!-- ease:line:start -->" in s:  # keep pass-2 "In one line" as the last block in <main>
+        main_end = s.index("\n<!-- ease:line:start -->")
     # tail: before the last <p> in <main> that bridges to the next lesson, else before </main>
     last_p = s.rfind("\n  <p>", 0, main_end)
     tail_at = last_p if last_p != -1 and "Next" in s[last_p:main_end] and "</div>" not in s[last_p:main_end] else main_end
@@ -178,7 +180,10 @@ def main():
             raise SystemExit(f"{n}: unknown lab id {e['lab']['id']}")
         p = pages[n]
         old = p.read_text(encoding="utf-8")
-        new = inject(old, render(e, n))
+        parts = render(e, n)
+        if "<!-- ease:top:start -->" in old:  # pass 2 folded the analogy into the Everyday picture
+            parts["analogy"] = "  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->\n"
+        new = inject(old, parts)
         if check:
             print(f"{n:6s} {p.relative_to(ROOT)}  {'would change' if new != old else 'unchanged'}")
         elif new != old:

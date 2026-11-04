@@ -12,6 +12,43 @@
 
   <span class="eyebrow">Start Here · Lesson 0.3</span>
   <h1>The Python you'll actually use</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Python is the language most AI tools speak.</p>
+    <p>You only need a small slice of it to start: about eight ideas.</p>
+    <p>The most important one is the f-string, which drops values into the middle of text.</p>
+    <p>That matters because a prompt to an AI model is just text.</p>
+    <p>Learn these eight and you can read every example in this course.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Think of a kitchen. Ingredients sit in labelled jars, some jars stand in a row on a shelf, and the spice rack has a name on every slot. A recipe card turns ingredients into a dish, you repeat a step for every jar on the shelf, and you only add chilli if someone likes it hot.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>A labelled jar</td><td>A variable: a name stuck on a value, like model_name = "qwen2.5:7b"</td></tr>
+      <tr><td>A row of jars on a shelf</td><td>A list: items in order, like a list of chunks</td></tr>
+      <tr><td>The spice rack with named slots</td><td>A dictionary: look a value up by its key, like reply["text"]</td></tr>
+      <tr><td>A recipe card</td><td>A function: give it inputs, get a result back</td></tr>
+      <tr><td>'For every jar' and 'only if it's hot'</td><td>A for loop and an if statement</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A jar holds one thing in one place. In Python two names can point at the same list, so changing it through one name changes what the other name sees too.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 264" role="img" aria-label="Variables flow into the slots of an f-string" preserveAspectRatio="xMidYMid meet"><text x="14" y="22" text-anchor="start" class="s m">Two variables</text><rect x="14" y="34" width="350" height="40" rx="10" class="bx tn-c" /><text x="24" y="60" text-anchor="start" class="mono">topic = &quot;the water cycle&quot;</text><rect x="390" y="34" width="350" height="40" rx="10" class="bx tn-c" /><text x="400" y="60" text-anchor="start" class="mono">grade = 5</text><rect x="14" y="120" width="96" height="32" rx="6" class="bx tn-b" /><text x="62" y="141" text-anchor="middle" class="mono" style="font-size:14px">f&quot;Explain </text><rect x="114" y="120" width="70.2" height="32" rx="6" class="bx tn-k" /><text x="149.1" y="141" text-anchor="middle" class="mono" style="font-size:14px">{topic}</text><rect x="188.2" y="120" width="113.2" height="32" rx="6" class="bx tn-b" /><text x="244.8" y="141" text-anchor="middle" class="mono" style="font-size:14px"> to a grade-</text><rect x="305.4" y="120" width="70.2" height="32" rx="6" class="bx tn-k" /><text x="340.5" y="141" text-anchor="middle" class="mono" style="font-size:14px">{grade}</text><rect x="379.6" y="120" width="225" height="32" rx="6" class="bx tn-b" /><text x="492.1" y="141" text-anchor="middle" class="mono" style="font-size:14px"> student in 3 sentences.&quot;</text><polyline points="189,76 189,97 149.1,97 149.1,108" class="ln ac"/><polygon points="149.1,117 154.05,108 144.15,108" class="hd ac"/><polyline points="565,76 565,97 340.5,97 340.5,108" class="ln ac"/><polygon points="340.5,117 345.45,108 335.55,108" class="hd ac"/><line x1="380" y1="156" x2="380" y2="171" class="ln "/><polygon points="380,180 384.95,171 375.05,171" class="hd "/><rect x="14" y="186" width="732" height="40" rx="10" class="bx tn-g" /><text x="26" y="212" text-anchor="start">Explain the water cycle to a grade-5 student in 3 sentences.</text><text x="14" y="252" text-anchor="start" class="s ok-t">The result is one ordinary string: a prompt ready to send.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 324" role="img" aria-label="Variables flow into the slots of an f-string" preserveAspectRatio="xMidYMid meet"><text x="14" y="22" text-anchor="start" class="s m">Two variables</text><rect x="14" y="34" width="206" height="40" rx="10" class="bx tn-c" /><text x="24" y="60" text-anchor="start" class="mono" style="font-size:13px">topic = &quot;the water cycle&quot;</text><rect x="228" y="34" width="118" height="40" rx="10" class="bx tn-c" /><text x="238" y="60" text-anchor="start" class="mono" style="font-size:13px">grade = 5</text><rect x="14" y="120" width="91" height="32" rx="6" class="bx tn-b" /><text x="59.5" y="141" text-anchor="middle" class="mono" style="font-size:14px">f&quot;Explain </text><rect x="109" y="120" width="66.7" height="32" rx="6" class="bx tn-k" /><text x="142.35" y="141" text-anchor="middle" class="mono" style="font-size:14px">{topic}</text><rect x="179.7" y="120" width="107.2" height="32" rx="6" class="bx tn-b" /><text x="233.3" y="141" text-anchor="middle" class="mono" style="font-size:14px"> to a grade-</text><rect x="14" y="160" width="66.7" height="32" rx="6" class="bx tn-k" /><text x="47.35" y="181" text-anchor="middle" class="mono" style="font-size:14px">{grade}</text><rect x="84.7" y="160" width="212.5" height="32" rx="6" class="bx tn-b" /><text x="190.95" y="181" text-anchor="middle" class="mono" style="font-size:14px"> student in 3 sentences.&quot;</text><polyline points="117,76 117,97 142.35,97 142.35,108" class="ln ac"/><polygon points="142.35,117 147.3,108 137.4,108" class="hd ac"/><polyline points="287,76 287,88 6,88 6,176 5,176" class="ln ac"/><polygon points="14,176 5,171.05 5,180.95" class="hd ac"/><line x1="180" y1="196" x2="180" y2="211" class="ln "/><polygon points="180,220 184.95,211 175.05,211" class="hd "/><rect x="14" y="226" width="332" height="60" rx="10" class="bx tn-g" /><text x="26" y="252" text-anchor="start">Explain the water cycle to a grade-5</text><text x="26" y="272" text-anchor="start">student in 3 sentences.</text><text x="14" y="312" text-anchor="start" class="s ok-t">The result is one ordinary string: a prompt ready to send.</text></svg>
+    <figcaption>The f-string from this lesson, taken apart: two variables on top, the template in the middle, the finished prompt below. Each {name} in the template is a slot, and Python fills it with that variable's value when the line runs.</figcaption>
+  </figure>
+  <div class="ez-play" data-ez-play="fstring">
+    <div class="ease-label">Try it</div>
+    <p class="ez-hint">Pick a topic and move the grade slider. The template stays the same; the finished prompt changes. This is how you build prompts from data.</p>
+    <div class="ez-stage"></div>
+  </div>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">You don’t need to “learn Python” to start. You need about eight small ideas, and you’ll meet every one of them here, with runnable examples. Come back to this page any time something looks unfamiliar.</p>
 
   <h2>Why a little Python — and only a little</h2>
@@ -187,8 +224,17 @@ names <span class="o">=</span> [<span class="s">"Pavan"</span>, <span class="s">
 
   <p>That’s your toolkit and your Python. You’re ready for the real thing. Next, we open the box: <strong>how LLMs actually work.</strong></p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> A few small Python ideas, above all the f-string, are enough to build prompts and read AI code.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/ease.js?v=1"></script>
+<script src="../assets/ease/play-t00.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>
