@@ -6,7 +6,7 @@ Source of truth: tools/ease/tNN.py (one module per curriculum section; LESSONS =
 Owned regions (rewritten on every run, idempotent; everything else is left alone):
   <!-- ease:top:start --> ... <!-- ease:top:end -->     right after the page's <h1>
   <!-- ease:line:start --> ... <!-- ease:line:end -->   just before </main>
-  <!-- ease:js:start --> ... <!-- ease:js:end -->       just before </body> (only if the lesson has a play)
+  <!-- ease:js:start --> ... <!-- ease:js:end -->       just before </body> (legible.js always, plus the play scripts)
 The pass-1 "School-kid picture" box (shape:analogy region) is folded into the Everyday picture,
 so the analogy is not shown twice. tools/lesson_shape.py keeps it folded on reruns.
 
@@ -82,11 +82,14 @@ def inject(s, n, e, shape, track):
     s = s[:h1] + region("top", render_top(n, e, shape)) + s[h1:]
     me = s.rindex("</main>")
     s = s[:me] + region("line", f'  <p class="ease-line"><b>In one line:</b> {e["line"]}</p>\n') + s[me:]
+    # every lesson loads the phone-legibility pass (review, 4 Nov 2026); plays add their core + module
+    js = (f'<script src="../assets/ease/diagram-fonts.js?v={JS_VER}"></script>\n'
+          f'<script src="../assets/ease/legible.js?v={JS_VER}"></script>\n')
     if e.get("play"):
-        be = s.rindex("</body>")
-        js = (f'<script src="../assets/ease/ease.js?v={JS_VER}"></script>\n'
-              f'<script src="../assets/ease/play-t{track:02d}.js?v={JS_VER}"></script>\n')
-        s = s[:be] + region("js", js) + s[be:]
+        js += (f'<script src="../assets/ease/ease.js?v={JS_VER}"></script>\n'
+               f'<script src="../assets/ease/play-t{track:02d}.js?v={JS_VER}"></script>\n')
+    be = s.rindex("</body>")
+    s = s[:be] + region("js", js) + s[be:]
     # fold the pass-1 analogy box
     s = re.sub(r"(<!-- shape:analogy:start -->\n).*?(<!-- shape:analogy:end -->)", lambda m: m.group(1) + FOLD + m.group(2), s, flags=re.S)
     return s
