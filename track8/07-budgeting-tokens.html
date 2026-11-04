@@ -12,6 +12,42 @@
 
   <span class="eyebrow">Track 8 · Lesson 8.7</span>
   <h1>Budgeting tokens</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Every request pays for every token in it, every single time.</p>
+    <p>A request is made of parts: instructions, examples, chat history, retrieved documents and the answer.</p>
+    <p>A token budget means counting each part, finding the biggest one and trimming that first.</p>
+    <p>Small cuts add up fast, because they repeat on millions of calls.</p>
+    <p>Agents need extra care, because their history grows on every step.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Think of a phone plan with a monthly data limit. Before you cut anything, you open the usage screen and see that one app used 80% of it. Deleting a tiny app you barely use would save nothing; turning off autoplay videos in the big one fixes the bill. Token budgeting is the same: open the usage screen first, then cut the biggest item.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The phone's data-usage screen</td><td>Measuring tokens per part of the prompt</td></tr>
+      <tr><td>The one app using 80% of the data</td><td>The biggest part, often retrieved context or history</td></tr>
+      <tr><td>Turning off autoplay in that app</td><td>Summarise history, retrieve less, cap the output, cache the fixed prefix</td></tr>
+      <tr><td>The monthly limit resetting</td><td>Only per request: an agent's history keeps growing within one task</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A phone plan resets each month, while an agent's history keeps growing inside a single task, so the biggest item can change halfway through.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 348" role="img" aria-label="Stacked bars: each agent call re-sends the fixed prefix plus a growing history" preserveAspectRatio="xMidYMid meet"><text x="14" y="20" text-anchor="start" class="b">Tokens sent on each call of one 8-step support-agent task</text><text x="62" y="56" text-anchor="end" class="s">call 1</text><rect x="70" y="40" width="211.429" height="22" rx="2" class="fill-c"/><rect x="281.429" y="40" width="0" height="22" rx="0" class="fill-k"/><rect x="283.429" y="40" width="10.5714" height="22" rx="2" class="fill-a"/><text x="300" y="56" text-anchor="start" class="s m">3,700</text><text x="62" y="85" text-anchor="end" class="s">call 2</text><rect x="70" y="69" width="211.429" height="22" rx="2" class="fill-c"/><rect x="281.429" y="69" width="54.2857" height="22" rx="0" class="fill-k"/><rect x="337.714" y="69" width="10.5714" height="22" rx="2" class="fill-a"/><text x="354.286" y="85" text-anchor="start" class="s m">4,650</text><text x="62" y="114" text-anchor="end" class="s">call 3</text><rect x="70" y="98" width="211.429" height="22" rx="2" class="fill-c"/><rect x="281.429" y="98" width="108.571" height="22" rx="0" class="fill-k"/><rect x="392" y="98" width="10.5714" height="22" rx="2" class="fill-a"/><text x="408.571" y="114" text-anchor="start" class="s m">5,600</text><text x="62" y="143" text-anchor="end" class="s">call 4</text><rect x="70" y="127" width="211.429" height="22" rx="2" class="fill-c"/><rect x="281.429" y="127" width="162.857" height="22" rx="0" class="fill-k"/><rect x="446.286" y="127" width="10.5714" height="22" rx="2" class="fill-a"/><text x="462.857" y="143" text-anchor="start" class="s m">6,550</text><text x="62" y="172" text-anchor="end" class="s">call 5</text><rect x="70" y="156" width="211.429" height="22" rx="2" class="fill-c"/><rect x="281.429" y="156" width="217.143" height="22" rx="0" class="fill-k"/><rect x="500.571" y="156" width="10.5714" height="22" rx="2" class="fill-a"/><text x="517.143" y="172" text-anchor="start" class="s m">7,500</text><text x="62" y="201" text-anchor="end" class="s">call 6</text><rect x="70" y="185" width="211.429" height="22" rx="2" class="fill-c"/><rect x="281.429" y="185" width="271.429" height="22" rx="0" class="fill-k"/><rect x="554.857" y="185" width="10.5714" height="22" rx="2" class="fill-a"/><text x="571.429" y="201" text-anchor="start" class="s m">8,450</text><text x="62" y="230" text-anchor="end" class="s">call 7</text><rect x="70" y="214" width="211.429" height="22" rx="2" class="fill-c"/><rect x="281.429" y="214" width="325.714" height="22" rx="0" class="fill-k"/><rect x="609.143" y="214" width="10.5714" height="22" rx="2" class="fill-a"/><text x="625.714" y="230" text-anchor="start" class="s m">9,400</text><text x="62" y="259" text-anchor="end" class="s">call 8</text><rect x="70" y="243" width="211.429" height="22" rx="2" class="fill-c"/><rect x="281.429" y="243" width="380" height="22" rx="0" class="fill-k"/><rect x="663.429" y="243" width="10.5714" height="22" rx="2" class="fill-a"/><text x="680" y="259" text-anchor="start" class="s m">10,350</text><rect x="14" y="271" width="14" height="14" rx="3" class="fill-c"/><text x="34" y="283" text-anchor="start" class="s">fixed prefix 3,700 (system + tools)</text><rect x="305" y="271" width="14" height="14" rx="3" class="fill-k"/><text x="325" y="283" text-anchor="start" class="s">history: +950 per step</text><rect x="505" y="271" width="14" height="14" rx="3" class="fill-a"/><text x="525" y="283" text-anchor="start" class="s">output 150</text><text x="14" y="310" text-anchor="start" class="s" style="font-size:13px">Whole task: 56,200 input + 1,200 output tokens = $0.1244 on Sonnet 5.5. The growing history is 47% of</text><text x="14" y="327" text-anchor="start" class="s" style="font-size:13px">the input, and the prefix repeats 8 times: those are the two things to trim or cache.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 423" role="img" aria-label="Stacked bars: each agent call re-sends the fixed prefix plus a growing history" preserveAspectRatio="xMidYMid meet"><text x="14" y="20" text-anchor="start" class="b">Tokens per call, one 8-step task</text><text x="52" y="54" text-anchor="end" class="s">call 1</text><rect x="60" y="40" width="88.0952" height="20" rx="2" class="fill-c"/><rect x="148.095" y="40" width="0" height="20" rx="0" class="fill-k"/><rect x="150.095" y="40" width="5.57143" height="20" rx="2" class="fill-a"/><text x="161.667" y="54" text-anchor="start" class="s m">3,700</text><text x="52" y="81" text-anchor="end" class="s">call 2</text><rect x="60" y="67" width="88.0952" height="20" rx="2" class="fill-c"/><rect x="148.095" y="67" width="22.619" height="20" rx="0" class="fill-k"/><rect x="172.714" y="67" width="5.57143" height="20" rx="2" class="fill-a"/><text x="184.286" y="81" text-anchor="start" class="s m">4,650</text><text x="52" y="108" text-anchor="end" class="s">call 3</text><rect x="60" y="94" width="88.0952" height="20" rx="2" class="fill-c"/><rect x="148.095" y="94" width="45.2381" height="20" rx="0" class="fill-k"/><rect x="195.333" y="94" width="5.57143" height="20" rx="2" class="fill-a"/><text x="206.905" y="108" text-anchor="start" class="s m">5,600</text><text x="52" y="135" text-anchor="end" class="s">call 4</text><rect x="60" y="121" width="88.0952" height="20" rx="2" class="fill-c"/><rect x="148.095" y="121" width="67.8571" height="20" rx="0" class="fill-k"/><rect x="217.952" y="121" width="5.57143" height="20" rx="2" class="fill-a"/><text x="229.524" y="135" text-anchor="start" class="s m">6,550</text><text x="52" y="162" text-anchor="end" class="s">call 5</text><rect x="60" y="148" width="88.0952" height="20" rx="2" class="fill-c"/><rect x="148.095" y="148" width="90.4762" height="20" rx="0" class="fill-k"/><rect x="240.571" y="148" width="5.57143" height="20" rx="2" class="fill-a"/><text x="252.143" y="162" text-anchor="start" class="s m">7,500</text><text x="52" y="189" text-anchor="end" class="s">call 6</text><rect x="60" y="175" width="88.0952" height="20" rx="2" class="fill-c"/><rect x="148.095" y="175" width="113.095" height="20" rx="0" class="fill-k"/><rect x="263.19" y="175" width="5.57143" height="20" rx="2" class="fill-a"/><text x="274.762" y="189" text-anchor="start" class="s m">8,450</text><text x="52" y="216" text-anchor="end" class="s">call 7</text><rect x="60" y="202" width="88.0952" height="20" rx="2" class="fill-c"/><rect x="148.095" y="202" width="135.714" height="20" rx="0" class="fill-k"/><rect x="285.81" y="202" width="5.57143" height="20" rx="2" class="fill-a"/><text x="297.381" y="216" text-anchor="start" class="s m">9,400</text><text x="52" y="243" text-anchor="end" class="s">call 8</text><rect x="60" y="229" width="88.0952" height="20" rx="2" class="fill-c"/><rect x="148.095" y="229" width="158.333" height="20" rx="0" class="fill-k"/><rect x="308.429" y="229" width="5.57143" height="20" rx="2" class="fill-a"/><text x="320" y="243" text-anchor="start" class="s m">10,350</text><rect x="14" y="255" width="14" height="14" rx="3" class="fill-c"/><text x="34" y="267" text-anchor="start" class="s">fixed prefix 3,700 (system + tools)</text><rect x="14" y="275" width="14" height="14" rx="3" class="fill-k"/><text x="34" y="287" text-anchor="start" class="s">history: +950 per step</text><rect x="14" y="295" width="14" height="14" rx="3" class="fill-a"/><text x="34" y="307" text-anchor="start" class="s">output 150</text><text x="14" y="334" text-anchor="start" class="s" style="font-size:13px">Whole task: 56,200 input + 1,200 output tokens</text><text x="14" y="351" text-anchor="start" class="s" style="font-size:13px">= $0.1244 on Sonnet 5.5. The growing history is</text><text x="14" y="368" text-anchor="start" class="s" style="font-size:13px">47% of the input, and the prefix repeats 8</text><text x="14" y="385" text-anchor="start" class="s" style="font-size:13px">times: those are the two things to trim or</text><text x="14" y="402" text-anchor="start" class="s" style="font-size:13px">cache.</text></svg>
+    <figcaption>This is the page's 8-step agent. Each call re-sends the fixed prefix plus everything said and done in earlier steps, so input grows on every step. The totals are computed; trimming tool output and caching the prefix are the page's two fixes.</figcaption>
+  </figure>
+  <div class="ez-play" data-ez-play="tokenbudget">
+    <div class="ease-label">Try it</div>
+    <p class="ez-hint">Drag each part of the request and pick a model. The bars and the cost per request and per 1 million requests are recomputed from the list prices.</p>
+    <div class="ez-stage"></div>
+  </div>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">Caching skips calls, routing right-sizes them, batching speeds the hardware — but every call you do make still spends tokens, on every request, forever. Token budgeting is the most universal lever: make each prompt as lean as it can be, and you pay less on literally every call.</p>
 
   <h2>Every token is paid, every time</h2>
@@ -27,10 +63,7 @@
     <p>A <span class="term">token budget</span> is a deliberate accounting of how many tokens each part of your request uses: the <strong>system prompt</strong>, any <strong>few-shot examples</strong>, the <strong>conversation history</strong>, <strong>retrieved context</strong> (in RAG), and the <strong>output</strong>. You measure each part, find the biggest, and trim it — with levers like shortening instructions, using fewer examples (or fine-tuning them in), summarizing old history, retrieving less, and capping <span class="term">max output tokens</span>.</p>
   </div>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>Think of a phone plan with a monthly data limit. Before you cut anything, you open the usage screen and see that one app used 80% of it. Deleting a tiny app you barely use would save nothing; turning off autoplay videos in the big one fixes the bill. Token budgeting is the same: open the usage screen first, then cut the biggest item. Where it breaks: a phone plan resets each month, while an agent's history keeps growing inside a single task, so the biggest item can change halfway through.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -225,8 +258,17 @@ parts <span class="o">=</span> {
     </ul>
   </div>
 <!-- shape:tail:end -->
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Measure where your tokens go, then cut the biggest part first.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/ease.js?v=1"></script>
+<script src="../assets/ease/play-t08.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>
