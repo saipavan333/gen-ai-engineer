@@ -12,6 +12,38 @@
 
   <span class="eyebrow">Track 7 · Lesson 7.4</span>
   <h1>PII &amp; privacy</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>PII (personally identifiable information) is anything that points to a real person: names, emails, phone numbers, card numbers, ID numbers.</p>
+    <p>AI apps copy text into many places: logs, traces, caches, search indexes and the model provider's servers.</p>
+    <p>Redaction swaps personal details for placeholders like [EMAIL] before the text is stored or sent.</p>
+    <p>Keep only the data you need, and delete it when you are done.</p>
+    <p>Redaction tools miss some names, so the stores still need locks and time limits.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Handling PII is like a school nurse keeping medical notes. She writes down only what she needs, keeps the notes in a locked drawer, blacks out names before sharing a report with the head teacher, and shreds old notes at the end of the year.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>Writing down only what she needs</td><td>Data minimisation: collect and keep only what the task needs</td></tr>
+      <tr><td>The locked drawer</td><td>Access control on logs, traces and vector stores</td></tr>
+      <tr><td>Blacking out names in the report</td><td>Redaction: placeholders such as [NAME] and [CARD]</td></tr>
+      <tr><td>Shredding old notes each year</td><td>Retention limits and deletion requests (for example GDPR Article 17)</td></tr>
+      <tr><td>Notes copied into five folders</td><td>The same data in logs, caches, vector stores and a provider's servers</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A paper note is in one place, but data in an LLM app gets copied into logs, caches, vector stores and maybe a model provider's servers, so 'shred it' means finding every copy.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 400" role="img" aria-label="Every place a user&#x27;s personal data gets copied, and where to redact it" preserveAspectRatio="xMidYMid meet"><rect x="20" y="150.5" width="230" height="99" rx="10" class="bx tn-c" /><g class="vzb"><text x="135" y="175.75" text-anchor="middle" class="b">One user message</text><text x="135" y="201.75" text-anchor="middle" class="s" style="font-size:13px">“I&#x27;m Jane Doe, card 4111 1111</text><text x="135" y="218.75" text-anchor="middle" class="s" style="font-size:13px">1111 1111” (this page&#x27;s</text><text x="135" y="235.75" text-anchor="middle" class="s" style="font-size:13px">sample)</text></g><rect x="440" y="18" width="300" height="82" rx="10" class="bx tn-k" /><g class="vzb"><text x="590" y="43.25" text-anchor="middle" class="b">Logs and traces</text><text x="590" y="69.25" text-anchor="middle" class="s" style="font-size:13px">redact before writing: “I&#x27;m [NAME], card</text><text x="590" y="86.25" text-anchor="middle" class="s" style="font-size:13px">[CARD]”</text></g><polyline points="252,200 310,200 380,59 428,59" class="ln "/><polygon points="437,59 428,54.05 428,63.95" class="hd "/><rect x="440" y="112" width="300" height="82" rx="10" class="bx tn-k" /><g class="vzb"><text x="590" y="137.25" text-anchor="middle" class="b">The model provider</text><text x="590" y="163.25" text-anchor="middle" class="s" style="font-size:13px">redact before sending; the text leaves</text><text x="590" y="180.25" text-anchor="middle" class="s" style="font-size:13px">your servers</text></g><polyline points="252,200 310,200 380,153 428,153" class="ln "/><polygon points="437,153 428,148.05 428,157.95" class="hd "/><rect x="440" y="206" width="300" height="82" rx="10" class="bx tn-k" /><g class="vzb"><text x="590" y="231.25" text-anchor="middle" class="b">Caches and vector stores</text><text x="590" y="257.25" text-anchor="middle" class="s" style="font-size:13px">redact before indexing; set a retention</text><text x="590" y="274.25" text-anchor="middle" class="s" style="font-size:13px">limit</text></g><polyline points="252,200 310,200 380,247 428,247" class="ln "/><polygon points="437,247 428,242.05 428,251.95" class="hd "/><rect x="440" y="300" width="300" height="82" rx="10" class="bx tn-g" /><g class="vzb"><text x="590" y="325.25" text-anchor="middle" class="b">The model&#x27;s reply</text><text x="590" y="351.25" text-anchor="middle" class="s" style="font-size:13px">redact again: it can echo what slipped</text><text x="590" y="368.25" text-anchor="middle" class="s" style="font-size:13px">through</text></g><polyline points="252,200 310,200 380,341 428,341" class="ln "/><polygon points="437,341 428,336.05 428,345.95" class="hd "/></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 518" role="img" aria-label="Every place a user&#x27;s personal data gets copied, and where to redact it" preserveAspectRatio="xMidYMid meet"><rect x="12" y="14" width="336" height="82" rx="10" class="bx tn-c" /><g class="vzb"><text x="180" y="39.25" text-anchor="middle" class="b">One user message</text><text x="180" y="65.25" text-anchor="middle" class="s" style="font-size:13px">“I&#x27;m Jane Doe, card 4111 1111 1111 1111”</text><text x="180" y="82.25" text-anchor="middle" class="s" style="font-size:13px">(this page&#x27;s sample)</text></g><line x1="26" y1="96" x2="26" y2="110" class="ln"/><rect x="56" y="130" width="292" height="82" rx="10" class="bx tn-k" /><g class="vzb"><text x="202" y="155.25" text-anchor="middle" class="b">Logs and traces</text><text x="202" y="181.25" text-anchor="middle" class="s" style="font-size:13px">redact before writing: “I&#x27;m [NAME],</text><text x="202" y="198.25" text-anchor="middle" class="s" style="font-size:13px">card [CARD]”</text></g><line x1="26" y1="171" x2="44" y2="171" class="ln "/><polygon points="53,171 44,166.05 44,175.95" class="hd "/><rect x="56" y="226" width="292" height="82" rx="10" class="bx tn-k" /><g class="vzb"><text x="202" y="251.25" text-anchor="middle" class="b">The model provider</text><text x="202" y="277.25" text-anchor="middle" class="s" style="font-size:13px">redact before sending; the text leaves</text><text x="202" y="294.25" text-anchor="middle" class="s" style="font-size:13px">your servers</text></g><line x1="26" y1="267" x2="44" y2="267" class="ln "/><polygon points="53,267 44,262.05 44,271.95" class="hd "/><rect x="56" y="322" width="292" height="82" rx="10" class="bx tn-k" /><g class="vzb"><text x="202" y="347.25" text-anchor="middle" class="b">Caches and vector stores</text><text x="202" y="373.25" text-anchor="middle" class="s" style="font-size:13px">redact before indexing; set a retention</text><text x="202" y="390.25" text-anchor="middle" class="s" style="font-size:13px">limit</text></g><line x1="26" y1="363" x2="44" y2="363" class="ln "/><polygon points="53,363 44,358.05 44,367.95" class="hd "/><rect x="56" y="418" width="292" height="82" rx="10" class="bx tn-g" /><g class="vzb"><text x="202" y="443.25" text-anchor="middle" class="b">The model&#x27;s reply</text><text x="202" y="469.25" text-anchor="middle" class="s" style="font-size:13px">redact again: it can echo what slipped</text><text x="202" y="486.25" text-anchor="middle" class="s" style="font-size:13px">through</text></g><line x1="26" y1="459" x2="44" y2="459" class="ln "/><polygon points="53,459 44,454.05 44,463.95" class="hd "/><line x1="26" y1="96" x2="26" y2="459" class="ln"/></svg>
+    <figcaption>One message, four copies. Redaction has to happen at each place the text would leave your control. The card number is a standard test number used in this page's demo.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">LLM apps swim in user data — and they log it, send it to third-party models, and sometimes repeat it back. Mishandling personal information isn’t just bad hygiene; it’s a legal liability. This lesson is how to handle data responsibly without crippling your app.</p>
 
   <h2>Why privacy is a first-class concern here</h2>
@@ -27,10 +59,7 @@
     <p><span class="term">PII</span> (personally identifiable information) is data that identifies a person — names, emails, phone numbers, addresses, government IDs, payment details. <span class="term">Redaction</span> (masking) replaces PII with placeholders before storing or sending. <span class="term">Data minimization</span> means collecting and retaining only what you actually need. <span class="term">Retention limits</span> mean deleting data after it’s served its purpose. Together these reduce both risk and regulatory exposure.</p>
   </div>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>Handling PII is like a school nurse keeping medical notes. She writes down only what she needs, keeps the notes in a locked drawer, blacks out names before sharing a report with the head teacher, and shreds old notes at the end of the year. Where it breaks: a paper note is in one place, but data in an LLM app gets copied into logs, caches, vector stores and maybe a model provider's servers, so 'shred it' means finding every copy.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -238,6 +267,10 @@ log(<span class="f">redact</span>(raw))                 <span class="c"># "Email
 
   <p>We’ve protected your instructions and your data. Now we make sure the model doesn’t produce harmful content in the first place — or at least never ships it. Next: <strong>content safety</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Personal data spreads into every log and copy, so mask it at the door and delete it on time.</p>
+<!-- ease:line:end -->
 </main>
 
 <script>

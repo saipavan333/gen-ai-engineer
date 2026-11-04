@@ -12,6 +12,37 @@
 
   <span class="eyebrow">Track 7 · Lesson 7.6</span>
   <h1>Output validation</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Treat the model's reply as text from a stranger, not as code you trust.</p>
+    <p>An attacker may have shaped it through injected text.</p>
+    <p>Put it unchecked into a web page, a database query or a tool call, and it can do real damage.</p>
+    <p>Output validation checks the reply before use: right shape, allowed values, no hidden code, no secrets.</p>
+    <p>The model suggests; your code decides.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Output validation is like a bank teller checking a cheque before paying it. The cheque looks fine, but the teller still checks the amount is in numbers and words, the signature matches, and the sum is under the account limit. The person who wrote it might have been fooled or forced.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The cheque that looks fine</td><td>Model output that parses and reads well</td></tr>
+      <tr><td>Checking amount, signature and limit</td><td>Schema validation, allowlists and bounds in code</td></tr>
+      <tr><td>A writer who was fooled or forced</td><td>Output shaped by prompt injection</td></tr>
+      <tr><td>Every place the cheque could be cashed</td><td>Every place the output is used: HTML, SQL, tools, links</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A cheque has a fixed format, but model output is free text that can hide instructions in links, markdown or code, so you have to check every place the text is going to be used.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 477" role="img" aria-label="Each place model output is used gets its own check" preserveAspectRatio="xMidYMid meet"><rect x="20" y="197.5" width="230" height="82" rx="10" class="bx tn-w" /><g class="vzb"><text x="135" y="222.75" text-anchor="middle" class="b">The model&#x27;s output</text><text x="135" y="248.75" text-anchor="middle" class="s" style="font-size:13px">untrusted: may carry injected</text><text x="135" y="265.75" text-anchor="middle" class="s" style="font-size:13px">content</text></g><rect x="440" y="18" width="300" height="82" rx="10" class="bx tn-g" /><g class="vzb"><text x="590" y="43.25" text-anchor="middle" class="b">Shown in a web page</text><text x="590" y="69.25" text-anchor="middle" class="s" style="font-size:13px">escape HTML so a &lt;script&gt; can&#x27;t run</text><text x="590" y="86.25" text-anchor="middle" class="s" style="font-size:13px">(XSS)</text></g><polyline points="252,238.5 310,238.5 380,59 428,59" class="ln "/><polygon points="437,59 428,54.05 428,63.95" class="hd "/><rect x="440" y="112" width="300" height="82" rx="10" class="bx tn-g" /><g class="vzb"><text x="590" y="137.25" text-anchor="middle" class="b">Run as a SQL query</text><text x="590" y="163.25" text-anchor="middle" class="s" style="font-size:13px">parse it, allow one SELECT, check</text><text x="590" y="180.25" text-anchor="middle" class="s" style="font-size:13px">tables, force a LIMIT</text></g><polyline points="252,238.5 310,238.5 380,153 428,153" class="ln "/><polygon points="437,153 428,148.05 428,157.95" class="hd "/><rect x="440" y="206" width="300" height="82" rx="10" class="bx tn-g" /><g class="vzb"><text x="590" y="231.25" text-anchor="middle" class="b">Turned into a tool call</text><text x="590" y="257.25" text-anchor="middle" class="s" style="font-size:13px">allowlist actions; big refunds need a</text><text x="590" y="274.25" text-anchor="middle" class="s" style="font-size:13px">human</text></g><polyline points="252,238.5 310,238.5 380,247 428,247" class="ln "/><polygon points="437,247 428,242.05 428,251.95" class="hd "/><rect x="440" y="300" width="300" height="82" rx="10" class="bx tn-g" /><g class="vzb"><text x="590" y="325.25" text-anchor="middle" class="b">Links and images in markdown</text><text x="590" y="351.25" text-anchor="middle" class="s" style="font-size:13px">render only allowlisted domains, so</text><text x="590" y="368.25" text-anchor="middle" class="s" style="font-size:13px">nothing leaks</text></g><polyline points="252,238.5 310,238.5 380,341 428,341" class="ln "/><polygon points="437,341 428,336.05 428,345.95" class="hd "/><rect x="440" y="394" width="300" height="65" rx="10" class="bx tn-g" /><g class="vzb"><text x="590" y="419.25" text-anchor="middle" class="b">Returned to the user</text><text x="590" y="445.25" text-anchor="middle" class="s" style="font-size:13px">scan for secrets and personal data</text></g><polyline points="252,238.5 310,238.5 380,426.5 428,426.5" class="ln "/><polygon points="437,426.5 428,421.55 428,431.45" class="hd "/></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 580" role="img" aria-label="Each place model output is used gets its own check" preserveAspectRatio="xMidYMid meet"><rect x="12" y="14" width="336" height="65" rx="10" class="bx tn-w" /><g class="vzb"><text x="180" y="39.25" text-anchor="middle" class="b">The model&#x27;s output</text><text x="180" y="65.25" text-anchor="middle" class="s" style="font-size:13px">untrusted: may carry injected content</text></g><line x1="26" y1="79" x2="26" y2="93" class="ln"/><rect x="56" y="113" width="292" height="82" rx="10" class="bx tn-g" /><g class="vzb"><text x="202" y="138.25" text-anchor="middle" class="b">Shown in a web page</text><text x="202" y="164.25" text-anchor="middle" class="s" style="font-size:13px">escape HTML so a &lt;script&gt; can&#x27;t run</text><text x="202" y="181.25" text-anchor="middle" class="s" style="font-size:13px">(XSS)</text></g><line x1="26" y1="154" x2="44" y2="154" class="ln "/><polygon points="53,154 44,149.05 44,158.95" class="hd "/><rect x="56" y="209" width="292" height="82" rx="10" class="bx tn-g" /><g class="vzb"><text x="202" y="234.25" text-anchor="middle" class="b">Run as a SQL query</text><text x="202" y="260.25" text-anchor="middle" class="s" style="font-size:13px">parse it, allow one SELECT, check</text><text x="202" y="277.25" text-anchor="middle" class="s" style="font-size:13px">tables, force a LIMIT</text></g><line x1="26" y1="250" x2="44" y2="250" class="ln "/><polygon points="53,250 44,245.05 44,254.95" class="hd "/><rect x="56" y="305" width="292" height="82" rx="10" class="bx tn-g" /><g class="vzb"><text x="202" y="330.25" text-anchor="middle" class="b">Turned into a tool call</text><text x="202" y="356.25" text-anchor="middle" class="s" style="font-size:13px">allowlist actions; big refunds need a</text><text x="202" y="373.25" text-anchor="middle" class="s" style="font-size:13px">human</text></g><line x1="26" y1="346" x2="44" y2="346" class="ln "/><polygon points="53,346 44,341.05 44,350.95" class="hd "/><rect x="56" y="401" width="292" height="82" rx="10" class="bx tn-g" /><g class="vzb"><text x="202" y="426.25" text-anchor="middle" class="b">Links and images in markdown</text><text x="202" y="452.25" text-anchor="middle" class="s" style="font-size:13px">render only allowlisted domains, so</text><text x="202" y="469.25" text-anchor="middle" class="s" style="font-size:13px">nothing leaks</text></g><line x1="26" y1="442" x2="44" y2="442" class="ln "/><polygon points="53,442 44,437.05 44,446.95" class="hd "/><rect x="56" y="497" width="292" height="65" rx="10" class="bx tn-g" /><g class="vzb"><text x="202" y="522.25" text-anchor="middle" class="b">Returned to the user</text><text x="202" y="548.25" text-anchor="middle" class="s" style="font-size:13px">scan for secrets and personal data</text></g><line x1="26" y1="529.5" x2="44" y2="529.5" class="ln "/><polygon points="53,529.5 44,524.55 44,534.45" class="hd "/><line x1="26" y1="79" x2="26" y2="529.5" class="ln"/></svg>
+    <figcaption>This is improper output handling, LLM05 in the OWASP 2025 list. Each destination needs its own check, and every check is plain code that wording can't talk round.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">The model’s output is not trusted code — it’s text generated from (possibly poisoned) inputs. The moment you feed it into HTML, a database query, a shell, or an action, it becomes an attack vector. Validating output before use closes the loop on LLM security.</p>
 
   <h2>Why output is an attack surface</h2>
@@ -27,10 +58,7 @@
     <p><span class="term">Output validation</span> is checking and sanitizing the model’s output before your system acts on it. It includes <span class="term">schema validation</span> (does it parse into the expected shape? — Track 2.4), <span class="term">sanitization</span> (escape or strip unsafe HTML/markup so it can’t execute), <span class="term">allowlisting</span> (only permit known-good values/actions), and <span class="term">leak checks</span> (no secrets or PII in what you return). The principle: <strong>insecure output handling</strong> — trusting model output downstream — is a top LLM vulnerability.</p>
   </div>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>Output validation is like a bank teller checking a cheque before paying it. The cheque looks fine, but the teller still checks the amount is in numbers and words, the signature matches, and the sum is under the account limit. The person who wrote it might have been fooled or forced. Where it breaks: a cheque has a fixed format, but model output is free text that can hide instructions in links, markdown or code, so you have to check every place the text is going to be used.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -230,6 +258,10 @@
 
   <p>You’ve now seen each guard individually. The art is combining them so no single failure becomes a breach. Next: <strong>defense in depth</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Never trust the model's answer just because it looks right; check it before it touches anything.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>

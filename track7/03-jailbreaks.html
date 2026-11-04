@@ -12,6 +12,37 @@
 
   <span class="eyebrow">Track 7 · Lesson 7.3</span>
   <h1>Jailbreaks</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>A model is trained to refuse some requests, such as instructions for causing harm.</p>
+    <p>A jailbreak is a message written to trick it into ignoring that training.</p>
+    <p>Common tricks are role-play, “ignore your rules”, coded or misspelled text, and asking in small steps over many turns.</p>
+    <p>No model is immune, so defences are layered and assume some attempts will work.</p>
+    <p>A jailbreak attacks the model's own rules; prompt injection attacks your app's instructions.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>A jailbreak is like a kid trying to get a sweet from a strict babysitter. 'Mum always lets me.' 'Let's play a game where you are a babysitter with no rules.' Or asking for one small step at a time until the whole sweet jar is gone. The babysitter's rules are the model's safety training.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The babysitter's rules</td><td>The model's safety training</td></tr>
+      <tr><td>“Mum always lets me” and “let's play a game”</td><td>Role-play and authority tricks</td></tr>
+      <tr><td>One small step at a time</td><td>Multi-turn escalation where no single message looks bad</td></tr>
+      <tr><td>The sweet jar on a high shelf</td><td>Controls outside the model: moderation, tool limits, output checks</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A babysitter remembers being tricked last time, but a deployed model does not learn from today's attempts, so the house needs other locks too, like a sweet jar on a high shelf.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 349" role="img" aria-label="The four jailbreak families this page covers" preserveAspectRatio="xMidYMid meet"><rect x="20" y="133.5" width="230" height="82" rx="10" class="bx tn-w" /><g class="vzb"><text x="135" y="158.75" text-anchor="middle" class="b">A jailbreak attempt</text><text x="135" y="184.75" text-anchor="middle" class="s" style="font-size:13px">goal: get output the model</text><text x="135" y="201.75" text-anchor="middle" class="s" style="font-size:13px">should refuse</text></g><rect x="440" y="18" width="300" height="65" rx="10" class="bx tn-k" /><g class="vzb"><text x="590" y="43.25" text-anchor="middle" class="b">Role-play</text><text x="590" y="69.25" text-anchor="middle" class="s" style="font-size:13px">“pretend you&#x27;re an AI with no rules”</text></g><polyline points="252,174.5 310,174.5 380,50.5 428,50.5" class="ln "/><polygon points="437,50.5 428,45.55 428,55.45" class="hd "/><rect x="440" y="95" width="300" height="65" rx="10" class="bx tn-k" /><g class="vzb"><text x="590" y="120.25" text-anchor="middle" class="b">Direct override</text><text x="590" y="146.25" text-anchor="middle" class="s" style="font-size:13px">“ignore your guidelines”</text></g><polyline points="252,174.5 310,174.5 380,127.5 428,127.5" class="ln "/><polygon points="437,127.5 428,122.55 428,132.45" class="hd "/><rect x="440" y="172" width="300" height="82" rx="10" class="bx tn-k" /><g class="vzb"><text x="590" y="197.25" text-anchor="middle" class="b">Obfuscation</text><text x="590" y="223.25" text-anchor="middle" class="s" style="font-size:13px">base64, misspellings, another language,</text><text x="590" y="240.25" text-anchor="middle" class="s" style="font-size:13px">to slip past filters</text></g><polyline points="252,174.5 310,174.5 380,213 428,213" class="ln "/><polygon points="437,213 428,208.05 428,217.95" class="hd "/><rect x="440" y="266" width="300" height="65" rx="10" class="bx tn-k" /><g class="vzb"><text x="590" y="291.25" text-anchor="middle" class="b">Multi-turn escalation</text><text x="590" y="317.25" text-anchor="middle" class="s" style="font-size:13px">small steps, each harmless-looking alone</text></g><polyline points="252,174.5 310,174.5 380,298.5 428,298.5" class="ln "/><polygon points="437,298.5 428,293.55 428,303.45" class="hd "/></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 467" role="img" aria-label="The four jailbreak families this page covers" preserveAspectRatio="xMidYMid meet"><rect x="12" y="14" width="336" height="65" rx="10" class="bx tn-w" /><g class="vzb"><text x="180" y="39.25" text-anchor="middle" class="b">A jailbreak attempt</text><text x="180" y="65.25" text-anchor="middle" class="s" style="font-size:13px">goal: get output the model should refuse</text></g><line x1="26" y1="79" x2="26" y2="93" class="ln"/><rect x="56" y="113" width="292" height="65" rx="10" class="bx tn-k" /><g class="vzb"><text x="202" y="138.25" text-anchor="middle" class="b">Role-play</text><text x="202" y="164.25" text-anchor="middle" class="s" style="font-size:13px">“pretend you&#x27;re an AI with no rules”</text></g><line x1="26" y1="145.5" x2="44" y2="145.5" class="ln "/><polygon points="53,145.5 44,140.55 44,150.45" class="hd "/><rect x="56" y="192" width="292" height="65" rx="10" class="bx tn-k" /><g class="vzb"><text x="202" y="217.25" text-anchor="middle" class="b">Direct override</text><text x="202" y="243.25" text-anchor="middle" class="s" style="font-size:13px">“ignore your guidelines”</text></g><line x1="26" y1="224.5" x2="44" y2="224.5" class="ln "/><polygon points="53,224.5 44,219.55 44,229.45" class="hd "/><rect x="56" y="271" width="292" height="82" rx="10" class="bx tn-k" /><g class="vzb"><text x="202" y="296.25" text-anchor="middle" class="b">Obfuscation</text><text x="202" y="322.25" text-anchor="middle" class="s" style="font-size:13px">base64, misspellings, another language,</text><text x="202" y="339.25" text-anchor="middle" class="s" style="font-size:13px">to slip past filters</text></g><line x1="26" y1="312" x2="44" y2="312" class="ln "/><polygon points="53,312 44,307.05 44,316.95" class="hd "/><rect x="56" y="367" width="292" height="82" rx="10" class="bx tn-k" /><g class="vzb"><text x="202" y="392.25" text-anchor="middle" class="b">Multi-turn escalation</text><text x="202" y="418.25" text-anchor="middle" class="s" style="font-size:13px">small steps, each harmless-looking</text><text x="202" y="435.25" text-anchor="middle" class="s" style="font-size:13px">alone</text></g><line x1="26" y1="408" x2="44" y2="408" class="ln "/><polygon points="53,408 44,403.05 44,412.95" class="hd "/><line x1="26" y1="79" x2="26" y2="408" class="ln"/></svg>
+    <figcaption>Four families, one goal. Filters that read single messages miss the last two most easily, which is why output moderation and monitoring across turns sit behind the model.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">A jailbreak tricks the model into bypassing its own safety training to produce content it’s supposed to refuse. If your app is public-facing, people <em>will</em> try. You can’t make it impossible, but you can make it hard, detectable, and low-impact.</p>
 
   <h2>Jailbreak vs. injection</h2>
@@ -27,10 +58,7 @@
     <p>A <span class="term">jailbreak</span> is an input crafted to circumvent a model’s safety guidelines so it produces prohibited output. Families include <span class="term">role-play</span> (“pretend you’re an unrestricted AI”), direct <span class="term">override</span> (“ignore your guidelines”), <span class="term">obfuscation</span> (encodings, misspellings, other languages to slip past filters), and <span class="term">multi-turn escalation</span> (building up gradually so no single message looks bad). Defenses are probabilistic, so this is an ongoing <span class="term">arms race</span>, not a solved problem.</p>
   </div>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>A jailbreak is like a kid trying to get a sweet from a strict babysitter. 'Mum always lets me.' 'Let's play a game where you are a babysitter with no rules.' Or asking for one small step at a time until the whole sweet jar is gone. The babysitter's rules are the model's safety training. Where it breaks: a babysitter remembers being tricked last time, but a deployed model does not learn from today's attempts, so the house needs other locks too, like a sweet jar on a high shelf.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -215,6 +243,10 @@
 
   <p>Beyond what the model <em>says</em>, you must protect the <em>data</em> flowing through your system. Next: <strong>PII &amp; privacy</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> A jailbreak is a trick to make the model break its own rules, so never rely on those rules alone.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>

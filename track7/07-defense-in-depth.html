@@ -12,6 +12,43 @@
 
   <span class="eyebrow">Track 7 · Lesson 7.7</span>
   <h1>Defense in depth</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Every guard in this track can fail on its own.</p>
+    <p>Defence in depth means stacking several different guards, so an attack must beat all of them.</p>
+    <p>The layers: check the input, fence untrusted text, limit the tools, ask a human, check the output, watch the logs.</p>
+    <p>The strongest layers are plain code, like “refund only your own orders”, because clever wording can't fool code.</p>
+    <p>If every layer is an AI model, one trick may fool them all.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Defence in depth is like the layers protecting a castle: a moat, then a wall, then a gate with guards, then a locked room for the treasure. An attacker who swims the moat still faces the wall.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The moat</td><td>Input moderation</td></tr>
+      <tr><td>The wall</td><td>Prompt hardening and spotlighting</td></tr>
+      <tr><td>The gate with guards</td><td>Least-privilege tools and human approval</td></tr>
+      <tr><td>The locked treasure room</td><td>Output validation and hard limits in code</td></tr>
+      <tr><td>Layers that fail for different reasons</td><td>Independent kinds of control: classifiers, code limits, people</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> Castle layers fail for different reasons, but if all your LLM layers are themselves LLMs reading the same text, one clever trick can fool several at once, so the layers must be different kinds of things, not copies of each other.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 604" role="img" aria-label="Defence in depth for an LLM app: six layers and what each stops" preserveAspectRatio="xMidYMid meet"><text x="255" y="22" text-anchor="middle" class="s m">↓ request or retrieved text</text><rect x="20" y="40" width="470" height="65" rx="10" class="bx tn-c" /><g class="vzb"><text x="255" y="65.25" text-anchor="middle" class="b">Input moderation</text><text x="255" y="91.25" text-anchor="middle" class="s" style="font-size:13px">classifier screens the user&#x27;s message</text></g><circle cx="22" cy="42" r="11" class="badge"/><text x="22" y="46.5" text-anchor="middle" class="badge-t">1</text><line x1="494" y1="72.5" x2="521" y2="72.5" class="ln wn"/><polygon points="530,72.5 521,67.55 521,77.45" class="hd wn"/><text x="538" y="68.5" text-anchor="start" class="s" style="font-size:13px">obviously unsafe or abusive</text><text x="538" y="84.5" text-anchor="start" class="s" style="font-size:13px">requests</text><line x1="255" y1="107" x2="255" y2="120" class="ln "/><polygon points="255,129 259.95,120 250.05,120" class="hd "/><rect x="20" y="131" width="470" height="65" rx="10" class="bx tn-c" /><g class="vzb"><text x="255" y="156.25" text-anchor="middle" class="b">Prompt hardening and spotlighting</text><text x="255" y="182.25" text-anchor="middle" class="s" style="font-size:13px">untrusted text fenced and labelled as data</text></g><circle cx="22" cy="133" r="11" class="badge"/><text x="22" y="137.5" text-anchor="middle" class="badge-t">2</text><line x1="494" y1="163.5" x2="521" y2="163.5" class="ln wn"/><polygon points="530,163.5 521,158.55 521,168.45" class="hd wn"/><text x="538" y="159.5" text-anchor="start" class="s" style="font-size:13px">many crude injected orders</text><text x="538" y="175.5" text-anchor="start" class="s" style="font-size:13px">(not all)</text><line x1="255" y1="198" x2="255" y2="211" class="ln "/><polygon points="255,220 259.95,211 250.05,211" class="hd "/><rect x="20" y="222" width="470" height="65" rx="10" class="bx tn-g" /><g class="vzb"><text x="255" y="247.25" text-anchor="middle" class="b">Least-privilege tools</text><text x="255" y="273.25" text-anchor="middle" class="s" style="font-size:13px">plain code: only this customer&#x27;s own orders</text></g><circle cx="22" cy="224" r="11" class="badge"/><text x="22" y="228.5" text-anchor="middle" class="badge-t">3</text><line x1="494" y1="254.5" x2="521" y2="254.5" class="ln wn"/><polygon points="530,254.5 521,249.55 521,259.45" class="hd wn"/><text x="538" y="242.5" text-anchor="start" class="s" style="font-size:13px">a hijacked model asking for</text><text x="538" y="258.5" text-anchor="start" class="s" style="font-size:13px">someone else&#x27;s data or</text><text x="538" y="274.5" text-anchor="start" class="s" style="font-size:13px">orders</text><line x1="255" y1="289" x2="255" y2="302" class="ln "/><polygon points="255,311 259.95,302 250.05,302" class="hd "/><rect x="20" y="313" width="470" height="65" rx="10" class="bx tn-g" /><g class="vzb"><text x="255" y="338.25" text-anchor="middle" class="b">Human approval</text><text x="255" y="364.25" text-anchor="middle" class="s" style="font-size:13px">refunds over a set amount wait for a person</text></g><circle cx="22" cy="315" r="11" class="badge"/><text x="22" y="319.5" text-anchor="middle" class="badge-t">4</text><line x1="494" y1="345.5" x2="521" y2="345.5" class="ln wn"/><polygon points="530,345.5 521,340.55 521,350.45" class="hd wn"/><text x="538" y="341.5" text-anchor="start" class="s" style="font-size:13px">big or odd actions that</text><text x="538" y="357.5" text-anchor="start" class="s" style="font-size:13px">slipped past</text><line x1="255" y1="380" x2="255" y2="393" class="ln "/><polygon points="255,402 259.95,393 250.05,393" class="hd "/><rect x="20" y="404" width="470" height="65" rx="10" class="bx tn-k" /><g class="vzb"><text x="255" y="429.25" text-anchor="middle" class="b">Output validation and moderation</text><text x="255" y="455.25" text-anchor="middle" class="s" style="font-size:13px">escape HTML, allowlist link and image domains, scan for leaks</text></g><circle cx="22" cy="406" r="11" class="badge"/><text x="22" y="410.5" text-anchor="middle" class="badge-t">5</text><line x1="494" y1="436.5" x2="521" y2="436.5" class="ln wn"/><polygon points="530,436.5 521,431.55 521,441.45" class="hd wn"/><text x="538" y="432.5" text-anchor="start" class="s" style="font-size:13px">XSS, leaking image links,</text><text x="538" y="448.5" text-anchor="start" class="s" style="font-size:13px">secrets in the reply</text><line x1="255" y1="471" x2="255" y2="484" class="ln "/><polygon points="255,493 259.95,484 250.05,484" class="hd "/><rect x="20" y="495" width="470" height="65" rx="10" class="bx tn-p" /><g class="vzb"><text x="255" y="520.25" text-anchor="middle" class="b">Monitoring</text><text x="255" y="546.25" text-anchor="middle" class="s" style="font-size:13px">log blocks and reversals; add them to the red-team suite</text></g><circle cx="22" cy="497" r="11" class="badge"/><text x="22" y="501.5" text-anchor="middle" class="badge-t">6</text><line x1="494" y1="527.5" x2="521" y2="527.5" class="ln wn"/><polygon points="530,527.5 521,522.55 521,532.45" class="hd wn"/><text x="538" y="523.5" text-anchor="start" class="s" style="font-size:13px">nothing directly; it finds</text><text x="538" y="539.5" text-anchor="start" class="s" style="font-size:13px">what got through</text><text x="255" y="592" text-anchor="middle" class="s m">↓ answer or action</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 638" role="img" aria-label="Defence in depth for an LLM app: six layers and what each stops" preserveAspectRatio="xMidYMid meet"><text x="180" y="22" text-anchor="middle" class="s m">↓ request or retrieved text</text><rect x="20" y="40" width="320" height="65" rx="10" class="bx tn-c" /><g class="vzb"><text x="180" y="65.25" text-anchor="middle" class="b">Input moderation</text><text x="180" y="91.25" text-anchor="middle" class="s" style="font-size:13px">classifier screens the user&#x27;s message</text></g><circle cx="22" cy="42" r="11" class="badge"/><text x="22" y="46.5" text-anchor="middle" class="badge-t">1</text><line x1="180" y1="107" x2="180" y2="120" class="ln "/><polygon points="180,129 184.95,120 175.05,120" class="hd "/><rect x="20" y="131" width="320" height="65" rx="10" class="bx tn-c" /><g class="vzb"><text x="180" y="156.25" text-anchor="middle" class="b">Prompt hardening and spotlighting</text><text x="180" y="182.25" text-anchor="middle" class="s" style="font-size:13px">untrusted text fenced and labelled as data</text></g><circle cx="22" cy="133" r="11" class="badge"/><text x="22" y="137.5" text-anchor="middle" class="badge-t">2</text><line x1="180" y1="198" x2="180" y2="211" class="ln "/><polygon points="180,220 184.95,211 175.05,211" class="hd "/><rect x="20" y="222" width="320" height="65" rx="10" class="bx tn-g" /><g class="vzb"><text x="180" y="247.25" text-anchor="middle" class="b">Least-privilege tools</text><text x="180" y="273.25" text-anchor="middle" class="s" style="font-size:13px">plain code: only this customer&#x27;s own orders</text></g><circle cx="22" cy="224" r="11" class="badge"/><text x="22" y="228.5" text-anchor="middle" class="badge-t">3</text><line x1="180" y1="289" x2="180" y2="302" class="ln "/><polygon points="180,311 184.95,302 175.05,302" class="hd "/><rect x="20" y="313" width="320" height="65" rx="10" class="bx tn-g" /><g class="vzb"><text x="180" y="338.25" text-anchor="middle" class="b">Human approval</text><text x="180" y="364.25" text-anchor="middle" class="s" style="font-size:13px">refunds over a set amount wait for a person</text></g><circle cx="22" cy="315" r="11" class="badge"/><text x="22" y="319.5" text-anchor="middle" class="badge-t">4</text><line x1="180" y1="380" x2="180" y2="393" class="ln "/><polygon points="180,402 184.95,393 175.05,393" class="hd "/><rect x="20" y="404" width="320" height="82" rx="10" class="bx tn-k" /><g class="vzb"><text x="180" y="429.25" text-anchor="middle" class="b">Output validation and moderation</text><text x="180" y="455.25" text-anchor="middle" class="s" style="font-size:13px">escape HTML, allowlist link and image</text><text x="180" y="472.25" text-anchor="middle" class="s" style="font-size:13px">domains, scan for leaks</text></g><circle cx="22" cy="406" r="11" class="badge"/><text x="22" y="410.5" text-anchor="middle" class="badge-t">5</text><line x1="180" y1="488" x2="180" y2="501" class="ln "/><polygon points="180,510 184.95,501 175.05,501" class="hd "/><rect x="20" y="512" width="320" height="82" rx="10" class="bx tn-p" /><g class="vzb"><text x="180" y="537.25" text-anchor="middle" class="b">Monitoring</text><text x="180" y="563.25" text-anchor="middle" class="s" style="font-size:13px">log blocks and reversals; add them to the</text><text x="180" y="580.25" text-anchor="middle" class="s" style="font-size:13px">red-team suite</text></g><circle cx="22" cy="514" r="11" class="badge"/><text x="22" y="518.5" text-anchor="middle" class="badge-t">6</text><text x="180" y="626" text-anchor="middle" class="s m">↓ answer or action</text></svg>
+    <figcaption>A request passes every layer top to bottom. Each one catches a different kind of attack, and the green ones are plain code or people, so wording can't talk them round.</figcaption>
+  </figure>
+  <div class="ez-play" data-ez-play="guardlayers">
+    <div class="ease-label">Try it</div>
+    <p class="ez-hint">Switch layers on and off. Seven made-up attacks run through the stack; see which ones get through. Illustrative, not measured.</p>
+    <div class="ez-stage"></div>
+  </div>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">Every guard in this track is imperfect on its own — moderation misses things, prompts get injected, models get jailbroken. The whole strategy is to layer them so that no single failure becomes a breach. This lesson assembles the pieces into a coherent defense.</p>
 
   <h2>Why one layer is never enough</h2>
@@ -27,10 +64,7 @@
     <p><span class="term">Defense in depth</span> uses multiple independent safeguards so that the failure of any one doesn’t cause a breach. For LLM apps the layers are: <span class="term">input moderation</span> (block unsafe requests), <span class="term">prompt hardening</span> (fence untrusted text as data), <span class="term">least-privilege tools</span> (limit what the model can do), <span class="term">human-in-the-loop</span> (approval for risky actions), <span class="term">output validation</span> (sanitize before use), and <span class="term">monitoring</span> (detect and respond to what slips through). <span class="term">Least privilege</span> ensures even a fully-hijacked model can do little harm.</p>
   </div>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>Defence in depth is like the layers protecting a castle: a moat, then a wall, then a gate with guards, then a locked room for the treasure. An attacker who swims the moat still faces the wall. Where it breaks: castle layers fail for different reasons, but if all your LLM layers are themselves LLMs reading the same text, one clever trick can fool several at once, so the layers must be different kinds of things, not copies of each other.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -217,8 +251,17 @@ Results (n=20 questions per row, 95% Wilson intervals)
     </ul>
   </div>
 <!-- shape:tail:end -->
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Stack different kinds of guards so one failure never becomes a breach.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/ease.js?v=1"></script>
+<script src="../assets/ease/play-t07.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>
