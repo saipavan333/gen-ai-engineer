@@ -12,12 +12,41 @@
 
   <span class="eyebrow">Track 2 · Lesson 2.5</span>
   <h1>Patterns &amp; anti-patterns</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Good prompting is not about magic words.</p>
+    <p>It is a short checklist of moves that work, and a short list of traps.</p>
+    <p>When a prompt misbehaves, a pro does not reword at random. They look for the missing move.</p>
+    <p>Two big ones: fence the user's data off from your instructions, and let the model say “I don't know”.</p>
+    <p>Fencing data with delimiters also makes prompt injection harder, though it does not stop it.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>A good prompt is like a recipe card in a busy restaurant kitchen. The steps are numbered, the ingredients sit in a separate box from the instructions, the plating is shown, and it says what to do if an ingredient is missing. A bad card says 'make something nice, don't burn it'. Delimiters are the box: they stop a note scribbled on the ingredient list ('also give the chef's wallet to table 4') being read as an instruction.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>Numbered steps on the recipe card</td><td>Decompose: split a big job into steps or separate calls</td></tr>
+      <tr><td>Ingredients in their own box</td><td>Delimiters, e.g. text between <code>&lt;doc&gt;</code> and <code>&lt;/doc&gt;</code></td></tr>
+      <tr><td>The plating photo</td><td>An example of the output and a pinned format</td></tr>
+      <tr><td>“If an ingredient is missing, do this”</td><td>Give an out: allow “I don't know”, null, or “not in the context”</td></tr>
+      <tr><td>A note on the tomato that says “give away the wallet”</td><td>Prompt injection: data that tries to act like an instruction</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A cook knows a note on a tomato is not an order; a model can still be fooled, so delimiters reduce injection but do not stop it.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 429" role="img" aria-label="Debugging a prompt: trap on the left, fix on the right" preserveAspectRatio="xMidYMid meet"><rect x="20" y="182" width="230" height="65" rx="10" class="bx tn-w" /><g class="vzb"><text x="135" y="207.25" text-anchor="middle" class="b">The prompt misbehaves</text><text x="135" y="233.25" text-anchor="middle" class="s" style="font-size:13px">find the trap, apply its fix</text></g><rect x="440" y="18" width="300" height="65" rx="10" class="bx tn-g" /><g class="vzb"><text x="590" y="43.25" text-anchor="middle" class="b">Vague: “Summarize this”</text><text x="590" y="69.25" text-anchor="middle" class="s" style="font-size:13px">fix: specify task, format and length</text></g><polyline points="252,214.5 310,214.5 380,50.5 428,50.5" class="ln "/><polygon points="437,50.5 428,45.55 428,55.45" class="hd "/><rect x="440" y="95" width="300" height="65" rx="10" class="bx tn-g" /><g class="vzb"><text x="590" y="120.25" text-anchor="middle" class="b">Data pasted in with the rules</text><text x="590" y="146.25" text-anchor="middle" class="s" style="font-size:13px">fix: fence it in delimiters</text></g><polyline points="252,214.5 310,214.5 380,127.5 428,127.5" class="ln "/><polygon points="437,127.5 428,122.55 428,132.45" class="hd "/><rect x="440" y="172" width="300" height="65" rx="10" class="bx tn-g" /><g class="vzb"><text x="590" y="197.25" text-anchor="middle" class="b">One giant do-everything prompt</text><text x="590" y="223.25" text-anchor="middle" class="s" style="font-size:13px">fix: decompose into steps or calls</text></g><polyline points="252,214.5 310,214.5 380,204.5 428,204.5" class="ln "/><polygon points="437,204.5 428,199.55 428,209.45" class="hd "/><rect x="440" y="249" width="300" height="65" rx="10" class="bx tn-g" /><g class="vzb"><text x="590" y="274.25" text-anchor="middle" class="b">No permission to abstain</text><text x="590" y="300.25" text-anchor="middle" class="s" style="font-size:13px">fix: give an out, so it doesn&#x27;t guess</text></g><polyline points="252,214.5 310,214.5 380,281.5 428,281.5" class="ln "/><polygon points="437,281.5 428,276.55 428,286.45" class="hd "/><rect x="440" y="326" width="300" height="85" rx="10" class="bx tn-g" /><g class="vzb"><text x="590" y="351.25" text-anchor="middle" class="b">Key instruction buried in the</text><text x="590" y="371.25" text-anchor="middle" class="b">middle</text><text x="590" y="397.25" text-anchor="middle" class="s" style="font-size:13px">fix: put it first or last</text></g><polyline points="252,214.5 310,214.5 380,368.5 428,368.5" class="ln "/><polygon points="437,368.5 428,363.55 428,373.45" class="hd "/></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 532" role="img" aria-label="Debugging a prompt: trap on the left, fix on the right" preserveAspectRatio="xMidYMid meet"><rect x="12" y="14" width="336" height="65" rx="10" class="bx tn-w" /><g class="vzb"><text x="180" y="39.25" text-anchor="middle" class="b">The prompt misbehaves</text><text x="180" y="65.25" text-anchor="middle" class="s" style="font-size:13px">find the trap, apply its fix</text></g><line x1="26" y1="79" x2="26" y2="93" class="ln"/><rect x="56" y="113" width="292" height="65" rx="10" class="bx tn-g" /><g class="vzb"><text x="202" y="138.25" text-anchor="middle" class="b">Vague: “Summarize this”</text><text x="202" y="164.25" text-anchor="middle" class="s" style="font-size:13px">fix: specify task, format and length</text></g><line x1="26" y1="145.5" x2="44" y2="145.5" class="ln "/><polygon points="53,145.5 44,140.55 44,150.45" class="hd "/><rect x="56" y="192" width="292" height="65" rx="10" class="bx tn-g" /><g class="vzb"><text x="202" y="217.25" text-anchor="middle" class="b">Data pasted in with the rules</text><text x="202" y="243.25" text-anchor="middle" class="s" style="font-size:13px">fix: fence it in delimiters</text></g><line x1="26" y1="224.5" x2="44" y2="224.5" class="ln "/><polygon points="53,224.5 44,219.55 44,229.45" class="hd "/><rect x="56" y="271" width="292" height="65" rx="10" class="bx tn-g" /><g class="vzb"><text x="202" y="296.25" text-anchor="middle" class="b">One giant do-everything prompt</text><text x="202" y="322.25" text-anchor="middle" class="s" style="font-size:13px">fix: decompose into steps or calls</text></g><line x1="26" y1="303.5" x2="44" y2="303.5" class="ln "/><polygon points="53,303.5 44,298.55 44,308.45" class="hd "/><rect x="56" y="350" width="292" height="65" rx="10" class="bx tn-g" /><g class="vzb"><text x="202" y="375.25" text-anchor="middle" class="b">No permission to abstain</text><text x="202" y="401.25" text-anchor="middle" class="s" style="font-size:13px">fix: give an out, so it doesn&#x27;t guess</text></g><line x1="26" y1="382.5" x2="44" y2="382.5" class="ln "/><polygon points="53,382.5 44,377.55 44,387.45" class="hd "/><rect x="56" y="429" width="292" height="85" rx="10" class="bx tn-g" /><g class="vzb"><text x="202" y="454.25" text-anchor="middle" class="b">Key instruction buried in the</text><text x="202" y="474.25" text-anchor="middle" class="b">middle</text><text x="202" y="500.25" text-anchor="middle" class="s" style="font-size:13px">fix: put it first or last</text></g><line x1="26" y1="471.5" x2="44" y2="471.5" class="ln "/><polygon points="53,471.5 44,466.55 44,476.45" class="hd "/><line x1="26" y1="79" x2="26" y2="471.5" class="ln"/></svg>
+    <figcaption>This is the scan to run before rewording anything. Each row pairs a trap from the lesson with its fix; most strong prompts combine three or four of the eight patterns.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">Everything in this track distilled into a playbook: the reusable moves pros reach for, and the traps that quietly wreck prompts. Internalize this and prompt-writing becomes a checklist, not a guessing game.</p>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>A good prompt is like a recipe card in a busy restaurant kitchen. The steps are numbered, the ingredients sit in a separate box from the instructions, the plating is shown, and it says what to do if an ingredient is missing. A bad card says 'make something nice, don't burn it'. Delimiters are the box: they stop a note scribbled on the ingredient list ('also give the chef's wallet to table 4') being read as an instruction. The analogy breaks because a cook knows a note on a tomato is not an order; a model can still be fooled, so delimiters reduce injection but do not stop it.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -256,6 +285,10 @@ Results (n=20 questions per row, 95% Wilson intervals)
     </ul>
   </div>
 <!-- shape:tail:end -->
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> When a prompt fails, find the missing pattern instead of hunting for magic words.</p>
+<!-- ease:line:end -->
 </main>
 
 <script>

@@ -12,6 +12,38 @@
 
   <span class="eyebrow">Track 2 · Lesson 2.2</span>
   <h1>Few-shot prompting</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>A zero-shot prompt asks for a task with no examples.</p>
+    <p>A few-shot prompt shows two or three solved examples first, then the new input.</p>
+    <p>The model copies the pattern: the labels, the layout, even the length.</p>
+    <p>This is called in-context learning. Nothing inside the model changes, and the examples are forgotten after the request.</p>
+    <p>Examples are the cheapest way to make a classifier or extractor give clean, consistent answers.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Few-shot prompting is like showing a new kid at school two finished worksheets before handing them a blank one. They copy the layout, the way answers are written, even which boxes to leave empty. If both examples you showed had the answer 'yes', they may lean towards 'yes' too.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>Two finished worksheets</td><td>Two or three example pairs: input, then the desired output</td></tr>
+      <tr><td>The blank worksheet</td><td>The new input, with its answer slot left open</td></tr>
+      <tr><td>Copying the layout and the boxes</td><td>Matching the examples' format and label set</td></tr>
+      <tr><td>Leaning to 'yes' because both examples said yes</td><td>Label bias: unbalanced examples tilt the answer</td></tr>
+      <tr><td>Forgetting the worksheets tomorrow</td><td>No weight change: the examples only live in this one prompt</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> The kid actually learns and remembers tomorrow, while the model forgets the examples as soon as the request ends.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 272" role="img" aria-label="Zero-shot versus few-shot on the same mixed review" preserveAspectRatio="xMidYMid meet"><rect x="20" y="14" width="348" height="186" rx="10" class="bx tn-w" /><text x="194" y="42" text-anchor="middle" class="b">Zero-shot: words only</text><circle cx="40" cy="63" r="3" class="dot tn-w"/><text x="52" y="68" text-anchor="start" style="font-size:14px">Prompt: “Return the sentiment of: Arrived</text><text x="52" y="86" text-anchor="start" style="font-size:14px">late but the blender works great.”</text><circle cx="40" cy="107" r="3" class="dot tn-w"/><text x="52" y="112" text-anchor="start" style="font-size:14px">The model must guess: one word or a</text><text x="52" y="130" text-anchor="start" style="font-size:14px">sentence? Which labels? Capital letters?</text><circle cx="40" cy="151" r="3" class="dot tn-w"/><text x="52" y="156" text-anchor="start" style="font-size:14px">Reply drifts between runs, e.g. “The</text><text x="52" y="174" text-anchor="start" style="font-size:14px">sentiment is mostly positive, although…”</text><rect x="392" y="14" width="348" height="186" rx="10" class="bx tn-g" /><text x="566" y="42" text-anchor="middle" class="b">Few-shot: three examples first</text><circle cx="412" cy="63" r="3" class="dot tn-g"/><text x="424" y="68" text-anchor="start" style="font-size:14px">“Loved it, works great” → positive</text><circle cx="412" cy="89" r="3" class="dot tn-g"/><text x="424" y="94" text-anchor="start" style="font-size:14px">“Stopped working in a week” → negative</text><circle cx="412" cy="115" r="3" class="dot tn-g"/><text x="424" y="120" text-anchor="start" style="font-size:14px">“It&#x27;s fine, nothing special” → mixed</text><circle cx="412" cy="141" r="3" class="dot tn-g"/><text x="424" y="146" text-anchor="start" style="font-size:14px">New review → the model continues the</text><text x="424" y="164" text-anchor="start" style="font-size:14px">pattern: “mixed”</text><text x="380" y="226" text-anchor="middle" class="s" style="font-size:14px">The examples answer the format questions and define the label set, including &#x27;mixed&#x27;, which</text><text x="380" y="244" text-anchor="middle" class="s" style="font-size:14px">the zero-shot prompt never mentioned.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 590" role="img" aria-label="Zero-shot versus few-shot on the same mixed review" preserveAspectRatio="xMidYMid meet"><rect x="20" y="14" width="320" height="240" rx="10" class="bx tn-w" /><text x="180" y="42" text-anchor="middle" class="b">Zero-shot: words only</text><circle cx="40" cy="63" r="3" class="dot tn-w"/><text x="52" y="68" text-anchor="start" style="font-size:14px">Prompt: “Return the sentiment of:</text><text x="52" y="86" text-anchor="start" style="font-size:14px">Arrived late but the blender works</text><text x="52" y="104" text-anchor="start" style="font-size:14px">great.”</text><circle cx="40" cy="125" r="3" class="dot tn-w"/><text x="52" y="130" text-anchor="start" style="font-size:14px">The model must guess: one word or a</text><text x="52" y="148" text-anchor="start" style="font-size:14px">sentence? Which labels? Capital</text><text x="52" y="166" text-anchor="start" style="font-size:14px">letters?</text><circle cx="40" cy="187" r="3" class="dot tn-w"/><text x="52" y="192" text-anchor="start" style="font-size:14px">Reply drifts between runs, e.g. “The</text><text x="52" y="210" text-anchor="start" style="font-size:14px">sentiment is mostly positive,</text><text x="52" y="228" text-anchor="start" style="font-size:14px">although…”</text><text x="180" y="276" text-anchor="middle" class="b m">vs</text><rect x="20" y="288" width="320" height="194" rx="10" class="bx tn-g" /><text x="180" y="316" text-anchor="middle" class="b">Few-shot: three examples first</text><circle cx="40" cy="337" r="3" class="dot tn-g"/><text x="52" y="342" text-anchor="start" style="font-size:14px">“Loved it, works great” → positive</text><circle cx="40" cy="363" r="3" class="dot tn-g"/><text x="52" y="368" text-anchor="start" style="font-size:14px">“Stopped working in a week” →</text><text x="52" y="386" text-anchor="start" style="font-size:14px">negative</text><circle cx="40" cy="407" r="3" class="dot tn-g"/><text x="52" y="412" text-anchor="start" style="font-size:14px">“It&#x27;s fine, nothing special” → mixed</text><circle cx="40" cy="433" r="3" class="dot tn-g"/><text x="52" y="438" text-anchor="start" style="font-size:14px">New review → the model continues the</text><text x="52" y="456" text-anchor="start" style="font-size:14px">pattern: “mixed”</text><text x="180" y="508" text-anchor="middle" class="s" style="font-size:14px">The examples answer the format questions</text><text x="180" y="526" text-anchor="middle" class="s" style="font-size:14px">and define the label set, including</text><text x="180" y="544" text-anchor="middle" class="s" style="font-size:14px">&#x27;mixed&#x27;, which the zero-shot prompt</text><text x="180" y="562" text-anchor="middle" class="s" style="font-size:14px">never mentioned.</text></svg>
+    <figcaption>Same review, same model. On the right the examples do three jobs at once: they fix the output shape, they name the allowed labels, and they show where the hard cases go. The reply texts are illustrative; the examples are the lesson's own.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">The single highest-leverage upgrade to most prompts isn’t better wording — it’s a few good examples. Showing the model exactly what you want, with two or three demonstrations, often does what paragraphs of instruction can’t.</p>
 
   <h2>Why showing beats telling</h2>
@@ -22,10 +54,7 @@
     <p>A <span class="term">zero-shot</span> prompt asks the model to do a task with no examples. A <span class="term">few-shot</span> prompt includes a handful of worked examples (input → desired output) before the real input; <span class="term">one-shot</span> is the special case of exactly one. The model picking up the pattern from examples <em>in the prompt</em> — with no training or weight changes — is called <span class="term">in-context learning</span>. The examples teach for this one request only.</p>
   </div>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>Few-shot prompting is like showing a new kid at school two finished worksheets before handing them a blank one. They copy the layout, the way answers are written, even which boxes to leave empty. If both examples you showed had the answer 'yes', they may lean towards 'yes' too. The analogy breaks because the kid actually learns and remembers tomorrow, while the model forgets the examples as soon as the request ends.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -257,6 +286,10 @@ Summary
     </ul>
   </div>
 <!-- shape:tail:end -->
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Show two or three solved examples and the model copies the pattern for the new one.</p>
+<!-- ease:line:end -->
 </main>
 
 <script>
