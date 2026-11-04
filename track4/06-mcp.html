@@ -12,6 +12,43 @@
 
   <span class="eyebrow">Track 4 · Lesson 4.6</span>
   <h1>MCP (Model Context Protocol)</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>MCP (Model Context Protocol) is a standard way to plug tools and data into AI apps.</p>
+    <p>Without it, every app needs its own hand-written connector for every system.</p>
+    <p>With it, you wrap a system once as an MCP server, and any MCP-ready app can use it.</p>
+    <p>A server can offer tools to call, resources to read and prompt templates.</p>
+    <p>In the current spec (dated 2026-07-28), every request stands on its own: there is no start-up handshake.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>MCP is like the standard plug sockets in your house. Before standard sockets, every gadget would need its own special wiring; now any lamp, charger or fan just plugs in, and the house doesn't care who made it.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The standard socket in the wall</td><td>The MCP protocol: JSON-RPC over stdio or Streamable HTTP</td></tr>
+      <tr><td>Your house's wiring</td><td>The MCP client inside the host app</td></tr>
+      <tr><td>A lamp or a charger</td><td>An MCP server wrapping one system (orders, a wiki, Postgres)</td></tr>
+      <tr><td>Plugging in any brand</td><td>Discovery: tools/list returns each tool's schema</td></tr>
+      <tr><td>Switching it on</td><td>tools/call: the client asks the server to run a tool</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A socket only gives power; an MCP server can also hand your agent text that tries to boss it around, so plugging in a stranger's server is closer to letting a stranger's device run code in your house.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 500" role="img" aria-label="One MCP tool call: host, client, server and back" preserveAspectRatio="xMidYMid meet"><rect x="30" y="12" width="160" height="40" rx="8" class="bx tn-a" /><text x="110" y="37" text-anchor="middle" class="b" style="font-size:14px">Host app + model</text><rect x="210" y="12" width="160" height="40" rx="8" class="bx tn-c" /><text x="290" y="37" text-anchor="middle" class="b" style="font-size:14px">MCP client</text><rect x="390" y="12" width="160" height="40" rx="8" class="bx tn-k" /><text x="470" y="37" text-anchor="middle" class="b" style="font-size:14px">MCP server</text><rect x="570" y="12" width="160" height="40" rx="8" class="bx tn-d" /><text x="650" y="37" text-anchor="middle" class="b" style="font-size:14px">Order system</text><line x1="110" y1="52" x2="110" y2="444" class="grid dash"/><line x1="290" y1="52" x2="290" y2="444" class="grid dash"/><line x1="470" y1="52" x2="470" y2="444" class="grid dash"/><line x1="650" y1="52" x2="650" y2="444" class="grid dash"/><text x="380" y="86" text-anchor="middle" class="s" style="font-size:13px">1. tools/list: what do you offer?</text><line x1="294" y1="96" x2="457" y2="96" class="ln ac"/><polygon points="466,96 457,91.05 457,100.95" class="hd ac"/><text x="380" y="126" text-anchor="middle" class="s" style="font-size:13px">2. tool get_order(order_id) + its schema</text><line x1="466" y1="136" x2="303" y2="136" class="ln "/><polygon points="294,136 303,140.95 303,131.05" class="hd "/><text x="200" y="166" text-anchor="middle" class="s" style="font-size:13px">3. schema handed to the model as a tool</text><line x1="286" y1="176" x2="123" y2="176" class="ln "/><polygon points="114,176 123,180.95 123,171.05" class="hd "/><text x="200" y="206" text-anchor="middle" class="s" style="font-size:13px">4. model asks: get_order(“4417”)</text><line x1="114" y1="216" x2="277" y2="216" class="ln ac"/><polygon points="286,216 277,211.05 277,220.95" class="hd ac"/><text x="380" y="246" text-anchor="middle" class="s" style="font-size:13px">5. tools/call get_order {order_id: 4417}</text><line x1="294" y1="256" x2="457" y2="256" class="ln ac"/><polygon points="466,256 457,251.05 457,260.95" class="hd ac"/><text x="560" y="286" text-anchor="middle" class="s" style="font-size:13px">6. server&#x27;s own code queries the system</text><line x1="474" y1="296" x2="637" y2="296" class="ln ac"/><polygon points="646,296 637,291.05 637,300.95" class="hd ac"/><text x="560" y="326" text-anchor="middle" class="s" style="font-size:13px">7. row: shipped, DHL</text><line x1="646" y1="336" x2="483" y2="336" class="ln "/><polygon points="474,336 483,340.95 483,331.05" class="hd "/><text x="380" y="366" text-anchor="middle" class="s" style="font-size:13px">8. result: “shipped, DHL”</text><line x1="466" y1="376" x2="303" y2="376" class="ln "/><polygon points="294,376 303,380.95 303,371.05" class="hd "/><text x="200" y="406" text-anchor="middle" class="s" style="font-size:13px">9. appended as a tool result; model answers</text><line x1="286" y1="416" x2="123" y2="416" class="ln ok"/><polygon points="114,416 123,420.95 123,411.05" class="hd ok"/><text x="20" y="466" text-anchor="start" class="s m" style="font-size:13px">Spec 2026-07-28: no initialize handshake; every request carries its own protocol version and</text><text x="20" y="483" text-anchor="start" class="s m" style="font-size:13px">capabilities.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 561" role="img" aria-label="One MCP tool call: host, client, server and back" preserveAspectRatio="xMidYMid meet"><rect x="16" y="12" width="76" height="48" rx="8" class="bx tn-a" /><text x="54" y="33" text-anchor="middle" class="b" style="font-size:12px">Host app</text><text x="54" y="48" text-anchor="middle" class="b" style="font-size:12px">+ model</text><rect x="100" y="12" width="76" height="48" rx="8" class="bx tn-c" /><text x="138" y="33" text-anchor="middle" class="b" style="font-size:12px">MCP</text><text x="138" y="48" text-anchor="middle" class="b" style="font-size:12px">client</text><rect x="184" y="12" width="76" height="48" rx="8" class="bx tn-k" /><text x="222" y="33" text-anchor="middle" class="b" style="font-size:12px">MCP</text><text x="222" y="48" text-anchor="middle" class="b" style="font-size:12px">server</text><rect x="268" y="12" width="76" height="48" rx="8" class="bx tn-d" /><text x="306" y="33" text-anchor="middle" class="b" style="font-size:12px">Order</text><text x="306" y="48" text-anchor="middle" class="b" style="font-size:12px">system</text><line x1="54" y1="60" x2="54" y2="488" class="grid dash"/><line x1="138" y1="60" x2="138" y2="488" class="grid dash"/><line x1="222" y1="60" x2="222" y2="488" class="grid dash"/><line x1="306" y1="60" x2="306" y2="488" class="grid dash"/><text x="12" y="92" text-anchor="start" class="s" style="font-size:12px">1. tools/list: what do you offer?</text><line x1="142" y1="108" x2="209" y2="108" class="ln ac"/><polygon points="218,108 209,103.05 209,112.95" class="hd ac"/><text x="12" y="136" text-anchor="start" class="s" style="font-size:12px">2. tool get_order(order_id) + its schema</text><line x1="218" y1="152" x2="151" y2="152" class="ln "/><polygon points="142,152 151,156.95 151,147.05" class="hd "/><text x="12" y="180" text-anchor="start" class="s" style="font-size:12px">3. schema handed to the model as a tool</text><line x1="134" y1="196" x2="67" y2="196" class="ln "/><polygon points="58,196 67,200.95 67,191.05" class="hd "/><text x="12" y="224" text-anchor="start" class="s" style="font-size:12px">4. model asks: get_order(“4417”)</text><line x1="58" y1="240" x2="125" y2="240" class="ln ac"/><polygon points="134,240 125,235.05 125,244.95" class="hd ac"/><text x="12" y="268" text-anchor="start" class="s" style="font-size:12px">5. tools/call get_order {order_id: 4417}</text><line x1="142" y1="284" x2="209" y2="284" class="ln ac"/><polygon points="218,284 209,279.05 209,288.95" class="hd ac"/><text x="12" y="312" text-anchor="start" class="s" style="font-size:12px">6. server&#x27;s own code queries the system</text><line x1="226" y1="328" x2="293" y2="328" class="ln ac"/><polygon points="302,328 293,323.05 293,332.95" class="hd ac"/><text x="12" y="356" text-anchor="start" class="s" style="font-size:12px">7. row: shipped, DHL</text><line x1="302" y1="372" x2="235" y2="372" class="ln "/><polygon points="226,372 235,376.95 235,367.05" class="hd "/><text x="12" y="400" text-anchor="start" class="s" style="font-size:12px">8. result: “shipped, DHL”</text><line x1="218" y1="416" x2="151" y2="416" class="ln "/><polygon points="142,416 151,420.95 151,411.05" class="hd "/><text x="12" y="444" text-anchor="start" class="s" style="font-size:12px">9. appended as a tool result; model answers</text><line x1="134" y1="460" x2="67" y2="460" class="ln ok"/><polygon points="58,460 67,464.95 67,455.05" class="hd ok"/><text x="12" y="510" text-anchor="start" class="s m" style="font-size:13px">Spec 2026-07-28: no initialize handshake; every</text><text x="12" y="527" text-anchor="start" class="s m" style="font-size:13px">request carries its own protocol version and</text><text x="12" y="544" text-anchor="start" class="s m" style="font-size:13px">capabilities.</text></svg>
+    <figcaption>Time runs downward. Steps 1 to 3 are discovery; steps 4 to 9 are one tool call and its way back. The model only ever talks to the host; the server's own code is what touches the real system. The order data is illustrative.</figcaption>
+  </figure>
+  <div class="ez-play" data-ez-play="mcpflow">
+    <div class="ease-label">Try it</div>
+    <p class="ez-hint">Press Step to move one tool call across the host, the client, the server and the order system, and back.</p>
+    <div class="ez-stage"></div>
+  </div>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">Before MCP, every team wired up every tool by hand, in its own way. MCP is the standard plug that fixed it: build a tool or data connector once as an MCP server, and any MCP-compatible agent can use it. It’s become core industry infrastructure — worth understanding well.</p>
 
   <h2>The problem MCP solves</h2>
@@ -33,10 +70,7 @@
     <p>MCP is a client–server protocol. The <span class="term">MCP host/client</span> is the AI application (your agent, or a product like a desktop assistant). An <span class="term">MCP server</span> is a small program that exposes capabilities to clients. Servers offer three kinds of things: <span class="term">tools</span> (functions the model can call, like tool calling), <span class="term">resources</span> (data the model can read, like files or records), and <span class="term">prompts</span> (reusable prompt templates). The client <em>discovers</em> what a server offers and calls it through the standard protocol — so the same agent can talk to any compliant server without custom code.</p>
   </div>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>MCP is like the standard plug sockets in your house. Before standard sockets, every gadget would need its own special wiring; now any lamp, charger or fan just plugs in, and the house doesn't care who made it. The analogy breaks because a socket only gives power; an MCP server can also hand your agent text that tries to boss it around, so plugging in a stranger's server is closer to letting a stranger's device run code in your house.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -236,8 +270,17 @@ mcp <span class="o">=</span> <span class="f">MCPServer</span>(<span class="s">"w
 
   <p>One capable agent is powerful. Sometimes the cleaner design is several specialists coordinated together. Next: <strong>multi-agent &amp; orchestration</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> MCP is a standard plug: wrap a system once as a server, and every compatible AI app can use it.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/ease.js?v=1"></script>
+<script src="../assets/ease/play-t04.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

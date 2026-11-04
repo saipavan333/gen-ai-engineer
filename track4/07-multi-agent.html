@@ -12,6 +12,37 @@
 
   <span class="eyebrow">Track 4 · Lesson 4.7</span>
   <h1>Multi-agent &amp; orchestration</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>One agent with a dozen tools and roles gets confused.</p>
+    <p>A multi-agent system splits the work between focused specialists.</p>
+    <p>An orchestrator decides who does what and combines the results.</p>
+    <p>A handoff passes the job, and the context it needs, from one agent to another.</p>
+    <p>It adds cost and new ways to fail, so use it only when one agent really isn't enough.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>A multi-agent system is like a group project at school: one kid researches, one draws, one writes, and a leader stitches it together. When it works it's faster; when it doesn't, two kids research the same thing, nobody draws the map, and the leader's instructions were so vague everyone guessed.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The group leader</td><td>The orchestrator (or supervisor)</td></tr>
+      <tr><td>The kid who researches</td><td>A specialist: narrow role, its own prompt and tools</td></tr>
+      <tr><td>Passing your notes to the writer</td><td>A handoff: control plus the context it needs</td></tr>
+      <tr><td>Vague instructions, so everyone guessed</td><td>A thin handoff message: agents only know what they were sent</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> Kids can lean over and ask each other quick questions; agents only know what was written into the message they were handed.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 332" role="img" aria-label="The router pattern: one orchestrator, several specialists" preserveAspectRatio="xMidYMid meet"><rect x="20" y="125" width="230" height="82" rx="10" class="bx tn-a" /><g class="vzb"><text x="135" y="150.25" text-anchor="middle" class="b">Orchestrator</text><text x="135" y="176.25" text-anchor="middle" class="s" style="font-size:13px">classifies the request, picks</text><text x="135" y="193.25" text-anchor="middle" class="s" style="font-size:13px">a specialist</text></g><rect x="440" y="18" width="300" height="65" rx="10" class="bx tn-k" /><g class="vzb"><text x="590" y="43.25" text-anchor="middle" class="b">Billing specialist</text><text x="590" y="69.25" text-anchor="middle" class="s" style="font-size:13px">tools: invoices, refunds</text></g><polyline points="252,166 310,166 380,50.5 428,50.5" class="ln "/><polygon points="437,50.5 428,45.55 428,55.45" class="hd "/><rect x="440" y="95" width="300" height="65" rx="10" class="bx tn-c" /><g class="vzb"><text x="590" y="120.25" text-anchor="middle" class="b">Technical specialist</text><text x="590" y="146.25" text-anchor="middle" class="s" style="font-size:13px">tools: logs, docs search</text></g><polyline points="252,166 310,166 380,127.5 428,127.5" class="ln "/><polygon points="437,127.5 428,122.55 428,132.45" class="hd "/><rect x="440" y="172" width="300" height="65" rx="10" class="bx tn-d" /><g class="vzb"><text x="590" y="197.25" text-anchor="middle" class="b">Shipping specialist</text><text x="590" y="223.25" text-anchor="middle" class="s" style="font-size:13px">tools: order lookup, carrier tracking</text></g><polyline points="252,166 310,166 380,204.5 428,204.5" class="ln "/><polygon points="437,204.5 428,199.55 428,209.45" class="hd "/><rect x="440" y="249" width="300" height="65" rx="10" class="bx tn-w" /><g class="vzb"><text x="590" y="274.25" text-anchor="middle" class="b">No match</text><text x="590" y="300.25" text-anchor="middle" class="s" style="font-size:13px">hand off to a human</text></g><polyline points="252,166 310,166 380,281.5 428,281.5" class="ln "/><polygon points="437,281.5 428,276.55 428,286.45" class="hd "/></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 433" role="img" aria-label="The router pattern: one orchestrator, several specialists" preserveAspectRatio="xMidYMid meet"><rect x="12" y="14" width="336" height="65" rx="10" class="bx tn-a" /><g class="vzb"><text x="180" y="39.25" text-anchor="middle" class="b">Orchestrator</text><text x="180" y="65.25" text-anchor="middle" class="s" style="font-size:13px">classifies the request, picks a specialist</text></g><line x1="26" y1="79" x2="26" y2="93" class="ln"/><rect x="56" y="113" width="292" height="65" rx="10" class="bx tn-k" /><g class="vzb"><text x="202" y="138.25" text-anchor="middle" class="b">Billing specialist</text><text x="202" y="164.25" text-anchor="middle" class="s" style="font-size:13px">tools: invoices, refunds</text></g><line x1="26" y1="145.5" x2="44" y2="145.5" class="ln "/><polygon points="53,145.5 44,140.55 44,150.45" class="hd "/><rect x="56" y="192" width="292" height="65" rx="10" class="bx tn-c" /><g class="vzb"><text x="202" y="217.25" text-anchor="middle" class="b">Technical specialist</text><text x="202" y="243.25" text-anchor="middle" class="s" style="font-size:13px">tools: logs, docs search</text></g><line x1="26" y1="224.5" x2="44" y2="224.5" class="ln "/><polygon points="53,224.5 44,219.55 44,229.45" class="hd "/><rect x="56" y="271" width="292" height="65" rx="10" class="bx tn-d" /><g class="vzb"><text x="202" y="296.25" text-anchor="middle" class="b">Shipping specialist</text><text x="202" y="322.25" text-anchor="middle" class="s" style="font-size:13px">tools: order lookup, carrier tracking</text></g><line x1="26" y1="303.5" x2="44" y2="303.5" class="ln "/><polygon points="53,303.5 44,298.55 44,308.45" class="hd "/><rect x="56" y="350" width="292" height="65" rx="10" class="bx tn-w" /><g class="vzb"><text x="202" y="375.25" text-anchor="middle" class="b">No match</text><text x="202" y="401.25" text-anchor="middle" class="s" style="font-size:13px">hand off to a human</text></g><line x1="26" y1="382.5" x2="44" y2="382.5" class="ln "/><polygon points="53,382.5 44,377.55 44,387.45" class="hd "/><line x1="26" y1="79" x2="26" y2="382.5" class="ln"/></svg>
+    <figcaption>This is the router, the simplest of the lesson's four patterns. Each arrow is a handoff, and the specialist sees only what travels along it. Pipelines, supervisors and parallel fan-outs reuse the same parts.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">When one agent juggling a dozen tools and roles starts getting confused, the fix is often to split the work: focused specialist agents, coordinated by an orchestrator. Done right it’s cleaner and more reliable. Done reflexively it’s needless complexity — so we’ll be honest about when to reach for it.</p>
 
   <h2>Why split one agent into several</h2>
@@ -27,10 +58,7 @@
     <p>A <span class="term">multi-agent</span> system uses several LLM agents that collaborate. An <span class="term">orchestrator</span> (or supervisor) coordinates them — deciding which agent handles what and combining outputs. A <span class="term">specialist</span> is an agent with a narrow role and toolset. A <span class="term">handoff</span> is passing control (and context) from one agent to another. The coordination shape is the <span class="term">orchestration pattern</span>.</p>
   </div>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>A multi-agent system is like a group project at school: one kid researches, one draws, one writes, and a leader stitches it together. When it works it's faster; when it doesn't, two kids research the same thing, nobody draws the map, and the leader's instructions were so vague everyone guessed. The analogy breaks because kids can lean over and ask each other quick questions; agents only know what was written into the message they were handed.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -261,6 +289,10 @@ Audit log (what actually moved money)
 
   <p>Whether one agent or many, autonomy without guardrails is dangerous. The final engineering lesson of this track is how to keep agents safe, bounded, and trustworthy. Next: <strong>failure modes &amp; guards</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Split a big job between focused specialists, with one leader who hands out the work clearly.</p>
+<!-- ease:line:end -->
 </main>
 
 <script>

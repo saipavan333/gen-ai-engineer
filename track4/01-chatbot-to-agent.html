@@ -12,6 +12,38 @@
 
   <span class="eyebrow">Track 4 · Lesson 4.1</span>
   <h1>From chatbot to agent</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>A chatbot answers from what it already knows, in one reply.</p>
+    <p>An agent works toward a goal. It can use tools, such as a search, a calculator or your database.</p>
+    <p>It looks at what each tool returns and decides the next step, again and again, until the job is done.</p>
+    <p>That repeating cycle is called the agent loop.</p>
+    <p>More freedom means more power and more ways to fail, so give an agent only as much as the task needs.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>A chatbot is a librarian at a desk: you ask, they answer from what they already know, and that's it. An agent is the same librarian with a phone, a calculator and permission to walk into the stacks: they can go check, come back, and check again until your question is answered.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The librarian at the desk</td><td>A plain LLM: answers from the prompt and its training</td></tr>
+      <tr><td>The phone and the calculator</td><td>Tools: functions the model can ask your code to run</td></tr>
+      <tr><td>Walking to the stacks and back</td><td>One loop step: act, then observe the result</td></tr>
+      <tr><td>Checking again until it's answered</td><td>Repeating the loop toward the goal</td></tr>
+      <tr><td>Someone telling them to stop</td><td>Your code's guards: step limits, budgets</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A real librarian knows when they are lost; an LLM agent will keep walking the stacks happily unless your code tells it to stop.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 254" role="img" aria-label="Chatbot versus agent on the same request" preserveAspectRatio="xMidYMid meet"><rect x="20" y="14" width="348" height="168" rx="10" class="bx tn-b" /><text x="194" y="42" text-anchor="middle" class="b">Chatbot: one shot</text><circle cx="40" cy="63" r="3" class="dot tn-b"/><text x="52" y="68" text-anchor="start" style="font-size:14px">Reads the prompt once and replies</text><circle cx="40" cy="89" r="3" class="dot tn-b"/><text x="52" y="94" text-anchor="start" style="font-size:14px">Knows only its training data and what you</text><text x="52" y="112" text-anchor="start" style="font-size:14px">pasted</text><circle cx="40" cy="133" r="3" class="dot tn-b"/><text x="52" y="138" text-anchor="start" style="font-size:14px">“What&#x27;s 18% of this invoice?” → a guess</text><text x="52" y="156" text-anchor="start" style="font-size:14px">at the number</text><rect x="392" y="14" width="348" height="168" rx="10" class="bx tn-a" /><text x="566" y="42" text-anchor="middle" class="b">Agent: a loop with tools</text><circle cx="412" cy="63" r="3" class="dot tn-a"/><text x="424" y="68" text-anchor="start" style="font-size:14px">Decides an action, runs a tool, reads the</text><text x="424" y="86" text-anchor="start" style="font-size:14px">result, decides again</text><circle cx="412" cy="107" r="3" class="dot tn-a"/><text x="424" y="112" text-anchor="start" style="font-size:14px">Can look things up and check its own work</text><circle cx="412" cy="133" r="3" class="dot tn-a"/><text x="424" y="138" text-anchor="start" style="font-size:14px">Same question → calls a calculator, then</text><text x="424" y="156" text-anchor="start" style="font-size:14px">answers with the exact figure</text><text x="380" y="208" text-anchor="middle" class="s" style="font-size:14px">Autonomy is a dial: plain LLM, tool-augmented, agent loop, then multi-agent. Turn it only as</text><text x="380" y="226" text-anchor="middle" class="s" style="font-size:14px">far as the task needs.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 510" role="img" aria-label="Chatbot versus agent on the same request" preserveAspectRatio="xMidYMid meet"><rect x="20" y="14" width="320" height="168" rx="10" class="bx tn-b" /><text x="180" y="42" text-anchor="middle" class="b">Chatbot: one shot</text><circle cx="40" cy="63" r="3" class="dot tn-b"/><text x="52" y="68" text-anchor="start" style="font-size:14px">Reads the prompt once and replies</text><circle cx="40" cy="89" r="3" class="dot tn-b"/><text x="52" y="94" text-anchor="start" style="font-size:14px">Knows only its training data and what</text><text x="52" y="112" text-anchor="start" style="font-size:14px">you pasted</text><circle cx="40" cy="133" r="3" class="dot tn-b"/><text x="52" y="138" text-anchor="start" style="font-size:14px">“What&#x27;s 18% of this invoice?” → a</text><text x="52" y="156" text-anchor="start" style="font-size:14px">guess at the number</text><text x="180" y="204" text-anchor="middle" class="b m">vs</text><rect x="20" y="216" width="320" height="186" rx="10" class="bx tn-a" /><text x="180" y="244" text-anchor="middle" class="b">Agent: a loop with tools</text><circle cx="40" cy="265" r="3" class="dot tn-a"/><text x="52" y="270" text-anchor="start" style="font-size:14px">Decides an action, runs a tool, reads</text><text x="52" y="288" text-anchor="start" style="font-size:14px">the result, decides again</text><circle cx="40" cy="309" r="3" class="dot tn-a"/><text x="52" y="314" text-anchor="start" style="font-size:14px">Can look things up and check its own</text><text x="52" y="332" text-anchor="start" style="font-size:14px">work</text><circle cx="40" cy="353" r="3" class="dot tn-a"/><text x="52" y="358" text-anchor="start" style="font-size:14px">Same question → calls a calculator,</text><text x="52" y="376" text-anchor="start" style="font-size:14px">then answers with the exact figure</text><text x="180" y="428" text-anchor="middle" class="s" style="font-size:14px">Autonomy is a dial: plain LLM,</text><text x="180" y="446" text-anchor="middle" class="s" style="font-size:14px">tool-augmented, agent loop, then</text><text x="180" y="464" text-anchor="middle" class="s" style="font-size:14px">multi-agent. Turn it only as far as the</text><text x="180" y="482" text-anchor="middle" class="s" style="font-size:14px">task needs.</text></svg>
+    <figcaption>The difference is the loop. The agent's answer is built from tool results it observed, not from one pass over the prompt.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">A chatbot answers what you ask. An agent <em>accomplishes a goal</em> — it can look things up, run calculations, call APIs, and take multiple steps, deciding what to do next based on what it sees. This is how LLMs move from “talks well” to “gets things done.”</p>
 
   <h2>Why agents exist</h2>
@@ -27,10 +59,7 @@
     <p>An <span class="term">agent</span> is an LLM placed in a loop where it can call <span class="term">tools</span> (functions the model can invoke — a calculator, a search API, your database) and use their results to decide its next step. The repeating cycle of <em>decide an action → run it → observe the result → decide again</em> is the <span class="term">agent loop</span>. <span class="term">Autonomy</span> is how much the agent decides on its own versus following a fixed script — a spectrum, not a switch.</p>
   </div>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>A chatbot is a librarian at a desk: you ask, they answer from what they already know, and that's it. An agent is the same librarian with a phone, a calculator and permission to walk into the stacks: they can go check, come back, and check again until your question is answered. The analogy breaks because a real librarian knows when they are lost; an LLM agent will keep walking the stacks happily unless your code tells it to stop.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -236,6 +265,10 @@ Audit log (what actually moved money)
 
   <p>The foundation of every agent is the ability for the model to call a function reliably. Let’s make that precise and robust. Next: <strong>tool / function calling</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> A chatbot talks once; an agent loops through tools until the job is done.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>

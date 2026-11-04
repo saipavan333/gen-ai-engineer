@@ -12,6 +12,43 @@
 
   <span class="eyebrow">Track 4 · Lesson 4.3</span>
   <h1>The agent loop (ReAct)</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Real tasks need several tool calls, where each one depends on the last.</p>
+    <p>The agent loop runs in steps. In each step the model thinks, then calls a tool or gives a final answer.</p>
+    <p>The tool's result is added to the conversation, and the loop goes round again.</p>
+    <p>Interleaving the reasoning with the actions like this is called ReAct (reason + act).</p>
+    <p>A step limit stops the loop if the model never finishes, because it will happily try forever.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>The agent loop is like finding a lost cat in your neighbourhood: you think 'she likes the park', you go look, you see nothing, you think 'maybe the neighbour's shed', you go look again. Each thing you see decides where you go next.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>Thinking “she likes the park”</td><td>The model's reasoning about the next move</td></tr>
+      <tr><td>Going to look</td><td>A tool call (the action)</td></tr>
+      <tr><td>Seeing nothing there</td><td>The tool result (the observation), appended to the messages</td></tr>
+      <tr><td>Choosing the next place from what you saw</td><td>The next step is conditioned on every observation so far</td></tr>
+      <tr><td>Giving up after an hour</td><td>The guard your code adds: max_steps</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> You would give up after an hour and go home; an agent has no sense of time or money and will search forever unless your code sets a limit.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 392" role="img" aria-label="The agent loop: think, act, observe, check the step budget, repeat" preserveAspectRatio="xMidYMid meet"><rect x="20" y="112" width="130" height="78" rx="10" class="bx tn-b" /><g class="vzb"><text x="85" y="136.3" text-anchor="middle" class="b" style="font-size:14px">Goal</text><text x="85" y="160.3" text-anchor="middle" class="s" style="font-size:12px">“Has order 4417</text><text x="85" y="176.3" text-anchor="middle" class="s" style="font-size:12px">shipped?”</text></g><rect x="200" y="112" width="160" height="94" rx="10" class="bx tn-a" /><g class="vzb"><text x="280" y="136.3" text-anchor="middle" class="b" style="font-size:14px">1. Think</text><text x="280" y="160.3" text-anchor="middle" class="s" style="font-size:12px">model reads all</text><text x="280" y="176.3" text-anchor="middle" class="s" style="font-size:12px">messages, picks the</text><text x="280" y="192.3" text-anchor="middle" class="s" style="font-size:12px">next move</text></g><rect x="430" y="16" width="170" height="78" rx="10" class="bx tn-k" /><g class="vzb"><text x="515" y="40.3" text-anchor="middle" class="b" style="font-size:14px">2. Act</text><text x="515" y="64.3" text-anchor="middle" class="s" style="font-size:12px">tool call, e.g.</text><text x="515" y="80.3" text-anchor="middle" class="s" style="font-size:12px">get_order(4417)</text></g><rect x="430" y="214" width="170" height="78" rx="10" class="bx tn-c" /><g class="vzb"><text x="515" y="238.3" text-anchor="middle" class="b" style="font-size:14px">3. Observe</text><text x="515" y="262.3" text-anchor="middle" class="s" style="font-size:12px">your code runs it; the</text><text x="515" y="278.3" text-anchor="middle" class="s" style="font-size:12px">result is appended</text></g><rect x="200" y="300" width="160" height="78" rx="10" class="bx tn-p" /><g class="vzb"><text x="280" y="324.3" text-anchor="middle" class="b" style="font-size:14px">Budget check</text><text x="280" y="348.3" text-anchor="middle" class="s" style="font-size:12px">steps used &lt;</text><text x="280" y="364.3" text-anchor="middle" class="s" style="font-size:12px">max_steps?</text></g><rect x="630" y="112" width="112" height="96" rx="10" class="bx tn-g" /><g class="vzb"><text x="686" y="136.3" text-anchor="middle" class="b" style="font-size:14px">Final</text><text x="686" y="154.3" text-anchor="middle" class="b" style="font-size:14px">answer</text><text x="686" y="178.3" text-anchor="middle" class="s" style="font-size:12px">no tool call:</text><text x="686" y="194.3" text-anchor="middle" class="s" style="font-size:12px">the loop ends</text></g><rect x="20" y="300" width="130" height="62" rx="10" class="bx tn-w" /><g class="vzb"><text x="85" y="324.3" text-anchor="middle" class="b" style="font-size:14px">Stopped</text><text x="85" y="348.3" text-anchor="middle" class="s" style="font-size:12px">“hit max steps”</text></g><line x1="153" y1="151" x2="188.145" y2="157.39" class="ln "/><polygon points="197,159 189.031,152.52 187.26,162.26" class="hd "/><polyline points="280,110 280,55 418,55" class="ln ac"/><polygon points="427,55 418,50.05 418,59.95" class="hd ac"/><line x1="515" y1="97" x2="515" y2="202" class="ln ac"/><polygon points="515,211 519.95,202 510.05,202" class="hd ac"/><polyline points="428,253 390,253 390,339 372,339" class="ln ac"/><polygon points="363,339 372,343.95 372,334.05" class="hd ac"/><line x1="280" y1="297" x2="280" y2="218" class="ln ok"/><polygon points="280,209 275.05,218 284.95,218" class="hd ok"/><text x="288" y="258" text-anchor="start" class="s ok-t">yes: next step</text><line x1="197" y1="339" x2="161.855" y2="332.61" class="ln wn"/><polygon points="153,331 160.969,337.48 162.74,327.74" class="hd wn"/><text x="175" y="331" text-anchor="middle" class="s wn-t">no</text><line x1="363" y1="159" x2="618" y2="159.966" class="ln ok"/><polygon points="627,160 618.019,155.016 617.981,164.916" class="hd ok"/><text x="535" y="151" text-anchor="middle" class="s ok-t">answer ready</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 460" role="img" aria-label="The agent loop: think, act, observe, check the step budget, repeat" preserveAspectRatio="xMidYMid meet"><rect x="30" y="12" width="200" height="60" rx="10" class="bx tn-b" /><g class="vzb"><text x="130" y="35.35" text-anchor="middle" class="b" style="font-size:13px">Goal</text><text x="130" y="58.35" text-anchor="middle" class="s" style="font-size:11px">“Has order 4417 shipped?”</text></g><line x1="130" y1="74" x2="130" y2="87" class="ln "/><polygon points="130,96 134.95,87 125.05,87" class="hd "/><rect x="30" y="98" width="200" height="60" rx="10" class="bx tn-a" /><g class="vzb"><text x="130" y="121.35" text-anchor="middle" class="b" style="font-size:13px">1. Think</text><text x="130" y="144.35" text-anchor="middle" class="s" style="font-size:11px">model picks the next move</text></g><line x1="130" y1="160" x2="130" y2="173" class="ln ac"/><polygon points="130,182 134.95,173 125.05,173" class="hd ac"/><rect x="30" y="184" width="200" height="60" rx="10" class="bx tn-k" /><g class="vzb"><text x="130" y="207.35" text-anchor="middle" class="b" style="font-size:13px">2. Act</text><text x="130" y="230.35" text-anchor="middle" class="s" style="font-size:11px">tool call get_order(4417)</text></g><line x1="130" y1="246" x2="130" y2="259" class="ln ac"/><polygon points="130,268 134.95,259 125.05,259" class="hd ac"/><rect x="30" y="270" width="200" height="60" rx="10" class="bx tn-c" /><g class="vzb"><text x="130" y="293.35" text-anchor="middle" class="b" style="font-size:13px">3. Observe</text><text x="130" y="316.35" text-anchor="middle" class="s" style="font-size:11px">result appended to messages</text></g><line x1="130" y1="332" x2="130" y2="345" class="ln ac"/><polygon points="130,354 134.95,345 125.05,345" class="hd ac"/><rect x="30" y="356" width="200" height="60" rx="10" class="bx tn-p" /><g class="vzb"><text x="130" y="379.35" text-anchor="middle" class="b" style="font-size:13px">Budget check</text><text x="130" y="402.35" text-anchor="middle" class="s" style="font-size:11px">steps used &lt; max_steps?</text></g><polyline points="28,386 12,386 12,128 18,128" class="ln ok"/><polygon points="27,128 18,123.05 18,132.95" class="hd ok"/><text x="22" y="257" text-anchor="middle" class="s ok-t" transform="rotate(-90 22 257)">yes: next step</text><rect x="244" y="98" width="104" height="77" rx="10" class="bx tn-g" /><g class="vzb"><text x="296" y="121.35" text-anchor="middle" class="b" style="font-size:13px">Final</text><text x="296" y="138.35" text-anchor="middle" class="b" style="font-size:13px">answer</text><text x="296" y="161.35" text-anchor="middle" class="s" style="font-size:11px">no tool call</text></g><line x1="233" y1="128" x2="232" y2="128" class="ln ok"/><polygon points="241,128 232,123.05 232,132.95" class="hd ok"/><rect x="244" y="356" width="104" height="60" rx="10" class="bx tn-w" /><g class="vzb"><text x="296" y="379.35" text-anchor="middle" class="b" style="font-size:13px">Stopped</text><text x="296" y="402.35" text-anchor="middle" class="s" style="font-size:11px">hit max steps</text></g><line x1="233" y1="386" x2="232" y2="386" class="ln wn"/><polygon points="241,386 232,381.05 232,390.95" class="hd wn"/></svg>
+    <figcaption>Each lap is one step. The loop has two ways out: the model gives an answer with no tool call (green), or the budget check fails and your code stops it (red). The second exit exists only if you write it.</figcaption>
+  </figure>
+  <div class="ez-play" data-ez-play="agentloop">
+    <div class="ease-label">Try it</div>
+    <p class="ez-hint">Press Step to walk a scripted run, one stage at a time. Lower the step budget below 4 and the guard stops the run before it can answer.</p>
+    <div class="ez-stage"></div>
+  </div>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">One tool call answers one question. Real tasks need several steps where each depends on the last. The agent loop — reason, act, observe, repeat — is the engine that turns a tool-using model into something that can actually solve problems.</p>
 
   <h2>Why a loop, and why interleave reasoning with acting</h2>
@@ -27,10 +64,7 @@
     <p>The <span class="term">agent loop</span> repeatedly asks the model what to do next. Each iteration is a <span class="term">step</span>: the model either emits a tool call (an <em>action</em>), whose result (the <em>observation</em>) is appended to the conversation, or it emits a final answer, which ends the loop. <span class="term">ReAct</span> is the pattern of interleaving explicit reasoning (“thoughts”) with these actions. A <span class="term">stopping condition</span> ends the loop — either the model finishes, or a guard (like a maximum step count) trips.</p>
   </div>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>The agent loop is like finding a lost cat in your neighbourhood: you think 'she likes the park', you go look, you see nothing, you think 'maybe the neighbour's shed', you go look again. Each thing you see decides where you go next. The analogy breaks because you would give up after an hour and go home; an agent has no sense of time or money and will search forever unless your code sets a limit.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -246,6 +280,10 @@ def run(goal, max_steps=8, max_tokens=60_000, max_secs=90):
 
   <p>Looping reactively works, but for complex goals it helps to think <em>before</em> acting — to lay out a plan and then execute it. Next: <strong>planning &amp; decomposition</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Think, act, look at the result, repeat, and always have a step limit.</p>
+<!-- ease:line:end -->
 </main>
 
 <script>
@@ -281,5 +319,10 @@ def run(goal, max_steps=8, max_tokens=60_000, max_secs=90):
 </script>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/ease.js?v=1"></script>
+<script src="../assets/ease/play-t04.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>
