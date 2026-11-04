@@ -12,6 +12,43 @@
 
   <span class="eyebrow">Track 17 · Lesson 17.1</span>
   <h1>LLM functions inside SQL: the warehouse pattern</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>BigQuery, Databricks and Snowflake all let you call a language model from inside a SQL query.</p>
+    <p>You pass a prompt built from a row's columns, and the answer comes back as a new column.</p>
+    <p>On BigQuery the function is AI.GENERATE, on Snowflake AI_COMPLETE, and on Databricks ai_query.</p>
+    <p>The catch: the model runs once for every row that reaches the function, and you pay per call.</p>
+    <p>So filter and remove duplicates first, ask for a fixed answer shape, and check the answers.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>An AI function in SQL is like hiring a reader who charges per page. You can hand them the whole library, or you can first throw out the duplicate copies and the pages you already read last week. The reader is equally good either way; your bill is not.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The reader who charges per page</td><td>The hosted model behind AI.GENERATE, AI_COMPLETE or ai_query</td></tr>
+      <tr><td>Each page you hand over</td><td>Each row that reaches the AI function: one model call</td></tr>
+      <tr><td>Throwing out the duplicate copies</td><td>SELECT DISTINCT on the text before the function runs</td></tr>
+      <tr><td>Skipping pages read last week</td><td>An incremental job: only new or changed rows</td></tr>
+      <tr><td>Keeping the reader's notes in a file</td><td>Materialising the AI column in a table, never a view</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A human reader would notice the duplicates and tell you; the warehouse will happily pay for every one.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 452" role="img" aria-label="SELECT DISTINCT shrinks the calls; where the AI column lives moves cost by thousands" preserveAspectRatio="xMidYMid meet"><text x="20" y="20" text-anchor="start" class="b" style="font-size:15px">Rows reaching the AI function decide the bill</text><rect x="20" y="34" width="720" height="26" rx="5" class="fill-m"/><text x="30" y="52" text-anchor="start" class="badge-t" style="font-size:13px">12,000,000 rows</text><text x="730" y="52" text-anchor="end" class="badge-t" style="font-size:13px">reviews table</text><rect x="20" y="70" width="540" height="26" rx="5" class="fill-c"/><text x="30" y="88" text-anchor="start" class="badge-t" style="font-size:13px">9,000,000 rows</text><text x="550" y="88" text-anchor="end" class="badge-t" style="font-size:13px">after SELECT DISTINCT</text><rect x="20" y="106" width="540" height="26" rx="5" class="fill-a"/><text x="30" y="124" text-anchor="start" class="badge-t" style="font-size:13px">9,000,000 calls</text><text x="550" y="124" text-anchor="end" class="badge-t" style="font-size:13px">AI function: one model call per row</text><line x1="40" y1="134" x2="40" y2="132" class="ln "/><polygon points="40,141 44.95,132 35.05,132" class="hd "/><rect x="20" y="142" width="720" height="62" rx="10" class="bx tn-g" /><g class="vzb"><text x="380" y="166.3" text-anchor="middle" class="b" style="font-size:14px">Map the answer onto the label set, else ‘unknown’, then write a table</text><text x="380" y="190.3" text-anchor="middle" class="s" style="font-size:12px">positive / negative / mixed / unknown, materialised once</text></g><text x="20" y="232" text-anchor="start" class="b" style="font-size:14px">Cost of each design at the reference price (log scale)</text><line x1="320" y1="248" x2="320" y2="392" class="grid"/><line x1="389.333" y1="248" x2="389.333" y2="392" class="grid"/><line x1="458.667" y1="248" x2="458.667" y2="392" class="grid"/><line x1="528" y1="248" x2="528" y2="392" class="grid"/><line x1="597.333" y1="248" x2="597.333" y2="392" class="grid"/><line x1="666.667" y1="248" x2="666.667" y2="392" class="grid"/><line x1="736" y1="248" x2="736" y2="392" class="grid"/><text x="310" y="273" text-anchor="end" class="s" style="font-size:13px">A view: 40 dashboards × 5 scans a day</text><rect x="320" y="259" width="384.216" height="20" rx="4" class="fill-w"/><text x="696.216" y="274" text-anchor="end" class="badge-t" style="font-size:13px">$34,800 per day</text><text x="310" y="305" text-anchor="end" class="s" style="font-size:13px">Back-fill, no dedupe</text><rect x="320" y="291" width="224.678" height="20" rx="4" class="fill-k"/><text x="536.678" y="306" text-anchor="end" class="badge-t" style="font-size:13px">$174.00 once</text><text x="310" y="337" text-anchor="end" class="s" style="font-size:13px">Back-fill after SELECT DISTINCT</text><rect x="320" y="323" width="216.016" height="20" rx="4" class="fill-c"/><text x="528.016" y="338" text-anchor="end" class="badge-t" style="font-size:13px">$130.50 once</text><text x="310" y="369" text-anchor="end" class="s" style="font-size:13px">Daily incremental, 45,000 new distinct texts</text><rect x="320" y="355" width="56.4776" height="20" rx="4" class="fill-g"/><text x="382.478" y="370" text-anchor="start" class="s b" style="font-size:13px">$0.65 per day</text><text x="320" y="396" text-anchor="start" class="s m" style="font-size:12px">$0.10</text><text x="458.667" y="396" text-anchor="middle" class="s m" style="font-size:12px">$10</text><text x="597.333" y="396" text-anchor="middle" class="s m" style="font-size:12px">$1,000</text><text x="736" y="396" text-anchor="end" class="s m" style="font-size:12px">$100,000</text><text x="20" y="416" text-anchor="start" class="s m" style="font-size:12px">120 input + 5 output tokens a call at Claude Haiku 5.5 list price ($0.10 / $0.50 per million, checked</text><text x="20" y="432" text-anchor="start" class="s m" style="font-size:12px">2026-11-03). Your warehouse&#x27;s model price differs; the ratios don&#x27;t.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 632" role="img" aria-label="SELECT DISTINCT shrinks the calls; where the AI column lives moves cost by thousands" preserveAspectRatio="xMidYMid meet"><text x="12" y="20" text-anchor="start" class="b" style="font-size:14px">Rows reaching the AI function decide the bill</text><rect x="12" y="34" width="336" height="26" rx="5" class="fill-m"/><text x="22" y="52" text-anchor="start" class="badge-t" style="font-size:13px">12,000,000 rows</text><text x="12" y="76" text-anchor="start" class="s" style="font-size:12px">reviews table</text><rect x="12" y="86" width="252" height="26" rx="5" class="fill-c"/><text x="22" y="104" text-anchor="start" class="badge-t" style="font-size:13px">9,000,000 rows</text><text x="12" y="128" text-anchor="start" class="s" style="font-size:12px">after SELECT DISTINCT</text><rect x="12" y="138" width="252" height="26" rx="5" class="fill-a"/><text x="22" y="156" text-anchor="start" class="badge-t" style="font-size:13px">9,000,000 calls</text><text x="12" y="180" text-anchor="start" class="s" style="font-size:12px">AI function: one model call per row</text><rect x="12" y="196" width="336" height="92" rx="10" class="bx tn-g" /><g class="vzb"><text x="180" y="219.35" text-anchor="middle" class="b" style="font-size:13px">Map the answer onto the label set, else</text><text x="180" y="236.35" text-anchor="middle" class="b" style="font-size:13px">‘unknown’, then write a table</text><text x="180" y="259.35" text-anchor="middle" class="s" style="font-size:11px">positive / negative / mixed / unknown, materialised</text><text x="180" y="274.35" text-anchor="middle" class="s" style="font-size:11px">once</text></g><text x="12" y="316" text-anchor="start" class="b" style="font-size:13px">Cost of each design at the reference price (log scale)</text><line x1="12" y1="332" x2="12" y2="532" class="grid"/><line x1="68" y1="332" x2="68" y2="532" class="grid"/><line x1="124" y1="332" x2="124" y2="532" class="grid"/><line x1="180" y1="332" x2="180" y2="532" class="grid"/><line x1="236" y1="332" x2="236" y2="532" class="grid"/><line x1="292" y1="332" x2="292" y2="532" class="grid"/><line x1="348" y1="332" x2="348" y2="532" class="grid"/><text x="12" y="352" text-anchor="start" class="s" style="font-size:12px">A view: 40 dashboards × 5 scans a day</text><rect x="12" y="359" width="310.328" height="20" rx="4" class="fill-w"/><text x="314.328" y="374" text-anchor="end" class="badge-t" style="font-size:13px">$34,800 per day</text><text x="12" y="400" text-anchor="start" class="s" style="font-size:12px">Back-fill, no dedupe</text><rect x="12" y="407" width="181.471" height="20" rx="4" class="fill-k"/><text x="185.471" y="422" text-anchor="end" class="badge-t" style="font-size:13px">$174.00 once</text><text x="12" y="448" text-anchor="start" class="s" style="font-size:12px">Back-fill after SELECT DISTINCT</text><rect x="12" y="455" width="174.474" height="20" rx="4" class="fill-c"/><text x="178.474" y="470" text-anchor="end" class="badge-t" style="font-size:13px">$130.50 once</text><text x="12" y="496" text-anchor="start" class="s" style="font-size:12px">Daily incremental, 45,000 new distinct texts</text><rect x="12" y="503" width="45.6165" height="20" rx="4" class="fill-g"/><text x="63.6165" y="518" text-anchor="start" class="s b" style="font-size:13px">$0.65 per day</text><text x="12" y="544" text-anchor="start" class="s m" style="font-size:12px">$0.10</text><text x="124" y="544" text-anchor="middle" class="s m" style="font-size:12px">$10</text><text x="236" y="544" text-anchor="middle" class="s m" style="font-size:12px">$1,000</text><text x="348" y="544" text-anchor="end" class="s m" style="font-size:12px">$100,000</text><text x="12" y="564" text-anchor="start" class="s m" style="font-size:12px">120 input + 5 output tokens a call at Claude Haiku</text><text x="12" y="580" text-anchor="start" class="s m" style="font-size:12px">5.5 list price ($0.10 / $0.50 per million, checked</text><text x="12" y="596" text-anchor="start" class="s m" style="font-size:12px">2026-11-03). Your warehouse&#x27;s model price differs;</text><text x="12" y="612" text-anchor="start" class="s m" style="font-size:12px">the ratios don&#x27;t.</text></svg>
+    <figcaption>Top: dedupe shrinks the rows before the model sees them. Bottom: the page's four designs, recomputed from its numbers. The model is the same in all four; where the AI function sits moves the bill from cents to tens of thousands of dollars.</figcaption>
+  </figure>
+  <div class="ez-play" data-ez-play="dedupe">
+    <div class="ease-label">Try it</div>
+    <p class="ez-hint">Set the rows, the share of distinct texts and the number of AI columns. Calls and cost are computed both ways; the Lab 10 preset reproduces the lab's 12 AI cells and 10 calls.</p>
+    <div class="ez-stage"></div>
+  </div>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">BigQuery, Databricks and Snowflake all let you call a language model from a <code>SELECT</code>. For a data engineer this is the fastest way to ship GenAI: no service to deploy, no data leaving the warehouse, the same governance you already have. It is also the fastest way to run up a bill, because the model runs once per row. This lesson is the shared mental model; the next three are each platform.</p>
 
   <div class="box concept">
@@ -19,10 +56,7 @@
     <p>An <span class="term">AI function</span> is a SQL function whose body is a call to a hosted model. You pass a prompt built from column values, and you get back text, a label, an embedding or a JSON object as a new column. On BigQuery it is <code>AI.GENERATE</code>, on Snowflake <code>AI_COMPLETE</code>, on Databricks <code>ai_query</code>. The warehouse handles batching, retries and quotas; you handle three things the warehouse cannot: <strong>which rows</strong> reach the function, <strong>what shape</strong> the answer must have, and <strong>whether the answers are right</strong>.</p>
   </div>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>An AI function in SQL is like hiring a reader who charges per page. You can hand them the whole library, or you can first throw out the duplicate copies and the pages you already read last week. The reader is equally good either way; your bill is not. The analogy breaks because a human reader would notice the duplicates and tell you; the warehouse will happily pay for every one.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -212,8 +246,17 @@
 
   <p>Same pattern, three dialects. Next: <strong>BigQuery and Gemini</strong>, where retrieval, embeddings and generation all live in SQL.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> The model runs once per row it sees, so cut the rows before you call it and store the answer in a table.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/ease.js?v=1"></script>
+<script src="../assets/ease/play-t17.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

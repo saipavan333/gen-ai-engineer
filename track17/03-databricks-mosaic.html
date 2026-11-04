@@ -12,6 +12,38 @@
 
   <span class="eyebrow">Track 17 · Lesson 17.3</span>
   <h1>Databricks Mosaic AI: ai_query and Vector Search</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>On Databricks the same RAG path runs on Delta tables, governed by Unity Catalog.</p>
+    <p>A Vector Search index is built from a table, and the vector_search() SQL function queries it.</p>
+    <p>Its HYBRID mode adds keyword matching, which helps with exact codes like part numbers.</p>
+    <p>ai_query(endpoint, request) calls a model serving endpoint once per row.</p>
+    <p>For big batch jobs, one setting matters most: failOnError.</p>
+    <p>Set it to false, so one failing row returns an error instead of failing the whole job.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Databricks is like a school where the library, the teachers and the rule book are all run by the same office. The library (Delta tables and the Vector Search index), the helper who writes answers (a model endpoint called by ai_query) and the rules about who may read what (Unity Catalog) live together.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The library</td><td>Delta tables and the Vector Search index built from them</td></tr>
+      <tr><td>The helper who writes answers</td><td>A model serving endpoint, called once per row by ai_query</td></tr>
+      <tr><td>The rule book</td><td>Unity Catalog grants: the definer needs SELECT on the index</td></tr>
+      <tr><td>The office only enforcing rules it knows about</td><td>Grants protect only the tables, index and endpoints you put under Unity Catalog</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> In a school the office notices a rule being broken; here the rules only apply if you actually put the tables, index and endpoints under them.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 298" role="img" aria-label="ai_query with failOnError true versus false on a nightly batch" preserveAspectRatio="xMidYMid meet"><rect x="20" y="12" width="350" height="222" rx="14" class="bx tn-w" /><text x="36" y="38" text-anchor="start" class="b mono" style="font-size:14px">failOnError true (the default)</text><text x="36" y="56" text-anchor="start" class="s" style="font-size:12px">800,000 ai_query calls, one per ticket</text><rect x="36" y="62" width="318" height="26" rx="4" class="bx"/><rect x="36" y="62" width="243.272" height="26" rx="4" class="fill-m"/><line x1="279.272" y1="58" x2="279.272" y2="94" class="ln wn" style="stroke-width:3"/><text x="279.272" y="110" text-anchor="middle" class="s wn-t b" style="font-size:13px">row 612,004 times out</text><text x="36" y="140" text-anchor="start" style="font-size:14px">The whole statement fails.</text><text x="36" y="160" text-anchor="start" style="font-size:14px">Rows written: 0.</text><text x="36" y="180" text-anchor="start" style="font-size:14px">A retry pays again for 612 K rows,</text><text x="36" y="200" text-anchor="start" style="font-size:14px">and at this scale some row always fails.</text><rect x="390" y="12" width="350" height="222" rx="14" class="bx tn-g" /><text x="406" y="38" text-anchor="start" class="b mono" style="font-size:14px">failOnError =&gt; false</text><text x="406" y="56" text-anchor="start" class="s" style="font-size:12px">800,000 ai_query calls, one per ticket</text><rect x="406" y="62" width="318" height="26" rx="4" class="fill-g"/><line x1="428.26" y1="59" x2="428.26" y2="91" class="ln wn" style="stroke-width:2"/><line x1="475.96" y1="59" x2="475.96" y2="91" class="ln wn" style="stroke-width:2"/><line x1="523.66" y1="59" x2="523.66" y2="91" class="ln wn" style="stroke-width:2"/><line x1="542.74" y1="59" x2="542.74" y2="91" class="ln wn" style="stroke-width:2"/><line x1="590.44" y1="59" x2="590.44" y2="91" class="ln wn" style="stroke-width:2"/><line x1="638.14" y1="59" x2="638.14" y2="91" class="ln wn" style="stroke-width:2"/><line x1="657.22" y1="59" x2="657.22" y2="91" class="ln wn" style="stroke-width:2"/><line x1="704.92" y1="59" x2="704.92" y2="91" class="ln wn" style="stroke-width:2"/><text x="406" y="110" text-anchor="start" class="s wn-t b" style="font-size:13px">800 rows (0.1%) return an error</text><text x="406" y="140" text-anchor="start" style="font-size:14px">Each row returns a struct: response + error.</text><text x="406" y="160" text-anchor="start" style="font-size:14px">Rows written: 799,200.</text><text x="406" y="180" text-anchor="start" style="font-size:14px">Then retry only the 800 failed rows.</text><text x="406" y="200" text-anchor="start" style="font-size:14px">One bad row costs one row, not the night.</text><text x="20" y="260" text-anchor="start" class="s m" style="font-size:12px">Same 800,000 tickets either way: 240 input + 25 output tokens each, about $29 a night at the page&#x27;s reference</text><text x="20" y="276" text-anchor="start" class="s m" style="font-size:12px">price.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 550" role="img" aria-label="ai_query with failOnError true versus false on a nightly batch" preserveAspectRatio="xMidYMid meet"><rect x="12" y="12" width="336" height="222" rx="14" class="bx tn-w" /><text x="28" y="38" text-anchor="start" class="b mono" style="font-size:14px">failOnError true (the default)</text><text x="28" y="56" text-anchor="start" class="s" style="font-size:12px">800,000 ai_query calls, one per ticket</text><rect x="28" y="62" width="304" height="26" rx="4" class="bx"/><rect x="28" y="62" width="232.562" height="26" rx="4" class="fill-m"/><line x1="260.562" y1="58" x2="260.562" y2="94" class="ln wn" style="stroke-width:3"/><text x="260.562" y="110" text-anchor="end" class="s wn-t b" style="font-size:13px">row 612,004 times out</text><text x="28" y="140" text-anchor="start" style="font-size:14px">The whole statement fails.</text><text x="28" y="160" text-anchor="start" style="font-size:14px">Rows written: 0.</text><text x="28" y="180" text-anchor="start" style="font-size:14px">A retry pays again for 612 K rows,</text><text x="28" y="200" text-anchor="start" style="font-size:14px">and at this scale some row always fails.</text><rect x="12" y="248" width="336" height="222" rx="14" class="bx tn-g" /><text x="28" y="274" text-anchor="start" class="b mono" style="font-size:14px">failOnError =&gt; false</text><text x="28" y="292" text-anchor="start" class="s" style="font-size:12px">800,000 ai_query calls, one per ticket</text><rect x="28" y="298" width="304" height="26" rx="4" class="fill-g"/><line x1="49.28" y1="295" x2="49.28" y2="327" class="ln wn" style="stroke-width:2"/><line x1="94.88" y1="295" x2="94.88" y2="327" class="ln wn" style="stroke-width:2"/><line x1="140.48" y1="295" x2="140.48" y2="327" class="ln wn" style="stroke-width:2"/><line x1="158.72" y1="295" x2="158.72" y2="327" class="ln wn" style="stroke-width:2"/><line x1="204.32" y1="295" x2="204.32" y2="327" class="ln wn" style="stroke-width:2"/><line x1="249.92" y1="295" x2="249.92" y2="327" class="ln wn" style="stroke-width:2"/><line x1="268.16" y1="295" x2="268.16" y2="327" class="ln wn" style="stroke-width:2"/><line x1="313.76" y1="295" x2="313.76" y2="327" class="ln wn" style="stroke-width:2"/><text x="28" y="346" text-anchor="start" class="s wn-t b" style="font-size:13px">800 rows (0.1%) return an error</text><text x="28" y="376" text-anchor="start" style="font-size:14px">Each row returns a struct: response + error.</text><text x="28" y="396" text-anchor="start" style="font-size:14px">Rows written: 799,200.</text><text x="28" y="416" text-anchor="start" style="font-size:14px">Then retry only the 800 failed rows.</text><text x="28" y="436" text-anchor="start" style="font-size:14px">One bad row costs one row, not the night.</text><text x="12" y="496" text-anchor="start" class="s m" style="font-size:12px">Same 800,000 tickets either way: 240 input + 25</text><text x="12" y="512" text-anchor="start" class="s m" style="font-size:12px">output tokens each, about $29 a night at the</text><text x="12" y="528" text-anchor="start" class="s m" style="font-size:12px">page&#x27;s reference price.</text></svg>
+    <figcaption>The page's scenario: 800,000 tickets a night and 0.1% of calls time out. With the default, one timeout throws away the night. With failOnError => false every row is written and only the failures are retried. Where the red ticks fall on the right is illustrative.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">On Databricks the same RAG path runs on Delta tables governed by Unity Catalog: a Vector Search index built from a table, the <code>vector_search()</code> SQL function to retrieve, and <code>ai_query()</code> to call a model endpoint from SQL or a pipeline.</p>
 
   <div class="box warn">
@@ -24,10 +56,7 @@
     <p><code>ai_query(endpoint, request)</code> calls a model serving endpoint once per row. The endpoint can be a Databricks-hosted foundation model (names like <code>system.ai.meta-llama-3-3-70b-instruct</code> in the docs), an external model you registered, or your own fine-tuned model. Optional arguments add a return type, <code>failOnError</code>, <code>modelParameters</code> and <code>responseFormat</code> for structured output. <code>vector_search(index, query_text | query_vector, num_results)</code> queries a Mosaic AI Vector Search index and can run hybrid (vector plus keyword) search.</p>
   </div>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>Databricks is like a school where the library, the teachers and the rule book are all run by the same office. The library (Delta tables and the Vector Search index), the helper who writes answers (a model endpoint called by ai_query) and the rules about who may read what (Unity Catalog) live together. The analogy breaks because in a school the office notices a rule being broken; here the rules only apply if you actually put the tables, index and endpoints under them.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -209,6 +238,10 @@
 
   <p>Next: the same pipeline on <strong>Snowflake Cortex</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> On Databricks, ai_query calls a model per row, so set failOnError => false and retry only the rows that failed.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
