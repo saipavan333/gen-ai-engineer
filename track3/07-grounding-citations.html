@@ -12,6 +12,38 @@
 
   <span class="eyebrow">Track 3 · Lesson 3.7</span>
   <h1>Grounding &amp; citations</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Finding the right text is only half the job.</p>
+    <p>The model must also answer from it and nothing else: that is grounding.</p>
+    <p>Each claim gets a citation, like [1], pointing to the chunk it came from.</p>
+    <p>If the answer isn't in the chunks, the model should say so. That is called abstention, and it is a feature.</p>
+    <p>Your code then checks the citations, because a model can cite the wrong chunk.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Grounding is a school report where the teacher says: every sentence needs a footnote to a page in the books on your desk, and if the books do not say it, write "not in my sources". A student who adds a fact from memory without a footnote loses marks even if the fact is true.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The books on your desk</td><td>The numbered chunks in the context block</td></tr>
+      <tr><td>“Every sentence needs a footnote”</td><td>“Cite the chunk number for each claim”</td></tr>
+      <tr><td>Writing “not in my sources”</td><td>Abstaining: “Not in the provided documents.”</td></tr>
+      <tr><td>A true fact without a footnote still loses marks</td><td>An unsupported claim fails faithfulness, even if true</td></tr>
+      <tr><td>The teacher checking footnotes</td><td>Code that verifies each [n] exists and supports the claim</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A teacher checks the footnotes by reading the page; your system only checks footnotes if you write code or a judge to do it.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 174" role="img" aria-label="The grounded-prompt recipe from the lesson, step by step" preserveAspectRatio="xMidYMid meet"><rect x="14" y="22" width="119.2" height="136" rx="10" class="bx tn-c" /><g class="vzb"><text x="73.6" y="55.75" text-anchor="middle" class="b">Number the</text><text x="73.6" y="75.75" text-anchor="middle" class="b">chunks</text><text x="73.6" y="101.75" text-anchor="middle" class="s" style="font-size:13px">[1]</text><text x="73.6" y="118.75" text-anchor="middle" class="s" style="font-size:13px">warranty.md</text><text x="73.6" y="135.75" text-anchor="middle" class="s" style="font-size:13px">[2] returns.md</text></g><circle cx="16" cy="24" r="11" class="badge"/><text x="16" y="28.5" text-anchor="middle" class="badge-t">1</text><line x1="137.2" y1="90" x2="154.2" y2="90" class="ln "/><polygon points="163.2,90 154.2,85.05 154.2,94.95" class="hd "/><rect x="167.2" y="22" width="119.2" height="136" rx="10" class="bx tn-k" /><g class="vzb"><text x="226.8" y="47.25" text-anchor="middle" class="b">Strict</text><text x="226.8" y="67.25" text-anchor="middle" class="b">instruction</text><text x="226.8" y="93.25" text-anchor="middle" class="s" style="font-size:13px">only the</text><text x="226.8" y="110.25" text-anchor="middle" class="s" style="font-size:13px">context; cite</text><text x="226.8" y="127.25" text-anchor="middle" class="s" style="font-size:13px">[n]; else say</text><text x="226.8" y="144.25" text-anchor="middle" class="s" style="font-size:13px">you don&#x27;t know</text></g><circle cx="169.2" cy="24" r="11" class="badge"/><text x="169.2" y="28.5" text-anchor="middle" class="badge-t">2</text><line x1="290.4" y1="90" x2="307.4" y2="90" class="ln "/><polygon points="316.4,90 307.4,85.05 307.4,94.95" class="hd "/><rect x="320.4" y="22" width="119.2" height="136" rx="10" class="bx tn-b" /><g class="vzb"><text x="380" y="55.75" text-anchor="middle" class="b">Question</text><text x="380" y="75.75" text-anchor="middle" class="b">last</text><text x="380" y="101.75" text-anchor="middle" class="s" style="font-size:13px">where the</text><text x="380" y="118.75" text-anchor="middle" class="s" style="font-size:13px">model attends</text><text x="380" y="135.75" text-anchor="middle" class="s" style="font-size:13px">well</text></g><circle cx="322.4" cy="24" r="11" class="badge"/><text x="322.4" y="28.5" text-anchor="middle" class="badge-t">3</text><line x1="443.6" y1="90" x2="460.6" y2="90" class="ln "/><polygon points="469.6,90 460.6,85.05 460.6,94.95" class="hd "/><rect x="473.6" y="22" width="119.2" height="136" rx="10" class="bx tn-a" /><g class="vzb"><text x="533.2" y="55.75" text-anchor="middle" class="b">Model</text><text x="533.2" y="75.75" text-anchor="middle" class="b">answers</text><text x="533.2" y="101.75" text-anchor="middle" class="s" style="font-size:13px">“The warranty</text><text x="533.2" y="118.75" text-anchor="middle" class="s" style="font-size:13px">is 3 years</text><text x="533.2" y="135.75" text-anchor="middle" class="s" style="font-size:13px">[1].”</text></g><circle cx="475.6" cy="24" r="11" class="badge"/><text x="475.6" y="28.5" text-anchor="middle" class="badge-t">4</text><line x1="596.8" y1="90" x2="613.8" y2="90" class="ln "/><polygon points="622.8,90 613.8,85.05 613.8,94.95" class="hd "/><rect x="626.8" y="22" width="119.2" height="136" rx="10" class="bx tn-g" /><g class="vzb"><text x="686.4" y="47.25" text-anchor="middle" class="b">Verify in</text><text x="686.4" y="67.25" text-anchor="middle" class="b">code</text><text x="686.4" y="93.25" text-anchor="middle" class="s" style="font-size:13px">every [n] is a</text><text x="686.4" y="110.25" text-anchor="middle" class="s" style="font-size:13px">real chunk;</text><text x="686.4" y="127.25" text-anchor="middle" class="s" style="font-size:13px">then check</text><text x="686.4" y="144.25" text-anchor="middle" class="s" style="font-size:13px">support</text></g><circle cx="628.8" cy="24" r="11" class="badge"/><text x="628.8" y="28.5" text-anchor="middle" class="badge-t">5</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 508" role="img" aria-label="The grounded-prompt recipe from the lesson, step by step" preserveAspectRatio="xMidYMid meet"><rect x="12" y="16" width="336" height="65" rx="10" class="bx tn-c" /><g class="vzb"><text x="180" y="41.25" text-anchor="middle" class="b">Number the chunks</text><text x="180" y="67.25" text-anchor="middle" class="s" style="font-size:13px">[1] warranty.md [2] returns.md</text></g><circle cx="14" cy="18" r="11" class="badge"/><text x="14" y="22.5" text-anchor="middle" class="badge-t">1</text><line x1="180" y1="84" x2="180" y2="103" class="ln "/><polygon points="180,112 184.95,103 175.05,103" class="hd "/><rect x="12" y="115" width="336" height="82" rx="10" class="bx tn-k" /><g class="vzb"><text x="180" y="140.25" text-anchor="middle" class="b">Strict instruction</text><text x="180" y="166.25" text-anchor="middle" class="s" style="font-size:13px">only the context; cite [n]; else say you</text><text x="180" y="183.25" text-anchor="middle" class="s" style="font-size:13px">don&#x27;t know</text></g><circle cx="14" cy="117" r="11" class="badge"/><text x="14" y="121.5" text-anchor="middle" class="badge-t">2</text><line x1="180" y1="200" x2="180" y2="219" class="ln "/><polygon points="180,228 184.95,219 175.05,219" class="hd "/><rect x="12" y="231" width="336" height="65" rx="10" class="bx tn-b" /><g class="vzb"><text x="180" y="256.25" text-anchor="middle" class="b">Question last</text><text x="180" y="282.25" text-anchor="middle" class="s" style="font-size:13px">where the model attends well</text></g><circle cx="14" cy="233" r="11" class="badge"/><text x="14" y="237.5" text-anchor="middle" class="badge-t">3</text><line x1="180" y1="299" x2="180" y2="318" class="ln "/><polygon points="180,327 184.95,318 175.05,318" class="hd "/><rect x="12" y="330" width="336" height="65" rx="10" class="bx tn-a" /><g class="vzb"><text x="180" y="355.25" text-anchor="middle" class="b">Model answers</text><text x="180" y="381.25" text-anchor="middle" class="s" style="font-size:13px">“The warranty is 3 years [1].”</text></g><circle cx="14" cy="332" r="11" class="badge"/><text x="14" y="336.5" text-anchor="middle" class="badge-t">4</text><line x1="180" y1="398" x2="180" y2="417" class="ln "/><polygon points="180,426 184.95,417 175.05,417" class="hd "/><rect x="12" y="429" width="336" height="65" rx="10" class="bx tn-g" /><g class="vzb"><text x="180" y="454.25" text-anchor="middle" class="b">Verify in code</text><text x="180" y="480.25" text-anchor="middle" class="s" style="font-size:13px">every [n] is a real chunk; then check support</text></g><circle cx="14" cy="431" r="11" class="badge"/><text x="14" y="435.5" text-anchor="middle" class="badge-t">5</text></svg>
+    <figcaption>The lesson's four-part recipe plus the model call. Step 5 is what turns citations from decoration into something you can trust.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">Retrieval found the right text. Now make the model actually <em>use</em> it, <em>cite</em> it, and <em>admit</em> when the answer isn’t there. This is where RAG converts retrieved chunks into a trustworthy, verifiable answer — and where a sloppy prompt can throw away all your retrieval work.</p>
 
   <h2>Retrieval isn’t enough on its own</h2>
@@ -22,10 +54,7 @@
     <p><span class="term">Grounding</span> means instructing the model to answer strictly from the provided context. <span class="term">Faithfulness</span> is the property that the answer is actually supported by that context (no invented claims). <span class="term">Citations</span> are references (like <code>[1]</code>, <code>[2]</code>) tying each claim to the chunk it came from. <span class="term">Abstention</span> is the model saying “I don’t know” or “not in the provided documents” when the answer isn’t present — a feature, not a failure.</p>
   </div>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>Grounding is a school report where the teacher says: every sentence needs a footnote to a page in the books on your desk, and if the books do not say it, write "not in my sources". A student who adds a fact from memory without a footnote loses marks even if the fact is true. The analogy breaks because a teacher checks the footnotes by reading the page; your system only checks footnotes if you write code or a judge to do it.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -240,6 +269,10 @@ out <span class="o">=</span> <span class="f">grounded_answer</span>(<span class=
 
   <p>You can now build a RAG system that retrieves, grounds, and cites. The last question — the one that separates demos from products — is: <em>how do you know it’s actually any good?</em> Next: <strong>evaluating retrieval quality</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Make the model answer only from the pages you gave it, cite them, and say so when the answer isn't there.</p>
+<!-- ease:line:end -->
 </main>
 
 <script>

@@ -12,6 +12,38 @@
 
   <span class="eyebrow">Track 3 · Lesson 3.8</span>
   <h1>Evaluating retrieval quality</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>You can't improve retrieval by feel. You need a score.</p>
+    <p>Start with a golden set: a few dozen real questions, each labelled with the chunk that should come back.</p>
+    <p>Hit rate@k asks: did the right chunk show up in the top k at all?</p>
+    <p>MRR (mean reciprocal rank) asks: how near the top was it?</p>
+    <p>Change one thing, such as chunk size, re-run, and keep the change only if the numbers go up.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Grading a treasure hunt team. Recall asks: of the 3 treasures hidden, how many did they bring back? Precision asks: of the 5 things in their bag, how many are treasure and how many are rocks? MRR asks: how many steps until they found the first treasure? nDCG gives more points for treasure found early and for the gold over the silver.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The treasures hidden in the park</td><td>The labelled relevant chunks in the golden set</td></tr>
+      <tr><td>How many treasures came back</td><td>Recall@k (equal to hit rate@k with one relevant chunk per query)</td></tr>
+      <tr><td>Rocks in the bag</td><td>Precision@k: the share of the top k that is relevant</td></tr>
+      <tr><td>Steps until the first treasure</td><td>Reciprocal rank: 1/2 if the first hit is at rank 2</td></tr>
+      <tr><td>Not knowing where every treasure is</td><td>Incomplete labels: a 'miss' may be an unlabelled good chunk</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> In a treasure hunt you know where every treasure is; in retrieval your labels are often incomplete, so a "rock" might be an unlabelled treasure.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 261" role="img" aria-label="Scoring a small golden set: hit rate at 5 and mean reciprocal rank" preserveAspectRatio="xMidYMid meet"><text x="20" y="20" text-anchor="start" class="s b">Top 5 results per query: green = the chunk your label says is right</text><text x="276" y="40" text-anchor="middle" class="s m">#1</text><text x="334" y="40" text-anchor="middle" class="s m">#2</text><text x="392" y="40" text-anchor="middle" class="s m">#3</text><text x="450" y="40" text-anchor="middle" class="s m">#4</text><text x="508" y="40" text-anchor="middle" class="s m">#5</text><text x="552" y="40" text-anchor="start" class="s m">reciprocal rank (RR)</text><text x="20" y="75" text-anchor="start" class="s">“how long is the warranty?”</text><rect x="250" y="54" width="52" height="30" rx="5" class="bx"/><rect x="308" y="54" width="52" height="30" rx="5" class="fill-g"/><text x="334" y="74" text-anchor="middle" class="b">✓</text><rect x="366" y="54" width="52" height="30" rx="5" class="bx"/><rect x="424" y="54" width="52" height="30" rx="5" class="bx"/><rect x="482" y="54" width="52" height="30" rx="5" class="bx"/><text x="552" y="74" text-anchor="start" class="s ok-t">1/2 = 0.50</text><text x="20" y="119" text-anchor="start" class="s">“can I return it?”</text><rect x="250" y="98" width="52" height="30" rx="5" class="fill-g"/><text x="276" y="118" text-anchor="middle" class="b">✓</text><rect x="308" y="98" width="52" height="30" rx="5" class="bx"/><rect x="366" y="98" width="52" height="30" rx="5" class="bx"/><rect x="424" y="98" width="52" height="30" rx="5" class="bx"/><rect x="482" y="98" width="52" height="30" rx="5" class="bx"/><text x="552" y="118" text-anchor="start" class="s ok-t">1/1 = 1.00</text><text x="20" y="163" text-anchor="start" class="s">“how do I cancel billing?”</text><rect x="250" y="142" width="52" height="30" rx="5" class="bx"/><rect x="308" y="142" width="52" height="30" rx="5" class="bx"/><rect x="366" y="142" width="52" height="30" rx="5" class="bx"/><rect x="424" y="142" width="52" height="30" rx="5" class="bx"/><rect x="482" y="142" width="52" height="30" rx="5" class="bx"/><text x="552" y="162" text-anchor="start" class="s wn-t">0 (missed)</text><text x="20" y="196" text-anchor="start" class="s b">hit rate@5 = 2 of 3 queries found it = 0.67</text><text x="20" y="219" text-anchor="start" class="s b">MRR = mean reciprocal rank = (0.50 + 1.00 + 0) / 3 = 0.50</text><text x="20" y="242" text-anchor="start" class="s">precision@5 for query 1 = 1 relevant of 5 shown = 0.20</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 367" role="img" aria-label="Scoring a small golden set: hit rate at 5 and mean reciprocal rank" preserveAspectRatio="xMidYMid meet"><text x="12" y="20" text-anchor="start" class="s b" style="font-size:13px">Top 5 results per query</text><text x="12" y="37" text-anchor="start" class="s b" style="font-size:13px">green = the labelled right chunk</text><text x="34" y="52" text-anchor="middle" class="s m">#1</text><text x="84" y="52" text-anchor="middle" class="s m">#2</text><text x="134" y="52" text-anchor="middle" class="s m">#3</text><text x="184" y="52" text-anchor="middle" class="s m">#4</text><text x="234" y="52" text-anchor="middle" class="s m">#5</text><text x="274" y="52" text-anchor="start" class="s m">RR</text><text x="12" y="74" text-anchor="start" class="s">“how long is the warranty?”</text><rect x="12" y="86" width="44" height="30" rx="5" class="bx"/><rect x="62" y="86" width="44" height="30" rx="5" class="fill-g"/><text x="84" y="106" text-anchor="middle" class="b">✓</text><rect x="112" y="86" width="44" height="30" rx="5" class="bx"/><rect x="162" y="86" width="44" height="30" rx="5" class="bx"/><rect x="212" y="86" width="44" height="30" rx="5" class="bx"/><text x="274" y="106" text-anchor="start" class="s ok-t">1/2 = 0.50</text><text x="12" y="138" text-anchor="start" class="s">“can I return it?”</text><rect x="12" y="150" width="44" height="30" rx="5" class="fill-g"/><text x="34" y="170" text-anchor="middle" class="b">✓</text><rect x="62" y="150" width="44" height="30" rx="5" class="bx"/><rect x="112" y="150" width="44" height="30" rx="5" class="bx"/><rect x="162" y="150" width="44" height="30" rx="5" class="bx"/><rect x="212" y="150" width="44" height="30" rx="5" class="bx"/><text x="274" y="170" text-anchor="start" class="s ok-t">1/1 = 1.00</text><text x="12" y="202" text-anchor="start" class="s">“how do I cancel billing?”</text><rect x="12" y="214" width="44" height="30" rx="5" class="bx"/><rect x="62" y="214" width="44" height="30" rx="5" class="bx"/><rect x="112" y="214" width="44" height="30" rx="5" class="bx"/><rect x="162" y="214" width="44" height="30" rx="5" class="bx"/><rect x="212" y="214" width="44" height="30" rx="5" class="bx"/><text x="274" y="234" text-anchor="start" class="s wn-t">0 (missed)</text><text x="12" y="268" text-anchor="start" class="s b">hit rate@5 = 2 of 3 queries found it = 0.67</text><text x="12" y="291" text-anchor="start" class="s b">MRR = mean reciprocal rank = (0.50 + 1.00 + 0) /</text><text x="12" y="308" text-anchor="start" class="s b">3 = 0.50</text><text x="12" y="331" text-anchor="start" class="s">precision@5 for query 1 = 1 relevant of 5 shown</text><text x="12" y="348" text-anchor="start" class="s">= 0.20</text></svg>
+    <figcaption>Three queries from the lesson's golden set, with illustrative results. Computed: hit rate@5 = 0.67, MRR = 0.50. The third query is a recall failure; no prompt fix can repair it.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">This is the lesson that turns RAG from guesswork into engineering. Without measurement you’re tuning chunk sizes and rerankers by vibes. With it, every change is a number that went up or down — and you finally know whether you’re improving.</p>
 
   <h2>Why you must measure, and what to measure</h2>
@@ -27,10 +59,7 @@
     <p>A <span class="term">golden set</span> is a small labeled dataset of queries paired with the chunk(s) that should be retrieved (and ideally a correct answer). On it you compute <span class="term">retrieval metrics</span>: <span class="term">recall@k</span> (what fraction of the relevant chunks appeared in the top k? when each query has one relevant chunk this is the same as hit rate@k, "did it appear at all", which is what the harness below computes), <span class="term">precision@k</span> (what fraction of the top k were relevant?), and <span class="term">MRR</span> (mean reciprocal rank — how high up the first relevant chunk was, rewarding good ordering). For the answer you add <span class="term">end-to-end metrics</span>: faithfulness (supported by context?) and answer correctness/relevance.</p>
   </div>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>Grading a treasure hunt team. Recall asks: of the 3 treasures hidden, how many did they bring back? Precision asks: of the 5 things in their bag, how many are treasure and how many are rocks? MRR asks: how many steps until they found the first treasure? nDCG gives more points for treasure found early and for the gold over the silver. The analogy breaks because in a treasure hunt you know where every treasure is; in retrieval your labels are often incomplete, so a "rock" might be an unlabelled treasure.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -249,6 +278,10 @@ golden <span class="o">=</span> {
     </ul>
   </div>
 <!-- shape:tail:end -->
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Label a few real questions with their right answers, and score every change against them.</p>
+<!-- ease:line:end -->
 </main>
 
 <script>

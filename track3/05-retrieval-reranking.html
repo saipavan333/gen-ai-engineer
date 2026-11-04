@@ -12,6 +12,42 @@
 
   <span class="eyebrow">Track 3 · Lesson 3.5</span>
   <h1>Retrieval &amp; reranking</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Retrieval gives every chunk a similarity score against the question.</p>
+    <p>Top-k keeps the k highest, for example the best 3.</p>
+    <p>A similarity threshold also drops any chunk whose score is too low, even if it made the top k.</p>
+    <p>If nothing passes, the honest answer is “I don't know”, and you never call the model at all.</p>
+    <p>A reranker can then re-read the shortlist next to the question and put the truly best chunk first.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Hiring with two rounds: a recruiter skims 500 CVs in an afternoon by keywords and picks 50, then the hiring manager actually reads those 50 against the job and picks 5. The recruiter is fast and rough (the bi-encoder); the manager is slow and careful (the cross-encoder).</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The recruiter skimming 500 CVs</td><td>Stage 1: fast vector search returns many candidates (e.g. 50)</td></tr>
+      <tr><td>The shortlist size</td><td>k: how many chunks you keep</td></tr>
+      <tr><td>“No one met the bar” for the job</td><td>The threshold: below it, refuse instead of guessing</td></tr>
+      <tr><td>The hiring manager reading each CV</td><td>Stage 2: a cross-encoder reranker scores (query, chunk) pairs</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A manager can ask the recruiter for more CVs; a reranker can only reorder what stage 1 handed it, so if the best candidate was not in the 50, it is gone.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 355" role="img" aria-label="Top-k retrieval with a similarity threshold, for an answerable and an off-topic question" preserveAspectRatio="xMidYMid meet"><text x="20" y="22" text-anchor="start" class="s b">“How long is the X200 warranty?”</text><text x="20" y="50" text-anchor="start" class="s">1. The X200 has a 3-year limited warranty.</text><rect x="20" y="56" width="241.9" height="14" rx="3" class="fill-g"/><text x="267.9" y="68" text-anchor="start" class="s">0.82</text><text x="20" y="94" text-anchor="start" class="s">2. Warranty claims need the order number.</text><rect x="20" y="100" width="209.45" height="14" rx="3" class="fill-g"/><text x="235.45" y="112" text-anchor="start" class="s">0.71</text><text x="20" y="138" text-anchor="start" class="s">3. Returns are free within 30 days.</text><rect x="20" y="144" width="135.7" height="14" rx="3" class="fill-w"/><text x="173.5" y="156" text-anchor="start" class="s">0.46</text><line x1="16" y1="164" x2="365" y2="164" class="ln thin dash"/><text x="365" y="161" text-anchor="end" class="s m">top-3 cut</text><text x="20" y="182" text-anchor="start" class="s m">4. The X200 motor is rated at 1200 watts.</text><rect x="20" y="188" width="115.05" height="14" rx="3" class="fill-m"/><text x="173.5" y="200" text-anchor="start" class="s">0.39</text><text x="20" y="226" text-anchor="start" class="s m">5. Cancel under Settings &gt; Billing.</text><rect x="20" y="232" width="35.4" height="14" rx="3" class="fill-m"/><text x="61.4" y="244" text-anchor="start" class="s">0.12</text><line x1="167.5" y1="53" x2="167.5" y2="73" class="ln wn"/><line x1="167.5" y1="97" x2="167.5" y2="117" class="ln wn"/><line x1="167.5" y1="141" x2="167.5" y2="161" class="ln wn"/><line x1="167.5" y1="185" x2="167.5" y2="205" class="ln wn"/><line x1="167.5" y1="229" x2="167.5" y2="249" class="ln wn"/><line x1="167.5" y1="249" x2="167.5" y2="256" class="ln wn dash"/><text x="171.5" y="270" text-anchor="start" class="s wn-t">threshold 0.50</text><text x="20" y="296" text-anchor="start" class="s ok-t" style="font-size:13px">→ prompt gets chunks 1, 2; rank 3 is in the top 3</text><text x="20" y="313" text-anchor="start" class="s ok-t" style="font-size:13px">but below the threshold, so it stays out</text><text x="415" y="22" text-anchor="start" class="s b">“Who won the 2022 World Cup?”</text><text x="415" y="50" text-anchor="start" class="s">1. The X200 has a 3-year limited warranty.</text><rect x="415" y="56" width="61.95" height="14" rx="3" class="fill-w"/><text x="482.95" y="68" text-anchor="start" class="s">0.21</text><text x="415" y="94" text-anchor="start" class="s">2. Warranty claims need the order number.</text><rect x="415" y="100" width="53.1" height="14" rx="3" class="fill-w"/><text x="474.1" y="112" text-anchor="start" class="s">0.18</text><text x="415" y="138" text-anchor="start" class="s">3. Returns are free within 30 days.</text><rect x="415" y="144" width="44.25" height="14" rx="3" class="fill-w"/><text x="465.25" y="156" text-anchor="start" class="s">0.15</text><line x1="411" y1="164" x2="760" y2="164" class="ln thin dash"/><text x="760" y="161" text-anchor="end" class="s m">top-3 cut</text><text x="415" y="182" text-anchor="start" class="s m">4. The X200 motor is rated at 1200 watts.</text><rect x="415" y="188" width="32.45" height="14" rx="3" class="fill-m"/><text x="453.45" y="200" text-anchor="start" class="s">0.11</text><text x="415" y="226" text-anchor="start" class="s m">5. Cancel under Settings &gt; Billing.</text><rect x="415" y="232" width="26.55" height="14" rx="3" class="fill-m"/><text x="447.55" y="244" text-anchor="start" class="s">0.09</text><line x1="562.5" y1="53" x2="562.5" y2="73" class="ln wn"/><line x1="562.5" y1="97" x2="562.5" y2="117" class="ln wn"/><line x1="562.5" y1="141" x2="562.5" y2="161" class="ln wn"/><line x1="562.5" y1="185" x2="562.5" y2="205" class="ln wn"/><line x1="562.5" y1="229" x2="562.5" y2="249" class="ln wn"/><line x1="562.5" y1="249" x2="562.5" y2="256" class="ln wn dash"/><text x="566.5" y="270" text-anchor="start" class="s wn-t">threshold 0.50</text><text x="415" y="296" text-anchor="start" class="s wn-t" style="font-size:13px">→ refuse: best score 0.21 is under 0.50, so no</text><text x="415" y="313" text-anchor="start" class="s wn-t" style="font-size:13px">chunk is good enough and the model is never</text><text x="415" y="330" text-anchor="start" class="s wn-t" style="font-size:13px">called</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 695" role="img" aria-label="Top-k retrieval with a similarity threshold, for an answerable and an off-topic question" preserveAspectRatio="xMidYMid meet"><text x="12" y="20" text-anchor="start" class="s b">“How long is the X200 warranty?”</text><text x="12" y="48" text-anchor="start" class="s">1. The X200 has a 3-year limited warranty.</text><rect x="12" y="54" width="234.52" height="14" rx="3" class="fill-g"/><text x="252.52" y="66" text-anchor="start" class="s">0.82</text><text x="12" y="92" text-anchor="start" class="s">2. Warranty claims need the order number.</text><rect x="12" y="98" width="203.06" height="14" rx="3" class="fill-g"/><text x="221.06" y="110" text-anchor="start" class="s">0.71</text><text x="12" y="136" text-anchor="start" class="s">3. Returns are free within 30 days.</text><rect x="12" y="142" width="131.56" height="14" rx="3" class="fill-w"/><text x="161" y="154" text-anchor="start" class="s">0.46</text><line x1="8" y1="162" x2="348" y2="162" class="ln thin dash"/><text x="348" y="159" text-anchor="end" class="s m">top-3 cut</text><text x="12" y="180" text-anchor="start" class="s m">4. The X200 motor is rated at 1200 watts.</text><rect x="12" y="186" width="111.54" height="14" rx="3" class="fill-m"/><text x="161" y="198" text-anchor="start" class="s">0.39</text><text x="12" y="224" text-anchor="start" class="s m">5. Cancel under Settings &gt; Billing.</text><rect x="12" y="230" width="34.32" height="14" rx="3" class="fill-m"/><text x="52.32" y="242" text-anchor="start" class="s">0.12</text><line x1="155" y1="51" x2="155" y2="71" class="ln wn"/><line x1="155" y1="95" x2="155" y2="115" class="ln wn"/><line x1="155" y1="139" x2="155" y2="159" class="ln wn"/><line x1="155" y1="183" x2="155" y2="203" class="ln wn"/><line x1="155" y1="227" x2="155" y2="247" class="ln wn"/><line x1="155" y1="247" x2="155" y2="254" class="ln wn dash"/><text x="159" y="268" text-anchor="start" class="s wn-t">threshold 0.50</text><text x="12" y="294" text-anchor="start" class="s ok-t" style="font-size:13px">→ prompt gets chunks 1, 2; rank 3 is in the top</text><text x="12" y="311" text-anchor="start" class="s ok-t" style="font-size:13px">3 but below the threshold, so it stays out</text><text x="12" y="362" text-anchor="start" class="s b">“Who won the 2022 World Cup?”</text><text x="12" y="390" text-anchor="start" class="s">1. The X200 has a 3-year limited warranty.</text><rect x="12" y="396" width="60.06" height="14" rx="3" class="fill-w"/><text x="78.06" y="408" text-anchor="start" class="s">0.21</text><text x="12" y="434" text-anchor="start" class="s">2. Warranty claims need the order number.</text><rect x="12" y="440" width="51.48" height="14" rx="3" class="fill-w"/><text x="69.48" y="452" text-anchor="start" class="s">0.18</text><text x="12" y="478" text-anchor="start" class="s">3. Returns are free within 30 days.</text><rect x="12" y="484" width="42.9" height="14" rx="3" class="fill-w"/><text x="60.9" y="496" text-anchor="start" class="s">0.15</text><line x1="8" y1="504" x2="348" y2="504" class="ln thin dash"/><text x="348" y="501" text-anchor="end" class="s m">top-3 cut</text><text x="12" y="522" text-anchor="start" class="s m">4. The X200 motor is rated at 1200 watts.</text><rect x="12" y="528" width="31.46" height="14" rx="3" class="fill-m"/><text x="49.46" y="540" text-anchor="start" class="s">0.11</text><text x="12" y="566" text-anchor="start" class="s m">5. Cancel under Settings &gt; Billing.</text><rect x="12" y="572" width="25.74" height="14" rx="3" class="fill-m"/><text x="43.74" y="584" text-anchor="start" class="s">0.09</text><line x1="155" y1="393" x2="155" y2="413" class="ln wn"/><line x1="155" y1="437" x2="155" y2="457" class="ln wn"/><line x1="155" y1="481" x2="155" y2="501" class="ln wn"/><line x1="155" y1="525" x2="155" y2="545" class="ln wn"/><line x1="155" y1="569" x2="155" y2="589" class="ln wn"/><line x1="155" y1="589" x2="155" y2="596" class="ln wn dash"/><text x="159" y="610" text-anchor="start" class="s wn-t">threshold 0.50</text><text x="12" y="636" text-anchor="start" class="s wn-t" style="font-size:13px">→ refuse: best score 0.21 is under 0.50, so no</text><text x="12" y="653" text-anchor="start" class="s wn-t" style="font-size:13px">chunk is good enough and the model is never</text><text x="12" y="670" text-anchor="start" class="s wn-t" style="font-size:13px">called</text></svg>
+    <figcaption>Illustrative scores, k = 3, threshold 0.50. Left, two chunks clear both bars. Right, an off-topic question scores low on everything, so the system refuses before generating.</figcaption>
+  </figure>
+  <div class="ez-play" data-ez-play="topk">
+    <div class="ease-label">Try it</div>
+    <p class="ez-hint">Move k and the threshold, and switch questions. Green chunks reach the prompt, red ones made the top k but failed the threshold, and grey ones were never in the top k.</p>
+    <div class="ez-stage"></div>
+  </div>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">Vector search is fast but a little blunt — it ranks by similarity, which isn’t the same as relevance. Reranking adds a second, smarter pass that reads each candidate against the query and reorders for quality. This two-stage pattern is one of the biggest, cheapest wins in RAG.</p>
 
   <h2>Why “similar” isn’t “best”</h2>
@@ -22,10 +58,7 @@
     <p>A <span class="term">bi-encoder</span> embeds query and document separately, so similarity is a fast vector comparison (this is your retriever). A <span class="term">cross-encoder</span> feeds the query and a document <em>together</em> through a model to produce a single relevance score — far more accurate, but far slower (you must run it per candidate). The standard design is <span class="term">two-stage retrieval</span>: use the fast bi-encoder to fetch many candidates (high <span class="term">recall</span>), then the slow cross-encoder to rerank them down to the best few (high <span class="term">precision</span>).</p>
   </div>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>Hiring with two rounds: a recruiter skims 500 CVs in an afternoon by keywords and picks 50, then the hiring manager actually reads those 50 against the job and picks 5. The recruiter is fast and rough (the bi-encoder); the manager is slow and careful (the cross-encoder). The analogy breaks because a manager can ask the recruiter for more CVs; a reranker can only reorder what stage 1 handed it, so if the best candidate was not in the 50, it is gone.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -228,6 +261,10 @@ index <span class="o">=</span> bi.<span class="f">encode</span>(chunks, normaliz
 
   <p>Semantic search has a blind spot: exact terms, codes, and rare words that embeddings smear together. Keyword search nails those. Combine them and you get the best of both. Next: <strong>hybrid search</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Keep the best few chunks that are actually good enough, and say “I don't know” when none are.</p>
+<!-- ease:line:end -->
 </main>
 
 <script>
@@ -295,5 +332,10 @@ index <span class="o">=</span> bi.<span class="f">encode</span>(chunks, normaliz
 </script>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/ease.js?v=1"></script>
+<script src="../assets/ease/play-t03.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

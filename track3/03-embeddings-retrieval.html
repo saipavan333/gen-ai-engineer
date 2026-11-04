@@ -12,6 +12,37 @@
 
   <span class="eyebrow">Track 3 · Lesson 3.3</span>
   <h1>Embeddings for retrieval</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>An embedding model turns text into a vector, a long list of numbers, so similar meanings get similar vectors.</p>
+    <p>RAG uses it twice. Once to embed every chunk when you build the index, and again for each question.</p>
+    <p>Then it finds the chunks whose vectors point the same way as the question's.</p>
+    <p>One hard rule: chunks and questions must go through the same model.</p>
+    <p>Each model makes its own map, so vectors from two models can't be compared.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Embedding is like giving every sentence a spot on a giant map where sentences about the same thing live in the same neighbourhood. "Cancel my plan" and "stop paying" end up on the same street even though they share no words. Searching is dropping a pin for the question and looking at the nearest houses.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>A spot on the giant map</td><td>A vector, e.g. 384 numbers from all-MiniLM-L6-v2</td></tr>
+      <tr><td>Neighbours on the same street</td><td>High cosine similarity between two vectors</td></tr>
+      <tr><td>Dropping a pin for the question</td><td>Embedding the query with the same model</td></tr>
+      <tr><td>Looking at the nearest houses</td><td>Ranking chunks by dot product of unit-length vectors (equal to cosine)</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> Every embedding model draws its own map: an address from one map means nothing on another, which is why documents and queries must use the same model.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 272" role="img" aria-label="Why the same embedding model must be used for chunks and queries" preserveAspectRatio="xMidYMid meet"><rect x="20" y="14" width="348" height="204" rx="10" class="bx tn-g" /><text x="194" y="42" text-anchor="middle" class="b">Same model for chunks and question</text><circle cx="40" cy="63" r="3" class="dot tn-g"/><text x="52" y="68" text-anchor="start" style="font-size:14px">Index time: every chunk goes through</text><text x="52" y="86" text-anchor="start" style="font-size:14px">all-MiniLM-L6-v2</text><circle cx="40" cy="107" r="3" class="dot tn-g"/><text x="52" y="112" text-anchor="start" style="font-size:14px">Query time: the question goes through the</text><text x="52" y="130" text-anchor="start" style="font-size:14px">same model</text><circle cx="40" cy="151" r="3" class="dot tn-g"/><text x="52" y="156" text-anchor="start" style="font-size:14px">“how do I stop paying?” lands next to “To</text><text x="52" y="174" text-anchor="start" style="font-size:14px">cancel your subscription…” (0.62 in the</text><text x="52" y="192" text-anchor="start" style="font-size:14px">lesson&#x27;s run) with no shared words</text><rect x="392" y="14" width="348" height="204" rx="10" class="bx tn-w" /><text x="566" y="42" text-anchor="middle" class="b">Different models (the #1 retrieval bug)</text><circle cx="412" cy="63" r="3" class="dot tn-w"/><text x="424" y="68" text-anchor="start" style="font-size:14px">Chunks indexed with model A, the question</text><text x="424" y="86" text-anchor="start" style="font-size:14px">embedded with model B</text><circle cx="412" cy="107" r="3" class="dot tn-w"/><text x="424" y="112" text-anchor="start" style="font-size:14px">Each model draws its own map, so the</text><text x="424" y="130" text-anchor="start" style="font-size:14px">numbers mean different things</text><circle cx="412" cy="151" r="3" class="dot tn-w"/><text x="424" y="156" text-anchor="start" style="font-size:14px">No error is raised: the search just</text><text x="424" y="174" text-anchor="start" style="font-size:14px">returns the wrong chunks</text><text x="380" y="244" text-anchor="middle" class="s" style="font-size:14px">If you switch embedding models, re-embed every chunk before you search again.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 528" role="img" aria-label="Why the same embedding model must be used for chunks and queries" preserveAspectRatio="xMidYMid meet"><rect x="20" y="14" width="320" height="222" rx="10" class="bx tn-g" /><text x="180" y="42" text-anchor="middle" class="b">Same model for chunks and question</text><circle cx="40" cy="63" r="3" class="dot tn-g"/><text x="52" y="68" text-anchor="start" style="font-size:14px">Index time: every chunk goes through</text><text x="52" y="86" text-anchor="start" style="font-size:14px">all-MiniLM-L6-v2</text><circle cx="40" cy="107" r="3" class="dot tn-g"/><text x="52" y="112" text-anchor="start" style="font-size:14px">Query time: the question goes through</text><text x="52" y="130" text-anchor="start" style="font-size:14px">the same model</text><circle cx="40" cy="151" r="3" class="dot tn-g"/><text x="52" y="156" text-anchor="start" style="font-size:14px">“how do I stop paying?” lands next to</text><text x="52" y="174" text-anchor="start" style="font-size:14px">“To cancel your subscription…” (0.62</text><text x="52" y="192" text-anchor="start" style="font-size:14px">in the lesson&#x27;s run) with no shared</text><text x="52" y="210" text-anchor="start" style="font-size:14px">words</text><text x="180" y="258" text-anchor="middle" class="b m">vs</text><rect x="20" y="270" width="320" height="186" rx="10" class="bx tn-w" /><text x="180" y="298" text-anchor="middle" class="b">Different models (the #1 retrieval bug)</text><circle cx="40" cy="319" r="3" class="dot tn-w"/><text x="52" y="324" text-anchor="start" style="font-size:14px">Chunks indexed with model A, the</text><text x="52" y="342" text-anchor="start" style="font-size:14px">question embedded with model B</text><circle cx="40" cy="363" r="3" class="dot tn-w"/><text x="52" y="368" text-anchor="start" style="font-size:14px">Each model draws its own map, so the</text><text x="52" y="386" text-anchor="start" style="font-size:14px">numbers mean different things</text><circle cx="40" cy="407" r="3" class="dot tn-w"/><text x="52" y="412" text-anchor="start" style="font-size:14px">No error is raised: the search just</text><text x="52" y="430" text-anchor="start" style="font-size:14px">returns the wrong chunks</text><text x="180" y="482" text-anchor="middle" class="s" style="font-size:14px">If you switch embedding models, re-embed</text><text x="180" y="500" text-anchor="middle" class="s" style="font-size:14px">every chunk before you search again.</text></svg>
+    <figcaption>Left, both sides live on one map and “nearest” means “closest meaning”. Right, the search still runs and still returns k results, which is what makes this bug dangerous.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">You already understand embeddings (Track 1.3). Here you put them to work as the search engine of RAG — turning every chunk into a point in meaning-space once, then finding the nearest points to each question in milliseconds.</p>
 
   <h2>Retrieval is embedding similarity at scale</h2>
@@ -27,10 +58,7 @@
     <p>An <span class="term">embedding model</span> maps text to a vector so that similar meanings get similar directions. In retrieval you use it twice: to embed every chunk at <span class="term">index time</span>, and to embed the query at <span class="term">query time</span>. A hard rule: you must use the <strong>same embedding model</strong> for both — vectors from different models live in different, incomparable spaces. Most retrieval also <span class="term">normalizes</span> vectors to length 1, which makes the fast dot product equal to cosine similarity.</p>
   </div>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>Embedding is like giving every sentence a spot on a giant map where sentences about the same thing live in the same neighbourhood. "Cancel my plan" and "stop paying" end up on the same street even though they share no words. Searching is dropping a pin for the question and looking at the nearest houses. The analogy breaks because every embedding model draws its own map: an address from one map means nothing on another, which is why documents and queries must use the same model.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -236,6 +264,10 @@ index <span class="o">=</span> model.<span class="f">encode</span>(chunks, norma
 
   <p>Brute-force cosine over a NumPy array is fine for thousands of chunks. For millions, you need a purpose-built store with a clever index. Next: <strong>vector databases &amp; indexes</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Embed the chunks and the question with the same model, then find the closest arrows.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
