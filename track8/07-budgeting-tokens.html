@@ -12,6 +12,42 @@
 
   <span class="eyebrow">Track 8 · Lesson 8.7</span>
   <h1>Budgeting tokens</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Every request pays for every token in it, every single time.</p>
+    <p>A request is made of parts: instructions, examples, chat history, retrieved documents and the answer.</p>
+    <p>A token budget means counting each part, finding the biggest one and trimming that first.</p>
+    <p>Small cuts add up fast, because they repeat on millions of calls.</p>
+    <p>Agents need extra care, because their history grows on every step.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Think of a phone plan with a monthly data limit. Before you cut anything, you open the usage screen and see that one app used 80% of it. Deleting a tiny app you barely use would save nothing; turning off autoplay videos in the big one fixes the bill. Token budgeting is the same: open the usage screen first, then cut the biggest item.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The phone's data-usage screen</td><td>Measuring tokens per part of the prompt</td></tr>
+      <tr><td>The one app using 80% of the data</td><td>The biggest part, often retrieved context or history</td></tr>
+      <tr><td>Turning off autoplay in that app</td><td>Summarise history, retrieve less, cap the output, cache the fixed prefix</td></tr>
+      <tr><td>The monthly limit resetting</td><td>Only per request: an agent's history keeps growing within one task</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A phone plan resets each month, while an agent's history keeps growing inside a single task, so the biggest item can change halfway through.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 348" role="img" aria-label="Stacked bars: each agent call re-sends the fixed prefix plus a growing history" preserveAspectRatio="xMidYMid meet"><text x="14" y="20" text-anchor="start" class="b">Tokens sent on each call of one 8-step support-agent task</text><text x="62" y="56" text-anchor="end" class="s">call 1</text><rect x="70" y="40" width="211.429" height="22" rx="2" class="fill-c"/><rect x="281.429" y="40" width="0" height="22" rx="0" class="fill-k"/><rect x="283.429" y="40" width="10.5714" height="22" rx="2" class="fill-a"/><text x="300" y="56" text-anchor="start" class="s m">3,700</text><text x="62" y="85" text-anchor="end" class="s">call 2</text><rect x="70" y="69" width="211.429" height="22" rx="2" class="fill-c"/><rect x="281.429" y="69" width="54.2857" height="22" rx="0" class="fill-k"/><rect x="337.714" y="69" width="10.5714" height="22" rx="2" class="fill-a"/><text x="354.286" y="85" text-anchor="start" class="s m">4,650</text><text x="62" y="114" text-anchor="end" class="s">call 3</text><rect x="70" y="98" width="211.429" height="22" rx="2" class="fill-c"/><rect x="281.429" y="98" width="108.571" height="22" rx="0" class="fill-k"/><rect x="392" y="98" width="10.5714" height="22" rx="2" class="fill-a"/><text x="408.571" y="114" text-anchor="start" class="s m">5,600</text><text x="62" y="143" text-anchor="end" class="s">call 4</text><rect x="70" y="127" width="211.429" height="22" rx="2" class="fill-c"/><rect x="281.429" y="127" width="162.857" height="22" rx="0" class="fill-k"/><rect x="446.286" y="127" width="10.5714" height="22" rx="2" class="fill-a"/><text x="462.857" y="143" text-anchor="start" class="s m">6,550</text><text x="62" y="172" text-anchor="end" class="s">call 5</text><rect x="70" y="156" width="211.429" height="22" rx="2" class="fill-c"/><rect x="281.429" y="156" width="217.143" height="22" rx="0" class="fill-k"/><rect x="500.571" y="156" width="10.5714" height="22" rx="2" class="fill-a"/><text x="517.143" y="172" text-anchor="start" class="s m">7,500</text><text x="62" y="201" text-anchor="end" class="s">call 6</text><rect x="70" y="185" width="211.429" height="22" rx="2" class="fill-c"/><rect x="281.429" y="185" width="271.429" height="22" rx="0" class="fill-k"/><rect x="554.857" y="185" width="10.5714" height="22" rx="2" class="fill-a"/><text x="571.429" y="201" text-anchor="start" class="s m">8,450</text><text x="62" y="230" text-anchor="end" class="s">call 7</text><rect x="70" y="214" width="211.429" height="22" rx="2" class="fill-c"/><rect x="281.429" y="214" width="325.714" height="22" rx="0" class="fill-k"/><rect x="609.143" y="214" width="10.5714" height="22" rx="2" class="fill-a"/><text x="625.714" y="230" text-anchor="start" class="s m">9,400</text><text x="62" y="259" text-anchor="end" class="s">call 8</text><rect x="70" y="243" width="211.429" height="22" rx="2" class="fill-c"/><rect x="281.429" y="243" width="380" height="22" rx="0" class="fill-k"/><rect x="663.429" y="243" width="10.5714" height="22" rx="2" class="fill-a"/><text x="680" y="259" text-anchor="start" class="s m">10,350</text><rect x="14" y="271" width="14" height="14" rx="3" class="fill-c"/><text x="34" y="283" text-anchor="start" class="s">fixed prefix 3,700 (system + tools)</text><rect x="305" y="271" width="14" height="14" rx="3" class="fill-k"/><text x="325" y="283" text-anchor="start" class="s">history: +950 per step</text><rect x="505" y="271" width="14" height="14" rx="3" class="fill-a"/><text x="525" y="283" text-anchor="start" class="s">output 150</text><text x="14" y="310" text-anchor="start" class="s" style="font-size:13px">Whole task: 56,200 input + 1,200 output tokens = $0.1244 on Sonnet 5.5. The growing history is 47% of</text><text x="14" y="327" text-anchor="start" class="s" style="font-size:13px">the input, and the prefix repeats 8 times: those are the two things to trim or cache.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 423" role="img" aria-label="Stacked bars: each agent call re-sends the fixed prefix plus a growing history" preserveAspectRatio="xMidYMid meet"><text x="14" y="20" text-anchor="start" class="b">Tokens per call, one 8-step task</text><text x="52" y="54" text-anchor="end" class="s">call 1</text><rect x="60" y="40" width="88.0952" height="20" rx="2" class="fill-c"/><rect x="148.095" y="40" width="0" height="20" rx="0" class="fill-k"/><rect x="150.095" y="40" width="5.57143" height="20" rx="2" class="fill-a"/><text x="161.667" y="54" text-anchor="start" class="s m">3,700</text><text x="52" y="81" text-anchor="end" class="s">call 2</text><rect x="60" y="67" width="88.0952" height="20" rx="2" class="fill-c"/><rect x="148.095" y="67" width="22.619" height="20" rx="0" class="fill-k"/><rect x="172.714" y="67" width="5.57143" height="20" rx="2" class="fill-a"/><text x="184.286" y="81" text-anchor="start" class="s m">4,650</text><text x="52" y="108" text-anchor="end" class="s">call 3</text><rect x="60" y="94" width="88.0952" height="20" rx="2" class="fill-c"/><rect x="148.095" y="94" width="45.2381" height="20" rx="0" class="fill-k"/><rect x="195.333" y="94" width="5.57143" height="20" rx="2" class="fill-a"/><text x="206.905" y="108" text-anchor="start" class="s m">5,600</text><text x="52" y="135" text-anchor="end" class="s">call 4</text><rect x="60" y="121" width="88.0952" height="20" rx="2" class="fill-c"/><rect x="148.095" y="121" width="67.8571" height="20" rx="0" class="fill-k"/><rect x="217.952" y="121" width="5.57143" height="20" rx="2" class="fill-a"/><text x="229.524" y="135" text-anchor="start" class="s m">6,550</text><text x="52" y="162" text-anchor="end" class="s">call 5</text><rect x="60" y="148" width="88.0952" height="20" rx="2" class="fill-c"/><rect x="148.095" y="148" width="90.4762" height="20" rx="0" class="fill-k"/><rect x="240.571" y="148" width="5.57143" height="20" rx="2" class="fill-a"/><text x="252.143" y="162" text-anchor="start" class="s m">7,500</text><text x="52" y="189" text-anchor="end" class="s">call 6</text><rect x="60" y="175" width="88.0952" height="20" rx="2" class="fill-c"/><rect x="148.095" y="175" width="113.095" height="20" rx="0" class="fill-k"/><rect x="263.19" y="175" width="5.57143" height="20" rx="2" class="fill-a"/><text x="274.762" y="189" text-anchor="start" class="s m">8,450</text><text x="52" y="216" text-anchor="end" class="s">call 7</text><rect x="60" y="202" width="88.0952" height="20" rx="2" class="fill-c"/><rect x="148.095" y="202" width="135.714" height="20" rx="0" class="fill-k"/><rect x="285.81" y="202" width="5.57143" height="20" rx="2" class="fill-a"/><text x="297.381" y="216" text-anchor="start" class="s m">9,400</text><text x="52" y="243" text-anchor="end" class="s">call 8</text><rect x="60" y="229" width="88.0952" height="20" rx="2" class="fill-c"/><rect x="148.095" y="229" width="158.333" height="20" rx="0" class="fill-k"/><rect x="308.429" y="229" width="5.57143" height="20" rx="2" class="fill-a"/><text x="320" y="243" text-anchor="start" class="s m">10,350</text><rect x="14" y="255" width="14" height="14" rx="3" class="fill-c"/><text x="34" y="267" text-anchor="start" class="s">fixed prefix 3,700 (system + tools)</text><rect x="14" y="275" width="14" height="14" rx="3" class="fill-k"/><text x="34" y="287" text-anchor="start" class="s">history: +950 per step</text><rect x="14" y="295" width="14" height="14" rx="3" class="fill-a"/><text x="34" y="307" text-anchor="start" class="s">output 150</text><text x="14" y="334" text-anchor="start" class="s" style="font-size:13px">Whole task: 56,200 input + 1,200 output tokens</text><text x="14" y="351" text-anchor="start" class="s" style="font-size:13px">= $0.1244 on Sonnet 5.5. The growing history is</text><text x="14" y="368" text-anchor="start" class="s" style="font-size:13px">47% of the input, and the prefix repeats 8</text><text x="14" y="385" text-anchor="start" class="s" style="font-size:13px">times: those are the two things to trim or</text><text x="14" y="402" text-anchor="start" class="s" style="font-size:13px">cache.</text></svg>
+    <figcaption>This is the page's 8-step agent. Each call re-sends the fixed prefix plus everything said and done in earlier steps, so input grows on every step. The totals are computed; trimming tool output and caching the prefix are the page's two fixes.</figcaption>
+  </figure>
+  <div class="ez-play" data-ez-play="tokenbudget">
+    <div class="ease-label">Try it</div>
+    <p class="ez-hint">Drag each part of the request and pick a model. The bars and the cost per request and per 1 million requests are recomputed from the list prices.</p>
+    <div class="ez-stage"></div>
+  </div>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">Caching skips calls, routing right-sizes them, batching speeds the hardware — but every call you do make still spends tokens, on every request, forever. Token budgeting is the most universal lever: make each prompt as lean as it can be, and you pay less on literally every call.</p>
 
   <h2>Every token is paid, every time</h2>
@@ -26,6 +62,10 @@
     <div class="box-label">Concept</div>
     <p>A <span class="term">token budget</span> is a deliberate accounting of how many tokens each part of your request uses: the <strong>system prompt</strong>, any <strong>few-shot examples</strong>, the <strong>conversation history</strong>, <strong>retrieved context</strong> (in RAG), and the <strong>output</strong>. You measure each part, find the biggest, and trim it — with levers like shortening instructions, using fewer examples (or fine-tuning them in), summarizing old history, retrieving less, and capping <span class="term">max output tokens</span>.</p>
   </div>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <div class="box example">
     <div class="box-label">Worked example — measure, then trim (free)</div>
@@ -50,6 +90,21 @@ parts <span class="o">=</span> {
 <span class="c">#  - retrieve less: top-3 instead of top-10, smaller chunks (Track 3)</span></code></pre>
     <p>The measurement is the point: people often “optimize” the system prompt while a 2,400-token retrieved-context blob is the real cost. Measure first, cut the biggest, re-measure.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Budgeting an 8-step support agent at 30,000 tasks a day</div>
+    <p>Assumptions (ours): 30,000 tasks a day on claude-sonnet-5-5 ($2 / $10 per million, cache reads $0.10/M per <a href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching" target="_blank" rel="noopener">Anthropic prompt caching docs</a>). Each task runs 8 model calls. Fixed prefix: 1,200-token system prompt + 2,500 tokens of tool definitions = 3,700. Each step appends 800 tokens of tool output and 150 tokens of model reply; output per call is 150 tokens.</p>
+<ol>
+<li><strong>Input per call.</strong> Call k sends 3,700 + 950 x (k - 1). Sum over 8 calls: 8 x 3,700 + 950 x (0+1+...+7) = 29,600 + 950 x 28 = <strong>56,200 input tokens</strong> a task. Output: 8 x 150 = 1,200.</li>
+<li><strong>Baseline cost.</strong> 56,200 x $2/M + 1,200 x $10/M = $0.1124 + $0.012 = $0.1244 a task, <strong>$3,732 a day</strong>. Note output is under 10% here: this is an input-shaped bill.</li>
+<li><strong>Trim tool output.</strong> Have tools return a 150-token summary instead of 800 raw tokens, so each step adds 300. Input: 29,600 + 300 x 28 = 38,000. Cost: $0.076 + $0.012 = $0.088, <strong>$2,640 a day</strong>.</li>
+<li><strong>Cache the fixed prefix.</strong> The 3,700-token prefix is the same on every call of every task, so it stays warm. Prefix: 8 x 3,700 x $0.10/M = $0.00296. Growing part: 8,400 x $2/M = $0.0168. Output $0.012. Total $0.0318 a task, <strong>$953 a day</strong>, a 74% cut from baseline with no change to what the model sees.</li>
+<li><strong>Cap the loop.</strong> A step budget of 8 with repeated-call detection stops runaway tasks; one task that loops 40 times costs about $1.84 under the baseline formula (889,000 input tokens), as much as 15 normal tasks.</li>
+<li><strong>Verify quality.</strong> Run the golden set before and after the tool-output summaries. Trimming is a behaviour change; caching is not.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -76,10 +131,10 @@ parts <span class="o">=</span> {
     </ul>
   </div>
   <div class="quiz">
-    <p class="quiz-q">You must cut cost on a chat feature. What's usually the biggest lever?</p>
+    <p class="quiz-q">A chat feature sends short prompts (about 300 tokens) and gets long replies (about 900 tokens). What's usually the biggest cost lever here?</p>
     <ul class="quiz-options">
       <li data-correct="true"><span class="opt">Cap or reduce the output length — output tokens are the pricier, serial part.</span>
-        <div class="why">Correct. Output dominates cost and latency, so limiting it helps most.</div></li>
+        <div class="why">Correct for this shape of traffic: output tokens cost several times more than input tokens on most price lists and are generated one at a time, so with long replies they dominate cost and latency. For RAG-style prompts with thousands of context tokens, input usually dominates instead (see the worked example above): always check which side is bigger before you optimise.</div></li>
       <li data-correct="false"><span class="opt">Add more few-shot examples.</span>
         <div class="why">That increases input tokens — the opposite of saving.</div></li>
       <li data-correct="false"><span class="opt">Raise the temperature.</span>
@@ -88,6 +143,22 @@ parts <span class="o">=</span> {
         <div class="why">More input tokens, not fewer.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">In an agent where every step re-sends the full history, which change usually cuts input tokens the most over a long task?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Keep tool outputs and old turns short (summaries instead of raw dumps), because history growth is multiplied by the number of later steps.</span>
+        <div class="why">Tokens added at step k are re-sent on every step after k, so their cost grows with the square of task length. Shrinking what each step adds attacks that term.</div></li>
+      <li data-correct="false"><span class="opt">B) Add more tools so the agent finishes in fewer steps.</span>
+        <div class="why">Each tool definition is input on every call. More tools can raise, not lower, the fixed part of the budget.</div></li>
+      <li data-correct="false"><span class="opt">C) Lower the temperature.</span>
+        <div class="why">Sampling settings do not change token counts in any predictable way.</div></li>
+      <li data-correct="false"><span class="opt">D) Shorten the final answer.</span>
+        <div class="why">The final answer is output on one call; history growth is input on every call. Useful, but usually much smaller.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -115,8 +186,91 @@ parts <span class="o">=</span> {
 
   <p>You now have the full serving toolkit — cost, latency, and the levers for both. Time to pressure-test it. On to the <strong>Track 8 interview check</strong>.</p>
 
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/08_llmops.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/08_llmops.py</code></pre>
+    <p><strong>What to look for:</strong> Section 3 sums tokens and hosted-equivalent cost across the requests that reached the model (prices set at the top of the file from Claude Haiku 5.5 list prices) and scales it to 2 M requests a day; each span in traces.jsonl also carries its own token counts and cost. Shorten the prompt template and rerun: the cost falls by exactly the removed tokens times the price. The lab does not simulate an agent's growing history; use the worked example's arithmetic for that.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  semantic similarity to the cached &#x27;track my order&#x27;: paraphrase=0.657  different intent (cancel)=0.523
+  semantic hits at threshold 0.9: 0
+  Look: a threshold low enough to catch the paraphrase would sit close to the wrong-intent score.
+  Serving &#x27;how to track&#x27; to someone who asked &#x27;how to cancel&#x27; is worse than a cache miss. Tune the
+  threshold on labelled pairs, scope caches per intent/tenant, and log every semantic hit for review.
+  traces written to traces.jsonl; first span:
+  {&quot;trace_id&quot;: &quot;54d669838c1f47758c9099aba0110b3f&quot;, &quot;name&quot;: &quot;chat qwen2.5:7b&quot;, &quot;gen_ai.operation.name&quot;: &quot;chat&quot;, &quot;gen_ai.provider.name&quot;: &quot;ollama&quot;, &quot;gen_ai.request.model&quot;: &quot;qwen2.5:7b&quot;, &quot;gen_ai.prompt.name&quot;: &quot;support_answer&quot;, &quot;gen_ai.prompt.version&quot;: 2, &quot;prompt.hash&quot;: &quot;5ab3d11ffb3b&quot;, &quot;user.id&quot;: &quot;u-123&quot;, 
+4) Prompt version rollout: v1 vs v2 on the same question, both traced
+  v1 hash=47ed77f326d6 -&gt; &quot;Yes, you can return innerwear as long as it meets your retailer&#x27;s return policy conditions, such as being unus&quot;
+  v2 hash=5ab3d11ffb3b -&gt; &#x27;Please contact support for specific return policies on innerwear.&#x27;
+  Check the facts too: store policy (labs/data/kb.json, ret-01) says innerwear cannot be returned. Neither
+  prompt has retrieval, so any &#x27;yes&#x27; is a hallucination; the version that defers to support is the safer one.
+  Look: the trace links every answer to an exact prompt hash and model, so a bad answer is debuggable,
+  and a rollout is a registry change you can roll back, not a code edit buried in a deploy.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/08_llmops.txt">labs/outputs</a>. Source: <a href="../labs/08_llmops.py">labs/08_llmops.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> A prompt has: system 400, few-shot examples 1,600, history 900, retrieved context 3,000, question 100 tokens. Which two parts do you attack first, and what is the share of each?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Total 6,000. Context 3,000 (50%) and few-shot 1,600 (27%). Retrieve fewer or smaller chunks, and test whether 2-3 examples (or selecting examples per query) match 8 examples on the golden set. The system prompt is under 7%; polishing it first is the classic mistake.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> You set max_tokens = 300 on a feature to cap output. A week later 12% of responses end mid-sentence. What happened and what is the right fix?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>max_tokens is a hard stop, not a length instruction. The model does not plan to finish within it; it is just cut off, and the finish reason says so (max_tokens or length, depending on the API). Right fix: tell the model the target length in the prompt ('answer in at most 120 words'), keep max_tokens as a safety ceiling with some margin above the target, and monitor the share of responses stopped by the limit. If it stays above about 1%, either raise the ceiling or tighten the instruction.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Prove that if each agent step adds d tokens to the history, the total re-sent history over n steps is d x n(n-1)/2, and compute how much a 4x reduction in d saves at n = 20 and d = 1,000.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Step k re-sends (k-1) x d history tokens. Summing k = 1..n gives d x (0+1+...+(n-1)) = d x n(n-1)/2. At n = 20, d = 1,000: 1,000 x 20 x 19 / 2 = 190,000 tokens a task. With d = 250: 47,500 tokens. Saving 142,500 input tokens a task, $0.285 a task on a $2/M model. Quadratic growth is why long agents need summarised memory, and why the same trim saves far more at n = 20 than at n = 5 (where the saving would be only 7,500 tokens).</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What goes into a token budget for a single LLM request?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Every part of the input plus the output: the system prompt, tool or function definitions, few-shot examples, conversation history, retrieved context, the user's message, and the answer. I measure each part with the model's own tokenizer and log the breakdown per request, so I can see which part is biggest. Then I set limits: a cap on retrieved chunks, a rule for summarising history after N turns, and a max_tokens ceiling with a length instruction in the prompt. The goal is lean prompts without losing the context the model really needs.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> How do you keep conversation history from blowing the budget in a long chat?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>I keep the last few turns verbatim and replace older turns with a running summary that a cheap model updates every few turns. Facts that must survive, like the user's order number, go into a small structured memory instead of free text. For very long sessions I retrieve older turns on demand by similarity rather than sending everything. Then I measure: tokens per turn should flatten instead of growing linearly, and the golden set should include long conversations to make sure the summary does not drop details users later refer back to.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> How would you enforce token budgets across 20 product teams sharing one LLM platform?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Make it visible, then make it enforceable. Every call goes through a gateway that tags team, feature and prompt version, records input, cached, and output tokens, and prices them. Each team gets a dashboard of cost per task and a monthly budget with alerts at 80%. The gateway enforces hard limits per feature: max input size, max_tokens ceilings, step budgets for agents, and rate limits. Platform-level savings like prompt caching and batch routing are on by default. A design review for any new feature includes a token estimate per task, and actuals are compared with it after launch.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://platform.claude.com/docs/en/build-with-claude/token-counting" target="_blank" rel="noopener">Token counting - Anthropic</a></li>
+      <li><a href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching" target="_blank" rel="noopener">Prompt caching - Anthropic</a></li>
+      <li><a href="https://arxiv.org/abs/2307.03172" target="_blank" rel="noopener">Lost in the Middle: How Language Models Use Long Contexts - arXiv</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Measure where your tokens go, then cut the biggest part first.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<script src="../assets/ease/ease.js?v=1"></script>
+<script src="../assets/ease/play-t08.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

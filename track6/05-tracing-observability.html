@@ -12,6 +12,37 @@
 
   <span class="eyebrow">Track 6 · Lesson 6.5</span>
   <h1>Tracing &amp; observability</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>One answer from an AI app often takes several steps: search, build a prompt, call the model, check.</p>
+    <p>When the answer is wrong, the final text alone doesn't tell you which step failed.</p>
+    <p>A trace is a record of one request, step by step. Each step is called a span.</p>
+    <p>A span stores what went in, what came out, how long it took and what it cost.</p>
+    <p>Monitoring adds these up into charts and alerts, so you hear about problems before users complain.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>A trace is like the tracking page for a parcel. It does not just say 'delivered late'; it shows every stop: picked up, sorted at the hub, stuck at customs for two days, out for delivery. When something goes wrong you can see exactly which stop caused it.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The parcel's tracking page</td><td>The trace: the whole record of one request</td></tr>
+      <tr><td>Each stop: picked up, sorted, customs</td><td>Each span: guard, embed, retrieve, rerank, LLM call</td></tr>
+      <tr><td>“Stuck at customs for two days”</td><td>A span that is slow, failed, or returned the wrong data</td></tr>
+      <tr><td>What's inside the parcel</td><td>The stored prompt and retrieved text, which may hold private data to redact</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A parcel tracker logs only times and places, but an LLM trace has to store the actual content at each stop (the prompt, the retrieved text), and that content can include private data you must protect.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 332" role="img" aria-label="A trace as a waterfall of timed spans" preserveAspectRatio="xMidYMid meet"><text x="20" y="20" text-anchor="start" class="b" style="font-size:15px">One request = one trace; each step = one span</text><text x="20" y="38" text-anchor="start" class="s m" style="font-size:12px">(illustrative timings; stored size per span from this page)</text><line x1="140.0" y1="54" x2="140.0" y2="258" class="grid"/><text x="140" y="274" text-anchor="middle" class="s m" style="font-size:12px">0 ms</text><line x1="281.7" y1="54" x2="281.7" y2="258" class="grid"/><text x="281.711" y="274" text-anchor="middle" class="s m" style="font-size:12px">500 ms</text><line x1="423.4" y1="54" x2="423.4" y2="258" class="grid"/><text x="423.422" y="274" text-anchor="middle" class="s m" style="font-size:12px">1000 ms</text><line x1="565.1" y1="54" x2="565.1" y2="258" class="grid"/><text x="565.134" y="274" text-anchor="middle" class="s m" style="font-size:12px">1500 ms</text><text x="130" y="73" text-anchor="end" class="s ">input guard</text><rect x="140.0" y="60" width="11.3" height="20" rx="3" class="fill-a"/><text x="157.337" y="75" text-anchor="start" class="s" style="font-size:12px">40 ms · 2 KB</text><text x="130" y="107" text-anchor="end" class="s ">embed</text><rect x="151.3" y="94" width="8.5" height="20" rx="3" class="fill-a"/><text x="165.84" y="109" text-anchor="start" class="s" style="font-size:12px">30 ms · 2 KB</text><text x="130" y="141" text-anchor="end" class="s wn-t b">retrieve</text><rect x="159.8" y="128" width="22.7" height="20" rx="3" class="fill-w"/><text x="188.513" y="143" text-anchor="start" class="s wn-t" style="font-size:12px">80 ms · 2 KB  · returned the old doc v3</text><text x="130" y="175" text-anchor="end" class="s ">rerank</text><rect x="182.5" y="162" width="22.7" height="20" rx="3" class="fill-a"/><text x="211.187" y="177" text-anchor="start" class="s" style="font-size:12px">80 ms · 2 KB</text><text x="130" y="209" text-anchor="end" class="s ">LLM call</text><rect x="205.2" y="196" width="453.5" height="20" rx="3" class="fill-a"/><text x="664.663" y="211" text-anchor="start" class="s" style="font-size:12px">1600 ms · 12 KB</text><text x="130" y="243" text-anchor="end" class="s ">output guard</text><rect x="658.7" y="230" width="11.3" height="20" rx="3" class="fill-a"/><text x="676" y="245" text-anchor="start" class="s" style="font-size:12px">40 ms · 2 KB</text><text x="20" y="296" text-anchor="start" class="s wn-t" style="font-size:13px">The retrieve span shows it returned last year&#x27;s policy (doc v3, not v4).</text><text x="20" y="314" text-anchor="start" class="s" style="font-size:13px">Fast, no error, wrong data: an indexing bug, not a model bug.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 422" role="img" aria-label="A trace as a waterfall of timed spans" preserveAspectRatio="xMidYMid meet"><text x="12" y="20" text-anchor="start" class="b" style="font-size:14px">One request = one trace; each step = one span</text><text x="12" y="38" text-anchor="start" class="s m" style="font-size:12px">(illustrative timings; stored size per span from this page)</text><line x1="12.0" y1="54" x2="12.0" y2="330" class="grid"/><text x="12" y="346" text-anchor="middle" class="s m" style="font-size:12px">0 ms</text><line x1="101.8" y1="54" x2="101.8" y2="330" class="grid"/><text x="101.84" y="346" text-anchor="middle" class="s m" style="font-size:12px">500 ms</text><line x1="191.7" y1="54" x2="191.7" y2="330" class="grid"/><text x="191.679" y="346" text-anchor="middle" class="s m" style="font-size:12px">1000 ms</text><line x1="281.5" y1="54" x2="281.5" y2="330" class="grid"/><text x="281.519" y="346" text-anchor="middle" class="s m" style="font-size:12px">1500 ms</text><text x="12" y="66" text-anchor="start" class="s " style="font-size:12px">input guard  40 ms · 2 KB</text><rect x="12.0" y="72" width="7.2" height="16" rx="3" class="fill-a"/><text x="12" y="112" text-anchor="start" class="s " style="font-size:12px">embed  30 ms · 2 KB</text><rect x="19.2" y="118" width="5.4" height="16" rx="3" class="fill-a"/><text x="12" y="158" text-anchor="start" class="s wn-t b" style="font-size:12px">retrieve  80 ms · 2 KB</text><rect x="24.6" y="164" width="14.4" height="16" rx="3" class="fill-w"/><text x="12" y="204" text-anchor="start" class="s " style="font-size:12px">rerank  80 ms · 2 KB</text><rect x="39.0" y="210" width="14.4" height="16" rx="3" class="fill-a"/><text x="12" y="250" text-anchor="start" class="s " style="font-size:12px">LLM call  1600 ms · 12 KB</text><rect x="53.3" y="256" width="287.5" height="16" rx="3" class="fill-a"/><text x="12" y="296" text-anchor="start" class="s " style="font-size:12px">output guard  40 ms · 2 KB</text><rect x="340.8" y="302" width="7.2" height="16" rx="3" class="fill-a"/><text x="12" y="368" text-anchor="start" class="s wn-t" style="font-size:13px">The retrieve span returned last year&#x27;s</text><text x="12" y="386" text-anchor="start" class="s" style="font-size:13px">policy (doc v3, not v4). Fast, no error,</text><text x="12" y="404" text-anchor="start" class="s" style="font-size:13px">wrong data: an indexing bug, not a model bug.</text></svg>
+    <figcaption>A trace drawn as a waterfall. Without it you only see a wrong answer. With it you can see the retrieve step quietly fetched an old document, which is the worked example further down this page.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">When a RAG pipeline or agent gives a bad answer in production, “the model messed up” isn’t a diagnosis. Tracing gives you an X-ray of every request — what was retrieved, what prompt was sent, what each step cost — so you can actually find and fix the problem.</p>
 
   <h2>Why LLM systems are hard to debug without tracing</h2>
@@ -26,6 +57,10 @@
     <div class="box-label">Concept</div>
     <p><span class="term">Observability</span> is the ability to understand what your system is doing from the data it emits. A <span class="term">trace</span> is the full record of one request; a <span class="term">span</span> is one step within it (a retrieval, an LLM call, a tool call) with its inputs, outputs, timing, and cost. <span class="term">Monitoring</span> aggregates these into dashboards and <span class="term">alerts</span> (latency spiking, error rate up, cost climbing) so you learn about problems before users complain.</p>
   </div>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <h2>What to capture per request</h2>
   <ul>
@@ -61,6 +96,13 @@
 <span class="c"># Free, open-source tracing tools (Langfuse, Phoenix) do this with nicer UIs + dashboards.</span></code></pre>
     <p>With this, a bad answer is debuggable: open the trace, see that <code>retrieve</code> returned the wrong chunk (a retrieval bug, Track 3) versus a good chunk the model ignored (a grounding bug). Free tools like Langfuse or Arize Phoenix add dashboards, but the idea is exactly this.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Tracing budget for 1 million requests a day</div>
+    <p>Assumptions: a RAG assistant serves 1 million requests a day. Each request has 6 spans: input guard, embed, retrieve, rerank, LLM call, output guard. Five small spans average 2 KB each; the LLM span stores the full assembled prompt and answer, about 12 KB.</p><ol><li><strong>Per-request size.</strong> 5 x 2 KB + 12 KB = 22 KB.</li><li><strong>Keep everything.</strong> 1,000,000 x 22 KB = 22 GB a day. With 30-day retention that is about 660 GB, most of it prompts nobody will ever open.</li><li><strong>Tail-based sampling.</strong> Decide what to keep after the request finishes: 100% of errors, guardrail blocks and thumbs-down (assume 3%, so 30,000), plus 5% of the remaining 970,000 (48,500). Kept: 78,500 x 22 KB = about 1.7 GB a day, or about 52 GB over 30 days.</li><li><strong>Metrics stay complete.</strong> Latency, tokens, cost and error counts are recorded for 100% of requests as small numeric counters, so dashboards and alerts are not affected by sampling.</li><li><strong>Redact before writing.</strong> Run PII masking on prompt and answer text before the span is exported, so the trace store never holds raw card numbers or emails.</li><li><strong>Debug a complaint.</strong> A user reports a wrong answer. Their request was a thumbs-down, so it was kept. Open the trace: the retrieve span returned last year's policy (doc version 3, not 4). That is an indexing bug, not a model bug, and the fix is a re-index plus a new golden case.</li></ol><p>For shared field names, the OpenTelemetry GenAI semantic conventions now live in their own repository (<a href="https://github.com/open-telemetry/semantic-conventions-genai">open-telemetry/semantic-conventions-genai</a>).</p>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -99,6 +141,22 @@
         <div class="why">Unrelated to debugging.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Traces are too expensive to keep in full, so you sample. Which policy keeps the most useful debugging data?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Keep a random 5% of all requests.</span>
+        <div class="why">Random sampling throws away 95% of failures, which are exactly the requests you need to open.</div></li>
+      <li data-correct="false"><span class="opt">B) Keep only the first 1,000 requests each day.</span>
+        <div class="why">That captures early-morning traffic only and misses failures later in the day.</div></li>
+      <li data-correct="false"><span class="opt">C) Keep the user query but drop the assembled prompt to save space.</span>
+        <div class="why">The assembled prompt is what the model actually saw. Without it, most failures cannot be explained.</div></li>
+      <li data-correct="true"><span class="opt">D) Keep every error, guardrail block and negative-feedback request, plus a small random share of the rest; keep metrics for 100%.</span>
+        <div class="why">Correct. Tail-based sampling keeps the interesting requests after you know how they ended, while counters keep dashboards accurate.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -122,10 +180,91 @@
     <p>So the mature setup is a loop: instrument everything → monitor dashboards and alerts → when quality dips or a user complains, open the trace and diagnose the exact span → fix it and add the case to the golden set → the offline eval now guards against it. Free, open-source tools (Langfuse, Arize Phoenix, and OpenTelemetry-based stacks) give you this with searchable traces, latency/cost dashboards, and judge integrations — but you can begin today with structured logging, which is better than the most beautiful dashboard you never built. The principle: <em>you cannot improve, debug, or trust a system you cannot see.</em> Observability is what makes an LLM product operable rather than mysterious.</p>
   </div>
 
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/08_llmops.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/08_llmops.py</code></pre>
+    <p><strong>What to look for:</strong> Open labs/outputs/traces.jsonl. Each line is one request: trace id, span name, model, prompt version and hash, token counts, cache status, semantic similarity, guard verdicts and latency in ms (no start/end timestamps or child spans). Compare a cache miss (about 6 s) with an exact-match hit (about 0.1 ms). On our run the semantic cache never hit at threshold 0.90; lower SemanticCache's threshold and check whether the new hits are the same intent.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  semantic similarity to the cached &#x27;track my order&#x27;: paraphrase=0.657  different intent (cancel)=0.523
+  semantic hits at threshold 0.9: 0
+  Look: a threshold low enough to catch the paraphrase would sit close to the wrong-intent score.
+  Serving &#x27;how to track&#x27; to someone who asked &#x27;how to cancel&#x27; is worse than a cache miss. Tune the
+  threshold on labelled pairs, scope caches per intent/tenant, and log every semantic hit for review.
+  traces written to traces.jsonl; first span:
+  {&quot;trace_id&quot;: &quot;54d669838c1f47758c9099aba0110b3f&quot;, &quot;name&quot;: &quot;chat qwen2.5:7b&quot;, &quot;gen_ai.operation.name&quot;: &quot;chat&quot;, &quot;gen_ai.provider.name&quot;: &quot;ollama&quot;, &quot;gen_ai.request.model&quot;: &quot;qwen2.5:7b&quot;, &quot;gen_ai.prompt.name&quot;: &quot;support_answer&quot;, &quot;gen_ai.prompt.version&quot;: 2, &quot;prompt.hash&quot;: &quot;5ab3d11ffb3b&quot;, &quot;user.id&quot;: &quot;u-123&quot;, 
+4) Prompt version rollout: v1 vs v2 on the same question, both traced
+  v1 hash=47ed77f326d6 -&gt; &quot;Yes, you can return innerwear as long as it meets your retailer&#x27;s return policy conditions, such as being unus&quot;
+  v2 hash=5ab3d11ffb3b -&gt; &#x27;Please contact support for specific return policies on innerwear.&#x27;
+  Check the facts too: store policy (labs/data/kb.json, ret-01) says innerwear cannot be returned. Neither
+  prompt has retrieval, so any &#x27;yes&#x27; is a hallucination; the version that defers to support is the safer one.
+  Look: the trace links every answer to an exact prompt hash and model, so a bad answer is debuggable,
+  and a rollout is a registry change you can roll back, not a code edit buried in a deploy.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/08_llmops.txt">labs/outputs</a>. Source: <a href="../labs/08_llmops.py">labs/08_llmops.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> A request has spans: retrieve 180 ms, rerank 90 ms, LLM 2,400 ms (time to first token 600 ms), output guard 40 ms. Total is 2,710 ms. Where would you look first to cut perceived latency, and why?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>The LLM span is 2,400 / 2,710 = 89% of the total, so it dominates. If the UI streams, perceived wait is roughly retrieve + rerank + time to first token = 180 + 90 + 600 = 870 ms, so streaming already hides most generation time. Next levers: a shorter prompt (fewer retrieved chunks) to cut time to first token, or a smaller model for this route. Note the output guard needs the full answer, so with streaming you must guard chunk by chunk or accept a delay.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your agent sometimes loops calling the same search tool. What fields must the trace capture to diagnose it, and what alert would you add?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Per tool span: tool name, arguments (redacted), a hash of the arguments, the result size and a short preview, error status, and the step number within the run. Per run: total steps, total tokens, and stop reason. With argument hashes you can see the same call repeating with identical inputs. Alert: the share of runs that hit the step budget, or contain three or more identical tool calls, rising above a baseline (say 1% of runs over an hour). Each alerting run's trace ID goes into a triage queue.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Design how traces feed your eval system without leaking customer data.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>1) Redact PII in-process before export, using a regex plus model-based detector, and store only redacted text in the trace store. 2) Tag traces with outcome signals such as thumbs-down, escalation and guardrail block. 3) A daily job samples tagged traces and runs an LLM judge for faithfulness; low scores go to a review queue. 4) A reviewer turns real failures into golden-set cases, rewriting any remaining identifying details, and links the case to the trace ID for provenance. 5) Access to raw traces is role-limited with 30-day retention, while golden cases, which are already anonymised, live in git. This gives a steady stream of real failures into evals with a clear privacy boundary.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is the difference between a trace and a span?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>A trace is the full record of one request through the system. A span is one step inside it, such as a retrieval, an LLM call or a tool call, with its start and end time, inputs, outputs, token counts and status. Spans nest under a trace through a shared trace ID and parent IDs, so you can see the order and timing of every step. When an answer is wrong, the trace lets you check each step in turn: did retrieval fetch the right document, what exact prompt did the model see, and what did it return.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> Which metrics would you put on the dashboard for a production RAG service, and which would you alert on?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Dashboard: request rate, p50 and p95 end-to-end latency, time to first token, tokens in and out per request, cost per request and per day, error and timeout rate per span, retrieval empty-result rate, refusal or 'I don't know' rate, guardrail block rate, cache hit rate, and online judge scores on a sample. Alerts: p95 latency over budget, error rate spikes, cost per hour over a threshold, and sudden shifts in refusal or empty-retrieval rate, because those often mean an index or upstream failure. All of them sliced by model version and prompt version.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> How would you instrument an LLM platform shared by 15 teams so traces are useful and affordable?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Provide one SDK wrapper that emits spans in a shared schema, aligned with the OpenTelemetry GenAI conventions, so any backend can read them. Make redaction and tail-based sampling defaults inside the wrapper rather than per team. Attach model ID, prompt version hash, team and feature to every span for cost attribution. Keep full numeric metrics for 100% of traffic and full content for failures plus a small sample. Enforce retention by data class. Then build shared views: cost per team, top failing spans, and a one-click 'add to golden set' from a trace. The goal is that every team gets debugging and cost visibility without building it.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://github.com/open-telemetry/semantic-conventions-genai" target="_blank" rel="noopener">OpenTelemetry GenAI semantic conventions (official repository)</a></li>
+      <li><a href="https://langfuse.com/docs/observability/overview" target="_blank" rel="noopener">LLM Observability and Application Tracing - Langfuse docs</a></li>
+      <li><a href="https://arize.com/docs/phoenix" target="_blank" rel="noopener">What is Arize Phoenix? - Phoenix docs</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
   <p>With observability in place, you can make your evals automatic — a gate that runs on every change, like tests for code. Next: <strong>regression-testing prompts</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> A trace is a step-by-step receipt for one request, so you can see exactly where it went wrong.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

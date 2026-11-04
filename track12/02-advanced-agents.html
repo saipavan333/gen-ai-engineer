@@ -12,7 +12,42 @@
 
   <span class="eyebrow">Going Deeper · Lesson 11.2</span>
   <h1>Advanced agents</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>An agent is a model that takes many steps: think, call a tool, read the result, repeat.</p>
+    <p>Small mistakes add up: if each step is right 95% of the time, a 10-step task works only about 60% of the time.</p>
+    <p>Reliable agents make a plan first, check their own work and check every tool result.</p>
+    <p>They also have hard limits on steps, time and money, and hand over to a person when stuck.</p>
+    <p>To test an agent, grade the whole journey, not just the final answer.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>An agent is a new intern sent on a 10-step errand across town. If each step goes right 95% of the time, the whole errand only works about 60% of the time, because one wrong turn early sends every later step the wrong way. Good managers give the intern a checklist (plan), a phone to call when stuck (escalation), a spending limit (budget), and they check the receipts afterwards (trajectory eval).</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The intern's checklist</td><td>Plan-then-execute: a plan you can validate before any action runs</td></tr>
+      <tr><td>Checking the receipts</td><td>Validating tool results and reviewing the trajectory (every step in the trace)</td></tr>
+      <tr><td>A spending limit</td><td>Caps on steps, wall-clock time and tokens per task</td></tr>
+      <tr><td>A phone to call when stuck</td><td>Escalating to a human instead of looping</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A human intern notices they are lost; an agent will happily repeat the same wrong step until something stops it.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 350" role="img" aria-label="Bar chart: success of a multi-step task falls fast as steps add up" preserveAspectRatio="xMidYMid meet"><text x="14" y="20" text-anchor="start" class="b">Chance the whole task succeeds, by number of steps</text><line x1="60" y1="254" x2="610" y2="254" class="grid"/><text x="54" y="258" text-anchor="end" class="s m">0%</text><line x1="60" y1="201.5" x2="610" y2="201.5" class="grid"/><text x="54" y="205.5" text-anchor="end" class="s m">25%</text><line x1="60" y1="149" x2="610" y2="149" class="grid"/><text x="54" y="153" text-anchor="end" class="s m">50%</text><line x1="60" y1="96.5" x2="610" y2="96.5" class="grid"/><text x="54" y="100.5" text-anchor="end" class="s m">75%</text><line x1="60" y1="44" x2="610" y2="44" class="grid"/><text x="54" y="48" text-anchor="end" class="s m">100%</text><rect x="66.6" y="54.5" width="19.8" height="199.5" rx="2" class="fill-w"/><rect x="88.4" y="48.2" width="19.8" height="205.8" rx="2" class="fill-g"/><text x="87.5" y="270" text-anchor="middle" class="s m">1</text><rect x="121.6" y="64.475" width="19.8" height="189.525" rx="2" class="fill-w"/><rect x="143.4" y="52.316" width="19.8" height="201.684" rx="2" class="fill-g"/><text x="142.5" y="270" text-anchor="middle" class="s m">2</text><rect x="176.6" y="73.9513" width="19.8" height="180.049" rx="2" class="fill-w"/><rect x="198.4" y="56.3497" width="19.8" height="197.65" rx="2" class="fill-g"/><text x="197.5" y="270" text-anchor="middle" class="s m">3</text><rect x="231.6" y="82.9537" width="19.8" height="171.046" rx="2" class="fill-w"/><rect x="253.4" y="60.3027" width="19.8" height="193.697" rx="2" class="fill-g"/><text x="252.5" y="270" text-anchor="middle" class="s m">4</text><rect x="286.6" y="91.506" width="19.8" height="162.494" rx="2" class="fill-w"/><rect x="308.4" y="64.1766" width="19.8" height="189.823" rx="2" class="fill-g"/><text x="307.5" y="270" text-anchor="middle" class="s m">5</text><rect x="341.6" y="99.6307" width="19.8" height="154.369" rx="2" class="fill-w"/><rect x="363.4" y="67.9731" width="19.8" height="186.027" rx="2" class="fill-g"/><text x="362.5" y="270" text-anchor="middle" class="s m">6</text><rect x="396.6" y="107.349" width="19.8" height="146.651" rx="2" class="fill-w"/><rect x="418.4" y="71.6936" width="19.8" height="182.306" rx="2" class="fill-g"/><text x="417.5" y="270" text-anchor="middle" class="s m">7</text><rect x="451.6" y="114.682" width="19.8" height="139.318" rx="2" class="fill-w"/><rect x="473.4" y="75.3398" width="19.8" height="178.66" rx="2" class="fill-g"/><text x="472.5" y="270" text-anchor="middle" class="s m">8</text><rect x="506.6" y="121.648" width="19.8" height="132.352" rx="2" class="fill-w"/><rect x="528.4" y="78.913" width="19.8" height="175.087" rx="2" class="fill-g"/><text x="527.5" y="270" text-anchor="middle" class="s m">9</text><rect x="561.6" y="128.265" width="19.8" height="125.735" rx="2" class="fill-w"/><rect x="583.4" y="82.4147" width="19.8" height="171.585" rx="2" class="fill-g"/><text x="582.5" y="270" text-anchor="middle" class="s m">10</text><text x="335" y="288" text-anchor="middle" class="s m">steps in the task</text><text x="622" y="132.265" text-anchor="start" class="s b wn-t">60% at 95% a step</text><text x="622" y="86.4147" text-anchor="start" class="s b ok-t">82% at 98% a step</text><text x="14" y="312" text-anchor="start" class="s" style="font-size:13px">Every step multiplies in its own chance of failing. Validating tool results, retrying and escalating are</text><text x="14" y="329" text-anchor="start" class="s" style="font-size:13px">what lift the per-step rate.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 371" role="img" aria-label="Bar chart: success of a multi-step task falls fast as steps add up" preserveAspectRatio="xMidYMid meet"><text x="14" y="20" text-anchor="start" class="b">Chance the whole task succeeds</text><line x1="44" y1="234" x2="346" y2="234" class="grid"/><text x="38" y="238" text-anchor="end" class="s m">0%</text><line x1="44" y1="186.5" x2="346" y2="186.5" class="grid"/><text x="38" y="190.5" text-anchor="end" class="s m">25%</text><line x1="44" y1="139" x2="346" y2="139" class="grid"/><text x="38" y="143" text-anchor="end" class="s m">50%</text><line x1="44" y1="91.5" x2="346" y2="91.5" class="grid"/><text x="38" y="95.5" text-anchor="end" class="s m">75%</text><line x1="44" y1="44" x2="346" y2="44" class="grid"/><text x="38" y="48" text-anchor="end" class="s m">100%</text><rect x="47.624" y="53.5" width="10.872" height="180.5" rx="2" class="fill-w"/><rect x="60.496" y="47.8" width="10.872" height="186.2" rx="2" class="fill-g"/><text x="59.1" y="250" text-anchor="middle" class="s m">1</text><rect x="77.824" y="62.525" width="10.872" height="171.475" rx="2" class="fill-w"/><rect x="90.696" y="51.524" width="10.872" height="182.476" rx="2" class="fill-g"/><text x="89.3" y="250" text-anchor="middle" class="s m">2</text><rect x="108.024" y="71.0988" width="10.872" height="162.901" rx="2" class="fill-w"/><rect x="120.896" y="55.1735" width="10.872" height="178.826" rx="2" class="fill-g"/><text x="119.5" y="250" text-anchor="middle" class="s m">3</text><rect x="138.224" y="79.2438" width="10.872" height="154.756" rx="2" class="fill-w"/><rect x="151.096" y="58.75" width="10.872" height="175.25" rx="2" class="fill-g"/><text x="149.7" y="250" text-anchor="middle" class="s m">4</text><rect x="168.424" y="86.9816" width="10.872" height="147.018" rx="2" class="fill-w"/><rect x="181.296" y="62.255" width="10.872" height="171.745" rx="2" class="fill-g"/><text x="179.9" y="250" text-anchor="middle" class="s m">5</text><rect x="198.624" y="94.3325" width="10.872" height="139.667" rx="2" class="fill-w"/><rect x="211.496" y="65.6899" width="10.872" height="168.31" rx="2" class="fill-g"/><text x="210.1" y="250" text-anchor="middle" class="s m">6</text><rect x="228.824" y="101.316" width="10.872" height="132.684" rx="2" class="fill-w"/><rect x="241.696" y="69.0561" width="10.872" height="164.944" rx="2" class="fill-g"/><text x="240.3" y="250" text-anchor="middle" class="s m">7</text><rect x="259.024" y="107.95" width="10.872" height="126.05" rx="2" class="fill-w"/><rect x="271.896" y="72.355" width="10.872" height="161.645" rx="2" class="fill-g"/><text x="270.5" y="250" text-anchor="middle" class="s m">8</text><rect x="289.224" y="114.253" width="10.872" height="119.747" rx="2" class="fill-w"/><rect x="302.096" y="75.5879" width="10.872" height="158.412" rx="2" class="fill-g"/><text x="300.7" y="250" text-anchor="middle" class="s m">9</text><rect x="319.424" y="120.24" width="10.872" height="113.76" rx="2" class="fill-w"/><rect x="332.296" y="78.7562" width="10.872" height="155.244" rx="2" class="fill-g"/><text x="330.9" y="250" text-anchor="middle" class="s m">10</text><text x="195" y="268" text-anchor="middle" class="s m">steps in the task</text><text x="346" y="112.24" text-anchor="end" class="s b wn-t">60%</text><text x="346" y="70.7562" text-anchor="end" class="s b ok-t">82%</text><rect x="14" y="279" width="14" height="14" rx="3" class="fill-w"/><text x="34" y="291" text-anchor="start" class="s">95% per step</text><rect x="150" y="279" width="14" height="14" rx="3" class="fill-g"/><text x="170" y="291" text-anchor="start" class="s">98% (errors recovered)</text><text x="14" y="316" text-anchor="start" class="s" style="font-size:13px">Every step multiplies in its own chance of</text><text x="14" y="333" text-anchor="start" class="s" style="font-size:13px">failing. Validating tool results, retrying and</text><text x="14" y="350" text-anchor="start" class="s" style="font-size:13px">escalating are what lift the per-step rate.</text></svg>
+    <figcaption>Computed from the page: 0.95 to the power of the step count, and 0.98 once tool-error recovery rescues 60% of failed steps. At 10 steps that is 60% versus 82%.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">Track&nbsp;4 built an agent that calls tools and loops. This lesson is about making one <em>reliable</em> — the patterns that turn an impressive demo into something you’d trust to run unattended, and how to evaluate whether it actually works.</p>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <h2>Why agents are hard to trust</h2>
   <p>An agent multiplies the unreliability of a single model call. If one step is 95% reliable, a ten-step task is only about 60% reliable, because errors compound and — worse — an early mistake gets carried forward as if it were true. Agents also fail in ways chatbots don’t: looping without making progress, calling the wrong tool, trusting a tool’s output blindly, or quietly burning time and money. The demo that dazzled on a clean example falls over on the messy 30% of real inputs. Advanced agent work is mostly <strong>engineering for that 30%</strong>: anticipating failure and designing so it’s caught, bounded, and recoverable.</p>
@@ -51,7 +86,14 @@
   <p>The biggest mistake in agent evaluation is grading only the final answer. An agent can reach the right answer by a lucky or unsafe path (and will fail next time), or produce a wrong answer despite sound reasoning (an easy fix you’ll miss). So you evaluate the <span class="term">trajectory</span> — the full sequence of thoughts, tool calls, and results — on a golden set of tasks.</p>
   <p>Track <strong>task success rate</strong> as the headline metric, but also per-step measures: did it pick the right tool, were arguments well-formed, did it recover from errors, how many steps and tokens did it take. Tracing every step (Track&nbsp;6) is what makes this possible — without traces, an agent is an unobservable black box and you’re debugging by vibes.</p>
 
-  <div class="box key">
+  
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Budgeting a ticket-triage agent at 20,000 tasks a day</div>
+    <p>Assumptions: 20,000 support tasks a day, 10 steps per normal task, input grows from 2,000 tokens by 800 per step as history accumulates, 200 output tokens per step, model at $2 / $10 per million input / output tokens (claude-sonnet-5-5, <a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic models overview, checked 2026-11-03</a>), 2% of tasks get stuck in a loop.</p><ol><li><strong>Reliability.</strong> At 95% per step, 0.95<sup>10</sup> = 0.60. If tool-error recovery rescues 60% of failed steps, per-step success becomes 0.95 + 0.05 x 0.6 = 0.98, and 0.98<sup>10</sup> = 0.82.</li><li><strong>Normal task cost.</strong> Input = 10 x 2,000 + 800 x (0 + 1 + ... + 9) = 20,000 + 36,000 = 56,000 tokens: $0.112. Output = 2,000 tokens: $0.02. Total $0.132 a task, $2,640 a day.</li><li><strong>A runaway with no cap.</strong> Say it spins for 50 steps. Input = 50 x 2,000 + 800 x (0 + ... + 49) = 100,000 + 980,000 = 1.08 M tokens: $2.16, plus 10,000 output tokens: $0.10. About $2.26 each. 2% of 20,000 = 400 runaways a day = $904 a day, a third on top of the useful spend.</li><li><strong>With a 12-step cap.</strong> Input = 12 x 2,000 + 800 x 66 = 76,800 tokens ($0.154) plus 2,400 output ($0.024) = about $0.18 each. 400 x $0.18 = $71 a day, and those tasks escalate to a human instead of failing silently.</li><li><strong>Repeated-call detection</strong> stops most loops even earlier, at the second identical call.</li></ol><p>The cap is a cost control and a reliability control at once: it turns an invisible spin into a visible escalation.</p>
+  </div>
+<!-- shape:scale:end -->
+<div class="box key">
     <div class="box-label">Key points</div>
     <ul>
       <li>Agents <strong>compound</strong> per-step error; advanced work is engineering for the messy 30% that breaks demos.</li>
@@ -101,6 +143,22 @@
         <div class="why">You measure task success rate, not vibes.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">An agent's steps each succeed 97% of the time and failures are independent. Roughly how often does a 15-step task succeed?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) It cannot be estimated.</span>
+        <div class="why">Under the independence assumption it is a simple product. Real errors are often correlated, but this is the right first estimate.</div></li>
+      <li data-correct="true"><span class="opt">B) About 63%, because 0.97 to the power 15 is about 0.63.</span>
+        <div class="why">Success needs every step to succeed, so you multiply: 0.97^15 = 0.633. Long chains erode reliability fast, which is why recovery and shorter plans matter.</div></li>
+      <li data-correct="false"><span class="opt">C) About 55%, because you subtract 3% per step.</span>
+        <div class="why">15 x 3% = 45% off would give 55%, but probabilities multiply rather than subtract. Subtracting overstates the loss at this size and breaks entirely for long chains.</div></li>
+      <li data-correct="false"><span class="opt">D) 97%, because each step is 97% reliable.</span>
+        <div class="why">That ignores compounding. Each extra step is another chance to fail.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box deep">
@@ -112,8 +170,89 @@
 
   <p>You can build agents that are bounded, observable, and measured. The thread running through both RAG and agents is evaluation — so let’s deepen that next: <strong>advanced evals.</strong></p>
 
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/04_agent_tools.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/04_agent_tools.py</code></pre>
+    <p><strong>What to look for:</strong> The lab's agent loop has a step budget, repeated-call detection, tool-error recovery, a code-enforced refund limit and a human-approval threshold (refunds over Rs 1,000 go to a queue), and it prints a trace. Read the flaky-courier scenario for error handling. On our run the real model never called the refund tool in the 'needs approval' scenario, so the 'scripted model' section shows the parts that did not fire on their own: a stuck model hitting the repeat guard and the step budget, and a model that requests a Rs 1,500 refund and gets pending_human_approval.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  Second scripted model: it calls issue_refund for Rs 1500 (over the Rs 1000 auto-approve line), then answers.
+    step 1: issue_refund({&#x27;order_id&#x27;: &#x27;ORD-55120&#x27;, &#x27;amount_rs&#x27;: 1500}) -&gt; {&#x27;status&#x27;: &#x27;pending_human_approval&#x27;, &#x27;order_id&#x27;: &#x27;ORD-55120&#x27;, &#x27;amount_rs&#x27;: 1500}
+    step 2: FINAL -&gt; Your refund request has been sent for approval.
+  Look: the code returned pending_human_approval and the audit log records NEEDS_HUMAN: money did not move.
+  (The claim checker above is a crude regex: it can flag a polite &#x27;shall I proceed?&#x27; as a promise. Read the
+  flagged lines yourself; in production you compare structured tool results, not text patterns.)
+Audit log (what actually moved money)
+   (&#x27;BLOCKED&#x27;, &#x27;ORD-55120&#x27;, 25000)
+   (&#x27;NEEDS_HUMAN&#x27;, &#x27;ORD-55120&#x27;, 1500)
+  unbacked claims detected: 1   ignored refund requests: 1
+  Look: the Rs 25000 request was blocked by code, whatever the model was persuaded to try.
+  And check every FINAL line against the tool results: a fluent agent can promise an action it never
+  took, or add numbers no tool returned (e.g. a refund timeline). Verify claims against the audit log.
+  Prompts guide the model; only code enforces policy.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/04_agent_tools.txt">labs/outputs</a>. Source: <a href="../labs/04_agent_tools.py">labs/04_agent_tools.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Your agent averages 7 steps. What per-step success rate do you need for 90% end-to-end success, assuming independence?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Solve p^7 = 0.90, so p = 0.90^(1/7). ln 0.90 = -0.1054; divided by 7 = -0.01505; e^-0.01505 = 0.985. You need about 98.5% per step. That target is why validating tool results and recovering from errors matter so much: they lift per-step success, and the gain compounds.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Design a trajectory eval for a refund agent with tools lookup_order, check_policy, issue_refund (needs human approval). What do you score per task?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Per task, from the trace: (1) final outcome correct (refund issued or correctly declined); (2) tool selection: was check_policy called before issue_refund; (3) argument validity: order id and amount match the lookup result; (4) safety: issue_refund never executed without approval and never above the policy limit, scored as pass or fail with zero tolerance; (5) efficiency: steps and tokens against a budget; (6) recovery: when a tool errored, did it adapt or repeat. Headline is task success rate, but a single safety failure blocks release regardless of the average.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> A teammate proposes splitting the agent into a planner, a researcher and a writer agent. How do you decide, and what do you measure?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>First, write down the failure the split is meant to fix (context overload, mixed permissions, missing critique). Then try the cheaper fix inside one agent: better tools, a plan step, a reflection step. If you still split, compare single-agent and multi-agent on the same golden tasks: task success rate with a confidence interval, p95 latency, tokens per task, and failures at handoffs (information lost between agents). Multi-agent usually costs more tokens and adds handoff failures, so it has to win clearly on success rate or on safety, for example by isolating a high-permission tool in its own narrowly scoped agent.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> Why do production agents need a step cap and a budget?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Because agents can loop: they repeat a tool call, keep retrying a failing approach, or wander, and each step costs tokens and time. Without a cap, a stuck task ends only when something external stops it, which shows up as a big bill and a user waiting forever. A maximum step count, a wall-clock timeout and a token budget bound the damage. When a cap is hit, the agent should stop cleanly and return partial progress or escalate to a human, so the failure is visible.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> Compare ReAct with plan-then-execute. When would you use each?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>ReAct interleaves reasoning and acting one step at a time, deciding the next action from the latest observation. It adapts well to surprises but can wander and is harder to predict. Plan-then-execute produces a full plan first, then runs the steps, optionally re-planning on failure. It gives readable traces, fewer wasted calls and a point where a human or a validator can approve the plan before anything runs. I use ReAct for short exploratory tasks and plan-then-execute for longer tasks or any with side effects.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> How do you evaluate and monitor an agent once it is live?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Offline, a golden set of tasks with expected outcomes and safety rules, scored on full trajectories: success, tool choice, argument correctness, recovery, steps and cost. That suite gates every prompt, tool or model change. Online, I trace every run with spans per step and track success proxies (escalation rate, user corrections, tool error rate), cost per task, step-count distribution and loop detections, with alerts on shifts. I sample traces for human review weekly and turn failures into new golden tasks. Safety-relevant actions get hard checks in code, not just eval coverage.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2210.03629" target="_blank" rel="noopener">Yao et al., ReAct: Synergizing Reasoning and Acting in Language Models (2022) - arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2303.11366" target="_blank" rel="noopener">Shinn et al., Reflexion: Language Agents with Verbal Reinforcement Learning (2023) - arXiv</a></li>
+      <li><a href="https://www.anthropic.com/engineering/building-effective-agents" target="_blank" rel="noopener">Building effective agents - Anthropic Engineering</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> An agent is only as reliable as all its steps multiplied together, so check each step and cap the loop.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

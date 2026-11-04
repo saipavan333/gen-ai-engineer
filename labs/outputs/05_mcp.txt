@@ -1,0 +1,29 @@
+
+======================================================================
+1) Connect and discover (no integration code written for this server)
+======================================================================
+  server='store-support'  negotiated protocol version=2026-07-28
+  tool lookup_order: Get status, item and total (in rupees) for an order id like ORD-12345.
+       input schema: {"type": "object", "properties": {"order_id": {"title": "Order Id", "type": "string"}}, "required": ["order_id"], "title": "lookup_orderArguments"}
+  tool search_policies: Keyword search over the store's policy pages. Returns the best k pages with their ids.
+       input schema: {"type": "object", "properties": {"query": {"title": "Query", "type": "string"}, "k": {"default": 2, "title": "K", "type": "integer"}}, "required": ["query"], "title": "search_policiesArguments"}
+  resource policies://index -> 14 lines, e.g. ['ship-01: Standard shipping', 'ship-02: Express shipping', 'ship-03: Address changes']
+
+======================================================================
+2) Hand the MCP tools to the local LLM and let it work
+======================================================================
+  user: Has my order ORD-55120 shipped, and can I still change its delivery address?
+    step 1: MCP tools/call lookup_order({'order_id': 'ORD-55120'}) -> {   "order_id": "ORD-55120",   "status": "Shipped",   "item": "MX-750 mixer grinder",   "total_rs": 1899 }...
+    step 1: MCP tools/call search_policies({'query': 'change delivery address', 'k': 2}) -> {   "id": "ship-03",   "title": "Address changes",   "text": "You can change the delivery address only before ...
+    step 2: FINAL -> Your order ORD-55120 has been shipped. The item is an MX-750 mixer grinder for a total of 1899 rupees. According to our policies, you cannot change the delivery address once the order has shipped. You can refuse delivery and place a new order if needed. [ship-03]
+  user: What is the warranty on the MX-750 mixer?
+    step 1: MCP tools/call search_policies({'k': 1, 'query': 'MX-750 mixer warranty'}) -> {   "id": "sell-01",   "title": "Warranty claims",   "text": "Manufacturer warranty claims are handled by the ...
+    step 2: FINAL -> The MX-750 mixer comes with a 2-year motor warranty, as stated in policy [sell-01]. For warranty claims, please contact the manufacturer's service centre and keep your invoice handy.
+
+======================================================================
+3) Trust boundary
+======================================================================
+  Look: the model only ever saw tool NAMES, DESCRIPTIONS and RESULTS that the server chose to send.
+  A malicious server can put instructions in any of those (tool poisoning / indirect injection),
+  so treat third-party servers like third-party code: pin versions, least privilege, and keep
+  approval gates for actions in YOUR client code (lab 04, lab 07).

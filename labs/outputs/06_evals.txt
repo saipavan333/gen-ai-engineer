@@ -1,0 +1,63 @@
+
+======================================================================
+1) Retrieval metrics on the answerable questions (k=3)
+======================================================================
+  dense_faiss  recall@3=1.00  MRR=1.00  nDCG@3=1.00
+  lexical      recall@3=1.00  MRR=1.00  nDCG@3=1.00
+  hybrid       recall@3=1.00  MRR=1.00  nDCG@3=1.00
+  Look: recall@k asks 'did we fetch it at all', MRR and nDCG reward putting it FIRST.
+
+======================================================================
+2) Generate answers with two prompt versions (v1 = grounded, v2 = a 'friendlier' rewrite)
+======================================================================
+
+======================================================================
+3) Regression gate: per-case checks, not just the average
+======================================================================
+  v1: correct=92%  cited=100%
+  v2: correct=83%  cited=17%
+  cases where v2 lost something v1 had: 12
+    - 'How long do UPI refunds take?' lost ['cited']
+      v2 said: 'UPI refunds typically take within 2 business days of the return being picked up. If you have any further questions or ne'
+    - 'What does refund status RF-DONE mean?' lost ['cited']
+      v2 said: 'Refund status RF-DONE means that the bank has confirmed the refund. This indicates that the refund process is complete, '
+    - 'Is express delivery available for a sofa?' lost ['cited']
+      v2 said: 'Express delivery is not available for furniture items like sofas. For your sofa, you would need to choose standard shipp'
+    - 'How many days do I have to return a shirt?' lost ['cited']
+      v2 said: 'You have 10 days from the date of delivery to return a shirt, as most items can be returned within this timeframe. Howev'
+    - 'My blender arrived broken. What should I do?' lost ['cited']
+      v2 said: "I'm sorry to hear that your blender arrived broken. Please follow these steps to get it resolved:\n\n1. **Take Photos**: T"
+    - 'I got charged two times for one order' lost ['cited']
+      v2 said: "I understand that you've been charged twice for one order, and that can be frustrating. According to our policy, if you "
+  Look: v2 averages look 'fine' on correctness but it dropped citations almost everywhere, and on the
+  unanswerable questions it refused politely but not in the contract phrase the UI detects. Read the
+  failing cases: some are real regressions, some show your check is too brittle. Both need a decision.
+  gate decision for shipping v2: BLOCK  (any per-case regression on a must-pass case blocks)
+
+======================================================================
+4) LLM-as-judge: faithfulness of v1 answers to their retrieved context
+======================================================================
+  judge 'faithful' agrees with the deterministic fact check on 7/12 cases
+  Look: faithful != correct. An answer can be faithful to the WRONG passage. Calibrate any judge
+  against human labels before you trust it (report agreement and Cohen's kappa, not vibes).
+
+======================================================================
+5) Judge position bias: same pair, swapped order
+======================================================================
+  How long do card refunds take?      order1 picked B, order2 picked B  -> FLIPPED
+  Return window for electronics?      order1 picked B, order2 picked A  -> consistent
+  Express shipping price?             order1 picked B, order2 picked A  -> consistent
+  When is standard shipping free?     order1 picked A, order2 picked B  -> consistent
+  Duplicate charge reversal time?     order1 picked A, order2 picked B  -> consistent
+  consistent verdicts: 4/5 = 80% (95% CI 38%-96%)   correct in both orders: 2/5 = 40% (95% CI 12%-77%)
+  n=5 pairs is a demo, not a measurement of this judge's bias: the intervals span most of 0-100%.
+  Look: with no reference passage in the judge prompt, the judge has to guess which number is right.
+  Always judge both orders and count a win only when both agree; give the judge the reference.
+
+======================================================================
+6) How wide is the error bar on 12 cases?
+======================================================================
+  v1 accuracy 11/12 = 92% (95% CI 65%-99%)  (Wilson interval)
+  At n=400 the same accuracy would be roughly +/- 2.7%
+{"v1_correct": 0.917, "regressions": 12, "judge_consistent": 4}
+

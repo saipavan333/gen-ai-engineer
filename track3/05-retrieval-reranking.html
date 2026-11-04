@@ -12,6 +12,42 @@
 
   <span class="eyebrow">Track 3 · Lesson 3.5</span>
   <h1>Retrieval &amp; reranking</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Retrieval gives every chunk a similarity score against the question.</p>
+    <p>Top-k keeps the k highest, for example the best 3.</p>
+    <p>A similarity threshold also drops any chunk whose score is too low, even if it made the top k.</p>
+    <p>If nothing passes, the honest answer is “I don't know”, and you never call the model at all.</p>
+    <p>A reranker can then re-read the shortlist next to the question and put the truly best chunk first.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Hiring with two rounds: a recruiter skims 500 CVs in an afternoon by keywords and picks 50, then the hiring manager actually reads those 50 against the job and picks 5. The recruiter is fast and rough (the bi-encoder); the manager is slow and careful (the cross-encoder).</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The recruiter skimming 500 CVs</td><td>Stage 1: fast vector search returns many candidates (e.g. 50)</td></tr>
+      <tr><td>The shortlist size</td><td>k: how many chunks you keep</td></tr>
+      <tr><td>“No one met the bar” for the job</td><td>The threshold: below it, refuse instead of guessing</td></tr>
+      <tr><td>The hiring manager reading each CV</td><td>Stage 2: a cross-encoder reranker scores (query, chunk) pairs</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A manager can ask the recruiter for more CVs; a reranker can only reorder what stage 1 handed it, so if the best candidate was not in the 50, it is gone.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 355" role="img" aria-label="Top-k retrieval with a similarity threshold, for an answerable and an off-topic question" preserveAspectRatio="xMidYMid meet"><text x="20" y="22" text-anchor="start" class="s b">“How long is the X200 warranty?”</text><text x="20" y="50" text-anchor="start" class="s">1. The X200 has a 3-year limited warranty.</text><rect x="20" y="56" width="241.9" height="14" rx="3" class="fill-g"/><text x="267.9" y="68" text-anchor="start" class="s">0.82</text><text x="20" y="94" text-anchor="start" class="s">2. Warranty claims need the order number.</text><rect x="20" y="100" width="209.45" height="14" rx="3" class="fill-g"/><text x="235.45" y="112" text-anchor="start" class="s">0.71</text><text x="20" y="138" text-anchor="start" class="s">3. Returns are free within 30 days.</text><rect x="20" y="144" width="135.7" height="14" rx="3" class="fill-w"/><text x="173.5" y="156" text-anchor="start" class="s">0.46</text><line x1="16" y1="164" x2="365" y2="164" class="ln thin dash"/><text x="365" y="161" text-anchor="end" class="s m">top-3 cut</text><text x="20" y="182" text-anchor="start" class="s m">4. The X200 motor is rated at 1200 watts.</text><rect x="20" y="188" width="115.05" height="14" rx="3" class="fill-m"/><text x="173.5" y="200" text-anchor="start" class="s">0.39</text><text x="20" y="226" text-anchor="start" class="s m">5. Cancel under Settings &gt; Billing.</text><rect x="20" y="232" width="35.4" height="14" rx="3" class="fill-m"/><text x="61.4" y="244" text-anchor="start" class="s">0.12</text><line x1="167.5" y1="53" x2="167.5" y2="73" class="ln wn"/><line x1="167.5" y1="97" x2="167.5" y2="117" class="ln wn"/><line x1="167.5" y1="141" x2="167.5" y2="161" class="ln wn"/><line x1="167.5" y1="185" x2="167.5" y2="205" class="ln wn"/><line x1="167.5" y1="229" x2="167.5" y2="249" class="ln wn"/><line x1="167.5" y1="249" x2="167.5" y2="256" class="ln wn dash"/><text x="171.5" y="270" text-anchor="start" class="s wn-t">threshold 0.50</text><text x="20" y="296" text-anchor="start" class="s ok-t" style="font-size:13px">→ prompt gets chunks 1, 2; rank 3 is in the top 3</text><text x="20" y="313" text-anchor="start" class="s ok-t" style="font-size:13px">but below the threshold, so it stays out</text><text x="415" y="22" text-anchor="start" class="s b">“Who won the 2022 World Cup?”</text><text x="415" y="50" text-anchor="start" class="s">1. The X200 has a 3-year limited warranty.</text><rect x="415" y="56" width="61.95" height="14" rx="3" class="fill-w"/><text x="482.95" y="68" text-anchor="start" class="s">0.21</text><text x="415" y="94" text-anchor="start" class="s">2. Warranty claims need the order number.</text><rect x="415" y="100" width="53.1" height="14" rx="3" class="fill-w"/><text x="474.1" y="112" text-anchor="start" class="s">0.18</text><text x="415" y="138" text-anchor="start" class="s">3. Returns are free within 30 days.</text><rect x="415" y="144" width="44.25" height="14" rx="3" class="fill-w"/><text x="465.25" y="156" text-anchor="start" class="s">0.15</text><line x1="411" y1="164" x2="760" y2="164" class="ln thin dash"/><text x="760" y="161" text-anchor="end" class="s m">top-3 cut</text><text x="415" y="182" text-anchor="start" class="s m">4. The X200 motor is rated at 1200 watts.</text><rect x="415" y="188" width="32.45" height="14" rx="3" class="fill-m"/><text x="453.45" y="200" text-anchor="start" class="s">0.11</text><text x="415" y="226" text-anchor="start" class="s m">5. Cancel under Settings &gt; Billing.</text><rect x="415" y="232" width="26.55" height="14" rx="3" class="fill-m"/><text x="447.55" y="244" text-anchor="start" class="s">0.09</text><line x1="562.5" y1="53" x2="562.5" y2="73" class="ln wn"/><line x1="562.5" y1="97" x2="562.5" y2="117" class="ln wn"/><line x1="562.5" y1="141" x2="562.5" y2="161" class="ln wn"/><line x1="562.5" y1="185" x2="562.5" y2="205" class="ln wn"/><line x1="562.5" y1="229" x2="562.5" y2="249" class="ln wn"/><line x1="562.5" y1="249" x2="562.5" y2="256" class="ln wn dash"/><text x="566.5" y="270" text-anchor="start" class="s wn-t">threshold 0.50</text><text x="415" y="296" text-anchor="start" class="s wn-t" style="font-size:13px">→ refuse: best score 0.21 is under 0.50, so no</text><text x="415" y="313" text-anchor="start" class="s wn-t" style="font-size:13px">chunk is good enough and the model is never</text><text x="415" y="330" text-anchor="start" class="s wn-t" style="font-size:13px">called</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 695" role="img" aria-label="Top-k retrieval with a similarity threshold, for an answerable and an off-topic question" preserveAspectRatio="xMidYMid meet"><text x="12" y="20" text-anchor="start" class="s b">“How long is the X200 warranty?”</text><text x="12" y="48" text-anchor="start" class="s">1. The X200 has a 3-year limited warranty.</text><rect x="12" y="54" width="234.52" height="14" rx="3" class="fill-g"/><text x="252.52" y="66" text-anchor="start" class="s">0.82</text><text x="12" y="92" text-anchor="start" class="s">2. Warranty claims need the order number.</text><rect x="12" y="98" width="203.06" height="14" rx="3" class="fill-g"/><text x="221.06" y="110" text-anchor="start" class="s">0.71</text><text x="12" y="136" text-anchor="start" class="s">3. Returns are free within 30 days.</text><rect x="12" y="142" width="131.56" height="14" rx="3" class="fill-w"/><text x="161" y="154" text-anchor="start" class="s">0.46</text><line x1="8" y1="162" x2="348" y2="162" class="ln thin dash"/><text x="348" y="159" text-anchor="end" class="s m">top-3 cut</text><text x="12" y="180" text-anchor="start" class="s m">4. The X200 motor is rated at 1200 watts.</text><rect x="12" y="186" width="111.54" height="14" rx="3" class="fill-m"/><text x="161" y="198" text-anchor="start" class="s">0.39</text><text x="12" y="224" text-anchor="start" class="s m">5. Cancel under Settings &gt; Billing.</text><rect x="12" y="230" width="34.32" height="14" rx="3" class="fill-m"/><text x="52.32" y="242" text-anchor="start" class="s">0.12</text><line x1="155" y1="51" x2="155" y2="71" class="ln wn"/><line x1="155" y1="95" x2="155" y2="115" class="ln wn"/><line x1="155" y1="139" x2="155" y2="159" class="ln wn"/><line x1="155" y1="183" x2="155" y2="203" class="ln wn"/><line x1="155" y1="227" x2="155" y2="247" class="ln wn"/><line x1="155" y1="247" x2="155" y2="254" class="ln wn dash"/><text x="159" y="268" text-anchor="start" class="s wn-t">threshold 0.50</text><text x="12" y="294" text-anchor="start" class="s ok-t" style="font-size:13px">→ prompt gets chunks 1, 2; rank 3 is in the top</text><text x="12" y="311" text-anchor="start" class="s ok-t" style="font-size:13px">3 but below the threshold, so it stays out</text><text x="12" y="362" text-anchor="start" class="s b">“Who won the 2022 World Cup?”</text><text x="12" y="390" text-anchor="start" class="s">1. The X200 has a 3-year limited warranty.</text><rect x="12" y="396" width="60.06" height="14" rx="3" class="fill-w"/><text x="78.06" y="408" text-anchor="start" class="s">0.21</text><text x="12" y="434" text-anchor="start" class="s">2. Warranty claims need the order number.</text><rect x="12" y="440" width="51.48" height="14" rx="3" class="fill-w"/><text x="69.48" y="452" text-anchor="start" class="s">0.18</text><text x="12" y="478" text-anchor="start" class="s">3. Returns are free within 30 days.</text><rect x="12" y="484" width="42.9" height="14" rx="3" class="fill-w"/><text x="60.9" y="496" text-anchor="start" class="s">0.15</text><line x1="8" y1="504" x2="348" y2="504" class="ln thin dash"/><text x="348" y="501" text-anchor="end" class="s m">top-3 cut</text><text x="12" y="522" text-anchor="start" class="s m">4. The X200 motor is rated at 1200 watts.</text><rect x="12" y="528" width="31.46" height="14" rx="3" class="fill-m"/><text x="49.46" y="540" text-anchor="start" class="s">0.11</text><text x="12" y="566" text-anchor="start" class="s m">5. Cancel under Settings &gt; Billing.</text><rect x="12" y="572" width="25.74" height="14" rx="3" class="fill-m"/><text x="43.74" y="584" text-anchor="start" class="s">0.09</text><line x1="155" y1="393" x2="155" y2="413" class="ln wn"/><line x1="155" y1="437" x2="155" y2="457" class="ln wn"/><line x1="155" y1="481" x2="155" y2="501" class="ln wn"/><line x1="155" y1="525" x2="155" y2="545" class="ln wn"/><line x1="155" y1="569" x2="155" y2="589" class="ln wn"/><line x1="155" y1="589" x2="155" y2="596" class="ln wn dash"/><text x="159" y="610" text-anchor="start" class="s wn-t">threshold 0.50</text><text x="12" y="636" text-anchor="start" class="s wn-t" style="font-size:13px">→ refuse: best score 0.21 is under 0.50, so no</text><text x="12" y="653" text-anchor="start" class="s wn-t" style="font-size:13px">chunk is good enough and the model is never</text><text x="12" y="670" text-anchor="start" class="s wn-t" style="font-size:13px">called</text></svg>
+    <figcaption>Illustrative scores, k = 3, threshold 0.50. Left, two chunks clear both bars. Right, an off-topic question scores low on everything, so the system refuses before generating.</figcaption>
+  </figure>
+  <div class="ez-play" data-ez-play="topk">
+    <div class="ease-label">Try it</div>
+    <p class="ez-hint">Move k and the threshold, and switch questions. Green chunks reach the prompt, red ones made the top k but failed the threshold, and grey ones were never in the top k.</p>
+    <div class="ez-stage"></div>
+  </div>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">Vector search is fast but a little blunt — it ranks by similarity, which isn’t the same as relevance. Reranking adds a second, smarter pass that reads each candidate against the query and reorders for quality. This two-stage pattern is one of the biggest, cheapest wins in RAG.</p>
 
   <h2>Why “similar” isn’t “best”</h2>
@@ -21,6 +57,10 @@
     <div class="box-label">Concept</div>
     <p>A <span class="term">bi-encoder</span> embeds query and document separately, so similarity is a fast vector comparison (this is your retriever). A <span class="term">cross-encoder</span> feeds the query and a document <em>together</em> through a model to produce a single relevance score — far more accurate, but far slower (you must run it per candidate). The standard design is <span class="term">two-stage retrieval</span>: use the fast bi-encoder to fetch many candidates (high <span class="term">recall</span>), then the slow cross-encoder to rerank them down to the best few (high <span class="term">precision</span>).</p>
   </div>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <figure class="diagram">
     <img src="../assets/diagrams/t3-rerank.svg" alt="Two-stage retrieval: a Query goes to Vector search (bi-encoder, fast) which returns top 50 candidates, then to Rerank (cross-encoder, slow, scores each pair) which returns the Top 5, best in order. Stage 1 casts a wide cheap net; stage 2 carefully reorders the shortlist.">
@@ -63,6 +103,13 @@ index <span class="o">=</span> bi.<span class="f">encode</span>(chunks, normaliz
     <span class="k">return</span> reranked[:keep]</code></pre>
     <p>You only run the expensive cross-encoder on the 50 candidates, not the whole corpus — that’s what makes two-stage affordable. Reranking often improves answer quality more than swapping to a bigger LLM, for a fraction of the cost.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Adding a cross-encoder to search over 30 M manual chunks at 120 QPS</div>
+    <p>Assumptions: 30 M chunks, 120 queries per second at peak, a MiniLM-size cross-encoder that scores about 2,000 (query, chunk) pairs per second on one GPU at your chunk length (an assumption: benchmark it yourself, it varies with hardware and sequence length).</p><ol><li><strong>Why not cross-encode everything?</strong> One query against all 30 M chunks = 30 M pairs / 2,000 per second = 15,000 s, over four hours per query. That is why stage 1 exists.</li><li><strong>Rerank 50 per query.</strong> 120 QPS x 50 = 6,000 pairs per second, so 6,000 / 2,000 = 3 GPUs at peak, with no headroom. Latency per query: 50 / 2,000 = 25 ms if the batch gets a GPU to itself.</li><li><strong>Rerank 20 per query.</strong> 120 x 20 = 2,400 pairs per second, 1.2 GPUs, so 2 with headroom; latency 20 / 2,000 = 10 ms.</li><li><strong>Is 20 enough?</strong> Check recall@20 and recall@50 of stage 1 on your golden set. If recall@20 = 0.93 and recall@50 = 0.96, reranking 50 can at best recover 3 more points of questions. Decide whether 3 points is worth one extra GPU.</li><li><strong>Keep narrow.</strong> After reranking, send the top 5 into the prompt. 5 chunks x 400 tokens = 2,000 tokens instead of 20,000 if you had stuffed all 50: at $2 per million input tokens (<a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic models overview, checked 2026-11-03</a>) that saves 18,000 x $2 / 1 M = $0.036 per query, about $15,500 an hour at a sustained 120 QPS (120 x 3,600 = 432,000 queries). The reranker pays for itself.</li></ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -101,6 +148,22 @@ index <span class="o">=</span> bi.<span class="f">encode</span>(chunks, normaliz
         <div class="why">It runs after embedding-based retrieval, not instead of it.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Stage-1 recall@50 is 0.97 and recall@5 is 0.71. You add a cross-encoder over the top 50 and keep 5. What is the best possible recall@5 after reranking?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) 0.97, because a reranker can only reorder the 50 candidates it is given.</span>
+        <div class="why">Reranking can promote any of the 50 into the top 5, so the ceiling is the stage-1 recall at the depth you rerank. It cannot recover the 3% of questions whose answer never made the shortlist.</div></li>
+      <li data-correct="false"><span class="opt">B) 1.0, because the cross-encoder reads the query and chunk together.</span>
+        <div class="why">The cross-encoder only sees the 50 candidates. Chunks outside the shortlist are never scored.</div></li>
+      <li data-correct="false"><span class="opt">C) 0.71, because reranking does not change recall.</span>
+        <div class="why">Reranking does not change recall at the shortlist depth (50), but it can raise recall at the smaller depth you keep (5) by promoting relevant chunks.</div></li>
+      <li data-correct="false"><span class="opt">D) It depends only on the size of the LLM.</span>
+        <div class="why">The LLM comes after retrieval and has no effect on which chunks are ranked into the top 5.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -124,8 +187,84 @@ index <span class="o">=</span> bi.<span class="f">encode</span>(chunks, normaliz
     <p>The strategic insight: in most RAG systems, <em>retrieval</em> is the bottleneck, not generation. Teams reflexively reach for a bigger, pricier LLM when their real problem is that the right evidence isn’t making it into the prompt. Adding a reranker, fetching more candidates, and (next lesson) blending in keyword search usually buys more answer quality per dollar than any model upgrade. Fix what reaches the model before you upgrade the model.</p>
   </div>
 
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/03_rag_local.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/03_rag_local.py</code></pre>
+    <p><strong>What to look for:</strong> Honest note: the lab has no cross-encoder stage; it does dense retrieval, BM25 and RRF fusion. Use it to see the precondition for reranking: print the top-20 from dense retrieval for a few golden questions and note at which rank the correct chunk sits. If it is in the top 20 but below rank 3, a reranker would help; if it is missing from the top 20, no reranker can. To try a real reranker, add sentence-transformers' CrossEncoder (the worked example above) on top of the lab's top-20 list.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  out of the top 3. On this tiny corpus dense already wins; hybrid earns its keep on big corpora full of
+  near-identical codes (SKUs, error ids) that embeddings blur. Never assume: measure hit@k (lab 06).
+5) Grounded answers with citations, and a refusal when retrieval is weak
+  Q: I was charged twice for one order. What happens now?
+  A: If you were charged twice for one order, the duplicate payment is reversed automatically within 3 business days [pay-01#0]. If it is not reversed after 3 business days, raise a billing ticket with both transaction ids.
+     citations=[&#x27;pay-01#0&#x27;] all-cited-ids-were-retrieved=True
+  Q: Can I change my delivery address after the order has shipped?
+  A: No, you cannot change your delivery address after the order has shipped. According to [ship-03#0], the address can only be changed before the order is packed.
+     citations=[&#x27;ship-03#0&#x27;] all-cited-ids-were-retrieved=True
+  Q: Do you deliver to Antarctica by drone?
+  A: I don&#x27;t know based on our policies. (refused before calling the LLM: best cosine 0.27 &lt; 0.35)
+     citations=[] all-cited-ids-were-retrieved=True
+  Look: every factual sentence carries an id you can check; the off-topic question is refused
+  cheaply by the retrieval threshold, so the model never gets a chance to make something up.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/03_rag_local.txt">labs/outputs</a>. Source: <a href="../labs/03_rag_local.py">labs/03_rag_local.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Your reranker scores 1,500 pairs per second. You rerank 40 candidates per query. What is the reranking latency per query and the maximum QPS on one instance?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Latency = 40 / 1,500 = 0.0267 s, about 27 ms. Max QPS = 1,500 / 40 = 37.5 queries per second per instance, assuming perfect batching. Real systems leave 30-50% headroom, so plan for about 25 QPS per instance.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your top 5 after reranking are often three near-duplicate chunks from copies of the same FAQ. Answers miss facts that live elsewhere. What do you add, and where?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Two fixes. Upstream, dedupe at indexing time with a content hash or near-duplicate detection so copies are not indexed separately. At query time, apply Maximal Marginal Relevance (MMR) after reranking: pick the top chunk, then repeatedly pick the chunk that balances high relevance with low similarity to those already chosen, controlled by a lambda weight. That spends the 5 prompt slots on distinct facts. Measure with an eval that includes multi-fact questions, since single-fact questions will not show the gain.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> You have a budget of 15 ms for reranking at 300 QPS. Propose two architectures and the evidence you would collect to choose.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Option A: a smaller cross-encoder over fewer candidates (say 20) on GPUs sized for 300 x 20 = 6,000 pairs per second at under 15 ms per batch. Option B: a late-interaction model (ColBERT-style) or a distilled reranker that precomputes token vectors for documents so query-time scoring is cheaper, at the price of more storage. A third, cheap option is caching rerank results for frequent queries. Evidence: on the golden set, nDCG@5 and recall@5 for each option; p95 latency under a load test at 300 QPS; GPU count and storage cost. Pick the cheapest option that meets the quality bar and the 15 ms budget.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is the difference between a bi-encoder and a cross-encoder?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>A bi-encoder embeds the query and each document separately into vectors and compares them with cosine similarity. Document vectors are computed once in advance, so search is fast. A cross-encoder takes the query and one document together as a single input and outputs a relevance score. It sees how the words interact, so it is more accurate, but it must run once per pair at query time. That is why we use the bi-encoder to shortlist and the cross-encoder to rerank the shortlist.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> How do you choose how many candidates to retrieve and how many to keep?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Fetch depth is about recall: I plot stage-1 recall@k for k = 10, 20, 50, 100 on the golden set and see where it flattens. Rerank depth costs latency and compute linearly, so I pick the point where extra candidates stop adding recall. Keep depth is about the prompt: few enough that the model is not diluted and tokens stay cheap, enough to cover multi-fact questions, usually 3 to 8. Then I verify end to end with faithfulness and answer correctness, because the best retrieval depth is the one that gives the best answers.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> A team wants to upgrade from a mid-size LLM to a frontier model to fix bad RAG answers. How do you decide whether a reranker is the better spend?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>I look at where the failures are. On a few hundred failing cases I check whether the answer-bearing chunk was in the prompt. If it is usually missing from the prompt but present in stage 1's top 50, the fault is ranking, and a reranker fixes it for a fraction of the cost of a bigger model. If the chunk is in the prompt and the answer is still wrong, it is a generation issue, and the bigger model or better grounding may help. I also price both: model upgrade is per-token on every call; a reranker is fixed GPU cost and often reduces prompt size. The eval decides, not the hype.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://www.sbert.net/docs/cross_encoder/usage/usage.html" target="_blank" rel="noopener">Cross-Encoder usage - Sentence Transformers documentation</a></li>
+      <li><a href="https://arxiv.org/abs/1908.10084" target="_blank" rel="noopener">Reimers and Gurevych, Sentence-BERT (2019) - arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2104.08663" target="_blank" rel="noopener">Thakur et al., BEIR: A Heterogeneous Benchmark for Zero-shot Evaluation of IR Models (2021) - arXiv</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
   <p>Semantic search has a blind spot: exact terms, codes, and rare words that embeddings smear together. Keyword search nails those. Combine them and you get the best of both. Next: <strong>hybrid search</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Keep the best few chunks that are actually good enough, and say “I don't know” when none are.</p>
+<!-- ease:line:end -->
 </main>
 
 <script>
@@ -193,5 +332,12 @@ index <span class="o">=</span> bi.<span class="f">encode</span>(chunks, normaliz
 </script>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<script src="../assets/ease/ease.js?v=1"></script>
+<script src="../assets/ease/play-t03.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

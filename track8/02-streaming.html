@@ -12,6 +12,43 @@
 
   <span class="eyebrow">Track 8 · Lesson 8.2</span>
   <h1>Streaming</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>A model writes its answer one token at a time.</p>
+    <p>Without streaming, your app waits for the very last token, then shows everything at once.</p>
+    <p>With streaming, each token is sent to the screen the moment it is written.</p>
+    <p>The answer takes just as long to finish, but the user starts reading almost at once.</p>
+    <p>The number users feel is TTFT (time to first token): how long until the first word appears.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Imagine ordering a pizza where the shop waits until all eight slices are cut, boxed and driven over before you see anything. Now imagine the cook handing you each slice the moment it is ready. You get the whole pizza at the same time either way, but in the second case you are eating after one minute instead of staring at the door.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The cook finishing a slice</td><td>The model producing the next token (decode)</td></tr>
+      <tr><td>Handing each slice over as soon as it is ready</td><td>Forwarding each chunk to the browser as a server-sent event (SSE)</td></tr>
+      <tr><td>Getting the first slice after one minute</td><td>Time to first token, mostly the prefill time</td></tr>
+      <tr><td>The whole pizza arriving at the same time either way</td><td>Total generation time is unchanged; only when you see it changes</td></tr>
+      <tr><td>A half-cut box nobody can use</td><td>JSON or a tool call: code needs the whole thing, so don't stream to a parser</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A pizza slice is useful alone, but a half-finished JSON object or SQL query is not, which is why machines usually want the whole box.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 394" role="img" aria-label="Sequence: browser, server and model exchange a streamed answer chunk by chunk" preserveAspectRatio="xMidYMid meet"><rect x="50" y="20" width="140" height="34" rx="8" class="bx tn-c" /><text x="120" y="42" text-anchor="middle" class="b">Browser</text><rect x="310" y="20" width="140" height="34" rx="8" class="bx tn-c" /><text x="380" y="42" text-anchor="middle" class="b">Your server</text><rect x="570" y="20" width="140" height="34" rx="8" class="bx tn-c" /><text x="640" y="42" text-anchor="middle" class="b">Model</text><line x1="120" y1="54" x2="120" y2="370" class="grid dash"/><line x1="380" y1="54" x2="380" y2="370" class="grid dash"/><line x1="640" y1="54" x2="640" y2="370" class="grid dash"/><line x1="126" y1="84" x2="365" y2="84" class="ln "/><polygon points="374,84 365,79.05 365,88.95" class="hd "/><text x="250" y="77" text-anchor="middle" class="s" style="font-size:13px">question (POST)</text><line x1="386" y1="122" x2="625" y2="122" class="ln "/><polygon points="634,122 625,117.05 625,126.95" class="hd "/><text x="510" y="115" text-anchor="middle" class="s" style="font-size:13px">prompt, stream=True</text><rect x="631" y="138" width="18" height="46" rx="4" class="bx tn-k" /><text x="658" y="166" text-anchor="start" class="s k-t" style="font-size:13px">prefill</text><line x1="634" y1="202" x2="395" y2="202" class="ln ac"/><polygon points="386,202 395,206.95 395,197.05" class="hd ac"/><text x="510" y="195" text-anchor="middle" class="s ac-t" style="font-size:13px">token 1</text><line x1="374" y1="224" x2="135" y2="224" class="ln ac"/><polygon points="126,224 135,228.95 135,219.05" class="hd ac"/><text x="250" y="217" text-anchor="middle" class="s ac-t" style="font-size:13px">SSE event: token 1</text><text x="54" y="252" text-anchor="start" class="s ac-t" style="font-size:13px">first words on screen</text><polyline points="34,84 26,84 26,224 34,224" class="ln thin"/><text x="42" y="154" class="s b" text-anchor="middle" transform="rotate(-90 42 154)">TTFT</text><line x1="634" y1="276" x2="395" y2="276" class="ln thin"/><polygon points="386,276 395,280.95 395,271.05" class="hd thin"/><text x="510" y="269" text-anchor="middle" class="s" style="font-size:13px"></text><line x1="374" y1="285" x2="135" y2="285" class="ln thin"/><polygon points="126,285 135,289.95 135,280.05" class="hd thin"/><text x="250" y="278" text-anchor="middle" class="s" style="font-size:13px"></text><line x1="634" y1="294" x2="395" y2="294" class="ln thin"/><polygon points="386,294 395,298.95 395,289.05" class="hd thin"/><text x="510" y="287" text-anchor="middle" class="s" style="font-size:13px"></text><line x1="374" y1="303" x2="135" y2="303" class="ln thin"/><polygon points="126,303 135,307.95 135,298.05" class="hd thin"/><text x="250" y="296" text-anchor="middle" class="s" style="font-size:13px"></text><line x1="634" y1="312" x2="395" y2="312" class="ln thin"/><polygon points="386,312 395,316.95 395,307.05" class="hd thin"/><text x="510" y="305" text-anchor="middle" class="s" style="font-size:13px"></text><line x1="374" y1="321" x2="135" y2="321" class="ln thin"/><polygon points="126,321 135,325.95 135,316.05" class="hd thin"/><text x="250" y="314" text-anchor="middle" class="s" style="font-size:13px"></text><text x="658" y="302" text-anchor="start" class="s" style="font-size:13px">decode: one</text><text x="658" y="318" text-anchor="start" class="s" style="font-size:13px">token at a time</text><line x1="634" y1="352" x2="395" y2="352" class="ln "/><polygon points="386,352 395,356.95 395,347.05" class="hd "/><text x="510" y="345" text-anchor="middle" class="s" style="font-size:13px">last token + stop</text><line x1="374" y1="376" x2="135" y2="376" class="ln "/><polygon points="126,376 135,380.95 135,371.05" class="hd "/><text x="250" y="369" text-anchor="middle" class="s" style="font-size:13px">done event</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 394" role="img" aria-label="Sequence: browser, server and model exchange a streamed answer chunk by chunk" preserveAspectRatio="xMidYMid meet"><rect x="12" y="20" width="96" height="34" rx="8" class="bx tn-c" /><text x="60" y="42" text-anchor="middle" class="b">Browser</text><rect x="132" y="20" width="96" height="34" rx="8" class="bx tn-c" /><text x="180" y="42" text-anchor="middle" class="b">Your server</text><rect x="252" y="20" width="96" height="34" rx="8" class="bx tn-c" /><text x="300" y="42" text-anchor="middle" class="b">Model</text><line x1="60" y1="54" x2="60" y2="410" class="grid dash"/><line x1="180" y1="54" x2="180" y2="410" class="grid dash"/><line x1="300" y1="54" x2="300" y2="410" class="grid dash"/><line x1="66" y1="84" x2="165" y2="84" class="ln "/><polygon points="174,84 165,79.05 165,88.95" class="hd "/><text x="120" y="77" text-anchor="middle" class="s" style="font-size:12px">question (POST)</text><line x1="186" y1="122" x2="285" y2="122" class="ln "/><polygon points="294,122 285,117.05 285,126.95" class="hd "/><text x="240" y="115" text-anchor="middle" class="s" style="font-size:12px">prompt, stream=True</text><rect x="291" y="138" width="18" height="46" rx="4" class="bx tn-k" /><text x="284" y="166" text-anchor="end" class="s k-t" style="font-size:12px">prefill</text><line x1="294" y1="202" x2="195" y2="202" class="ln ac"/><polygon points="186,202 195,206.95 195,197.05" class="hd ac"/><text x="240" y="195" text-anchor="middle" class="s ac-t" style="font-size:12px">token 1</text><line x1="174" y1="224" x2="75" y2="224" class="ln ac"/><polygon points="66,224 75,228.95 75,219.05" class="hd ac"/><text x="120" y="217" text-anchor="middle" class="s ac-t" style="font-size:12px">SSE event: token 1</text><text x="14" y="252" text-anchor="start" class="s ac-t" style="font-size:12px">first words on screen</text><polyline points="18,84 10,84 10,224 18,224" class="ln thin"/><text x="26" y="154" class="s b" text-anchor="middle" transform="rotate(-90 26 154)">TTFT</text><line x1="294" y1="276" x2="195" y2="276" class="ln thin"/><polygon points="186,276 195,280.95 195,271.05" class="hd thin"/><text x="240" y="269" text-anchor="middle" class="s" style="font-size:12px"></text><line x1="174" y1="285" x2="75" y2="285" class="ln thin"/><polygon points="66,285 75,289.95 75,280.05" class="hd thin"/><text x="120" y="278" text-anchor="middle" class="s" style="font-size:12px"></text><line x1="294" y1="294" x2="195" y2="294" class="ln thin"/><polygon points="186,294 195,298.95 195,289.05" class="hd thin"/><text x="240" y="287" text-anchor="middle" class="s" style="font-size:12px"></text><line x1="174" y1="303" x2="75" y2="303" class="ln thin"/><polygon points="66,303 75,307.95 75,298.05" class="hd thin"/><text x="120" y="296" text-anchor="middle" class="s" style="font-size:12px"></text><line x1="294" y1="312" x2="195" y2="312" class="ln thin"/><polygon points="186,312 195,316.95 195,307.05" class="hd thin"/><text x="240" y="305" text-anchor="middle" class="s" style="font-size:12px"></text><line x1="174" y1="321" x2="75" y2="321" class="ln thin"/><polygon points="66,321 75,325.95 75,316.05" class="hd thin"/><text x="120" y="314" text-anchor="middle" class="s" style="font-size:12px"></text><text x="286" y="302" text-anchor="end" class="s" style="font-size:12px">decode: one</text><text x="286" y="318" text-anchor="end" class="s" style="font-size:12px">token at a time</text><line x1="294" y1="352" x2="195" y2="352" class="ln "/><polygon points="186,352 195,356.95 195,347.05" class="hd "/><text x="240" y="345" text-anchor="middle" class="s" style="font-size:12px">last token + stop</text><line x1="174" y1="376" x2="75" y2="376" class="ln "/><polygon points="66,376 75,380.95 75,371.05" class="hd "/><text x="120" y="369" text-anchor="middle" class="s" style="font-size:12px">done event</text></svg>
+    <figcaption>Time runs downward. Your server opens one long connection to the browser and relays each token as an event, so the first words appear one TTFT after the question, not after the whole answer.</figcaption>
+  </figure>
+  <div class="ez-play" data-ez-play="streaming">
+    <div class="ease-label">Try it</div>
+    <p class="ez-hint">Move the sliders for prefill time, generation speed and answer length. The top lane waits for the end; the bottom lane streams. The times are computed from your settings, which are illustrative.</p>
+    <div class="ez-stage"></div>
+  </div>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">The cheapest, highest-impact latency improvement doesn’t make the model faster at all — it just shows the user the words as they’re generated. Streaming is the difference between a chat that feels instant and one that feels broken, and it’s a few lines of code.</p>
 
   <h2>Perceived latency is what users feel</h2>
@@ -26,6 +63,10 @@
     <div class="box-label">Concept</div>
     <p><span class="term">Streaming</span> sends the model’s output token by token as it’s generated, rather than waiting for the whole response. <span class="term">Time to first token</span> (TTFT) is how long until the first word appears — the number users actually feel. <span class="term">Perceived latency</span> is the felt slowness, which streaming reduces even though total generation time is unchanged. Technically it’s delivered over a streaming transport (server-sent events or websockets).</p>
   </div>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <h2>Feel the difference</h2>
   <div class="demo" id="st-demo">
@@ -45,7 +86,7 @@
 <pre><code><span class="k">import</span> ollama
 
 stream <span class="o">=</span> ollama.<span class="f">chat</span>(
-    model<span class="o">=</span><span class="s">"llama3.2"</span>,
+    model<span class="o">=</span><span class="s">"qwen2.5:7b"</span>,
     messages<span class="o">=</span>[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: <span class="s">"Explain streaming in two sentences."</span>}],
     stream<span class="o">=</span><span class="kc">True</span>,                              <span class="c"># the whole trick</span>
 )
@@ -54,6 +95,21 @@ stream <span class="o">=</span> ollama.<span class="f">chat</span>(
 <span class="c"># In a web app, push each chunk to the browser via Server-Sent Events (SSE) or a websocket.</span></code></pre>
     <p>Almost every model API and runtime supports a streaming mode like this. For any chat-style UI, it should be your default.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Streaming a chat assistant at 100,000 requests in the peak hour</div>
+    <p>Assumptions (ours, illustrative): 100,000 requests in the busiest hour, answers average 600 tokens, TTFT 0.8 s, decode 50 tokens/s per stream. Measure your own numbers; these are round figures to show the method.</p>
+<ol>
+<li><strong>Without streaming.</strong> Decode takes 600 / 50 = 12 s, plus 0.8 s TTFT. The user stares at a spinner for <strong>12.8 s</strong>, and many will assume it broke.</li>
+<li><strong>With streaming.</strong> First words at <strong>0.8 s</strong>. Total time is still 12.8 s, but the user is reading from 0.8 s on.</li>
+<li><strong>Does the stream outrun the reader?</strong> Assume a fast reader at about 250 words a minute, roughly 4 words or about 5-6 tokens a second. 50 tokens/s is about 9x faster than reading, so the reader never catches up with the text. Streaming hides almost all decode time.</li>
+<li><strong>How many open connections must the server hold?</strong> Use Little's law: concurrency = arrival rate x time in system. 100,000 / 3,600 s = 27.8 requests/s, each held open 12.8 s, so about <strong>356 concurrent streams</strong>. Your web tier, proxy and load balancer must allow that many long-lived SSE connections, and their idle timeouts must be longer than your slowest stream.</li>
+<li><strong>Safety checks need a plan.</strong> Output moderation wants full text. A common compromise: moderate each completed sentence before releasing it, which adds a buffer of one sentence (maybe 20-30 tokens, under 1 s at 50 tokens/s), and keep a retract path if the final check fails.</li>
+<li><strong>Measure the right number.</strong> Log TTFT and total time separately per request. On OpenTelemetry's GenAI conventions the streaming attribute is gen_ai.response.time_to_first_chunk; p95 TTFT is the number to alert on.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box note">
     <div class="box-label">When NOT to stream</div>
@@ -97,6 +153,22 @@ stream <span class="o">=</span> ollama.<span class="f">chat</span>(
         <div class="why">Same computation; only delivery changes.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Your streaming chat endpoint works on your laptop but in production long answers cut off after about a minute with no error from the model. What is the most likely cause?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) The model is slower when streaming.</span>
+        <div class="why">Generation speed is the same; only delivery changes.</div></li>
+      <li data-correct="false"><span class="opt">B) SSE only supports one message per connection.</span>
+        <div class="why">Server-sent events are designed for many messages over one open connection.</div></li>
+      <li data-correct="true"><span class="opt">C) A proxy or load balancer idle or request timeout is closing the long-lived streaming connection.</span>
+        <div class="why">Streams are long HTTP connections. Infrastructure between client and server often has timeouts tuned for short requests; raise them or send periodic keep-alive events.</div></li>
+      <li data-correct="false"><span class="opt">D) Streaming makes the model generate more tokens, which hits max_tokens.</span>
+        <div class="why">Streaming does not change how many tokens are generated. A max_tokens stop would show up as a finish reason, not a dropped connection.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -122,8 +194,84 @@ stream <span class="o">=</span> ollama.<span class="f">chat</span>(
     <p>For structured output you simply don’t stream to the parser. So the rule of thumb: stream human-facing prose by default for the big UX win, but keep machine-consumed and safety-gated paths on a collect-then-process model. Used this way, streaming is the rare optimization that’s nearly free, dramatically improves the experience, and ships in an afternoon.</p>
   </div>
 
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/01_generate_and_sample.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/01_generate_and_sample.py</code></pre>
+    <p><strong>What to look for:</strong> The lab streams from Ollama and prints time-to-first-token and tokens/sec separately. Compare TTFT with total time: the gap between them is the wait streaming hides from the user. Ask for a 50-word answer and then a 500-word answer; TTFT barely moves while total time grows roughly in step with eval_count.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>2) Same prompt, temperature 1.0, three different seeds
+  seed=1: Bengaluru in July typically experiences warm to hot temperatures with occasional thunderstorms.
+  seed=2: Bengaluru in July typically experiences hot and humid weather with occasional thunderstorms.
+  seed=3: Bengaluru in July typically experiences hot and dry weather with temperatures often soaring above 30°C.
+  distinct outputs at T=1.0: 3  (sampling -&gt; usually 2-3)
+3) Same seed twice at T=1.0 -&gt; reproducible on the same machine
+  identical: True
+4) Tokens are what you pay for: prompt vs output token counts
+  short prompt: prompt_tokens=   36  output_tokens=  2  prefill_s=  0.52  answer=&#x27;Paris&#x27;
+  long prompt : prompt_tokens=  639  output_tokens=  2  prefill_s=  0.22  answer=&#x27;Paris&#x27;
+  Look: the long prompt costs many more input tokens and more prefill time for the same answer.
+5) Streaming: time-to-first-token (TTFT) vs total time
+  TTFT=0.36s  total=2.54s  chunks=16  decode_tokens_per_s=7.3
+  Look: streaming does not make generation faster; it shows the first words sooner.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/01_generate_and_sample.txt">labs/outputs</a>. Source: <a href="../labs/01_generate_and_sample.py">labs/01_generate_and_sample.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> An answer is 900 tokens, TTFT is 1.2 s and decode runs at 45 tokens/s. How long does the user wait before seeing anything, with and without streaming?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Decode: 900 / 45 = 20 s. Without streaming the user sees nothing for 1.2 + 20 = 21.2 s. With streaming the first words appear at 1.2 s. Same total, but the blank wait drops by about 94%.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> You expose a tool-calling agent to a browser. The model streams, but tool-call arguments arrive as partial JSON fragments. How do you stream to the user and still execute tools safely?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Split the stream by content type. Text deltas go straight to the browser. Tool-call deltas are buffered on the server until the provider signals the tool-use block is complete; only then parse the JSON, validate it against the tool's schema, and run the tool (with any approval gate). Meanwhile send the browser a status event like 'looking up your order' so the user sees progress. The why: humans can read partial text, but code cannot act on partial arguments, so you stream for people and collect-then-parse for machines inside the same response.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Using Little's law, size your streaming tier: peak 60 requests/s, average stream duration 15 s, and each server process can hold 500 open streams comfortably. How many processes do you need with 30% headroom, and what changes if you cut average answer length by a third?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Concurrency = 60 x 15 = 900 open streams. With 30% headroom: 900 x 1.3 = 1,170, so 1,170 / 500 = 2.34, round up to 3 processes. If answers are a third shorter and decode dominates duration, streams last about 10 s: 60 x 10 x 1.3 = 780, which still needs 2 processes (780 / 500 = 1.56). The lesson: output length drives not just cost and latency but how many connections you hold open, so it shapes infrastructure too.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is the difference between time to first token and total latency, and which does streaming improve?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Time to first token is how long until the first piece of the answer arrives; it is mostly the model reading the prompt (prefill) plus any queueing. Total latency adds the time to generate every output token (decode). Streaming does not change either number at the server. What it changes is when the user sees text: with streaming they start reading at TTFT instead of waiting for the full total. So streaming improves perceived latency, and if I want a lower TTFT itself I shorten the prompt, cache the prefix, or use a faster model.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> How would you implement streaming from an LLM through a FastAPI backend to a React front end?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>On the backend I call the provider with streaming on and wrap the iterator in a StreamingResponse with the text/event-stream media type, yielding one SSE event per text delta and a final event with usage and finish reason. I use an async client so one worker can hold many streams. On the front end I read the stream with EventSource or fetch and a reader, appending deltas to state. I handle disconnects by cancelling the upstream call so I stop paying for tokens nobody will read, and I log TTFT and total time per request.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> When would you deliberately not stream, even for a user-facing feature?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>When the output must be checked before anyone sees it, and a retraction would be worse than a wait. Examples: regulated advice where every answer must pass a compliance check, a reply that will be sent to a customer by email, or structured output a UI renders as a form. I also skip streaming for machine consumers: JSON, tool calls and SQL need the whole object. Middle grounds exist: stream a status or a progress bar, or release text sentence by sentence after a fast check. The decision is a trade between perceived speed and the cost of showing something wrong.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://platform.claude.com/docs/en/build-with-claude/streaming" target="_blank" rel="noopener">Streaming Messages - Anthropic</a></li>
+      <li><a href="https://docs.ollama.com/capabilities/streaming" target="_blank" rel="noopener">Streaming - Ollama docs</a></li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events" target="_blank" rel="noopener">Using server-sent events - MDN</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
   <p>Streaming makes responses feel instant. The next technique can make some responses <em>actually</em> instant — and free. Next: <strong>caching</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Streaming doesn't make the model faster; it lets people start reading sooner.</p>
+<!-- ease:line:end -->
 </main>
 
 <script>
@@ -158,5 +306,12 @@ stream <span class="o">=</span> ollama.<span class="f">chat</span>(
 </script>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<script src="../assets/ease/ease.js?v=1"></script>
+<script src="../assets/ease/play-t08.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

@@ -12,6 +12,37 @@
 
   <span class="eyebrow">Track 5 · Lesson 5.1</span>
   <h1>Prompt vs RAG vs fine-tune</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>There are three ways to change what a model does.</p>
+    <p>A prompt changes the instructions you send with each request.</p>
+    <p>RAG (retrieval-augmented generation) looks up the right documents and puts them in the request.</p>
+    <p>Fine-tuning trains the model further on your own examples, so its weights change for good.</p>
+    <p>Prompts and RAG are cheap and quick to change, so try them first. Fine-tune only for a steady style, format or narrow task they can't hold.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Think of a new cook in a restaurant. A prompt is the order slip ('no onions, extra spicy'): it changes this one dish. RAG is handing them the recipe book so they can look things up. Fine-tuning is sending them to cooking school for a month so the house style becomes habit. You don't send someone to school because today's menu changed.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The order slip: “no onions, extra spicy”</td><td>The prompt: changes this one request, costs nothing to edit</td></tr>
+      <tr><td>Handing the cook the recipe book</td><td>RAG: retrieved facts placed in the input at run time</td></tr>
+      <tr><td>A month at cooking school</td><td>Fine-tuning: extra training that changes the model's weights, once, ahead of time</td></tr>
+      <tr><td>Today's menu changed</td><td>Your facts changed: re-index the documents for RAG, don't retrain</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A trained cook can still read new recipes perfectly well, while a fine-tuned model can quietly get worse at things it used to do well, so you test it after training.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 446" role="img" aria-label="Choosing between prompting, RAG and fine-tuning by what is actually wrong" preserveAspectRatio="xMidYMid meet"><rect x="20" y="180.5" width="230" height="85" rx="10" class="bx tn-c" /><g class="vzb"><text x="135" y="205.75" text-anchor="middle" class="b">What is wrong with the</text><text x="135" y="225.75" text-anchor="middle" class="b">answers?</text><text x="135" y="251.75" text-anchor="middle" class="s" style="font-size:13px">start with the cheapest lever</text></g><rect x="440" y="18" width="300" height="85" rx="10" class="bx tn-g" /><g class="vzb"><text x="590" y="43.25" text-anchor="middle" class="b">It ignores or forgets the</text><text x="590" y="63.25" text-anchor="middle" class="b">instructions</text><text x="590" y="89.25" text-anchor="middle" class="s" style="font-size:13px">prompt better (Track 2): instant, free</text></g><polyline points="252,223 310,223 380,60.5 428,60.5" class="ln "/><polygon points="437,60.5 428,55.55 428,65.45" class="hd "/><rect x="440" y="115" width="300" height="85" rx="10" class="bx tn-c" /><g class="vzb"><text x="590" y="140.25" text-anchor="middle" class="b">It doesn&#x27;t know the facts, or</text><text x="590" y="160.25" text-anchor="middle" class="b">they keep changing</text><text x="590" y="186.25" text-anchor="middle" class="s" style="font-size:13px">RAG (Track 3): facts go in the input</text></g><polyline points="252,223 310,223 380,157.5 428,157.5" class="ln "/><polygon points="437,157.5 428,152.55 428,162.45" class="hd "/><rect x="440" y="212" width="300" height="102" rx="10" class="bx tn-k" /><g class="vzb"><text x="590" y="237.25" text-anchor="middle" class="b">It knows enough but won&#x27;t hold a</text><text x="590" y="257.25" text-anchor="middle" class="b">style, format or narrow task</text><text x="590" y="283.25" text-anchor="middle" class="s" style="font-size:13px">fine-tune: change the weights once,</text><text x="590" y="300.25" text-anchor="middle" class="s" style="font-size:13px">ahead of time</text></g><polyline points="252,223 310,223 380,263 428,263" class="ln "/><polygon points="437,263 428,258.05 428,267.95" class="hd "/><rect x="440" y="326" width="300" height="102" rx="10" class="bx tn-p" /><g class="vzb"><text x="590" y="351.25" text-anchor="middle" class="b">You need a steady format and</text><text x="590" y="371.25" text-anchor="middle" class="b">fresh facts</text><text x="590" y="397.25" text-anchor="middle" class="s" style="font-size:13px">fine-tune for how it answers, RAG for</text><text x="590" y="414.25" text-anchor="middle" class="s" style="font-size:13px">what it knows</text></g><polyline points="252,223 310,223 380,377 428,377" class="ln "/><polygon points="437,377 428,372.05 428,381.95" class="hd "/></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 547" role="img" aria-label="Choosing between prompting, RAG and fine-tuning by what is actually wrong" preserveAspectRatio="xMidYMid meet"><rect x="12" y="14" width="336" height="65" rx="10" class="bx tn-c" /><g class="vzb"><text x="180" y="39.25" text-anchor="middle" class="b">What is wrong with the answers?</text><text x="180" y="65.25" text-anchor="middle" class="s" style="font-size:13px">start with the cheapest lever</text></g><line x1="26" y1="79" x2="26" y2="93" class="ln"/><rect x="56" y="113" width="292" height="85" rx="10" class="bx tn-g" /><g class="vzb"><text x="202" y="138.25" text-anchor="middle" class="b">It ignores or forgets the</text><text x="202" y="158.25" text-anchor="middle" class="b">instructions</text><text x="202" y="184.25" text-anchor="middle" class="s" style="font-size:13px">prompt better (Track 2): instant, free</text></g><line x1="26" y1="155.5" x2="44" y2="155.5" class="ln "/><polygon points="53,155.5 44,150.55 44,160.45" class="hd "/><rect x="56" y="212" width="292" height="85" rx="10" class="bx tn-c" /><g class="vzb"><text x="202" y="237.25" text-anchor="middle" class="b">It doesn&#x27;t know the facts, or</text><text x="202" y="257.25" text-anchor="middle" class="b">they keep changing</text><text x="202" y="283.25" text-anchor="middle" class="s" style="font-size:13px">RAG (Track 3): facts go in the input</text></g><line x1="26" y1="254.5" x2="44" y2="254.5" class="ln "/><polygon points="53,254.5 44,249.55 44,259.45" class="hd "/><rect x="56" y="311" width="292" height="102" rx="10" class="bx tn-k" /><g class="vzb"><text x="202" y="336.25" text-anchor="middle" class="b">It knows enough but won&#x27;t hold a</text><text x="202" y="356.25" text-anchor="middle" class="b">style, format or narrow task</text><text x="202" y="382.25" text-anchor="middle" class="s" style="font-size:13px">fine-tune: change the weights once,</text><text x="202" y="399.25" text-anchor="middle" class="s" style="font-size:13px">ahead of time</text></g><line x1="26" y1="362" x2="44" y2="362" class="ln "/><polygon points="53,362 44,357.05 44,366.95" class="hd "/><rect x="56" y="427" width="292" height="102" rx="10" class="bx tn-p" /><g class="vzb"><text x="202" y="452.25" text-anchor="middle" class="b">You need a steady format and</text><text x="202" y="472.25" text-anchor="middle" class="b">fresh facts</text><text x="202" y="498.25" text-anchor="middle" class="s" style="font-size:13px">fine-tune for how it answers, RAG for</text><text x="202" y="515.25" text-anchor="middle" class="s" style="font-size:13px">what it knows</text></g><line x1="26" y1="478" x2="44" y2="478" class="ln "/><polygon points="53,478 44,473.05 44,482.95" class="hd "/><line x1="26" y1="79" x2="26" y2="478" class="ln"/></svg>
+    <figcaption>Read the problem first, then pick the lever. Facts belong in RAG because you can re-index in minutes; behaviour that must hold on every call is what fine-tuning is for.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">Fine-tuning sounds like the “serious” option, so people reach for it first — and usually shouldn’t. Knowing exactly when fine-tuning is the right tool (and when prompting or RAG wins) is one of the clearest markers of an experienced GenAI engineer. Let’s build that judgment before we build a model.</p>
 
   <h2>Three ways to change what a model does</h2>
@@ -21,6 +52,10 @@
     <div class="box-label">Concept</div>
     <p><span class="term">Fine-tuning</span> is further training a pretrained model on your own examples, updating its weights so it reliably produces a desired <em>behavior</em> — a format, a style, a tone, or strong performance on a narrow task. Unlike prompting and RAG (which change the input at run time), fine-tuning changes the model itself, once, ahead of time.</p>
   </div>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <figure class="diagram">
     <img src="../assets/diagrams/t5-decision.svg" alt="Prompt vs RAG vs fine-tune decision flow. Needs fresh/private knowledge? yes → RAG (Track 3); no → A better prompt/few-shot solves it? yes → Prompt engineering (Track 2); no → Need durable behavior/style/format or a smaller cheaper specialized model? yes → Fine-tune (this track). RAG for knowledge, prompting for instructions, fine-tuning for behavior. Try them in that order.">
@@ -50,7 +85,14 @@
     <p>These aren’t mutually exclusive. A common production stack is <strong>fine-tune + RAG</strong>: fine-tune the model to follow your format and tone reliably, <em>and</em> use RAG to feed it current facts. Fine-tuning fixes <em>how</em> it answers; RAG supplies <em>what</em> it knows. Reach for both when you need both.</p>
   </div>
 
-  <div class="box key">
+  
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Should we fine-tune to shrink a 2,000-token prompt at 3 million calls a month?</div>
+    <p>Assumptions: a ticket-classification service makes 3,000,000 calls a month. Every call carries a 2,000-token block of fixed instructions and 8 examples, plus about 300 tokens of ticket text. Prices: claude-sonnet-5-5 at $2 per million input tokens; prompt-cache reads cost 5% of the base input price on Sonnet 5.5 (<a href="https://platform.claude.com/docs/en/about-claude/models/overview">Claude models overview</a>).</p><ol><li><strong>Today.</strong> 3,000,000 x 2,000 = 6 billion fixed tokens a month. 6,000 x $2 = <strong>$12,000 a month</strong> for the fixed block.</li><li><strong>Option A: prompt caching.</strong> The fixed block is identical on every call, so it can be cached. Cache reads at 5% = $0.10 per million: 6,000 x $0.10 = <strong>$600 a month</strong> (plus cache writes, ignored here). No training, no new model to maintain, and reversible in an afternoon.</li><li><strong>Option B: fine-tune a small open model</strong> to do the classification with no fixed block. You need a curated dataset (the hard part: say 3,000 labelled tickets at 2 minutes each = 100 hours of expert time), training runs, an eval to prove it matches, hosting, and a re-tune every time the base model or the label set changes.</li><li><strong>Compare.</strong> Caching takes the $12,000 to about $600. Fine-tuning has to beat $600 a month <em>after</em> its people and hosting costs. For most teams it doesn't.</li><li><strong>When the answer flips.</strong> Fine-tuning wins if you need much lower latency or cost than any hosted model gives, must run on-prem, or the behaviour is something prompting can't hit reliably even with examples, measured on an eval, not assumed.</li></ol><p>Research backs the knowledge side too: Ovadia et al. found RAG consistently beat unsupervised fine-tuning for injecting knowledge, both old and new (<a href="https://arxiv.org/abs/2312.05934">arXiv 2312.05934</a>).</p>
+  </div>
+<!-- shape:scale:end -->
+<div class="box key">
     <div class="box-label">Key points</div>
     <ul>
       <li>Prompting &amp; RAG change the <strong>input</strong>; fine-tuning changes the <strong>weights</strong>.</li>
@@ -87,6 +129,35 @@
         <div class="why">Size doesn't give it facts it never saw.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Which of these is the weakest reason to fine-tune?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Our classifier must hit a strict label schema, and prompting plus constrained decoding still mislabels 9% on our eval.</span>
+        <div class="why">Reasonable: you tried the cheaper levers, measured, and still have a behaviour gap. That's when fine-tuning earns its cost.</div></li>
+      <li data-correct="false"><span class="opt">B) We need a 1B model on-device to match a large model's output on one narrow task.</span>
+        <div class="why">This is a strong reason: distillation into a small model for latency, cost or offline use is a classic fine-tuning win.</div></li>
+      <li data-correct="true"><span class="opt">C) The model doesn't know about our product launched last week.</span>
+        <div class="why">Correct, it is the weakest. New and changing facts are a retrieval problem. Fine-tuning teaches facts poorly (Ovadia et al. found RAG beat fine-tuning for knowledge injection), goes stale, and can't cite sources.</div></li>
+      <li data-correct="false"><span class="opt">D) We pay for 4,000 tokens of instructions on 50M calls a month and can't cache them because they vary per tenant.</span>
+        <div class="why">Plausible: when caching can't help, baking stable behaviour into weights to shrink the prompt can pay off at that volume.</div></li>
+    </ul>
+  </div>
+  <div class="quiz">
+    <p class="quiz-q">Your team wants to fine-tune because 'the model sometimes ignores our tone guidelines'. You haven't built an eval yet. What's the right first step?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Switch to RAG over the guidelines.</span>
+        <div class="why">Retrieving the guideline puts it in the prompt, which is what is already happening. It's a behaviour problem, not a missing-knowledge problem.</div></li>
+      <li data-correct="true"><span class="opt">B) Build a small eval of 100-200 real prompts scored against the tone rubric, then try prompt fixes and few-shot examples, and fine-tune only if the measured gap remains.</span>
+        <div class="why">Correct. Without an eval you can't know whether a fine-tune helped, and cheaper levers often close the gap. The eval is needed for the fine-tune anyway.</div></li>
+      <li data-correct="false"><span class="opt">C) Fine-tune on the tone guideline document itself.</span>
+        <div class="why">Training on a document about tone teaches the document's text, not the behaviour. SFT needs input-to-output examples of the behaviour.</div></li>
+      <li data-correct="false"><span class="opt">D) Collect 10,000 examples and start a LoRA run.</span>
+        <div class="why">You'd spend weeks on data and compute with no way to show the result beats a better prompt.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -111,8 +182,84 @@
     <p>It’s how many teams turn an expensive prototype into an affordable production model. But notice it still obeys the rule: you’re fine-tuning for <em>behavior</em> (match the teacher on this task), not stuffing in changing facts. Keep the map in your head and the right tool is almost always obvious.</p>
   </div>
 
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/02_structured_output.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/02_structured_output.py</code></pre>
+    <p><strong>What to look for:</strong> Before fine-tuning for format, see how far prompting and constrained decoding get you: on these 8 messy emails a clear prompt and the schema-constrained call were both 8 of 8 valid, and only the vague prompt failed (0 of 4). If structure is already solved without training, 'fine-tune for JSON' is the wrong project. Change the schema and rerun: the result updates instantly, which a fine-tune can't do.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>C) Schema-valid is not business-valid: validate rules, retry with the error
+  rule violations repaired by retry: 0
+D) Content check against gold labels (shape-valid does not mean right)
+  #4: model said &#x27;delivery&#x27;, a human would file &#x27;other&#x27;: &#x27;Just wanted to say the delivery guy was very polite. thanks!&#x27;
+  category accuracy: 7/8
+Summary
+  vague-prompt valid:       0/4 = 0% (95% CI 0%-49%)
+  prompt-only valid:        8/8 = 100% (95% CI 68%-100%)
+  schema-constrained valid: 8/8 = 100% (95% CI 68%-100%)
+  category accuracy (gold): 7/8 = 88% (95% CI 53%-98%)
+  On this model and these 8 emails a clear prompt already gives valid JSON every time, so the schema shows
+  NO measurable advantage here. Its value is the guarantee on the inputs you have not tested yet.
+  Look: constrained decoding guarantees the SHAPE. It does not guarantee the CONTENT is right;
+  that is what the business-rule check + retry (and your eval set) are for.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/02_structured_output.txt">labs/outputs</a>. Source: <a href="../labs/02_structured_output.py">labs/02_structured_output.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> For each, pick prompt, RAG, fine-tune, or 'none of these': (a) answer HR policy questions where policies change quarterly; (b) make outputs valid JSON for a fixed schema; (c) run a classifier on a factory floor with no internet; (d) stop the model inventing citations.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>(a) RAG: changing knowledge, re-index on change. (b) Prompt plus constrained decoding (structured outputs) first; fine-tune only if that measurably fails. (c) Fine-tune a small open model (often by distillation), since it must run offline. (d) None alone: RAG with citation checking in code, and refusal when retrieval is weak. Fine-tuning won't stop invention; it can make it more fluent.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> A stakeholder says 'Fine-tune it on our 40,000 Confluence pages so it knows our company.' Write the reply you'd send, with the alternative.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Fine-tuning mostly changes how the model answers, not what it reliably knows. Training on 40,000 pages would give us a model that sounds like our wiki but still makes up details, can't say which page it used, and is out of date the day a page changes. The published comparison (Ovadia et al., arXiv 2312.05934) found retrieval beat fine-tuning for injecting knowledge. Proposal: RAG over Confluence with permissions-aware retrieval and citations, an eval of 200 real employee questions, and a fine-tune later only if we find a stable behaviour (tone, format) that prompting can't fix.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Write a one-page decision rule your team can apply before any fine-tuning project. Include the questions and the evidence required at each gate.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Gate 1, problem type: is it knowledge (use RAG), instructions (prompt), or behaviour (continue)? Gate 2, eval exists: 100+ held-out real cases with a metric and a current baseline. Gate 3, cheap levers tried: better prompt, few-shot, constrained decoding, a stronger model, prompt caching for cost; record each result. Gate 4, the gap is measured and worth closing: quantify it in quality, latency or cost per month. Gate 5, data exists: at least a few hundred clean, consistent input-output examples, with rights to use them. Gate 6, ownership: who re-tunes when the base model or data changes, and how it will be served. Fail any gate and you don't fine-tune yet.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> When would you fine-tune instead of using RAG?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>When the problem is behaviour, not knowledge. Fine-tuning is good for a consistent format or style that prompting can't hold, strong performance on a narrow repeated task, or getting a small cheap model to match a big one (distillation). RAG is for facts, especially private or changing ones, because you can update the index and cite sources. Often you need both: fine-tune for how it answers, RAG for what it knows. And I only fine-tune after an eval shows prompting, constrained decoding and a stronger model still fall short.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> Your manager asks for a fine-tuned model to cut inference costs. What do you check first?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Where the cost actually comes from. If it's a big fixed system prompt, prompt caching may cut it by around 90% or more with no training. If it's output length, prompt for shorter outputs. If it's the model tier, test whether a cheaper hosted model already passes the eval. Batch APIs help for offline jobs. Only if those don't get us there would I look at distilling into a small self-hosted model, and then the comparison must include data labelling, training runs, GPU hosting, on-call and re-tuning, not just per-token price.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Make the case against a fine-tuning project that a team is excited about.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>I'd ask what problem it solves that cheaper levers can't, with numbers from an eval. Fine-tuning is a long-term commitment: a dataset to maintain, a model to version, a serving stack, and a re-tune whenever the base model improves, which happens every few months. A fine-tune of last year's model can lose to this year's base model with a good prompt. It can also cause forgetting outside the target task, and it's a bad way to add knowledge. If the team can show a measured behaviour gap, a dataset, an owner and a cost model that still wins after caching and model upgrades, I'm in. Otherwise we ship the prompt-plus-RAG version and revisit in a quarter.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2312.05934" target="_blank" rel="noopener">Fine-Tuning or Retrieval? Comparing Knowledge Injection in LLMs — Ovadia et al., arXiv 2312.05934</a></li>
+      <li><a href="https://platform.claude.com/docs/en/about-claude/models/overview" target="_blank" rel="noopener">Models overview (pricing, context) — Claude Platform docs</a></li>
+      <li><a href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching" target="_blank" rel="noopener">Prompt caching — Claude Platform docs</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
   <p>To use fine-tuning well, you need a feel for what “training” actually does to a model. Let’s demystify it — gently, with a runnable toy. Next: <strong>how training actually works</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Prompt for instructions, RAG for facts, fine-tune for habits.</p>
+<!-- ease:line:end -->
 </main>
 
 <script>
@@ -154,5 +301,10 @@
 </script>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

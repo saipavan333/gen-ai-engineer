@@ -230,6 +230,16 @@ window.CURRICULUM = {
         { n: "16.4", title: "Mock interview drill", file: "track11/04-mock-interview.html", built: true },
         { n: "16.5", title: "Lab: Generate your portfolio README", file: "track11/lab.html", built: true }
       ]
+    },
+    {
+      id: "t17", num: "17", title: "GenAI on Your Data Platform", ready: true,
+      blurb: "The warehouse pattern: LLM functions, embeddings and vector search inside SQL on BigQuery, Databricks and Snowflake, with a local DuckDB + Ollama stand-in you can run today.",
+      lessons: [
+        { n: "17.1", title: "LLM functions inside SQL", file: "track17/01-ai-in-sql.html", built: true },
+        { n: "17.2", title: "BigQuery and Gemini", file: "track17/02-bigquery-gemini.html", built: true },
+        { n: "17.3", title: "Databricks Mosaic AI", file: "track17/03-databricks-mosaic.html", built: true },
+        { n: "17.4", title: "Snowflake Cortex", file: "track17/04-snowflake-cortex.html", built: true }
+      ]
     }
   ]
 };

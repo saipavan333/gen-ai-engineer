@@ -54,6 +54,21 @@
       <div class="labs-grid" id="grid-python"></div>
     </section>
 
+    <section class="labs-section" id="sec-local">
+      <div class="labs-sec-head">
+        <h2><b class="lc-tag py">LOCAL</b> Run it on your machine, with a real model</h2>
+        <p>The browser labs above use small simulations. These twelve run a real 7B model locally with <a href="https://ollama.com">Ollama</a> (<code>qwen2.5:7b</code>), real embeddings, DuckDB and FAISS. Still free, still no API key. Setup and the full list: <a href="labs/README.md">labs/README.md</a>. Every lab's recorded output from our run is in <code>labs/outputs/</code>.</p>
+      </div>
+      <div class="labs-grid">
+        <a class="lab-card2" href="labs/03_rag_local.py"><span class="lc-track">Tracks 3 &amp; 11 · RAG</span><h3>Local RAG, measured</h3><p>Chunking, embeddings in DuckDB and FAISS, BM25, hybrid fusion, cited answers and a refusal threshold, scored against gold.</p><span class="lc-go">View code &rarr;</span></a>
+        <a class="lab-card2" href="labs/04_agent_tools.py"><span class="lc-track">Track 4 · Agents</span><h3>A guarded tool-calling agent</h3><p>Step budget, repeat guard, tool errors, a code-enforced refund limit, and a checker that catches promises the agent never kept.</p><span class="lc-go">View code &rarr;</span></a>
+        <a class="lab-card2" href="labs/05_mcp/client_agent.py"><span class="lc-track">Track 4 · MCP</span><h3>MCP server and client</h3><p>An MCP server on SDK 2.x and a client that hands its tools to the local model over stdio.</p><span class="lc-go">View code &rarr;</span></a>
+        <a class="lab-card2" href="labs/06_evals.py"><span class="lc-track">Track 6 · Evals</span><h3>Evals you can trust</h3><p>recall@k, MRR, nDCG, a per-case regression gate, an LLM judge checked against facts, and a position-bias test.</p><span class="lc-go">View code &rarr;</span></a>
+        <a class="lab-card2" href="labs/07_injection_exfiltration.py"><span class="lc-track">Track 7 · Security</span><h3>Injection that steals data</h3><p>A poisoned page leaks PII through a markdown image; measure attack success with and without each defence.</p><span class="lc-go">View code &rarr;</span></a>
+        <a class="lab-card2" href="labs/10_ai_sql_udf.py"><span class="lc-track">Track 17 · Data platform</span><h3>LLM functions inside SQL</h3><p>The local stand-in for BigQuery AI.GENERATE, Snowflake AI_COMPLETE and Databricks ai_query.</p><span class="lc-go">View code &rarr;</span></a>
+      </div>
+    </section>
+
     <p class="pg-note" style="margin-top:2rem">Interview Bank and Capstones have no lab — they're already hands-on by design.</p>
   </main>
 

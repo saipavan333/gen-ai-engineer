@@ -12,7 +12,47 @@
 
   <span class="eyebrow">Going Deeper · Lesson 11.1</span>
   <h1>Advanced RAG</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Basic RAG (retrieval-augmented generation) embeds the question and grabs the closest few chunks.</p>
+    <p>It stalls when the question is worded differently from the documents, or the right chunk is buried.</p>
+    <p>Advanced RAG adds fixes: rewrite the question, search with several versions, then rerank the results carefully.</p>
+    <p>Then it trims the context so only the useful sentences reach the model.</p>
+    <p>Each fix is a knob, and an evaluation tells you which knob actually helped.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>A good librarian does not just search for the exact words you said. If you ask "that book about the boy wizard's school", they try a few phrasings, guess the title, check two shelves, then hand you only the two pages that matter instead of the whole stack. That is query rewriting, multi-query, HyDE, reranking and compression.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>Trying a few phrasings</td><td>Query rewriting and multi-query: several versions, results merged with RRF (reciprocal rank fusion)</td></tr>
+      <tr><td>Guessing the title</td><td>HyDE: embed a made-up ideal answer instead of the short question</td></tr>
+      <tr><td>Checking two shelves, then picking the best</td><td>Retrieve 25 cheaply (bi-encoder), rerank with a cross-encoder, keep 5</td></tr>
+      <tr><td>Handing over only the two pages that matter</td><td>Context compression and ordering, against “lost in the middle”</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> The librarian knows when a guess is silly; HyDE's made-up answer can confidently point the search in the wrong direction.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 227" role="img" aria-label="Advanced RAG pipeline" preserveAspectRatio="xMidYMid meet"><rect x="14" y="22" width="119.2" height="133" rx="10" class="bx tn-c" /><g class="vzb"><text x="73.6" y="54.25" text-anchor="middle" class="b">Fix the</text><text x="73.6" y="74.25" text-anchor="middle" class="b">query</text><text x="73.6" y="100.25" text-anchor="middle" class="s" style="font-size:13px">rewrite,</text><text x="73.6" y="117.25" text-anchor="middle" class="s" style="font-size:13px">multi-query,</text><text x="73.6" y="134.25" text-anchor="middle" class="s" style="font-size:13px">HyDE</text></g><circle cx="16" cy="24" r="11" class="badge"/><text x="16" y="28.5" text-anchor="middle" class="badge-t">1</text><line x1="137.2" y1="88.5" x2="154.2" y2="88.5" class="ln "/><polygon points="163.2,88.5 154.2,83.55 154.2,93.45" class="hd "/><rect x="167.2" y="22" width="119.2" height="133" rx="10" class="bx tn-b" /><g class="vzb"><text x="226.8" y="54.25" text-anchor="middle" class="b">Retrieve</text><text x="226.8" y="74.25" text-anchor="middle" class="b">wide</text><text x="226.8" y="100.25" text-anchor="middle" class="s" style="font-size:13px">bi-encoder top</text><text x="226.8" y="117.25" text-anchor="middle" class="s" style="font-size:13px">25 per query,</text><text x="226.8" y="134.25" text-anchor="middle" class="s" style="font-size:13px">fused with RRF</text></g><circle cx="169.2" cy="24" r="11" class="badge"/><text x="169.2" y="28.5" text-anchor="middle" class="badge-t">2</text><line x1="290.4" y1="88.5" x2="307.4" y2="88.5" class="ln "/><polygon points="316.4,88.5 307.4,83.55 307.4,93.45" class="hd "/><rect x="320.4" y="22" width="119.2" height="133" rx="10" class="bx tn-p" /><g class="vzb"><text x="380" y="64.25" text-anchor="middle" class="b">Rerank</text><text x="380" y="90.25" text-anchor="middle" class="s" style="font-size:13px">cross-encoder</text><text x="380" y="107.25" text-anchor="middle" class="s" style="font-size:13px">reads query +</text><text x="380" y="124.25" text-anchor="middle" class="s" style="font-size:13px">chunk, keeps 5</text></g><circle cx="322.4" cy="24" r="11" class="badge"/><text x="322.4" y="28.5" text-anchor="middle" class="badge-t">3</text><line x1="443.6" y1="88.5" x2="460.6" y2="88.5" class="ln "/><polygon points="469.6,88.5 460.6,83.55 460.6,93.45" class="hd "/><rect x="473.6" y="22" width="119.2" height="133" rx="10" class="bx tn-k" /><g class="vzb"><text x="533.2" y="47.25" text-anchor="middle" class="b">Curate</text><text x="533.2" y="73.25" text-anchor="middle" class="s" style="font-size:13px">dedupe, trim</text><text x="533.2" y="90.25" text-anchor="middle" class="s" style="font-size:13px">to relevant</text><text x="533.2" y="107.25" text-anchor="middle" class="s" style="font-size:13px">sentences,</text><text x="533.2" y="124.25" text-anchor="middle" class="s" style="font-size:13px">best first and</text><text x="533.2" y="141.25" text-anchor="middle" class="s" style="font-size:13px">last</text></g><circle cx="475.6" cy="24" r="11" class="badge"/><text x="475.6" y="28.5" text-anchor="middle" class="badge-t">4</text><line x1="596.8" y1="88.5" x2="613.8" y2="88.5" class="ln "/><polygon points="622.8,88.5 613.8,83.55 613.8,93.45" class="hd "/><rect x="626.8" y="22" width="119.2" height="133" rx="10" class="bx tn-g" /><g class="vzb"><text x="686.4" y="64.25" text-anchor="middle" class="b">Generate</text><text x="686.4" y="90.25" text-anchor="middle" class="s" style="font-size:13px">grounded</text><text x="686.4" y="107.25" text-anchor="middle" class="s" style="font-size:13px">answer with</text><text x="686.4" y="124.25" text-anchor="middle" class="s" style="font-size:13px">citations</text></g><circle cx="628.8" cy="24" r="11" class="badge"/><text x="628.8" y="28.5" text-anchor="middle" class="badge-t">5</text><polyline points="686.4,157 686.4,185 73.6,185 73.6,168" class="ln ac"/><polygon points="73.6,159 68.65,168 78.55,168" class="hd ac"/><text x="380" y="205" text-anchor="middle" class="s ac-t" style="font-size:14px">measure on the golden set, then change one knob at a time</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 542" role="img" aria-label="Advanced RAG pipeline" preserveAspectRatio="xMidYMid meet"><rect x="12" y="16" width="280" height="65" rx="10" class="bx tn-c" /><g class="vzb"><text x="152" y="41.25" text-anchor="middle" class="b">Fix the query</text><text x="152" y="67.25" text-anchor="middle" class="s" style="font-size:13px">rewrite, multi-query, HyDE</text></g><circle cx="14" cy="18" r="11" class="badge"/><text x="14" y="22.5" text-anchor="middle" class="badge-t">1</text><line x1="152" y1="84" x2="152" y2="103" class="ln "/><polygon points="152,112 156.95,103 147.05,103" class="hd "/><rect x="12" y="115" width="280" height="82" rx="10" class="bx tn-b" /><g class="vzb"><text x="152" y="140.25" text-anchor="middle" class="b">Retrieve wide</text><text x="152" y="166.25" text-anchor="middle" class="s" style="font-size:13px">bi-encoder top 25 per query, fused</text><text x="152" y="183.25" text-anchor="middle" class="s" style="font-size:13px">with RRF</text></g><circle cx="14" cy="117" r="11" class="badge"/><text x="14" y="121.5" text-anchor="middle" class="badge-t">2</text><line x1="152" y1="200" x2="152" y2="219" class="ln "/><polygon points="152,228 156.95,219 147.05,219" class="hd "/><rect x="12" y="231" width="280" height="82" rx="10" class="bx tn-p" /><g class="vzb"><text x="152" y="256.25" text-anchor="middle" class="b">Rerank</text><text x="152" y="282.25" text-anchor="middle" class="s" style="font-size:13px">cross-encoder reads query + chunk,</text><text x="152" y="299.25" text-anchor="middle" class="s" style="font-size:13px">keeps 5</text></g><circle cx="14" cy="233" r="11" class="badge"/><text x="14" y="237.5" text-anchor="middle" class="badge-t">3</text><line x1="152" y1="316" x2="152" y2="335" class="ln "/><polygon points="152,344 156.95,335 147.05,335" class="hd "/><rect x="12" y="347" width="280" height="82" rx="10" class="bx tn-k" /><g class="vzb"><text x="152" y="372.25" text-anchor="middle" class="b">Curate</text><text x="152" y="398.25" text-anchor="middle" class="s" style="font-size:13px">dedupe, trim to relevant sentences,</text><text x="152" y="415.25" text-anchor="middle" class="s" style="font-size:13px">best first and last</text></g><circle cx="14" cy="349" r="11" class="badge"/><text x="14" y="353.5" text-anchor="middle" class="badge-t">4</text><line x1="152" y1="432" x2="152" y2="451" class="ln "/><polygon points="152,460 156.95,451 147.05,451" class="hd "/><rect x="12" y="463" width="280" height="65" rx="10" class="bx tn-g" /><g class="vzb"><text x="152" y="488.25" text-anchor="middle" class="b">Generate</text><text x="152" y="514.25" text-anchor="middle" class="s" style="font-size:13px">grounded answer with citations</text></g><circle cx="14" cy="465" r="11" class="badge"/><text x="14" y="469.5" text-anchor="middle" class="badge-t">5</text><polyline points="294,495.5 326,495.5 326,48.5 305,48.5" class="ln ac"/><polygon points="296,48.5 305,53.45 305,43.55" class="hd ac"/><text x="340" y="272" text-anchor="middle" class="s ac-t" transform="rotate(-90 340 272)">measure on the golden set, then change one knob at a time</text></svg>
+    <figcaption>Each box is a knob you can turn on its own. The loop is the discipline: turn one knob, rerun the eval, keep it only if the numbers moved the right way.</figcaption>
+  </figure>
+  <div class="ez-play" data-ez-play="rrf">
+    <div class="ease-label">Try it</div>
+    <p class="ez-hint">Switch the query versions on and off. Each list is a ranked search result (illustrative); the fused score uses the page's formula, 1 / (60 + rank), added across lists.</p>
+    <div class="ez-stage"></div>
+  </div>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">Track&nbsp;3 got you a working, grounded RAG system. This lesson covers what you reach for when “embed and take the top&nbsp;k” isn’t good enough — query transformation, reranking, context curation, and the rigorous evaluation that tells you which change actually helped.</p>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <h2>Why basic RAG plateaus</h2>
   <p>A first RAG build usually works on easy questions and then stalls on real ones. The reasons are predictable: the user’s question is phrased differently from the documents (so embedding similarity misses), the right chunk is retrieved but buried among weak ones (so the model overlooks it), or several relevant chunks are needed and the top&nbsp;k grabs only one. Advanced RAG is a set of targeted fixes for these specific failures — and crucially, a way to <em>measure</em> whether each fix worked. Every technique below is a knob; the eval is how you know which knob to turn.</p>
@@ -51,7 +91,14 @@ top <span class="o">=</span> <span class="f">sorted</span>(scores, key<span clas
   <h2>4 · Measure it like an engineer</h2>
   <p>You can’t improve what you don’t measure, and RAG has two failure surfaces that need separate metrics. <strong>Retrieval</strong> quality: <em>context recall</em> (did we fetch the chunks that contain the answer?) and <em>context precision</em> (how much of what we fetched was relevant?). <strong>Generation</strong> quality: <em>faithfulness</em> (is every claim supported by the retrieved context, i.e. no hallucination?) and <em>answer relevance</em> (did it actually address the question?). This four-metric view (popularized by RAGAS) is powerful because it <strong>localizes the problem</strong>: low recall means fix retrieval; high recall but low faithfulness means fix generation/grounding. Build this on the golden-set + LLM-judge foundation from Track&nbsp;6 — it works with free local models.</p>
 
-  <div class="box key">
+  
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Pricing multi-query and context compression at 200,000 questions a day</div>
+    <p>Assumptions: 200,000 questions a day, a rewrite model at $2 / $10 per million input / output tokens (claude-sonnet-5-5, <a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic models overview, checked 2026-11-03</a>), retrieval at about 15 ms per search, 10 retrieved chunks of 400 tokens each.</p><ol><li><strong>Multi-query cost.</strong> One rewrite call returns 3 variants: about 250 input and 90 output tokens. 250 x $2 / 1 M = $0.0005; 90 x $10 / 1 M = $0.0009. Total $0.0014 per question, $280 a day.</li><li><strong>Multi-query latency.</strong> The 4 searches (original + 3) run in parallel, so retrieval stays near 15 ms. The real cost is the rewrite call itself, which adds a model round trip, typically hundreds of milliseconds (measure it). That is often the deciding factor for chat UX.</li><li><strong>Compression saving.</strong> 10 chunks x 400 = 4,000 context tokens. An extractive step that keeps only the sentences relevant to the question, say down to 1,200 tokens, saves 2,800 tokens per call: 2,800 x $2 / 1 M = $0.0056 per question, $1,120 a day.</li><li><strong>Net.</strong> Compression with a local extractive model pays for multi-query four times over: $1,120 saved versus $280 spent, net about $840 a day.</li><li><strong>The risk to measure.</strong> Compression can cut the one sentence that held the answer. Re-run context recall after compression on the golden set; if it drops from 0.91 to 0.84, the saving is buying wrong answers.</li></ol><p>Each technique is a line in a spreadsheet and a line in the eval. Turn on one at a time.</p>
+  </div>
+<!-- shape:scale:end -->
+<div class="box key">
     <div class="box-label">Key points</div>
     <ul>
       <li>Advanced RAG = targeted fixes for specific failures, each <strong>measured</strong>, not guessed.</li>
@@ -101,6 +148,22 @@ top <span class="o">=</span> <span class="f">sorted</span>(scores, key<span clas
         <div class="why">Unrelated to retrieval quality.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">When is HyDE (embedding a hypothetical answer instead of the question) most likely to hurt retrieval?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) When the model does not know the domain and invents a plausible but wrong answer, pulling the search toward the wrong documents, or when the query hinges on an exact identifier.</span>
+        <div class="why">HyDE works because a fake answer often looks more like real documents than a short question does. If the fake answer is wrong in substance, or turns a code like ERR_2043 into prose, the embedding lands in the wrong neighbourhood.</div></li>
+      <li data-correct="false"><span class="opt">B) When documents are long.</span>
+        <div class="why">Document length is a chunking concern. HyDE changes only the query side.</div></li>
+      <li data-correct="false"><span class="opt">C) When the question is short and vague.</span>
+        <div class="why">Short, vague questions are where HyDE tends to help most, because the hypothetical answer adds the vocabulary the documents use.</div></li>
+      <li data-correct="false"><span class="opt">D) HyDE never hurts; it only adds latency.</span>
+        <div class="why">It can lower recall when the hypothetical answer misleads. Measure it on your golden set like any other change.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box deep">
@@ -109,10 +172,94 @@ top <span class="o">=</span> <span class="f">sorted</span>(scores, key<span clas
     <p>Three more production realities round it out. <strong>Metadata filtering</strong> (by tenant, date, permissions) must combine with vector search, which shapes your index and store choice — and pre- vs post-filtering has real recall implications. <strong>Freshness</strong> means incremental indexing and re-embedding as documents change, plus handling deletes and duplicates, exactly the pipeline hygiene you already do for warehouses. And <strong>cost</strong> compounds: embedding millions of chunks, storing vectors, and re-embedding on model upgrades are budget items you plan for. None of this is exotic — it’s data engineering applied to vectors, which is precisely why your background is an advantage here.</p>
   </div>
 
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/03_rag_local.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/03_rag_local.py</code></pre>
+    <p><strong>What to look for:</strong> The lab fuses dense and BM25 results with Reciprocal Rank Fusion, which is the same fusion step multi-query uses. To see multi-query, write two or three rephrasings of a golden question by hand, retrieve for each, and fuse with the lab's RRF function: check whether the right chunk ranks higher than with the original wording alone. The lab does not do HyDE or compression; for metrics on any change, run 06_evals before and after.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  out of the top 3. On this tiny corpus dense already wins; hybrid earns its keep on big corpora full of
+  near-identical codes (SKUs, error ids) that embeddings blur. Never assume: measure hit@k (lab 06).
+5) Grounded answers with citations, and a refusal when retrieval is weak
+  Q: I was charged twice for one order. What happens now?
+  A: If you were charged twice for one order, the duplicate payment is reversed automatically within 3 business days [pay-01#0]. If it is not reversed after 3 business days, raise a billing ticket with both transaction ids.
+     citations=[&#x27;pay-01#0&#x27;] all-cited-ids-were-retrieved=True
+  Q: Can I change my delivery address after the order has shipped?
+  A: No, you cannot change your delivery address after the order has shipped. According to [ship-03#0], the address can only be changed before the order is packed.
+     citations=[&#x27;ship-03#0&#x27;] all-cited-ids-were-retrieved=True
+  Q: Do you deliver to Antarctica by drone?
+  A: I don&#x27;t know based on our policies. (refused before calling the LLM: best cosine 0.27 &lt; 0.35)
+     citations=[] all-cited-ids-were-retrieved=True
+  Look: every factual sentence carries an id you can check; the off-topic question is refused
+  cheaply by the retrieval threshold, so the model never gets a chance to make something up.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/03_rag_local.txt">labs/outputs</a>. Source: <a href="../labs/03_rag_local.py">labs/03_rag_local.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> You have 6 reranked chunks, scores 0.95, 0.91, 0.80, 0.62, 0.55, 0.41. Given lost-in-the-middle, in what order do you place them in the prompt, and would you include all six?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Put the strongest at the edges and the weakest in the middle: for example 0.95 first, 0.91 last, then 0.80 second and 0.62 second-to-last, leaving 0.55 and 0.41 in the middle. Better still, test dropping the last two: a chunk scoring 0.41 is often noise that lowers faithfulness. Keep or drop based on the eval, not on the rule of thumb.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> In a chat, the user first asks about the Pro plan and then says "what about the EU one?" Retrieval for that second message returns junk. Fix it.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Add conversational query rewriting: before retrieval, send the last few turns plus the new message to a model and ask for a standalone search query, here something like "Pro plan pricing in the EU region". Retrieve with that, answer with the full conversation. Log both the raw and rewritten query so you can debug. Evaluate with a multi-turn golden set; a single-turn set will never show this failure.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> You have time to try four upgrades: multi-query, HyDE, a reranker and compression. Design the experiment so you know which helped.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Fix the golden set (300+ queries, sliced by type) and the judge. Measure the baseline: context recall, context precision, faithfulness, answer relevance, latency p95, cost per query. Then add one technique at a time on top of the baseline and measure each alone, followed by the best combination. Record a confidence interval per metric and only count a change as a win if it clears the noise. Expect interactions: the reranker raises context precision, compression can lower context recall, multi-query raises recall but costs latency. The output is a table of metric deltas against cost and latency, from which you pick, rather than shipping all four because each sounded good.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is query rewriting in RAG and why does it help?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Query rewriting uses a model to turn the user's raw message into a better search query before retrieval. Users write messy, conversational or context-dependent questions like "why is it broken since the update", while documents use formal terms. Rewriting can expand abbreviations, resolve references to earlier turns, and match document vocabulary, so the embedding lands nearer the right chunks. The cost is one extra model call, so you check that recall goes up enough to justify the latency.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> Explain the four RAGAS-style metrics and what each tells you to fix.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Context recall: did retrieval fetch the information needed to answer? Low means fix chunking, embeddings, query transformation or k. Context precision: was what we fetched relevant and ranked high? Low means add a reranker or retrieve fewer chunks. Faithfulness: is each claim in the answer supported by the context? Low means fix grounding, prompt and context order. Answer relevance: does the answer address the question? Low means the prompt or the context is pulling the answer off topic. The pair recall-plus-faithfulness localizes whether a fault is retrieval or generation.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Retrieval quality is good in offline evals but poor in production. What could explain the gap?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Usually the golden set does not look like production. Real queries are shorter, multi-turn, misspelled, or use internal jargon the set lacks. The index may be stale or missing sources that production users ask about. Permission filters run in production but not offline, and selective filters can tank recall. Latency budgets may force a smaller k or skip the reranker in production. I sample and label recent production queries, slice metrics by type and tenant, compare offline and online configs line by line, and fold the failures into the golden set so the gap closes.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2212.10496" target="_blank" rel="noopener">Gao et al., Precise Zero-Shot Dense Retrieval without Relevance Labels (HyDE, 2022) - arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2307.03172" target="_blank" rel="noopener">Liu et al., Lost in the Middle: How Language Models Use Long Contexts (2023) - arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2309.15217" target="_blank" rel="noopener">Es et al., Ragas: Automated Evaluation of Retrieval Augmented Generation (2023) - arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2312.10997" target="_blank" rel="noopener">Gao et al., Retrieval-Augmented Generation for Large Language Models: A Survey - arXiv</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
   <p>RAG can be tuned and measured to a high bar. Next, the same rigor applied to systems that take actions: <strong>advanced agents.</strong></p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Better RAG means a better question, a wider search, a careful re-sort and a tidy context, each checked by an eval.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<script src="../assets/ease/ease.js?v=1"></script>
+<script src="../assets/ease/play-t11.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

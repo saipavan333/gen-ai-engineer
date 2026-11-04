@@ -12,6 +12,37 @@
 
   <span class="eyebrow">Track 7 · Lesson 7.3</span>
   <h1>Jailbreaks</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>A model is trained to refuse some requests, such as instructions for causing harm.</p>
+    <p>A jailbreak is a message written to trick it into ignoring that training.</p>
+    <p>Common tricks are role-play, “ignore your rules”, coded or misspelled text, and asking in small steps over many turns.</p>
+    <p>No model is immune, so defences are layered and assume some attempts will work.</p>
+    <p>A jailbreak attacks the model's own rules; prompt injection attacks your app's instructions.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>A jailbreak is like a kid trying to get a sweet from a strict babysitter. 'Mum always lets me.' 'Let's play a game where you are a babysitter with no rules.' Or asking for one small step at a time until the whole sweet jar is gone. The babysitter's rules are the model's safety training.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The babysitter's rules</td><td>The model's safety training</td></tr>
+      <tr><td>“Mum always lets me” and “let's play a game”</td><td>Role-play and authority tricks</td></tr>
+      <tr><td>One small step at a time</td><td>Multi-turn escalation where no single message looks bad</td></tr>
+      <tr><td>The sweet jar on a high shelf</td><td>Controls outside the model: moderation, tool limits, output checks</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A babysitter remembers being tricked last time, but a deployed model does not learn from today's attempts, so the house needs other locks too, like a sweet jar on a high shelf.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 349" role="img" aria-label="The four jailbreak families this page covers" preserveAspectRatio="xMidYMid meet"><rect x="20" y="133.5" width="230" height="82" rx="10" class="bx tn-w" /><g class="vzb"><text x="135" y="158.75" text-anchor="middle" class="b">A jailbreak attempt</text><text x="135" y="184.75" text-anchor="middle" class="s" style="font-size:13px">goal: get output the model</text><text x="135" y="201.75" text-anchor="middle" class="s" style="font-size:13px">should refuse</text></g><rect x="440" y="18" width="300" height="65" rx="10" class="bx tn-k" /><g class="vzb"><text x="590" y="43.25" text-anchor="middle" class="b">Role-play</text><text x="590" y="69.25" text-anchor="middle" class="s" style="font-size:13px">“pretend you&#x27;re an AI with no rules”</text></g><polyline points="252,174.5 310,174.5 380,50.5 428,50.5" class="ln "/><polygon points="437,50.5 428,45.55 428,55.45" class="hd "/><rect x="440" y="95" width="300" height="65" rx="10" class="bx tn-k" /><g class="vzb"><text x="590" y="120.25" text-anchor="middle" class="b">Direct override</text><text x="590" y="146.25" text-anchor="middle" class="s" style="font-size:13px">“ignore your guidelines”</text></g><polyline points="252,174.5 310,174.5 380,127.5 428,127.5" class="ln "/><polygon points="437,127.5 428,122.55 428,132.45" class="hd "/><rect x="440" y="172" width="300" height="82" rx="10" class="bx tn-k" /><g class="vzb"><text x="590" y="197.25" text-anchor="middle" class="b">Obfuscation</text><text x="590" y="223.25" text-anchor="middle" class="s" style="font-size:13px">base64, misspellings, another language,</text><text x="590" y="240.25" text-anchor="middle" class="s" style="font-size:13px">to slip past filters</text></g><polyline points="252,174.5 310,174.5 380,213 428,213" class="ln "/><polygon points="437,213 428,208.05 428,217.95" class="hd "/><rect x="440" y="266" width="300" height="65" rx="10" class="bx tn-k" /><g class="vzb"><text x="590" y="291.25" text-anchor="middle" class="b">Multi-turn escalation</text><text x="590" y="317.25" text-anchor="middle" class="s" style="font-size:13px">small steps, each harmless-looking alone</text></g><polyline points="252,174.5 310,174.5 380,298.5 428,298.5" class="ln "/><polygon points="437,298.5 428,293.55 428,303.45" class="hd "/></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 467" role="img" aria-label="The four jailbreak families this page covers" preserveAspectRatio="xMidYMid meet"><rect x="12" y="14" width="336" height="65" rx="10" class="bx tn-w" /><g class="vzb"><text x="180" y="39.25" text-anchor="middle" class="b">A jailbreak attempt</text><text x="180" y="65.25" text-anchor="middle" class="s" style="font-size:13px">goal: get output the model should refuse</text></g><line x1="26" y1="79" x2="26" y2="93" class="ln"/><rect x="56" y="113" width="292" height="65" rx="10" class="bx tn-k" /><g class="vzb"><text x="202" y="138.25" text-anchor="middle" class="b">Role-play</text><text x="202" y="164.25" text-anchor="middle" class="s" style="font-size:13px">“pretend you&#x27;re an AI with no rules”</text></g><line x1="26" y1="145.5" x2="44" y2="145.5" class="ln "/><polygon points="53,145.5 44,140.55 44,150.45" class="hd "/><rect x="56" y="192" width="292" height="65" rx="10" class="bx tn-k" /><g class="vzb"><text x="202" y="217.25" text-anchor="middle" class="b">Direct override</text><text x="202" y="243.25" text-anchor="middle" class="s" style="font-size:13px">“ignore your guidelines”</text></g><line x1="26" y1="224.5" x2="44" y2="224.5" class="ln "/><polygon points="53,224.5 44,219.55 44,229.45" class="hd "/><rect x="56" y="271" width="292" height="82" rx="10" class="bx tn-k" /><g class="vzb"><text x="202" y="296.25" text-anchor="middle" class="b">Obfuscation</text><text x="202" y="322.25" text-anchor="middle" class="s" style="font-size:13px">base64, misspellings, another language,</text><text x="202" y="339.25" text-anchor="middle" class="s" style="font-size:13px">to slip past filters</text></g><line x1="26" y1="312" x2="44" y2="312" class="ln "/><polygon points="53,312 44,307.05 44,316.95" class="hd "/><rect x="56" y="367" width="292" height="82" rx="10" class="bx tn-k" /><g class="vzb"><text x="202" y="392.25" text-anchor="middle" class="b">Multi-turn escalation</text><text x="202" y="418.25" text-anchor="middle" class="s" style="font-size:13px">small steps, each harmless-looking</text><text x="202" y="435.25" text-anchor="middle" class="s" style="font-size:13px">alone</text></g><line x1="26" y1="408" x2="44" y2="408" class="ln "/><polygon points="53,408 44,403.05 44,412.95" class="hd "/><line x1="26" y1="79" x2="26" y2="408" class="ln"/></svg>
+    <figcaption>Four families, one goal. Filters that read single messages miss the last two most easily, which is why output moderation and monitoring across turns sit behind the model.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">A jailbreak tricks the model into bypassing its own safety training to produce content it’s supposed to refuse. If your app is public-facing, people <em>will</em> try. You can’t make it impossible, but you can make it hard, detectable, and low-impact.</p>
 
   <h2>Jailbreak vs. injection</h2>
@@ -26,6 +57,10 @@
     <div class="box-label">Concept</div>
     <p>A <span class="term">jailbreak</span> is an input crafted to circumvent a model’s safety guidelines so it produces prohibited output. Families include <span class="term">role-play</span> (“pretend you’re an unrestricted AI”), direct <span class="term">override</span> (“ignore your guidelines”), <span class="term">obfuscation</span> (encodings, misspellings, other languages to slip past filters), and <span class="term">multi-turn escalation</span> (building up gradually so no single message looks bad). Defenses are probabilistic, so this is an ongoing <span class="term">arms race</span>, not a solved problem.</p>
   </div>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <h2>The defense stack</h2>
   <ul>
@@ -36,7 +71,14 @@
     <li><strong>Monitoring &amp; rate-limiting</strong> — detect probing patterns and slow down or flag abusive users.</li>
   </ul>
 
-  <div class="box key">
+  
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Jailbreak volume on a public chatbot with 2 million messages a day</div>
+    <p>Assumptions: a consumer chatbot receives 2 million messages a day. From red-team and log review, about 0.5% are jailbreak attempts. All rates below are illustrative targets you would measure on your own traffic.</p><ol><li><strong>Attempts per day.</strong> 2,000,000 x 0.005 = 10,000.</li><li><strong>Model refusal training.</strong> Suppose 97% fail against the model alone, so 3% get an unsafe draft: 300 a day.</li><li><strong>Output moderation.</strong> An independent classifier such as Llama Guard (<a href="https://arxiv.org/abs/2312.06674">Inan et al., arXiv 2312.06674</a>) catches, say, 90% of those: 300 x 0.10 = 30 unsafe replies still reach users each day.</li><li><strong>Multi-turn escalation.</strong> Crescendo-style attacks build up slowly over turns (<a href="https://arxiv.org/abs/2404.01833">Russinovich et al., arXiv 2404.01833</a>). Checking each message alone misses them, so the moderator also sees the last few turns. If that lifts catch rate on the remainder to 95%, the leak falls to 15 a day.</li><li><strong>Automated suffix attacks.</strong> Gradient-searched suffixes can transfer from open models to closed ones (<a href="https://arxiv.org/abs/2307.15043">Zou et al., arXiv 2307.15043</a>). They often look like gibberish, so a cheap perplexity or character-pattern check on input flags many of them for stricter handling.</li><li><strong>Rate-limit the prober.</strong> Most attempts come from a small number of accounts. If 200 accounts make 80% of attempts, throttling accounts with three or more refusals in ten minutes cuts their attempts sharply and leaves normal users alone.</li><li><strong>Close the loop.</strong> Sample the remaining leaks for human review each day and add them to the safety eval set, so the next model or prompt change is tested against them.</li></ol><p>The point of the arithmetic: no single layer gets you to zero, but each one cuts the remainder, and you can only see that if you measure each layer separately.</p>
+  </div>
+<!-- shape:scale:end -->
+<div class="box key">
     <div class="box-label">Key points</div>
     <ul>
       <li>A <strong>jailbreak</strong> bypasses the model’s safety training; <strong>injection</strong> bypasses your app’s instructions — defend both.</li>
@@ -73,6 +115,35 @@
         <div class="why">Bigger models are still jailbreakable.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Your safety checks run only on the latest user message. Over eight friendly turns, a user steers the bot into giving harmful instructions. Which change helps most?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Lengthen the system prompt.</span>
+        <div class="why">A longer prompt does not see the escalation pattern, and the model can be talked out of it over many turns.</div></li>
+      <li data-correct="false"><span class="opt">B) Block any conversation longer than five turns.</span>
+        <div class="why">That breaks legitimate use and attackers simply restart. It treats the symptom.</div></li>
+      <li data-correct="false"><span class="opt">C) Use a keyword blocklist on the final turn.</span>
+        <div class="why">The final turn may contain no banned words at all; it may just say 'continue'.</div></li>
+      <li data-correct="true"><span class="opt">D) Moderate with conversation context, looking at the last several turns and the model's own replies, not just the newest message.</span>
+        <div class="why">Correct. Multi-turn attacks such as Crescendo keep each message harmless-looking. The harm is only visible across turns.</div></li>
+    </ul>
+  </div>
+  <div class="quiz">
+    <p class="quiz-q">A suffix of random-looking tokens appended to a harmful request makes several different models comply. Which statement is accurate?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Automatically searched adversarial suffixes can transfer between models, so closed models are not safe just because their weights are secret.</span>
+        <div class="why">Correct. Zou et al. (arXiv 2307.15043) found suffixes optimised on open models transferred to black-box models.</div></li>
+      <li data-correct="false"><span class="opt">B) These attacks require access to the target model's weights.</span>
+        <div class="why">The suffix is optimised on accessible models and then transferred.</div></li>
+      <li data-correct="false"><span class="opt">C) This only works on small open-source models.</span>
+        <div class="why">The transfer result specifically included public black-box models.</div></li>
+      <li data-correct="false"><span class="opt">D) Raising temperature defeats these suffixes.</span>
+        <div class="why">Sampling settings are not a security control, and many current APIs do not accept them.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -97,10 +168,92 @@
     <p>Second, remember that jailbreaks and injection share the same root — the model treats persuasive text as authoritative — so the same structural defenses help both: independent moderation, least privilege, output validation, and monitoring. You won’t “solve” jailbreaks any more than the web “solved” spam; you manage them with layered, evolving defenses and a clear-eyed view of what’s actually at risk.</p>
   </div>
 
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/08_llmops.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/08_llmops.py</code></pre>
+    <p><strong>What to look for:</strong> The lab's input and output guardrails are the moderation layer from this lesson. Feed it a role-play style request and an encoded one and see which guard fires, or whether neither does. The lab has no dedicated jailbreak suite, so treat this as a demonstration of where the guards sit, not as a jailbreak benchmark.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  semantic similarity to the cached &#x27;track my order&#x27;: paraphrase=0.657  different intent (cancel)=0.523
+  semantic hits at threshold 0.9: 0
+  Look: a threshold low enough to catch the paraphrase would sit close to the wrong-intent score.
+  Serving &#x27;how to track&#x27; to someone who asked &#x27;how to cancel&#x27; is worse than a cache miss. Tune the
+  threshold on labelled pairs, scope caches per intent/tenant, and log every semantic hit for review.
+  traces written to traces.jsonl; first span:
+  {&quot;trace_id&quot;: &quot;54d669838c1f47758c9099aba0110b3f&quot;, &quot;name&quot;: &quot;chat qwen2.5:7b&quot;, &quot;gen_ai.operation.name&quot;: &quot;chat&quot;, &quot;gen_ai.provider.name&quot;: &quot;ollama&quot;, &quot;gen_ai.request.model&quot;: &quot;qwen2.5:7b&quot;, &quot;gen_ai.prompt.name&quot;: &quot;support_answer&quot;, &quot;gen_ai.prompt.version&quot;: 2, &quot;prompt.hash&quot;: &quot;5ab3d11ffb3b&quot;, &quot;user.id&quot;: &quot;u-123&quot;, 
+4) Prompt version rollout: v1 vs v2 on the same question, both traced
+  v1 hash=47ed77f326d6 -&gt; &quot;Yes, you can return innerwear as long as it meets your retailer&#x27;s return policy conditions, such as being unus&quot;
+  v2 hash=5ab3d11ffb3b -&gt; &#x27;Please contact support for specific return policies on innerwear.&#x27;
+  Check the facts too: store policy (labs/data/kb.json, ret-01) says innerwear cannot be returned. Neither
+  prompt has retrieval, so any &#x27;yes&#x27; is a hallucination; the version that defers to support is the safer one.
+  Look: the trace links every answer to an exact prompt hash and model, so a bad answer is debuggable,
+  and a rollout is a registry change you can roll back, not a code edit buried in a deploy.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/08_llmops.txt">labs/outputs</a>. Source: <a href="../labs/08_llmops.py">labs/08_llmops.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Classify each as jailbreak or prompt injection: (a) a user asks a chatbot to role-play an AI with no rules to get weapon instructions; (b) a web page tells a browsing agent to reveal the user's calendar.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>(a) Jailbreak: the target is the model's own safety policy, and the attacker is the user. (b) Prompt injection, indirect: the target is the app's instructions and the user's data, and the attacker is a third party. OWASP's LLM01:2025 page treats jailbreaking as a form of prompt injection, but the defences you prioritise differ: moderation for (a), data-flow limits for (b).</p></div>
+    </details>
+    <p><strong>Transfer.</strong> A security-training company wants a bot that can discuss malware techniques with students. How do you avoid both blocking real teaching and giving out working attack tools?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Define the policy in writing first: explaining how a technique works and how to detect it is allowed; ready-to-run weaponised code against real targets is not. Configure the moderator with that custom policy (Llama Guard supports custom categories through its prompt). Gate the bot behind authenticated, enrolled users and log sessions. Build two eval sets: 200 legitimate teaching questions that must be answered, and 200 'give me working ransomware' style requests that must be refused. Tune until false refusals on the first set are low and leaks on the second are near zero, then review a sample weekly.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Design a jailbreak red-team programme for a model release, with a metric leadership can track.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Corpus: categories from your content policy multiplied by attack families (role-play, override, obfuscation and encoding, multi-turn escalation, automated suffixes), about 20 prompts per cell, refreshed each quarter with leaked production attempts. Runs: every candidate model or prompt runs the full corpus; multi-turn cases run as scripted conversations. Scoring: an independent judge plus human review of all flagged and a 10% sample of unflagged replies. Metric: attack success rate per category with a confidence interval, plus over-refusal rate on a matched benign set, because a release that blocks everything is also a failure. Gate: no category's success rate may rise against the current production model. Report both numbers on one chart per release.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is a jailbreak and how is it different from prompt injection?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>A jailbreak is an input designed to make a model ignore its own safety training and produce content it should refuse, for example by role-play, claiming special authority, encoding the request, or escalating slowly over many turns. Prompt injection targets the application instead: it makes the model ignore the developer's instructions, leak its prompt, or misuse tools, often through text from documents or web pages. They use similar tricks, and OWASP treats jailbreaking as a type of prompt injection, but jailbreaks are mainly a content-safety problem and injection is mainly a data and action security problem.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> How do you defend against multi-turn jailbreaks?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Evaluate safety with conversation context, not message by message: give the moderator the last several user turns and the model's replies, because the harmful intent only shows across turns. Moderate the output as well as the input, since the final user turn may be just 'go on'. Watch for patterns such as repeated refusals followed by rephrasing, and slow down or flag those sessions. Keep scripted multi-turn attacks, Crescendo-style, in the safety eval set so every model change is tested against them.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Leadership asks you to guarantee the chatbot can never be jailbroken. What do you say and what do you commit to?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>I would say no one can guarantee that: model safety is probabilistic, attacks keep evolving, and automated methods find new ones. What I can commit to is measured risk. We define the content policy, keep a red-team corpus by category, and report attack success rate and over-refusal rate on every release with a gate that blocks regressions. In production we run independent input and output moderation with conversation context, rate-limit probing accounts, review a daily sample, and feed leaks back into the corpus. I would also separate reputational risk from security risk: a jailbreak that only produces text is a content issue, while one that triggers tools needs least privilege and approvals so it cannot do damage.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2404.01833" target="_blank" rel="noopener">Great, Now Write an Article About That: The Crescendo Multi-Turn LLM Jailbreak Attack - Russinovich et al., arXiv 2404.01833</a></li>
+      <li><a href="https://arxiv.org/abs/2307.15043" target="_blank" rel="noopener">Universal and Transferable Adversarial Attacks on Aligned Language Models - Zou et al., arXiv 2307.15043</a></li>
+      <li><a href="https://arxiv.org/abs/2312.06674" target="_blank" rel="noopener">Llama Guard: LLM-based Input-Output Safeguard for Human-AI Conversations - Inan et al., arXiv 2312.06674</a></li>
+      <li><a href="https://genai.owasp.org/llmrisk/llm01-prompt-injection/" target="_blank" rel="noopener">LLM01:2025 Prompt Injection - OWASP Gen AI Security Project</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
   <p>Beyond what the model <em>says</em>, you must protect the <em>data</em> flowing through your system. Next: <strong>PII &amp; privacy</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> A jailbreak is a trick to make the model break its own rules, so never rely on those rules alone.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

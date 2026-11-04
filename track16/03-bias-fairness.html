@@ -12,7 +12,43 @@
 
   <span class="eyebrow">Frontier &amp; Responsible AI · Lesson 13.3</span>
   <h1>Responsible AI: bias &amp; fairness</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Models learn from text written by people, so they pick up people's biases too.</p>
+    <p>That matters when a system makes decisions about people, such as who gets a job interview or a loan.</p>
+    <p>A good overall score can hide a group that is failed again and again.</p>
+    <p>So you measure results for each group separately, with inputs that differ only in, say, the name.</p>
+    <p>Then you fix what you find and measure again.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Imagine a school grading machine that is right 90% of the time overall, but it was mostly tested on neat handwriting, so it fails more often for kids with messy writing. The class average looks fine while some kids are marked down again and again. Checking fairness means looking at the results for each group of kids, not just the class average.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The class average</td><td>Overall accuracy or overall advance rate</td></tr>
+      <tr><td>Results for each group of kids</td><td>Disaggregated evaluation: the same metric per group</td></tr>
+      <tr><td>The same essay in different handwriting</td><td>Matched pairs: the same resume with only the name changed</td></tr>
+      <tr><td>Kids with messy writing marked down</td><td>A group whose rate falls below four-fifths of the top group's</td></tr>
+      <tr><td>A teacher checking the machine's marks</td><td>Human review of rejects and a model card that records the tests</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> With people, unlike handwriting, the groups can be hidden behind proxies like a name or a postcode that the system never openly 'looks at'.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 274" role="img" aria-label="Per-group advance rates against the four-fifths line" preserveAspectRatio="xMidYMid meet"><text x="12" y="20" text-anchor="start" class="s m">Same 500 resumes, only the name changed (rates from the page, illustrative)</text><text x="80" y="62" text-anchor="end" class="s b">Group A</text><rect x="90" y="46" width="400" height="24" rx="4" class="fill-g"/><text x="515" y="63" text-anchor="start" class="s ">32%  ratio 1.00</text><text x="80" y="100" text-anchor="end" class="s b">Group B</text><rect x="90" y="84" width="387.5" height="24" rx="4" class="fill-g"/><text x="515" y="101" text-anchor="start" class="s ">31%  ratio 0.97</text><text x="80" y="138" text-anchor="end" class="s b">Group C</text><rect x="90" y="122" width="375" height="24" rx="4" class="fill-g"/><text x="515" y="139" text-anchor="start" class="s ">30%  ratio 0.94</text><text x="80" y="176" text-anchor="end" class="s b">Group D</text><rect x="90" y="160" width="287.5" height="24" rx="4" class="fill-w"/><text x="515" y="177" text-anchor="start" class="s wn-t b">23%  ratio 0.72</text><line x1="410" y1="34" x2="410" y2="198" class="ln wn dash"/><text x="410" y="216" text-anchor="middle" class="s wn-t">four-fifths line: 0.8 x 32% = 25.6%</text><text x="12" y="242" text-anchor="start" class="s">Group D advances at 23%, ratio 0.72 &lt; 0.8: evidence of adverse impact on identical qualifications.</text><text x="12" y="262" text-anchor="start" class="s m">The average advance rate is 29%. It hides the gap.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 274" role="img" aria-label="Per-group advance rates against the four-fifths line" preserveAspectRatio="xMidYMid meet"><text x="12" y="20" text-anchor="start" class="s m">Same 500 resumes, only the name changed</text><text x="68" y="62" text-anchor="end" class="s b">Group A</text><rect x="78" y="46" width="136" height="24" rx="4" class="fill-g"/><text x="222.5" y="63" text-anchor="start" class="s ">32%  ratio 1.00</text><text x="68" y="100" text-anchor="end" class="s b">Group B</text><rect x="78" y="84" width="131.75" height="24" rx="4" class="fill-g"/><text x="222.5" y="101" text-anchor="start" class="s ">31%  ratio 0.97</text><text x="68" y="138" text-anchor="end" class="s b">Group C</text><rect x="78" y="122" width="127.5" height="24" rx="4" class="fill-g"/><text x="222.5" y="139" text-anchor="start" class="s ">30%  ratio 0.94</text><text x="68" y="176" text-anchor="end" class="s b">Group D</text><rect x="78" y="160" width="97.75" height="24" rx="4" class="fill-w"/><text x="222.5" y="177" text-anchor="start" class="s wn-t b">23%  ratio 0.72</text><line x1="186.8" y1="34" x2="186.8" y2="198" class="ln wn dash"/><text x="186.8" y="216" text-anchor="middle" class="s wn-t">four-fifths line: 0.8 x 32% = 25.6%</text><text x="12" y="242" text-anchor="start" class="s">Below the line is evidence of adverse impact.</text><text x="12" y="262" text-anchor="start" class="s m">The average advance rate is 29%. It hides the gap.</text></svg>
+    <figcaption>Bars are the advance rates from the page's matched-pair audit (illustrative). Each ratio is the group's rate divided by the highest. US federal guidelines generally treat a ratio below 0.8 as evidence of adverse impact.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">Models learn from human data, so they inherit human biases. If your system touches decisions about people — hiring, lending, content, access — that isn’t an abstract ethics topic; it’s an engineering requirement you’ll be asked about. This lesson is practical: where bias comes from, how to measure it, and how to reduce it.</p>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <h2>Why models are biased</h2>
   <p>An LLM learns statistical patterns from vast amounts of human-written text, and that text reflects the world’s inequities, stereotypes, and skews. So the model can absorb and reproduce them: associating certain jobs with certain genders, rating dialects as less “professional,” performing worse for some groups because they’re underrepresented in the data. This isn’t the model being malicious — it’s a mirror of its training data, which is exactly why it’s subtle and pervasive. The harm becomes real when such a model is placed in a decision: screening résumés, moderating speech, approving applications, or simply representing people. As the builder, you’re responsible for the system’s behavior, not just the model’s.</p>
@@ -42,7 +78,22 @@
 
   <div class="lab" data-lab="fairness"></div>
 
-  <div class="box key">
+  
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Auditing a resume screener before it touches 200,000 applications a year</div>
+    <p>Assume an employer gets <strong>200,000 applications a year</strong> and an LLM scores each as advance / reject. Before launch you run a matched-pair audit. Rates are assumptions to illustrate the arithmetic.</p>
+<ol>
+<li><strong>Build matched pairs.</strong> Take 500 real resumes, strip names, then insert names signalling 4 groups. 500 x 4 = <strong>2,000 runs</strong>. Qualifications are identical across each set of four.</li>
+<li><strong>Compute selection rates.</strong> Suppose advance rates are 32%, 31%, 30% and 23%.</li>
+<li><strong>Adverse impact ratio.</strong> Divide each by the highest: 23 / 32 = <strong>0.72</strong>. US federal guidelines generally treat a selection rate below four-fifths (0.8) of the highest group's rate as evidence of adverse impact (<a href="https://www.law.cornell.edu/cfr/text/29/1607.4">29 CFR 1607.4(D)</a>). This one fails.</li>
+<li><strong>Is it noise?</strong> With n = 500 per group, the standard error of a 30% rate is sqrt(0.3 x 0.7 / 500) = about <strong>2 points</strong>, so a 95% interval is about plus or minus 4 points. A 9-point gap is well outside that.</li>
+<li><strong>Size the harm.</strong> If a quarter of the 200,000 applicants are in the affected group, 50,000 people x (32% - 23%) = about <strong>4,500 qualified people</strong> a year not advanced who would have been at the top group's rate.</li>
+<li><strong>Fix and re-measure.</strong> Remove names and other proxies before scoring, tighten the rubric to stated job criteria, add human review of all rejects near the cutoff, and re-run the same 2,000-run audit. Write the before and after into the model card.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+<div class="box key">
     <div class="box-label">Key points</div>
     <ul>
       <li>Models <strong>inherit bias from human training data</strong> — it’s a mirror, which makes it subtle and pervasive.</li>
@@ -92,6 +143,22 @@
         <div class="why">More data doesn't reveal a hidden disparity; disaggregated evaluation does.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">You remove the 'gender' field from a hiring model's input, and the audit still shows a large gap between men and women. What is the most likely explanation?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Gaps always disappear with a bigger model.</span>
+        <div class="why">Larger models still learn patterns from their data, biased ones included. Size is not a fairness fix.</div></li>
+      <li data-correct="false"><span class="opt">B) The gap means fairness cannot be measured.</span>
+        <div class="why">You just measured it. The next step is finding the cause.</div></li>
+      <li data-correct="true"><span class="opt">C) Other inputs act as proxies, such as names, clubs, gaps in employment or word choice, so the model can still pick up the attribute indirectly.</span>
+        <div class="why">Right. Removing a field is not the same as removing the information. You find proxies with matched-input tests and per-group evaluation, then remove or neutralise them.</div></li>
+      <li data-correct="false"><span class="opt">D) The audit is wrong because the model cannot see gender.</span>
+        <div class="why">The model cannot see the field, but it can see correlated signals. The audit is measuring real behaviour.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box deep">
@@ -101,10 +168,92 @@
     <p>The deeper point is that bias is a <strong>sociotechnical</strong> problem: it lives in the interaction between the model, the data, the product design, and the humans and institutions around it — not in the weights alone. So the strongest mitigations are often not clever algorithms but design decisions: keeping a human in the loop, giving affected people a way to appeal, choosing <em>not</em> to build a high-risk automated decision, being transparent about limitations, and including diverse perspectives when defining what “good” means. This connects straight to the next lesson: because these harms are real and hard, they’re increasingly the subject of regulation, which turns “we should be responsible” into “we’re legally required to be.” Treating responsibility as a first-class engineering requirement — measured, documented, and designed for — is both the ethical stance and, increasingly, the compliant one.</p>
   </div>
 
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/06_evals.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/06_evals.py</code></pre>
+    <p><strong>What to look for:</strong> The lab does not run a per-group fairness audit, but its tools are the ones you need. The position-bias test (swap A/B order, count verdict flips) is the same matched-input idea: change something that should not matter and count how often the output changes. The regression gate per case shows how to block a release when a slice gets worse.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>5) Judge position bias: same pair, swapped order
+  How long do card refunds take?      order1 picked B, order2 picked B  -&gt; FLIPPED
+  Return window for electronics?      order1 picked B, order2 picked A  -&gt; consistent
+  Express shipping price?             order1 picked B, order2 picked A  -&gt; consistent
+  When is standard shipping free?     order1 picked A, order2 picked B  -&gt; consistent
+  Duplicate charge reversal time?     order1 picked A, order2 picked B  -&gt; consistent
+  consistent verdicts: 4/5 = 80% (95% CI 38%-96%)   correct in both orders: 2/5 = 40% (95% CI 12%-77%)
+  n=5 pairs is a demo, not a measurement of this judge&#x27;s bias: the intervals span most of 0-100%.
+  Look: with no reference passage in the judge prompt, the judge has to guess which number is right.
+  Always judge both orders and count a win only when both agree; give the judge the reference.
+6) How wide is the error bar on 12 cases?
+  v1 accuracy 11/12 = 92% (95% CI 65%-99%)  (Wilson interval)
+  At n=400 the same accuracy would be roughly +/- 2.7%
+{&quot;v1_correct&quot;: 0.917, &quot;regressions&quot;: 12, &quot;judge_consistent&quot;: 4}</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/06_evals.txt">labs/outputs</a>. Source: <a href="../labs/06_evals.py">labs/06_evals.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Group A is approved 60% of the time and group B 45%. Compute the adverse impact ratio and say whether it passes the four-fifths rule of thumb.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>45 / 60 = 0.75. That is below 0.8, so under the four-fifths guideline this would generally be treated as evidence of adverse impact and needs investigation. Also check sample sizes, since small groups make ratios noisy.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your content moderation model flags posts. Design a disaggregated eval for dialect bias.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Collect a labelled set of posts in several English dialects with the same mix of truly harmful and harmless content, labelled by annotators familiar with each dialect. Measure the false-positive rate (harmless posts flagged) per dialect, plus matched pairs: the same harmless message written in different dialects. Report rates with confidence intervals. If one dialect's false-positive rate is much higher, fix it (prompt rubric, examples, threshold per category, human review) and re-measure.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Kleinberg et al. (2016) show some fairness criteria cannot all hold at once when base rates differ. Explain the trade-off in plain words with a lending example, and how you would pick a criterion.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>If two groups repay at different rates, a score cannot generally be equally calibrated for both groups (a score of 0.7 means 70% repay in each) and also give both groups equal false-positive and false-negative rates. You must choose. In lending, calibration supports accurate pricing, while equal false-negative rates protect creditworthy people from being refused. Choose based on the harm that matters most, the law in your market, and input from affected people; document the choice and its cost in the model card rather than claiming the system is 'fair' in every sense.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> Where does bias in LLMs come from?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Mainly from training data: human text reflects stereotypes and imbalances, and groups that are under-represented get worse performance. It can also come from fine-tuning data, from how prompts are written, and from the product design, for example using the model to make a decision it should not make alone. The model is not malicious; it reflects its data, which is why bias is subtle and has to be measured.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> How do you test an LLM feature for bias before launch?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Disaggregated evaluation: measure accuracy, error rates and outcomes per relevant group, not just overall. Matched-input tests: inputs identical except for a sensitive attribute or proxy such as a name, checking that outputs do not change. Use enough samples to compute confidence intervals and compare against a clear threshold such as the four-fifths ratio where it applies. Include affected-domain experts in defining the test cases. Then fix, re-measure and document results in a model card.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Leadership wants to fully automate a decision about people with an LLM. How do you handle it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>First, check whether the use is high-risk under the law in our markets, which brings documentation, oversight and testing duties. Then measure: disaggregated evals and matched-pair audits on realistic data. If gaps exist and cannot be closed reliably, recommend assistive use, where the model drafts and a person decides, with an appeal route. Either way, add monitoring of outcomes by group in production, logging for audit, and a model card that states limits. Sometimes the responsible design is not automating the decision at all.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://proceedings.mlr.press/v81/buolamwini18a.html" target="_blank" rel="noopener">Gender Shades: Intersectional Accuracy Disparities in Commercial Gender Classification (Buolamwini and Gebru, 2018) — PMLR</a></li>
+      <li><a href="https://arxiv.org/abs/1810.03993" target="_blank" rel="noopener">Model Cards for Model Reporting (Mitchell et al., 2019) — arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/1609.05807" target="_blank" rel="noopener">Inherent Trade-Offs in the Fair Determination of Risk Scores (Kleinberg et al., 2016) — arXiv</a></li>
+      <li><a href="https://www.law.cornell.edu/cfr/text/29/1607.4" target="_blank" rel="noopener">29 CFR 1607.4 (four-fifths rule) — Cornell Legal Information Institute</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
   <p>Responsibility is also becoming law. Next: <strong>governance &amp; regulation.</strong></p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Never trust the class average: check every group, with the same inputs, before the system judges real people.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

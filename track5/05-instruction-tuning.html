@@ -12,6 +12,37 @@
 
   <span class="eyebrow">Track 5 · Lesson 5.5</span>
   <h1>Instruction tuning</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>A base model only continues text. Ask it a question and it may reply with more questions.</p>
+    <p>Instruction tuning, also called SFT (supervised fine-tuning), trains it on many pairs: a request and a good answer.</p>
+    <p>After that, it answers requests instead of just continuing them.</p>
+    <p>Each example is wrapped in the model's chat template: special tokens that mark who is speaking.</p>
+    <p>A second step, preference tuning, trains on pairs of answers where people marked the better one.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Instruction tuning is like teaching a parrot that already knows thousands of words how to answer questions instead of just repeating whatever it hears. You show it again and again: when someone asks this, the answer looks like that. Preference tuning is then giving it a treat for the better of two answers.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>A parrot that already knows thousands of words</td><td>A pretrained base model</td></tr>
+      <tr><td>“When someone asks this, the answer looks like that”</td><td>SFT on instruction → response pairs</td></tr>
+      <tr><td>A treat for the better of two answers</td><td>Preference tuning (RLHF or DPO) on chosen-versus-rejected pairs</td></tr>
+      <tr><td>Learning even your mistakes and your accent</td><td>The model learns everything in the examples, template tokens included</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A parrot learns from the treat in the moment, while a model learns only from what's in the examples, including their mistakes and their formatting tokens.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 272" role="img" aria-label="Which tokens of a training example carry the loss" preserveAspectRatio="xMidYMid meet"><text x="20" y="20" text-anchor="start" class="b">One training example: 750 tokens in the Qwen2.5 chat template</text><text x="20" y="48" text-anchor="start" class="s mono" style="font-size:12px">&lt;|im_start|&gt;system … &lt;|im_end|&gt;   &lt;|im_start|&gt;user … &lt;|im_end|&gt;   &lt;|im_start|&gt;assistant … &lt;|im_end|&gt;</text><text x="20" y="78" text-anchor="start" class="s b">Full-sequence loss (TRL default for chat datasets)</text><rect x="20.0" y="88" width="141.0" height="34" rx="5" class="fill-a"/><text x="90.5" y="110" text-anchor="middle" class="b" style="font-size:13px">system 150</text><rect x="164.0" y="88" width="333.0" height="34" rx="5" class="fill-a"/><text x="330.5" y="110" text-anchor="middle" class="b" style="font-size:13px">customer 350</text><rect x="500.0" y="88" width="237.0" height="34" rx="5" class="fill-a"/><text x="618.5" y="110" text-anchor="middle" class="b" style="font-size:13px">reply 250</text><text x="20" y="140" text-anchor="start" class="s" style="font-size:13px">graded tokens: 750 of 750; the reply you want to teach is 33% of the loss</text><text x="20" y="172" text-anchor="start" class="s b">assistant_only_loss=True</text><rect x="20.0" y="182" width="141.0" height="34" rx="5" class="bx"/><text x="90.5" y="204" text-anchor="middle" class="s m" style="font-size:13px">system 150</text><rect x="164.0" y="182" width="333.0" height="34" rx="5" class="bx"/><text x="330.5" y="204" text-anchor="middle" class="s m" style="font-size:13px">customer 350</text><rect x="500.0" y="182" width="237.0" height="34" rx="5" class="fill-a"/><text x="618.5" y="204" text-anchor="middle" class="b" style="font-size:13px">reply 250</text><text x="20" y="234" text-anchor="start" class="s" style="font-size:13px">graded tokens: 250 of 750; the reply you want to teach is 100% of the loss</text><rect x="20" y="250" width="14" height="14" rx="3" class="fill-a"/><text x="40" y="262" text-anchor="start" class="s" style="font-size:12px">graded: the model is trained to predict these</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 368" role="img" aria-label="Which tokens of a training example carry the loss" preserveAspectRatio="xMidYMid meet"><text x="12" y="20" text-anchor="start" class="b" style="font-size:14px">One training example: 750 tokens</text><text x="12" y="38" text-anchor="start" class="s m">in the Qwen2.5 chat template</text><text x="12" y="60" text-anchor="start" class="s mono" style="font-size:12px">&lt;|im_start|&gt;system … &lt;|im_end|&gt;</text><text x="12" y="78" text-anchor="start" class="s mono" style="font-size:12px">&lt;|im_start|&gt;user … &lt;|im_end|&gt;</text><text x="12" y="96" text-anchor="start" class="s mono" style="font-size:12px">&lt;|im_start|&gt;assistant … &lt;|im_end|&gt;</text><text x="12" y="126" text-anchor="start" class="s b">Full-sequence loss (TRL default for chat datasets)</text><rect x="12.0" y="136" width="64.2" height="42" rx="5" class="fill-a"/><text x="44.1" y="154" text-anchor="middle" class="b" style="font-size:12px">system</text><text x="44.1" y="170" text-anchor="middle" class="b" style="font-size:12px">150</text><rect x="79.2" y="136" width="153.8" height="42" rx="5" class="fill-a"/><text x="156.1" y="154" text-anchor="middle" class="b" style="font-size:12px">customer</text><text x="156.1" y="170" text-anchor="middle" class="b" style="font-size:12px">350</text><rect x="236.0" y="136" width="109.0" height="42" rx="5" class="fill-a"/><text x="290.5" y="154" text-anchor="middle" class="b" style="font-size:12px">reply</text><text x="290.5" y="170" text-anchor="middle" class="b" style="font-size:12px">250</text><text x="12" y="196" text-anchor="start" class="s" style="font-size:12px">graded: 750 of 750 tokens; the reply you</text><text x="12" y="212" text-anchor="start" class="s" style="font-size:12px">want to teach is 33% of the loss</text><text x="12" y="244" text-anchor="start" class="s b">assistant_only_loss=True</text><rect x="12.0" y="254" width="64.2" height="42" rx="5" class="bx"/><text x="44.1" y="272" text-anchor="middle" class="s m" style="font-size:12px">system</text><text x="44.1" y="288" text-anchor="middle" class="s m" style="font-size:12px">150</text><rect x="79.2" y="254" width="153.8" height="42" rx="5" class="bx"/><text x="156.1" y="272" text-anchor="middle" class="s m" style="font-size:12px">customer</text><text x="156.1" y="288" text-anchor="middle" class="s m" style="font-size:12px">350</text><rect x="236.0" y="254" width="109.0" height="42" rx="5" class="fill-a"/><text x="290.5" y="272" text-anchor="middle" class="b" style="font-size:12px">reply</text><text x="290.5" y="288" text-anchor="middle" class="b" style="font-size:12px">250</text><text x="12" y="314" text-anchor="start" class="s" style="font-size:12px">graded: 250 of 750 tokens; the reply you</text><text x="12" y="330" text-anchor="start" class="s" style="font-size:12px">want to teach is 100% of the loss</text><rect x="12" y="346" width="14" height="14" rx="3" class="fill-a"/><text x="32" y="358" text-anchor="start" class="s" style="font-size:12px">graded: the model is trained to predict these</text></svg>
+    <figcaption>This page's worked example: 150 system tokens, 350 customer tokens, 250 reply tokens. With the default full-sequence loss, two thirds of the training signal goes on predicting the prompt. Assistant-only loss spends all of it on the reply.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">This is the most common kind of fine-tuning, and the one that turned raw next-token predictors into the helpful assistants you use every day. Understand it and you understand both how to specialize a model <em>and</em> how ChatGPT-style models are actually made.</p>
 
   <h2>From “continues text” to “follows instructions”</h2>
@@ -26,6 +57,10 @@
     <div class="box-label">Concept</div>
     <p><span class="term">Supervised fine-tuning</span> (SFT) trains the model on instruction→response pairs so it learns to produce the response given the instruction — the workhorse of instruction tuning. The data uses a <span class="term">chat template</span>: the specific formatting (special tokens marking system/user/assistant turns) the model expects. <span class="term">Preference tuning</span> — via <span class="term">RLHF</span> (reinforcement learning from human feedback) or the simpler <span class="term">DPO</span> (direct preference optimization) — further trains the model on <em>comparisons</em> (“response A is better than B”) to align tone, helpfulness, and safety with human preferences.</p>
   </div>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <div class="box example">
     <div class="box-label">Worked example — SFT a model to your style (free, Colab)</div>
@@ -54,6 +89,13 @@ trainer.<span class="f">train</span>()
 <span class="c"># now the model replies in your taught style — without those examples in the prompt</span></code></pre>
     <p>After SFT, the model behaves the way your examples demonstrated — apologetic-then-actionable support replies, say — <em>without</em> needing those instructions/examples in every prompt. That baked-in behavior is the payoff of instruction tuning.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Instruction-tuning a support model on 8,000 conversations</div>
+    <p>Assumptions: 8,000 curated support conversations (from Lesson 5.3). Each has a system message (150 tokens), a customer message (350 tokens) and an agent reply (250 tokens): 750 tokens per example.</p><ol><li><strong>Tokens per epoch.</strong> 8,000 x 750 = 6 million tokens. Three epochs = 18 million.</li><li><strong>Which tokens carry the loss?</strong> TRL computes loss on the whole sequence for a conversational (messages) dataset unless you set <code>assistant_only_loss=True</code>; for prompt-completion datasets it uses completion-only loss by default (<a href="https://huggingface.co/docs/trl/sft_trainer">TRL SFT docs</a>). With full-sequence loss, only 250 / 750 = 33% of the loss comes from the replies you want to teach; the rest teaches the model to predict system prompts and customer messages.</li><li><strong>Switch to assistant-only loss.</strong> 8,000 x 250 = 2 million loss-carrying tokens per epoch, all of them reply behaviour. TRL notes this needs a chat template with generation markers, which it patches automatically for some known families.</li><li><strong>Template and EOS.</strong> Qwen2.5 models use <code>&lt;|im_start|&gt;</code> and <code>&lt;|im_end|&gt;</code> turn markers. TRL's docs warn that for a base model like Qwen2.5-1.5B you should set <code>eos_token="&lt;|im_end|&gt;"</code> so replies stop where the template says the turn ends. Skip that, and the model may keep generating past the reply.</li><li><strong>Then maybe preference tuning.</strong> If reviewers can easily say which of two replies is better but can't write the perfect reply, collect 2,000 preference pairs and run DPO (<a href="https://arxiv.org/abs/2305.18290">arXiv 2305.18290</a>) on top of the SFT checkpoint.</li></ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box note">
     <div class="box-label">The chat template gotcha</div>
@@ -97,6 +139,22 @@ trainer.<span class="f">train</span>()
         <div class="why">Unrelated — SFT is behavior alignment.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">You SFT on conversational 'messages' data with TRL defaults. What does the loss cover?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Only the system prompt.</span>
+        <div class="why">No standard setup trains on just the system prompt.</div></li>
+      <li data-correct="true"><span class="opt">B) The full sequence, including system and user turns, unless you set assistant_only_loss=True (which needs generation markers in the chat template).</span>
+        <div class="why">Correct. Per the TRL docs, assistant_only_loss defaults to False; completion-only loss is the default only for prompt-completion datasets. Turn on assistant-only loss to focus learning on the replies.</div></li>
+      <li data-correct="false"><span class="opt">C) Only the assistant turns, always.</span>
+        <div class="why">That's what many people assume, but it isn't the default for messages datasets in TRL. Check your config.</div></li>
+      <li data-correct="false"><span class="opt">D) Nothing until you add a reward model.</span>
+        <div class="why">SFT uses plain next-token cross-entropy on its targets; reward models belong to RLHF.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -121,10 +179,92 @@ trainer.<span class="f">train</span>()
     <p>For your own projects, the practical takeaway is a ladder: <strong>SFT first</strong> — it’s simpler, cheaper, and solves most “make it behave like X” needs. Reach for <strong>preference tuning</strong> only when you need to optimize subtle trade-offs SFT can’t easily capture (nuanced helpfulness, refusing the right things, ranking among already-good answers) and you can collect preference comparisons. Most applied fine-tuning you’ll do is SFT with LoRA on a few hundred excellent examples — understanding RLHF/DPO mainly lets you reason about how the assistants you build on were aligned, and recognize when your task genuinely needs that extra machinery.</p>
   </div>
 
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/11_lora_tiny.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/11_lora_tiny.py</code></pre>
+    <p><strong>What to look for:</strong> The lab does not use a chat template or -100 label masking: its tiny model learns plain counting sequences, so it shows LoRA mechanics, not instruction formatting. For this lesson's template gotcha, use the worked example above with a real tokenizer: print tokenizer.apply_chat_template(messages, tokenize=False) and compare it with the template you will use at inference.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  base model: 798,848 params. Pre-training it on &#x27;count UP&#x27; sequences (0123456789012...)
+  base loss  count-up=0.097   count-down=10.885  &lt;- it never saw &#x27;down&#x27;
+  LoRA r=8 on attention + MLP: trainable=65,536 of 864,384 (7.6%)
+    after   0 LoRA steps: count-down loss=10.878  count-up loss=0.098
+    after 100 LoRA steps: count-down loss=0.100  count-up loss=9.747
+    after 200 LoRA steps: count-down loss=0.098  count-up loss=10.912
+    after 300 LoRA steps: count-down loss=0.097  count-up loss=10.695
+  frozen base tensors changed during LoRA training: 0  (expect 0)
+  adapter switched OFF: count-up loss=0.098  count-down loss=10.882  &lt;- the old skill is back: forgetting lived in the adapter, not the base
+  saved adapter: 266 KB  vs base model ~3120 KB in fp32
+  merge_and_unload: max logit difference after merging = 2.86e-06  (merged = same model, no adapter overhead)
+  Look: count-down loss falls while the base stays byte-identical. But count-up loss rose: with the adapter
+  on, the model forgot the old skill. That is why you eval BOTH the new task and the old ones (Lesson 5.6),
+  and why keeping adapters separate (swap or disable per task) is a real advantage of LoRA.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/11_lora_tiny.txt">labs/outputs</a>. Source: <a href="../labs/11_lora_tiny.py">labs/11_lora_tiny.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> An example has 120 system tokens, 400 user tokens and 180 assistant tokens. What fraction of loss-carrying tokens is assistant behaviour with full-sequence loss, and with assistant-only loss?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Full sequence: 180 / (120 + 400 + 180) = 180 / 700 = <strong>25.7%</strong>. Assistant-only: <strong>100%</strong> of loss-carrying tokens are assistant tokens, and there are 180 of them. With long prompts and short answers, full-sequence loss spends most of the gradient on text you never want the model to generate.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your SFT model gives good answers but then keeps going, inventing a new 'user:' turn and answering it. What's wrong and how do you fix it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>The model never learned where a turn ends: the end-of-turn token in the template doesn't match the EOS token used in training or generation. Fix: make the tokenizer's eos_token the template's end-of-turn token (for Qwen2.5, <code>&lt;|im_end|&gt;</code>, which TRL's docs call out), make sure each training example ends with it, and pass it as a stop token at inference. Re-check by decoding a training example and looking at its last tokens.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> You have budget for either 5,000 more SFT examples or 5,000 preference pairs. The model's replies are accurate but often too long and slightly off in tone. Which do you buy, and how do you set it up?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Preference pairs suit this case. The model already knows what to say; the problem is a subtle quality judgement (length, tone) that is easier to compare than to write perfectly. Generate two replies per prompt from the SFT model, have reviewers pick the better one by a written rubric (concise, warm, accurate), and run DPO starting from the SFT checkpoint with the same chat template. Evaluate reply length, rubric scores and accuracy against the SFT model, since preference tuning can trade accuracy for style if pairs reward tone alone. If the issue were missing knowledge or wrong format, more SFT would be the right buy.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is the difference between SFT, RLHF and DPO?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>SFT trains on input-output demonstrations with next-token cross-entropy: the model imitates the good answers. RLHF, as in InstructGPT, trains a reward model on human rankings of outputs, then optimises the policy with reinforcement learning to score highly on that reward while staying close to the original model. DPO gets a similar effect directly from preferred-versus-rejected pairs with a classification-style loss and no separate reward model or RL loop, which makes it simpler and more stable to run. In practice: SFT first, then DPO if you have preference data and a quality gap that demonstrations don't fix.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> What is a chat template and how does it break fine-tunes?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>A chat template is the exact text format, with special tokens, that turns a list of messages into the token sequence a model was trained on. For Qwen it uses im_start and im_end markers around each role. If training data is formatted with one template and inference with another, or the end-of-turn token isn't the EOS token, the model sees unfamiliar input. You get degraded answers, or replies that never stop and start inventing turns. I always format with the tokenizer's apply_chat_template, decode a training sample to check it by eye, and serve with the same template and stop tokens.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Design an instruction-tuning project to turn a base model into an internal coding assistant for your company's frameworks.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Start with an instruct model, not a raw base, unless there's a strong reason, since it already follows instructions. Data: mine real internal questions and accepted answers from code review and support channels, plus expert-written examples for core frameworks, deduped and split by repository and time. Include examples that use retrieved docs in context, so the model learns to rely on RAG for API details instead of memorising them. Train LoRA SFT with assistant-only loss and the model's own chat template. Evaluate on held-out internal tasks with tests that execute, plus general coding and safety probes against the base. Add DPO later from developer thumbs-up and thumbs-down data. Version the adapter with the base model.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://huggingface.co/docs/trl/sft_trainer" target="_blank" rel="noopener">SFT Trainer — Hugging Face TRL docs</a></li>
+      <li><a href="https://arxiv.org/abs/2203.02155" target="_blank" rel="noopener">Training language models to follow instructions with human feedback (InstructGPT) — Ouyang et al., arXiv 2203.02155</a></li>
+      <li><a href="https://arxiv.org/abs/2305.18290" target="_blank" rel="noopener">Direct Preference Optimization — Rafailov et al., arXiv 2305.18290</a></li>
+      <li><a href="https://huggingface.co/docs/transformers/chat_templating" target="_blank" rel="noopener">Chat templates — Hugging Face Transformers docs</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
   <p>You’ve trained a model. The non-negotiable final step is proving it actually got better — without quietly breaking. Next: <strong>evaluating a fine-tune</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Instruction tuning shows the model thousands of 'asked this, answer like that' examples until answering becomes its habit.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

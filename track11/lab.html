@@ -25,7 +25,7 @@
 <pre><code>PROJECT <span class="o">=</span> {
     <span class="s">"name"</span>: <span class="s">"docs-assistant"</span>,
     <span class="s">"one_liner"</span>: <span class="s">"A grounded Q&amp;A assistant over a company's help-center docs."</span>,
-    <span class="s">"stack"</span>: [<span class="s">"Python"</span>, <span class="s">"Chroma"</span>, <span class="s">"Ollama (llama3.2)"</span>, <span class="s">"sentence-transformers"</span>],
+    <span class="s">"stack"</span>: [<span class="s">"Python"</span>, <span class="s">"Chroma"</span>, <span class="s">"Ollama (qwen2.5:7b)"</span>, <span class="s">"sentence-transformers"</span>],
     <span class="s">"decisions"</span>: [
         (<span class="s">"Chunk size 500 with 50 overlap"</span>,
          <span class="s">"200-char chunks split definitions across boundaries and hurt 'what is X' answers"</span>),
@@ -35,7 +35,7 @@
     <span class="s">"results"</span>: {<span class="s">"golden_set"</span>: <span class="n">40</span>, <span class="s">"recall_at_5"</span>: <span class="n">0.86</span>, <span class="s">"faithfulness"</span>: <span class="n">0.92</span>},
     <span class="s">"limitations"</span>: [<span class="s">"multi-hop questions need query decomposition"</span>,
                     <span class="s">"no reranker yet"</span>],
-    <span class="s">"run"</span>: [<span class="s">"pip install -r requirements.txt"</span>, <span class="s">"ollama pull llama3.2"</span>,
+    <span class="s">"run"</span>: [<span class="s">"pip install -r requirements.txt"</span>, <span class="s">"ollama pull qwen2.5:7b"</span>,
             <span class="s">"python ingest.py"</span>, <span class="s">"python app.py"</span>],
 }
 <span class="f">print</span>(PROJECT[<span class="s">"name"</span>], <span class="s">"-"</span>, PROJECT[<span class="s">"one_liner"</span>])</code></pre>

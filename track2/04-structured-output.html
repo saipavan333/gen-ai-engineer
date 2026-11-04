@@ -12,6 +12,38 @@
 
   <span class="eyebrow">Track 2 · Lesson 2.4</span>
   <h1>Structured output &amp; JSON</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Software can't read a chatty paragraph; it needs fields, such as intent, sentiment and urgent.</p>
+    <p>Structured output means the model replies in a fixed format, almost always JSON (JavaScript Object Notation).</p>
+    <p>A schema is the contract: which fields exist, their types and their allowed values.</p>
+    <p>Your code checks every reply against the schema before trusting it. That check is called validation.</p>
+    <p>If the check fails, you send the error back and ask again.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Structured output is like a form with labelled boxes instead of a blank page. 'Name: ___ Age: ___ Allergic to nuts: yes / no' gets answers a computer can file; 'tell me about yourself' gets a story someone has to read. Constrained decoding is like boxes that physically only accept digits where a number goes.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>A form with labelled boxes</td><td>A JSON schema: named fields with types</td></tr>
+      <tr><td>Yes / no tick boxes</td><td>Allowed values, e.g. intent ∈ {refund, billing, technical, other}</td></tr>
+      <tr><td>Boxes that only accept digits</td><td>JSON mode or constrained decoding (Ollama <code>format="json"</code>)</td></tr>
+      <tr><td>A clerk checking the form before filing it</td><td>Validation in code, e.g. with pydantic</td></tr>
+      <tr><td>Handing the form back to be fixed</td><td>Retry with the validation error in the prompt</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A form cannot stop someone writing a wrong but valid answer, and neither can a schema: it guarantees the shape, not the truth.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 231" role="img" aria-label="Generate, validate, and retry with the error" preserveAspectRatio="xMidYMid meet"><rect x="14" y="22" width="119.2" height="119" rx="10" class="bx tn-c" /><g class="vzb"><text x="73.6" y="55.75" text-anchor="middle" class="b">Prompt with</text><text x="73.6" y="75.75" text-anchor="middle" class="b">the shape</text><text x="73.6" y="101.75" text-anchor="middle" class="s" style="font-size:13px">an example of</text><text x="73.6" y="118.75" text-anchor="middle" class="s" style="font-size:13px">the exact JSON</text></g><circle cx="16" cy="24" r="11" class="badge"/><text x="16" y="28.5" text-anchor="middle" class="badge-t">1</text><line x1="137.2" y1="81.5" x2="154.2" y2="81.5" class="ln "/><polygon points="163.2,81.5 154.2,76.55 154.2,86.45" class="hd "/><rect x="167.2" y="22" width="119.2" height="119" rx="10" class="bx tn-a" /><g class="vzb"><text x="226.8" y="47.25" text-anchor="middle" class="b">Model, in</text><text x="226.8" y="67.25" text-anchor="middle" class="b">JSON mode</text><text x="226.8" y="93.25" text-anchor="middle" class="s" style="font-size:13px">output is</text><text x="226.8" y="110.25" text-anchor="middle" class="s" style="font-size:13px">always valid</text><text x="226.8" y="127.25" text-anchor="middle" class="s" style="font-size:13px">JSON</text></g><circle cx="169.2" cy="24" r="11" class="badge"/><text x="169.2" y="28.5" text-anchor="middle" class="badge-t">2</text><line x1="290.4" y1="81.5" x2="307.4" y2="81.5" class="ln "/><polygon points="316.4,81.5 307.4,76.55 307.4,86.45" class="hd "/><rect x="320.4" y="22" width="119.2" height="119" rx="10" class="bx tn-b" /><g class="vzb"><text x="380" y="65.75" text-anchor="middle" class="b">Parse</text><text x="380" y="91.75" text-anchor="middle" class="s" style="font-size:13px">text becomes a</text><text x="380" y="108.75" text-anchor="middle" class="s" style="font-size:13px">Python object</text></g><circle cx="322.4" cy="24" r="11" class="badge"/><text x="322.4" y="28.5" text-anchor="middle" class="badge-t">3</text><line x1="443.6" y1="81.5" x2="460.6" y2="81.5" class="ln "/><polygon points="469.6,81.5 460.6,76.55 460.6,86.45" class="hd "/><rect x="473.6" y="22" width="119.2" height="119" rx="10" class="bx tn-k" /><g class="vzb"><text x="533.2" y="65.75" text-anchor="middle" class="b">Validate</text><text x="533.2" y="91.75" text-anchor="middle" class="s" style="font-size:13px">fields, types,</text><text x="533.2" y="108.75" text-anchor="middle" class="s" style="font-size:13px">allowed values</text></g><circle cx="475.6" cy="24" r="11" class="badge"/><text x="475.6" y="28.5" text-anchor="middle" class="badge-t">4</text><line x1="596.8" y1="81.5" x2="613.8" y2="81.5" class="ln "/><polygon points="622.8,81.5 613.8,76.55 613.8,86.45" class="hd "/><rect x="626.8" y="22" width="119.2" height="119" rx="10" class="bx tn-g" /><g class="vzb"><text x="686.4" y="57.25" text-anchor="middle" class="b">Use it</text><text x="686.4" y="83.25" text-anchor="middle" class="s" style="font-size:13px">route the</text><text x="686.4" y="100.25" text-anchor="middle" class="s" style="font-size:13px">ticket, save</text><text x="686.4" y="117.25" text-anchor="middle" class="s" style="font-size:13px">the row</text></g><circle cx="628.8" cy="24" r="11" class="badge"/><text x="628.8" y="28.5" text-anchor="middle" class="badge-t">5</text><polyline points="533.2,143 533.2,171 226.8,171 226.8,154" class="ln ac"/><polygon points="226.8,145 221.85,154 231.75,154" class="hd ac"/><text x="380" y="191" text-anchor="middle" class="s ac-t" style="font-size:14px">on failure: send the error back and</text><text x="380" y="209" text-anchor="middle" class="s ac-t" style="font-size:14px">ask again</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 491" role="img" aria-label="Generate, validate, and retry with the error" preserveAspectRatio="xMidYMid meet"><rect x="12" y="16" width="280" height="65" rx="10" class="bx tn-c" /><g class="vzb"><text x="152" y="41.25" text-anchor="middle" class="b">Prompt with the shape</text><text x="152" y="67.25" text-anchor="middle" class="s" style="font-size:13px">an example of the exact JSON</text></g><circle cx="14" cy="18" r="11" class="badge"/><text x="14" y="22.5" text-anchor="middle" class="badge-t">1</text><line x1="152" y1="84" x2="152" y2="103" class="ln "/><polygon points="152,112 156.95,103 147.05,103" class="hd "/><rect x="12" y="115" width="280" height="65" rx="10" class="bx tn-a" /><g class="vzb"><text x="152" y="140.25" text-anchor="middle" class="b">Model, in JSON mode</text><text x="152" y="166.25" text-anchor="middle" class="s" style="font-size:13px">output is always valid JSON</text></g><circle cx="14" cy="117" r="11" class="badge"/><text x="14" y="121.5" text-anchor="middle" class="badge-t">2</text><line x1="152" y1="183" x2="152" y2="202" class="ln "/><polygon points="152,211 156.95,202 147.05,202" class="hd "/><rect x="12" y="214" width="280" height="65" rx="10" class="bx tn-b" /><g class="vzb"><text x="152" y="239.25" text-anchor="middle" class="b">Parse</text><text x="152" y="265.25" text-anchor="middle" class="s" style="font-size:13px">text becomes a Python object</text></g><circle cx="14" cy="216" r="11" class="badge"/><text x="14" y="220.5" text-anchor="middle" class="badge-t">3</text><line x1="152" y1="282" x2="152" y2="301" class="ln "/><polygon points="152,310 156.95,301 147.05,301" class="hd "/><rect x="12" y="313" width="280" height="65" rx="10" class="bx tn-k" /><g class="vzb"><text x="152" y="338.25" text-anchor="middle" class="b">Validate</text><text x="152" y="364.25" text-anchor="middle" class="s" style="font-size:13px">fields, types, allowed values</text></g><circle cx="14" cy="315" r="11" class="badge"/><text x="14" y="319.5" text-anchor="middle" class="badge-t">4</text><line x1="152" y1="381" x2="152" y2="400" class="ln "/><polygon points="152,409 156.95,400 147.05,400" class="hd "/><rect x="12" y="412" width="280" height="65" rx="10" class="bx tn-g" /><g class="vzb"><text x="152" y="437.25" text-anchor="middle" class="b">Use it</text><text x="152" y="463.25" text-anchor="middle" class="s" style="font-size:13px">route the ticket, save the row</text></g><circle cx="14" cy="414" r="11" class="badge"/><text x="14" y="418.5" text-anchor="middle" class="badge-t">5</text><polyline points="294,345.5 326,345.5 326,147.5 305,147.5" class="ln ac"/><polygon points="296,147.5 305,152.45 305,142.55" class="hd ac"/><text x="340" y="246.5" text-anchor="middle" class="s ac-t" transform="rotate(-90 340 246.5)">on failure: send the error back and ask again</text></svg>
+    <figcaption>The four levers from the lesson in order: show the shape, use JSON mode, validate, and retry. JSON mode guarantees the output parses, not that it is right, so step 4 runs on every reply.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">The moment you put an LLM <em>inside software</em>, you need its output in a shape code can read. This lesson is how you turn a chatty model into a reliable component — the bridge between “cool demo” and “shipped feature.”</p>
 
   <h2>Why structured output is non-negotiable for products</h2>
@@ -26,6 +58,10 @@
     <div class="box-label">Concept</div>
     <p><span class="term">Structured output</span> means the model returns data in a fixed, machine-readable format — almost always <span class="term">JSON</span> (JavaScript Object Notation: keys and values like <code>{"urgent": true}</code>). A <span class="term">schema</span> is the contract describing the expected shape: which fields exist, their types, and allowed values. <span class="term">Validation</span> is checking the model’s output actually matches that schema before you trust it.</p>
   </div>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <h2>Getting JSON reliably: four levers</h2>
   <p>Asking nicely isn’t enough on its own — models love to add “Sure! Here’s the JSON:” or a trailing explanation that breaks parsing. Use these together:</p>
@@ -75,7 +111,7 @@
 intent (refund/billing/technical/other), sentiment (positive/negative/mixed/neutral), urgent (true/false).
 Ticket: "</span>{text}<span class="s">" """</span>
     <span class="k">for</span> attempt <span class="k">in</span> <span class="f">range</span>(tries):
-        resp <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"llama3.2"</span>,
+        resp <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"qwen2.5:7b"</span>,
                            messages<span class="o">=</span>[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: prompt}],
                            format<span class="o">=</span><span class="s">"json"</span>)        <span class="c"># force valid JSON (free!)</span>
         <span class="k">try</span>:
@@ -88,6 +124,21 @@ t <span class="o">=</span> <span class="f">extract</span>(<span class="s">"My ca
 <span class="f">print</span>(t.intent, t.sentiment, t.urgent)   <span class="c"># -> refund negative True</span></code></pre>
     <p>Notice what makes this robust: <code>format="json"</code> stops the model adding prose, <code>pydantic</code> guarantees the types are right before you use them, and the retry loop feeds the error back so a one-off slip self-corrects. That’s the difference between a script and a feature.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Extracting fields from 3 million invoices a month</div>
+    <p>Assume an accounts team processes <strong>3,000,000 invoices a month</strong> and extracts vendor, invoice number, date, total and currency. Failure rates are assumptions to replace with your own measurements.</p>
+<ol>
+<li><strong>Free-text prompting.</strong> Suppose 4% of replies fail to parse (prose around the JSON, trailing commas). 3M x 4% = <strong>120,000 broken records</strong> a month.</li>
+<li><strong>Constrain the shape.</strong> Pass a JSON schema as the format. Ollama accepts a schema in <code>format</code> (<a href="https://docs.ollama.com/capabilities/structured-outputs">Ollama docs</a>), and hosted APIs have their own structured output features (<a href="https://platform.claude.com/docs/en/build-with-claude/structured-outputs">Anthropic docs</a>). Parse failures drop to about zero.</li>
+<li><strong>Now count value errors.</strong> Valid JSON can still be wrong: a date as "next Friday", a total that does not match the line items, currency "dollars" instead of an ISO code. Suppose 1.5% fail validation: 3M x 1.5% = 45,000 a month.</li>
+<li><strong>Retry with the error.</strong> Send the validation message back once. Suppose 85% fix themselves: 45,000 x 0.85 = 38,250 recovered, at the cost of 45,000 extra calls (1.5% more volume).</li>
+<li><strong>Human queue.</strong> The remaining 6,750 a month, about 225 a day, go to a reviewer. At 1 minute each that is under 4 hours a day: affordable, and every case becomes a test example.</li>
+<li><strong>Design the schema to allow honesty.</strong> Make fields nullable where invoices really omit them, use enums for currency, and add a cross-check in code (sum of lines = total). A schema that forces every field pushes the model to invent values.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -126,6 +177,22 @@ t <span class="o">=</span> <span class="f">extract</span>(<span class="s">"My ca
         <div class="why">Politeness doesn't guarantee structure; validation does.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">With schema-constrained decoding switched on, the model returns {"currency": "USD", "total": 1250.0} for an invoice whose real total is 1,520. What does this show?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) The schema should use a string for total instead of a number.</span>
+        <div class="why">Changing the type does not make the value correct; it just removes a useful type check.</div></li>
+      <li data-correct="false"><span class="opt">B) The temperature was too low.</span>
+        <div class="why">A higher temperature would add randomness, not accuracy.</div></li>
+      <li data-correct="false"><span class="opt">C) Constrained decoding is broken and should be turned off.</span>
+        <div class="why">It did its job: valid JSON with the right types. Catching wrong values was never its job.</div></li>
+      <li data-correct="true"><span class="opt">D) Constrained decoding guarantees valid shape and types, not correct values, so you still need value checks such as matching the total to the line items.</span>
+        <div class="why">Right. The output passes the schema but is wrong. Cross-checks in code and grounding are what catch value errors.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -152,6 +219,89 @@ t <span class="o">=</span> <span class="f">extract</span>(<span class="s">"My ca
 
   <p>You can now make outputs that software trusts. The last prompting lesson zooms out to the reusable <strong>patterns and anti-patterns</strong> — the playbook pros reach for, and the traps that quietly wreck prompts.</p>
 
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/02_structured_output.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/02_structured_output.py</code></pre>
+    <p><strong>What to look for:</strong> This lab is this lesson. Compare section A2 (vague prompt: 0 of 4 parseable), section A (keys pinned in the prompt: 8 of 8) and section B (schema passed as format: 8 of 8). Section C runs a business-rule check with retry-with-error-feedback; on our run no rule was broken, so it printed 0 repairs: the loop is there, but this data never triggered it. To see it fire, add an email whose order id the model is likely to mangle, or tighten a rule in business_rules().</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>C) Schema-valid is not business-valid: validate rules, retry with the error
+  rule violations repaired by retry: 0
+D) Content check against gold labels (shape-valid does not mean right)
+  #4: model said &#x27;delivery&#x27;, a human would file &#x27;other&#x27;: &#x27;Just wanted to say the delivery guy was very polite. thanks!&#x27;
+  category accuracy: 7/8
+Summary
+  vague-prompt valid:       0/4 = 0% (95% CI 0%-49%)
+  prompt-only valid:        8/8 = 100% (95% CI 68%-100%)
+  schema-constrained valid: 8/8 = 100% (95% CI 68%-100%)
+  category accuracy (gold): 7/8 = 88% (95% CI 53%-98%)
+  On this model and these 8 emails a clear prompt already gives valid JSON every time, so the schema shows
+  NO measurable advantage here. Its value is the guarantee on the inputs you have not tested yet.
+  Look: constrained decoding guarantees the SHAPE. It does not guarantee the CONTENT is right;
+  that is what the business-rule check + retry (and your eval set) are for.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/02_structured_output.txt">labs/outputs</a>. Source: <a href="../labs/02_structured_output.py">labs/02_structured_output.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Write a Pydantic model for a support ticket with: intent (one of refund, billing, technical, other), urgent (bool), order_id (string or missing).</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p><pre><code>from typing import Literal, Optional
+from pydantic import BaseModel
+
+class Ticket(BaseModel):
+    intent: Literal["refund", "billing", "technical", "other"]
+    urgent: bool
+    order_id: Optional[str] = None</code></pre>Literal turns the allowed intents into an enum the validator enforces, and Optional with a default of None lets the model honestly report a missing order id instead of inventing one.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your retry loop sometimes runs 5 times on the same email and still fails, burning tokens. Improve the loop.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Cap retries at 1 or 2. Make each retry message specific: quote the exact validation error and the field. If it still fails, stop and route the case to a fallback: a human queue, a stronger model, or a partial record with failed fields set to null and flagged. Log the input and errors so the case joins your test set. Also check the schema itself, because repeated failure on one field often means the schema demands something the input does not contain.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Explain how a grammar-constrained decoder decides which tokens are allowed at each step, and why it can make some outputs slightly worse in quality.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>The decoder tracks where it is in the grammar (a state machine built from the JSON schema). At each step it masks every token that would lead to an invalid continuation, then samples from what is left, renormalised (Willard and Louf, 2023, describe an efficient indexed version). Quality can dip because the mask may force awkward tokenisations or cut off the path the model would have taken to a good answer, especially if the schema forces fields in an unnatural order. Mitigations: order fields so reasoning-like fields come before conclusions, keep schemas simple, and evaluate quality, not just validity.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> How do you get reliable JSON out of an LLM?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Describe the exact shape in the prompt with an example, use the runtime's structured output or JSON mode (for example passing a JSON schema as Ollama's format), parse and validate against a schema with something like Pydantic, and on failure retry once with the error message. Never pass raw model output to downstream code without validation.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> What is the difference between JSON mode, schema-constrained output, and function or tool calling?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>JSON mode guarantees syntactically valid JSON but not your fields. Schema-constrained output restricts decoding to a specific JSON schema, so required fields, types and enums are enforced. Tool calling has the model fill in arguments for a named function defined by a schema; the same constraint idea, but framed as an action your code executes. In all three you still validate values, because a schema cannot know that a total is wrong or an id does not exist.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Design the extraction pipeline for millions of documents a month, with an accuracy target of 99.5% per field.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Schema-constrained extraction with nullable fields and enums, code-level cross-checks (totals, dates, id formats, lookups against master data), one retry with the specific error, then routing to a stronger model or a human queue. Measure per-field accuracy on a labelled sample every week, not just parse rate. Version schemas and prompts together, and make downstream consumers handle nulls. Log every correction as a new test case. Use batch APIs for cost and keep a confidence or review flag in the record, so 99.5% is measured rather than assumed.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://docs.ollama.com/capabilities/structured-outputs" target="_blank" rel="noopener">Structured outputs — Ollama docs</a></li>
+      <li><a href="https://platform.claude.com/docs/en/build-with-claude/structured-outputs" target="_blank" rel="noopener">Structured outputs — Anthropic docs</a></li>
+      <li><a href="https://docs.pydantic.dev/latest/" target="_blank" rel="noopener">Pydantic documentation</a></li>
+      <li><a href="https://arxiv.org/abs/2307.09702" target="_blank" rel="noopener">Efficient Guided Generation for Large Language Models (Willard and Louf, 2023) — arXiv</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Ask for a fixed shape, check every reply against it, and send it back when it fails.</p>
+<!-- ease:line:end -->
 </main>
 
 <script>
@@ -209,5 +359,10 @@ t <span class="o">=</span> <span class="f">extract</span>(<span class="s">"My ca
 </script>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

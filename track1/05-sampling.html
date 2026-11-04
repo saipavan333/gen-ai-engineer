@@ -12,6 +12,43 @@
 
   <span class="eyebrow">Track 1 · Lesson 1.5</span>
   <h1>Sampling &amp; decoding</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>For every next token, the model gives a probability to every option.</p>
+    <p>Sampling is the step that picks one option from that list.</p>
+    <p>Temperature sets how bold the pick is: low almost always takes the favourite, high gives long shots a chance.</p>
+    <p>Top-p throws away the unlikely tail before the pick.</p>
+    <p>On local models you set these knobs yourself; some hosted APIs now fix them for you.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Picture a bag of coloured marbles where each colour is a possible next word, and the model decides how many marbles of each colour go in. Temperature is how much you shake the odds: low temperature means almost every marble is the favourite colour, high temperature evens the colours out. Top-k and top-p throw the rarest colours out of the bag before you draw.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>How many marbles of each colour</td><td>The probability of each candidate token</td></tr>
+      <tr><td>Shaking the odds (temperature)</td><td>Dividing the model's scores by T before turning them into probabilities</td></tr>
+      <tr><td>Throwing the rarest colours out (top-k, top-p)</td><td>Cutting the tail, then rescaling what is left</td></tr>
+      <tr><td>Drawing one marble</td><td>Sampling one token</td></tr>
+      <tr><td>Refilling the bag after every draw</td><td>New probabilities after every token, based on the text so far</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> The model refills the bag with new odds after every single draw, based on everything drawn so far.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 300" role="img" aria-label="Temperature and top-p reshape the next-token probabilities" preserveAspectRatio="xMidYMid meet"><text x="20" y="22" text-anchor="start" class="b">Next token after &quot;The weather today is&quot; (illustrative scores)</text><text x="109" y="50" text-anchor="middle" class="b ac-t">T = 0.3</text><text x="72" y="79" text-anchor="end" class="s">sunny</text><rect x="76" y="66" width="98.5896" height="18" rx="3" class="fill-a"/><text x="178.59" y="80" text-anchor="start" class="s m" style="font-size:12px">91%</text><text x="72" y="109" text-anchor="end" class="s">cloudy</text><rect x="76" y="96" width="6.85034" height="18" rx="3" class="fill-a"/><text x="86.8503" y="110" text-anchor="start" class="s m" style="font-size:12px">6%</text><text x="72" y="139" text-anchor="end" class="s">rainy</text><rect x="76" y="126" width="2" height="18" rx="3" class="fill-a"/><text x="81.8057" y="140" text-anchor="start" class="s m" style="font-size:12px">2%</text><text x="72" y="169" text-anchor="end" class="s">nice</text><rect x="76" y="156" width="2" height="18" rx="3" class="fill-a"/><text x="80.6643" y="170" text-anchor="start" class="s m" style="font-size:12px">1%</text><text x="72" y="199" text-anchor="end" class="s">humid</text><rect x="76" y="186" width="2" height="18" rx="3" class="fill-a"/><text x="80.0899" y="200" text-anchor="start" class="s m" style="font-size:12px">0%</text><text x="72" y="229" text-anchor="end" class="s">purple</text><rect x="76" y="216" width="2" height="18" rx="3" class="fill-a"/><text x="80.0002" y="230" text-anchor="start" class="s m" style="font-size:12px">0%</text><text x="295" y="50" text-anchor="middle" class="b ac-t">T = 1.0</text><text x="258" y="79" text-anchor="end" class="s">sunny</text><rect x="262" y="66" width="51.0777" height="18" rx="3" class="fill-a"/><text x="317.078" y="80" text-anchor="start" class="s m" style="font-size:12px">47%</text><text x="258" y="109" text-anchor="end" class="s">cloudy</text><rect x="262" y="96" width="22.9507" height="18" rx="3" class="fill-a"/><text x="288.951" y="110" text-anchor="start" class="s m" style="font-size:12px">21%</text><text x="258" y="139" text-anchor="end" class="s">rainy</text><rect x="262" y="126" width="15.3843" height="18" rx="3" class="fill-a"/><text x="281.384" y="140" text-anchor="start" class="s m" style="font-size:12px">14%</text><text x="258" y="169" text-anchor="end" class="s">nice</text><rect x="262" y="156" width="11.397" height="18" rx="3" class="fill-a"/><text x="277.397" y="170" text-anchor="start" class="s m" style="font-size:12px">11%</text><text x="258" y="199" text-anchor="end" class="s">humid</text><rect x="262" y="186" width="6.25479" height="18" rx="3" class="fill-a"/><text x="272.255" y="200" text-anchor="start" class="s m" style="font-size:12px">6%</text><text x="258" y="229" text-anchor="end" class="s">purple</text><rect x="262" y="216" width="2" height="18" rx="3" class="fill-a"/><text x="266.936" y="230" text-anchor="start" class="s m" style="font-size:12px">1%</text><text x="481" y="50" text-anchor="middle" class="b ac-t">T = 1.0, top-p = 0.8</text><text x="444" y="79" text-anchor="end" class="s">sunny</text><rect x="448" y="66" width="51.0777" height="18" rx="3" class="fill-a"/><text x="503.078" y="80" text-anchor="start" class="s m" style="font-size:12px">47%</text><text x="444" y="109" text-anchor="end" class="s">cloudy</text><rect x="448" y="96" width="22.9507" height="18" rx="3" class="fill-a"/><text x="474.951" y="110" text-anchor="start" class="s m" style="font-size:12px">21%</text><text x="444" y="139" text-anchor="end" class="s">rainy</text><rect x="448" y="126" width="15.3843" height="18" rx="3" class="fill-a"/><text x="467.384" y="140" text-anchor="start" class="s m" style="font-size:12px">14%</text><text x="444" y="169" text-anchor="end" class="s">nice</text><rect x="448" y="156" width="11.397" height="18" rx="3" class="fill-w"/><text x="463.397" y="170" text-anchor="start" class="s wn-t" style="font-size:12px">11%</text><text x="444" y="199" text-anchor="end" class="s">humid</text><rect x="448" y="186" width="6.25479" height="18" rx="3" class="fill-w"/><text x="458.255" y="200" text-anchor="start" class="s wn-t" style="font-size:12px">6%</text><text x="444" y="229" text-anchor="end" class="s">purple</text><rect x="448" y="216" width="2" height="18" rx="3" class="fill-w"/><text x="452.936" y="230" text-anchor="start" class="s wn-t" style="font-size:12px">1%</text><text x="481" y="258" text-anchor="middle" class="s wn-t" style="font-size:12px">red = cut before the draw</text><text x="667" y="50" text-anchor="middle" class="b ac-t">T = 1.6</text><text x="630" y="79" text-anchor="end" class="s">sunny</text><rect x="634" y="66" width="38.2743" height="18" rx="3" class="fill-a"/><text x="676.274" y="80" text-anchor="start" class="s m" style="font-size:12px">35%</text><text x="630" y="109" text-anchor="end" class="s">cloudy</text><rect x="634" y="96" width="23.2146" height="18" rx="3" class="fill-a"/><text x="661.215" y="110" text-anchor="start" class="s m" style="font-size:12px">21%</text><text x="630" y="139" text-anchor="end" class="s">rainy</text><rect x="634" y="126" width="18.0795" height="18" rx="3" class="fill-a"/><text x="656.08" y="140" text-anchor="start" class="s m" style="font-size:12px">17%</text><text x="630" y="169" text-anchor="end" class="s">nice</text><rect x="634" y="156" width="14.9884" height="18" rx="3" class="fill-a"/><text x="652.988" y="170" text-anchor="start" class="s m" style="font-size:12px">14%</text><text x="630" y="199" text-anchor="end" class="s">humid</text><rect x="634" y="186" width="10.3014" height="18" rx="3" class="fill-a"/><text x="648.301" y="200" text-anchor="start" class="s m" style="font-size:12px">10%</text><text x="630" y="229" text-anchor="end" class="s">purple</text><rect x="634" y="216" width="3.14175" height="18" rx="3" class="fill-a"/><text x="641.142" y="230" text-anchor="start" class="s m" style="font-size:12px">3%</text><text x="20" y="284" text-anchor="start" class="s">Low T sharpens the favourite. High T flattens the odds. Top-p drops the unlikely tail, then the rest is rescaled.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 552" role="img" aria-label="Temperature and top-p reshape the next-token probabilities" preserveAspectRatio="xMidYMid meet"><text x="12" y="20" text-anchor="start" class="b">After &quot;The weather today is&quot;</text><text x="12" y="38" text-anchor="start" class="s m">(illustrative scores)</text><text x="92" y="66" text-anchor="middle" class="b ac-t">T=0.3</text><text x="8" y="90" text-anchor="start" class="s">sunny</text><rect x="8" y="94" width="116.847" height="12" rx="3" class="fill-a"/><text x="128.847" y="105" text-anchor="start" class="s m" style="font-size:12px">91%</text><text x="8" y="124" text-anchor="start" class="s">cloudy</text><rect x="8" y="128" width="8.11893" height="12" rx="3" class="fill-a"/><text x="20.1189" y="139" text-anchor="start" class="s m" style="font-size:12px">6%</text><text x="8" y="158" text-anchor="start" class="s">rainy</text><rect x="8" y="162" width="2.14013" height="12" rx="3" class="fill-a"/><text x="14.1401" y="173" text-anchor="start" class="s m" style="font-size:12px">2%</text><text x="8" y="192" text-anchor="start" class="s">nice</text><rect x="8" y="196" width="2" height="12" rx="3" class="fill-a"/><text x="12.7873" y="207" text-anchor="start" class="s m" style="font-size:12px">1%</text><text x="8" y="226" text-anchor="start" class="s">humid</text><rect x="8" y="230" width="2" height="12" rx="3" class="fill-a"/><text x="12.1066" y="241" text-anchor="start" class="s m" style="font-size:12px">0%</text><text x="8" y="260" text-anchor="start" class="s">purple</text><rect x="8" y="264" width="2" height="12" rx="3" class="fill-a"/><text x="12.0002" y="275" text-anchor="start" class="s m" style="font-size:12px">0%</text><text x="272" y="66" text-anchor="middle" class="b ac-t">T=1.0</text><text x="188" y="90" text-anchor="start" class="s">sunny</text><rect x="188" y="94" width="60.5365" height="12" rx="3" class="fill-a"/><text x="252.537" y="105" text-anchor="start" class="s m" style="font-size:12px">47%</text><text x="188" y="124" text-anchor="start" class="s">cloudy</text><rect x="188" y="128" width="27.2008" height="12" rx="3" class="fill-a"/><text x="219.201" y="139" text-anchor="start" class="s m" style="font-size:12px">21%</text><text x="188" y="158" text-anchor="start" class="s">rainy</text><rect x="188" y="162" width="18.2333" height="12" rx="3" class="fill-a"/><text x="210.233" y="173" text-anchor="start" class="s m" style="font-size:12px">14%</text><text x="188" y="192" text-anchor="start" class="s">nice</text><rect x="188" y="196" width="13.5075" height="12" rx="3" class="fill-a"/><text x="205.508" y="207" text-anchor="start" class="s m" style="font-size:12px">11%</text><text x="188" y="226" text-anchor="start" class="s">humid</text><rect x="188" y="230" width="7.41309" height="12" rx="3" class="fill-a"/><text x="199.413" y="241" text-anchor="start" class="s m" style="font-size:12px">6%</text><text x="188" y="260" text-anchor="start" class="s">purple</text><rect x="188" y="264" width="2" height="12" rx="3" class="fill-a"/><text x="193.109" y="275" text-anchor="start" class="s m" style="font-size:12px">1%</text><text x="92" y="316" text-anchor="middle" class="b ac-t">T=1.0, top-p 0.8</text><text x="8" y="340" text-anchor="start" class="s">sunny</text><rect x="8" y="344" width="60.5365" height="12" rx="3" class="fill-a"/><text x="72.5365" y="355" text-anchor="start" class="s m" style="font-size:12px">47%</text><text x="8" y="374" text-anchor="start" class="s">cloudy</text><rect x="8" y="378" width="27.2008" height="12" rx="3" class="fill-a"/><text x="39.2008" y="389" text-anchor="start" class="s m" style="font-size:12px">21%</text><text x="8" y="408" text-anchor="start" class="s">rainy</text><rect x="8" y="412" width="18.2333" height="12" rx="3" class="fill-a"/><text x="30.2333" y="423" text-anchor="start" class="s m" style="font-size:12px">14%</text><text x="8" y="442" text-anchor="start" class="s">nice</text><rect x="8" y="446" width="13.5075" height="12" rx="3" class="fill-w"/><text x="25.5075" y="457" text-anchor="start" class="s wn-t" style="font-size:12px">11%</text><text x="8" y="476" text-anchor="start" class="s">humid</text><rect x="8" y="480" width="7.41309" height="12" rx="3" class="fill-w"/><text x="19.4131" y="491" text-anchor="start" class="s wn-t" style="font-size:12px">6%</text><text x="8" y="510" text-anchor="start" class="s">purple</text><rect x="8" y="514" width="2" height="12" rx="3" class="fill-w"/><text x="13.1088" y="525" text-anchor="start" class="s wn-t" style="font-size:12px">1%</text><text x="272" y="316" text-anchor="middle" class="b ac-t">T=1.6</text><text x="188" y="340" text-anchor="start" class="s">sunny</text><rect x="188" y="344" width="45.3622" height="12" rx="3" class="fill-a"/><text x="237.362" y="355" text-anchor="start" class="s m" style="font-size:12px">35%</text><text x="188" y="374" text-anchor="start" class="s">cloudy</text><rect x="188" y="378" width="27.5135" height="12" rx="3" class="fill-a"/><text x="219.514" y="389" text-anchor="start" class="s m" style="font-size:12px">21%</text><text x="188" y="408" text-anchor="start" class="s">rainy</text><rect x="188" y="412" width="21.4276" height="12" rx="3" class="fill-a"/><text x="213.428" y="423" text-anchor="start" class="s m" style="font-size:12px">17%</text><text x="188" y="442" text-anchor="start" class="s">nice</text><rect x="188" y="446" width="17.7641" height="12" rx="3" class="fill-a"/><text x="209.764" y="457" text-anchor="start" class="s m" style="font-size:12px">14%</text><text x="188" y="476" text-anchor="start" class="s">humid</text><rect x="188" y="480" width="12.2091" height="12" rx="3" class="fill-a"/><text x="204.209" y="491" text-anchor="start" class="s m" style="font-size:12px">10%</text><text x="188" y="510" text-anchor="start" class="s">purple</text><rect x="188" y="514" width="3.72355" height="12" rx="3" class="fill-a"/><text x="195.724" y="525" text-anchor="start" class="s m" style="font-size:12px">3%</text></svg>
+    <figcaption>Same scores, four settings. The percentages are computed from the illustrative scores with softmax. Temperature changes the shape; top-p (nucleus sampling) keeps the smallest set of tokens whose probabilities add up to p.</figcaption>
+  </figure>
+  <div class="ez-play" data-ez-play="sampling">
+    <div class="ease-label">Try it</div>
+    <p class="ez-hint">Move temperature and top-p. The bars are recomputed with softmax; red bars are cut before the draw. Press Draw to sample one token.</p>
+    <div class="ez-stage"></div>
+  </div>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">The model hands you a probability for every possible next token. <em>Choosing</em> one is a separate step with its own knobs — temperature, top-k, top-p. These are the settings you’ll tune most often, and the difference between a reliable extractor and a creative writer is often just these numbers.</p>
 
   <h2>Why this is a separate, tunable step</h2>
@@ -29,6 +66,10 @@
     <p><span class="term">Top-k</span>: only consider the <em>k</em> most likely tokens; throw away the rest of the tail before sampling.</p>
     <p><span class="term">Top-p</span> (also called <span class="term">nucleus sampling</span>): consider the smallest set of top tokens whose probabilities add up to at least <em>p</em> (e.g. 0.9). Adapts automatically — few tokens when the model is confident, more when it’s unsure.</p>
   </div>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <p>Temperature is the one you’ll reach for most. Here’s the whole idea in a picture — same model, same context, only the temperature changes:</p>
 
@@ -81,11 +122,32 @@ prompt <span class="o">=</span> <span class="s">"The best way to learn programmi
 <span class="f">print</span>(<span class="s">"HIGH temp 1.3:"</span>, <span class="f">gen</span>(prompt, max_new_tokens<span class="o">=</span><span class="n">25</span>, do_sample<span class="o">=</span><span class="kc">True</span>, temperature<span class="o">=</span><span class="n">1.3</span>)[<span class="n">0</span>][<span class="s">"generated_text"</span>])</code></pre>
     <p>The low-temperature run stays safe and predictable; the high-temperature run wanders into more unusual (and sometimes incoherent) territory. That trade-off — coherence vs. creativity — is exactly what you’re dialing.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Decoding settings for three features on 500,000 requests a day</div>
+    <p>Assume one product has three LLM features: <strong>order-number extraction</strong> (300,000 requests/day), <strong>ticket summaries</strong> (100,000/day) and <strong>marketing taglines</strong> (100,000/day). Volumes are assumptions.</p>
+<ol>
+<li><strong>See what temperature does, with numbers.</strong> Take three logits [2, 1, 0]. At T = 1: e^2 = 7.39, e^1 = 2.72, e^0 = 1, sum 11.11, so probabilities 0.67 / 0.24 / 0.09. At T = 0.5 the logits become [4, 2, 0]: 54.6, 7.39, 1, sum 63.0, so 0.87 / 0.12 / 0.02. Halving T moved the favourite from 67% to 87%.</li>
+<li><strong>See top-p, with numbers.</strong> Next-token probabilities 0.50, 0.20, 0.10, 0.08, 0.05, then a long tail. With top-p 0.9: 0.50 + 0.20 + 0.10 + 0.08 = 0.88, still under 0.9, so add 0.05 to reach 0.93. Five tokens survive; the rest of the tail is gone.</li>
+<li><strong>Extraction on a local model.</strong> On Ollama, temperature 0 plus a fixed seed gives repeatable output for regression tests.</li>
+<li><strong>Extraction on a hosted reasoning model.</strong> On Anthropic API version 2026-10-21, sending <code>temperature</code>, <code>top_p</code> or <code>top_k</code> returns a 400 error, and Claude 4.7+ models accept only defaults (<a href="https://platform.claude.com/docs/en/api/migration-2026-10-21">Anthropic API migration 2026-10-21</a>). Consistency comes from a JSON schema plus validation, and an eval that tracks exact-match rate per release.</li>
+<li><strong>Taglines.</strong> Want 5 options per request: 100,000 x 5 x 40 output tokens = 20M tokens. On Sonnet 5.5 at $10 per million output tokens (<a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic models overview</a>) that is <strong>$200/day</strong>. Asking for all five in one response, distinct from each other, often gives more variety than five independent samples and shares one input.</li>
+<li><strong>Write the setting down.</strong> Store decoding parameters next to the prompt version, so a change is reviewed like code.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box note">
     <div class="box-label">Two gotchas worth knowing</div>
     <p><strong>Reproducibility:</strong> if you need the same output every run (for tests, or debugging a prompt), use temperature 0 / greedy, and where available a fixed <span class="term">seed</span> (the starting point for the randomness). Even then, exact determinism across hardware isn’t always guaranteed.</p>
     <p><strong>Don’t fight on two fronts:</strong> people often crank temperature <em>and</em> tighten top-p at once and get confused. Start by tuning temperature alone; reach for top-p/top-k only when you specifically want to cap the weird tail while keeping some randomness.</p>
+  </div>
+
+  <div class="box warn">
+    <div class="box-label">2026 reality check: some hosted APIs took the knobs away</div>
+    <p>Everything above is how decoding works, and you still control it fully on <strong>local models</strong> (Ollama, Hugging Face <code>transformers</code>). Some hosted APIs no longer let you turn these dials. On the Anthropic API, version <code>2026-10-21</code> returns a <strong>400 error</strong> if a request sends <code>temperature</code>, <code>top_p</code> or <code>top_k</code>, even at the default value, and Claude 4.7 and later models already accept only the defaults (<a href="https://platform.claude.com/docs/en/api/migration-2026-10-21">Anthropic API migration guide, 2026-10-21</a>).</p>
+    <p>So on hosted reasoning models, “set temperature 0” is not your consistency tool. You get reliable output from <strong>structured outputs</strong> (a schema the reply must match, Lesson 2.4), <strong>evals</strong> that catch drift (Track 6), and <strong>prompt design</strong> that leaves little room to wander. The table above still holds for local models and for hosted models that still expose the knobs.</p>
   </div>
 
   <div class="box key">
@@ -125,6 +187,35 @@ prompt <span class="o">=</span> <span class="s">"The best way to learn programmi
         <div class="why">Determinism depends directly on temperature being 0.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Your team migrates a feature to Anthropic API version 2026-10-21 and every request starts failing with a 400 error. The request body has temperature: 0. What is the fix?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Switch from top_p to top_k.</span>
+        <div class="why">All three sampling parameters are rejected on that version.</div></li>
+      <li data-correct="false"><span class="opt">B) Move temperature into the system prompt as text: 'use temperature 0'.</span>
+        <div class="why">Writing a sampling setting in the prompt does nothing; sampling is not controlled by prompt text.</div></li>
+      <li data-correct="true"><span class="opt">C) Remove temperature (and top_p/top_k) from the request; on that API version they are rejected even at default values, so get consistency from structured outputs and evals instead.</span>
+        <div class="why">Right. The migration guide says requests with these parameters return 400 on 2026-10-21. Drop them, and use a schema, validation and regression evals for consistency.</div></li>
+      <li data-correct="false"><span class="opt">D) Change temperature to 0.01 so it is not exactly zero.</span>
+        <div class="why">Any value is rejected on that API version, including the default.</div></li>
+    </ul>
+  </div>
+  <div class="quiz">
+    <p class="quiz-q">With top-p = 0.9, the model's top token has probability 0.95. How many tokens are kept for sampling?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Ten, because top-p always keeps a fixed number.</span>
+        <div class="why">That describes top-k. Top-p's set size changes with the distribution.</div></li>
+      <li data-correct="false"><span class="opt">B) None, because 0.95 is above the threshold.</span>
+        <div class="why">The threshold is a minimum cumulative mass to reach, not a ceiling that removes tokens above it.</div></li>
+      <li data-correct="true"><span class="opt">C) One, because the top token alone already covers at least 0.9 of the probability.</span>
+        <div class="why">Right. Top-p keeps the smallest set whose probabilities reach p. When the model is confident, that set is a single token, which is why top-p adapts to confidence.</div></li>
+      <li data-correct="false"><span class="opt">D) All tokens, because 0.9 is close to 1.</span>
+        <div class="why">Top-p 1.0 keeps everything; 0.9 trims the tail as soon as the cumulative sum reaches 0.9.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -150,6 +241,83 @@ prompt <span class="o">=</span> <span class="s">"The best way to learn programmi
 
   <p>One lesson left in this track, and it’s the one that keeps you honest on the job: what these models genuinely <strong>can and can’t do</strong> — including <em>why</em> they hallucinate, and what to do about it.</p>
 
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/01_generate_and_sample.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/01_generate_and_sample.py</code></pre>
+    <p><strong>What to look for:</strong> Sections 1-3 run the same prompt at temperature 0 and 1.0 with three seeds, then the same seed twice. On our runs temperature 0 gave identical text in one run and 2 different outputs out of 3 in another, while temperature 1.0 gave 3 different outputs and the same seed reproduced exactly. With n=3 seeds this is a demo, not a rate. Edit the temperatures in the lab to see the spread change. This is the local, knobs-still-exposed side of the 2026 reality check box.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>2) Same prompt, temperature 1.0, three different seeds
+  seed=1: Bengaluru in July typically experiences warm to hot temperatures with occasional thunderstorms.
+  seed=2: Bengaluru in July typically experiences hot and humid weather with occasional thunderstorms.
+  seed=3: Bengaluru in July typically experiences hot and dry weather with temperatures often soaring above 30°C.
+  distinct outputs at T=1.0: 3  (sampling -&gt; usually 2-3)
+3) Same seed twice at T=1.0 -&gt; reproducible on the same machine
+  identical: True
+4) Tokens are what you pay for: prompt vs output token counts
+  short prompt: prompt_tokens=   36  output_tokens=  2  prefill_s=  0.52  answer=&#x27;Paris&#x27;
+  long prompt : prompt_tokens=  639  output_tokens=  2  prefill_s=  0.22  answer=&#x27;Paris&#x27;
+  Look: the long prompt costs many more input tokens and more prefill time for the same answer.
+5) Streaming: time-to-first-token (TTFT) vs total time
+  TTFT=0.36s  total=2.54s  chunks=16  decode_tokens_per_s=7.3
+  Look: streaming does not make generation faster; it shows the first words sooner.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/01_generate_and_sample.txt">labs/outputs</a>. Source: <a href="../labs/01_generate_and_sample.py">labs/01_generate_and_sample.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Logits are [3, 1]. Compute the probability of the first token at T = 1 and at T = 2.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>T = 1: e^3 = 20.09, e^1 = 2.72, p = 20.09 / 22.81 = 0.88. T = 2: logits become [1.5, 0.5]: e^1.5 = 4.48, e^0.5 = 1.65, p = 4.48 / 6.13 = 0.73. Doubling temperature dropped the favourite from 88% to 73%, the flattening effect.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your nightly regression test compares exact output strings from a hosted model and fails randomly. You cannot set temperature on that API. Redesign the test.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Stop asserting exact strings. Ask for structured output (a JSON schema) and assert on fields: types, allowed values, and exact match only on fields that should be deterministic, like an extracted order number. For free text, score with rules or an LLM judge against a rubric, run each case several times, and gate on a pass rate (say 95%) rather than on one sample. Track the pass rate per release so drift shows up as a trend.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Explain why greedy decoding can produce repetitive loops in long generations, and why nucleus sampling was proposed as a fix.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Greedy always takes the single most likely token. Once a phrase repeats, the context makes repeating it again even more likely, so greedy can get stuck in a loop. Holtzman et al. (2019) showed that human text is not made of only the most likely tokens, and that sampling from the full distribution picks junk from the long tail. Nucleus (top-p) sampling samples only from the smallest set covering p of the mass: it keeps variety where the model is unsure and cuts the junk tail.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What does temperature do?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>The model outputs scores called logits for every possible next token. Temperature divides those scores before softmax turns them into probabilities. Low temperature sharpens the distribution so the top token almost always wins, which suits extraction, classification and code. High temperature flattens it, giving more variety for brainstorming but more risk of nonsense. Temperature near 0 approximates greedy decoding. Note that some hosted APIs, such as Anthropic's 2026-10-21 version, no longer accept it.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> Is temperature 0 fully deterministic? How do you get reproducible outputs?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Not always. Ties or near-ties between tokens, floating-point differences across GPUs, batching with other requests, and model updates can all change output even at temperature 0. On local models I set temperature 0 and a seed and pin the model version. On hosted APIs, especially ones that no longer expose sampling settings, I design for variation: structured outputs with a schema, validation, tests that assert on fields and pass rates, and evals run per release. Reproducibility is something you build into the system around the model.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Hosted reasoning models increasingly remove sampling controls. How does that change your reliability strategy?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Sampling settings were always a weak reliability tool; they reduce variance but not error. Without them, I lean on constrained output (JSON schema or strict tool definitions), validation with retry-and-feedback, deterministic code for anything computable, and evals as a release gate with pass-rate thresholds. For tasks that need variety, I ask for multiple distinct candidates in one call. For tasks that need exact repeatability, such as tests or audits, I cache responses by input hash or use a local model where I control decoding.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/1904.09751" target="_blank" rel="noopener">The Curious Case of Neural Text Degeneration (Holtzman et al., 2019) — arXiv</a></li>
+      <li><a href="https://huggingface.co/docs/transformers/generation_strategies" target="_blank" rel="noopener">Generation strategies — Hugging Face Transformers docs</a></li>
+      <li><a href="https://platform.claude.com/docs/en/api/migration-2026-10-21" target="_blank" rel="noopener">API migration guide 2026-10-21 (sampling parameters removed) — Anthropic</a></li>
+      <li><a href="https://docs.ollama.com/api/chat" target="_blank" rel="noopener">Chat API (options such as temperature, seed) — Ollama</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> The model gives the odds; temperature and top-p decide how adventurous the pick is.</p>
+<!-- ease:line:end -->
 </main>
 
 <script>
@@ -221,5 +389,12 @@ prompt <span class="o">=</span> <span class="s">"The best way to learn programmi
 </script>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<script src="../assets/ease/ease.js?v=1"></script>
+<script src="../assets/ease/play-t01.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

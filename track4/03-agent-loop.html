@@ -12,6 +12,43 @@
 
   <span class="eyebrow">Track 4 · Lesson 4.3</span>
   <h1>The agent loop (ReAct)</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Real tasks need several tool calls, where each one depends on the last.</p>
+    <p>The agent loop runs in steps. In each step the model thinks, then calls a tool or gives a final answer.</p>
+    <p>The tool's result is added to the conversation, and the loop goes round again.</p>
+    <p>Interleaving the reasoning with the actions like this is called ReAct (reason + act).</p>
+    <p>A step limit stops the loop if the model never finishes, because it will happily try forever.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>The agent loop is like finding a lost cat in your neighbourhood: you think 'she likes the park', you go look, you see nothing, you think 'maybe the neighbour's shed', you go look again. Each thing you see decides where you go next.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>Thinking “she likes the park”</td><td>The model's reasoning about the next move</td></tr>
+      <tr><td>Going to look</td><td>A tool call (the action)</td></tr>
+      <tr><td>Seeing nothing there</td><td>The tool result (the observation), appended to the messages</td></tr>
+      <tr><td>Choosing the next place from what you saw</td><td>The next step is conditioned on every observation so far</td></tr>
+      <tr><td>Giving up after an hour</td><td>The guard your code adds: max_steps</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> You would give up after an hour and go home; an agent has no sense of time or money and will search forever unless your code sets a limit.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 392" role="img" aria-label="The agent loop: think, act, observe, check the step budget, repeat" preserveAspectRatio="xMidYMid meet"><rect x="20" y="112" width="130" height="78" rx="10" class="bx tn-b" /><g class="vzb"><text x="85" y="136.3" text-anchor="middle" class="b" style="font-size:14px">Goal</text><text x="85" y="160.3" text-anchor="middle" class="s" style="font-size:12px">“Has order 4417</text><text x="85" y="176.3" text-anchor="middle" class="s" style="font-size:12px">shipped?”</text></g><rect x="200" y="112" width="160" height="94" rx="10" class="bx tn-a" /><g class="vzb"><text x="280" y="136.3" text-anchor="middle" class="b" style="font-size:14px">1. Think</text><text x="280" y="160.3" text-anchor="middle" class="s" style="font-size:12px">model reads all</text><text x="280" y="176.3" text-anchor="middle" class="s" style="font-size:12px">messages, picks the</text><text x="280" y="192.3" text-anchor="middle" class="s" style="font-size:12px">next move</text></g><rect x="430" y="16" width="170" height="78" rx="10" class="bx tn-k" /><g class="vzb"><text x="515" y="40.3" text-anchor="middle" class="b" style="font-size:14px">2. Act</text><text x="515" y="64.3" text-anchor="middle" class="s" style="font-size:12px">tool call, e.g.</text><text x="515" y="80.3" text-anchor="middle" class="s" style="font-size:12px">get_order(4417)</text></g><rect x="430" y="214" width="170" height="78" rx="10" class="bx tn-c" /><g class="vzb"><text x="515" y="238.3" text-anchor="middle" class="b" style="font-size:14px">3. Observe</text><text x="515" y="262.3" text-anchor="middle" class="s" style="font-size:12px">your code runs it; the</text><text x="515" y="278.3" text-anchor="middle" class="s" style="font-size:12px">result is appended</text></g><rect x="200" y="300" width="160" height="78" rx="10" class="bx tn-p" /><g class="vzb"><text x="280" y="324.3" text-anchor="middle" class="b" style="font-size:14px">Budget check</text><text x="280" y="348.3" text-anchor="middle" class="s" style="font-size:12px">steps used &lt;</text><text x="280" y="364.3" text-anchor="middle" class="s" style="font-size:12px">max_steps?</text></g><rect x="630" y="112" width="112" height="96" rx="10" class="bx tn-g" /><g class="vzb"><text x="686" y="136.3" text-anchor="middle" class="b" style="font-size:14px">Final</text><text x="686" y="154.3" text-anchor="middle" class="b" style="font-size:14px">answer</text><text x="686" y="178.3" text-anchor="middle" class="s" style="font-size:12px">no tool call:</text><text x="686" y="194.3" text-anchor="middle" class="s" style="font-size:12px">the loop ends</text></g><rect x="20" y="300" width="130" height="62" rx="10" class="bx tn-w" /><g class="vzb"><text x="85" y="324.3" text-anchor="middle" class="b" style="font-size:14px">Stopped</text><text x="85" y="348.3" text-anchor="middle" class="s" style="font-size:12px">“hit max steps”</text></g><line x1="153" y1="151" x2="188.145" y2="157.39" class="ln "/><polygon points="197,159 189.031,152.52 187.26,162.26" class="hd "/><polyline points="280,110 280,55 418,55" class="ln ac"/><polygon points="427,55 418,50.05 418,59.95" class="hd ac"/><line x1="515" y1="97" x2="515" y2="202" class="ln ac"/><polygon points="515,211 519.95,202 510.05,202" class="hd ac"/><polyline points="428,253 390,253 390,339 372,339" class="ln ac"/><polygon points="363,339 372,343.95 372,334.05" class="hd ac"/><line x1="280" y1="297" x2="280" y2="218" class="ln ok"/><polygon points="280,209 275.05,218 284.95,218" class="hd ok"/><text x="288" y="258" text-anchor="start" class="s ok-t">yes: next step</text><line x1="197" y1="339" x2="161.855" y2="332.61" class="ln wn"/><polygon points="153,331 160.969,337.48 162.74,327.74" class="hd wn"/><text x="175" y="331" text-anchor="middle" class="s wn-t">no</text><line x1="363" y1="159" x2="618" y2="159.966" class="ln ok"/><polygon points="627,160 618.019,155.016 617.981,164.916" class="hd ok"/><text x="535" y="151" text-anchor="middle" class="s ok-t">answer ready</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 460" role="img" aria-label="The agent loop: think, act, observe, check the step budget, repeat" preserveAspectRatio="xMidYMid meet"><rect x="30" y="12" width="200" height="60" rx="10" class="bx tn-b" /><g class="vzb"><text x="130" y="35.35" text-anchor="middle" class="b" style="font-size:13px">Goal</text><text x="130" y="58.35" text-anchor="middle" class="s" style="font-size:11px">“Has order 4417 shipped?”</text></g><line x1="130" y1="74" x2="130" y2="87" class="ln "/><polygon points="130,96 134.95,87 125.05,87" class="hd "/><rect x="30" y="98" width="200" height="60" rx="10" class="bx tn-a" /><g class="vzb"><text x="130" y="121.35" text-anchor="middle" class="b" style="font-size:13px">1. Think</text><text x="130" y="144.35" text-anchor="middle" class="s" style="font-size:11px">model picks the next move</text></g><line x1="130" y1="160" x2="130" y2="173" class="ln ac"/><polygon points="130,182 134.95,173 125.05,173" class="hd ac"/><rect x="30" y="184" width="200" height="60" rx="10" class="bx tn-k" /><g class="vzb"><text x="130" y="207.35" text-anchor="middle" class="b" style="font-size:13px">2. Act</text><text x="130" y="230.35" text-anchor="middle" class="s" style="font-size:11px">tool call get_order(4417)</text></g><line x1="130" y1="246" x2="130" y2="259" class="ln ac"/><polygon points="130,268 134.95,259 125.05,259" class="hd ac"/><rect x="30" y="270" width="200" height="60" rx="10" class="bx tn-c" /><g class="vzb"><text x="130" y="293.35" text-anchor="middle" class="b" style="font-size:13px">3. Observe</text><text x="130" y="316.35" text-anchor="middle" class="s" style="font-size:11px">result appended to messages</text></g><line x1="130" y1="332" x2="130" y2="345" class="ln ac"/><polygon points="130,354 134.95,345 125.05,345" class="hd ac"/><rect x="30" y="356" width="200" height="60" rx="10" class="bx tn-p" /><g class="vzb"><text x="130" y="379.35" text-anchor="middle" class="b" style="font-size:13px">Budget check</text><text x="130" y="402.35" text-anchor="middle" class="s" style="font-size:11px">steps used &lt; max_steps?</text></g><polyline points="28,386 12,386 12,128 18,128" class="ln ok"/><polygon points="27,128 18,123.05 18,132.95" class="hd ok"/><text x="22" y="257" text-anchor="middle" class="s ok-t" transform="rotate(-90 22 257)">yes: next step</text><rect x="244" y="98" width="104" height="77" rx="10" class="bx tn-g" /><g class="vzb"><text x="296" y="121.35" text-anchor="middle" class="b" style="font-size:13px">Final</text><text x="296" y="138.35" text-anchor="middle" class="b" style="font-size:13px">answer</text><text x="296" y="161.35" text-anchor="middle" class="s" style="font-size:11px">no tool call</text></g><line x1="233" y1="128" x2="232" y2="128" class="ln ok"/><polygon points="241,128 232,123.05 232,132.95" class="hd ok"/><rect x="244" y="356" width="104" height="60" rx="10" class="bx tn-w" /><g class="vzb"><text x="296" y="379.35" text-anchor="middle" class="b" style="font-size:13px">Stopped</text><text x="296" y="402.35" text-anchor="middle" class="s" style="font-size:11px">hit max steps</text></g><line x1="233" y1="386" x2="232" y2="386" class="ln wn"/><polygon points="241,386 232,381.05 232,390.95" class="hd wn"/></svg>
+    <figcaption>Each lap is one step. The loop has two ways out: the model gives an answer with no tool call (green), or the budget check fails and your code stops it (red). The second exit exists only if you write it.</figcaption>
+  </figure>
+  <div class="ez-play" data-ez-play="agentloop">
+    <div class="ease-label">Try it</div>
+    <p class="ez-hint">Press Step to walk a scripted run, one stage at a time. Lower the step budget below 4 and the guard stops the run before it can answer.</p>
+    <div class="ez-stage"></div>
+  </div>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">One tool call answers one question. Real tasks need several steps where each depends on the last. The agent loop — reason, act, observe, repeat — is the engine that turns a tool-using model into something that can actually solve problems.</p>
 
   <h2>Why a loop, and why interleave reasoning with acting</h2>
@@ -26,6 +63,10 @@
     <div class="box-label">Concept</div>
     <p>The <span class="term">agent loop</span> repeatedly asks the model what to do next. Each iteration is a <span class="term">step</span>: the model either emits a tool call (an <em>action</em>), whose result (the <em>observation</em>) is appended to the conversation, or it emits a final answer, which ends the loop. <span class="term">ReAct</span> is the pattern of interleaving explicit reasoning (“thoughts”) with these actions. A <span class="term">stopping condition</span> ends the loop — either the model finishes, or a guard (like a maximum step count) trips.</p>
   </div>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <h2>Watch an agent think</h2>
   <p>Step through a real multi-step trace. Notice how each observation feeds the next thought — the model isn’t guessing, it’s building on what it learned.</p>
@@ -51,7 +92,7 @@ TOOLS <span class="o">=</span> {<span class="s">"calculator"</span>: calculator,
         {<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: goal},
     ]
     <span class="k">for</span> step <span class="k">in</span> <span class="f">range</span>(max_steps):                       <span class="c"># the GUARD: bounded loop</span>
-        msg <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"llama3.2"</span>, messages<span class="o">=</span>messages, tools<span class="o">=</span>tool_schemas)[<span class="s">"message"</span>]
+        msg <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"qwen2.5:7b"</span>, messages<span class="o">=</span>messages, tools<span class="o">=</span>tool_schemas)[<span class="s">"message"</span>]
         messages.<span class="f">append</span>(msg)
         calls <span class="o">=</span> msg.<span class="f">get</span>(<span class="s">"tool_calls"</span>)
         <span class="k">if</span> <span class="k">not</span> calls:                                    <span class="c"># no tool → it's the final answer</span>
@@ -65,6 +106,13 @@ TOOLS <span class="o">=</span> {<span class="s">"calculator"</span>: calculator,
 <span class="f">print</span>(<span class="f">run_agent</span>(<span class="s">"What is the population of France, doubled?"</span>, tool_schemas))</code></pre>
     <p>That’s a complete agent. The loop is short on purpose — the intelligence is in the model’s choices and your tools, not in clever loop code. Everything else in this track makes this loop smarter (planning, memory) and safer (guards).</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: What a stuck loop costs across 500,000 runs a day</div>
+    <p>Assumptions: an internal ops agent runs 500,000 times a day. Traces show 1% of runs get stuck calling a failing tool with the same arguments. Each step starts from 4,000 tokens of context and adds 600 tokens; each step writes 150 output tokens. Prices: claude-sonnet-5-5, $2/M in, $10/M out (<a href="https://platform.claude.com/docs/en/about-claude/models/overview">Claude models overview</a>).</p><p>Input tokens for N steps = 4,000N + 600 x N(N-1)/2, because the history is resent every step.</p><ol><li><strong>Cap of 30 steps.</strong> Input = 120,000 + 600 x 435 = 381,000 tokens = $0.762. Output = 4,500 tokens = $0.045. About <strong>$0.81</strong> per stuck run.</li><li><strong>Cap of 6 steps.</strong> Input = 24,000 + 600 x 15 = 33,000 = $0.066. Output = 900 = $0.009. About <strong>$0.075</strong>.</li><li><strong>Repeat detection</strong> (stop on the third identical call, at step 3). Input = 12,000 + 600 x 3 = 13,800 = $0.028. Output = 450 = $0.0045. About <strong>$0.032</strong>.</li><li><strong>Daily bill for the 5,000 stuck runs:</strong> 30-step cap $4,035; 6-step cap $375; repeat detection $161.</li></ol><p>Notice the quadratic term: doubling the cap more than doubles the cost of a stuck run, because each extra step resends everything before it. That is why the step budget, a token budget and repeated-call detection all belong in the loop, and why the fix for the 1% is to repair the tool, found by reading the trace.</p>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -103,6 +151,22 @@ TOOLS <span class="o">=</span> {<span class="s">"calculator"</span>: calculator,
         <div class="why">Temperature affects sampling, not where facts originate.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Your agent's trace shows it calling search(query='Q3 revenue') five times in a row with identical arguments, getting the same empty result each time. What is the best guard to add first?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Add 'do not repeat yourself' to the system prompt.</span>
+        <div class="why">It may help a little, but it is not a guarantee. Loop termination should be enforced in code.</div></li>
+      <li data-correct="false"><span class="opt">B) Raise max_steps so it has more chances to succeed.</span>
+        <div class="why">Identical calls return identical results. More steps only make the stuck run more expensive.</div></li>
+      <li data-correct="true"><span class="opt">C) Repeated-call detection: if the same tool and arguments appear N times, stop or return an error telling the model to change approach.</span>
+        <div class="why">Correct. The step cap would eventually stop it, but only after burning every step. Detecting identical calls catches this failure early and cheaply, and the trace tells you which tool needs fixing.</div></li>
+      <li data-correct="false"><span class="opt">D) Switch to a bigger model.</span>
+        <div class="why">It might loop less, but the real bug is an empty result the model cannot act on, plus a missing guard. Fix the tool output and add the guard.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -126,8 +190,100 @@ TOOLS <span class="o">=</span> {<span class="s">"calculator"</span>: calculator,
     <p>This also reframes “observations.” How you format a tool’s result matters as much as the result itself: a wall of raw JSON or a 10,000-token API dump will confuse the model and blow the context budget, while a concise, labeled summary (“search results: 1) … 2) …”) keeps it on track. Trim, label, and structure observations before feeding them back. And because the trace grows every step, long-running agents eventually strain the context window — which is exactly the problem memory (Lesson 4.5) solves. For now, internalize the loop and the trace: master those two and you understand 80% of agent engineering.</p>
   </div>
 
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/04_agent_tools.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/04_agent_tools.py</code></pre>
+    <p><strong>What to look for:</strong> The lab prints a step number on every model turn. The real model finished every scenario in 2 steps on our run, so the guards never fired there; the 'scripted model' section uses a fake model stuck on one tool call to show the repeat guard blocking steps 2-4 and the step budget ending the run. Lower max_steps to 1 in a real scenario and watch a two-step task stop early.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  Second scripted model: it calls issue_refund for Rs 1500 (over the Rs 1000 auto-approve line), then answers.
+    step 1: issue_refund({&#x27;order_id&#x27;: &#x27;ORD-55120&#x27;, &#x27;amount_rs&#x27;: 1500}) -&gt; {&#x27;status&#x27;: &#x27;pending_human_approval&#x27;, &#x27;order_id&#x27;: &#x27;ORD-55120&#x27;, &#x27;amount_rs&#x27;: 1500}
+    step 2: FINAL -&gt; Your refund request has been sent for approval.
+  Look: the code returned pending_human_approval and the audit log records NEEDS_HUMAN: money did not move.
+  (The claim checker above is a crude regex: it can flag a polite &#x27;shall I proceed?&#x27; as a promise. Read the
+  flagged lines yourself; in production you compare structured tool results, not text patterns.)
+Audit log (what actually moved money)
+   (&#x27;BLOCKED&#x27;, &#x27;ORD-55120&#x27;, 25000)
+   (&#x27;NEEDS_HUMAN&#x27;, &#x27;ORD-55120&#x27;, 1500)
+  unbacked claims detected: 1   ignored refund requests: 1
+  Look: the Rs 25000 request was blocked by code, whatever the model was persuaded to try.
+  And check every FINAL line against the tool results: a fluent agent can promise an action it never
+  took, or add numbers no tool returned (e.g. a refund timeline). Verify claims against the audit log.
+  Prompts guide the model; only code enforces policy.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/04_agent_tools.txt">labs/outputs</a>. Source: <a href="../labs/04_agent_tools.py">labs/04_agent_tools.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Using the lesson's formula (input = start x N + growth x N(N-1)/2), compute input tokens for a 10-step run starting at 3,000 tokens and growing 500 per step.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>3,000 x 10 + 500 x (10 x 9 / 2) = 30,000 + 22,500 = <strong>52,500</strong> input tokens. Almost half the total comes from resending history, and that share grows with N.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your agent's observations are raw 8,000-token JSON API responses, and it often misreads them. Redesign the observation step.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Format the result in the tool wrapper before it enters the context: keep only the fields the task needs, label them, cap list length (say the top 5 rows with a 'showing 5 of 240' note), and return errors as one clear line. This cuts tokens per step (and the quadratic resend cost) and makes the model's next decision easier. Keep the full raw response in your logs, not in the prompt, so you can still debug.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Write a loop guard that stops on any of: 8 steps, 60,000 total tokens, 90 seconds wall clock, or the same (tool, arguments) pair appearing 3 times. Return a distinct stop reason for each.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p><pre><code>import time, json
+def run(goal, max_steps=8, max_tokens=60_000, max_secs=90):
+    t0, used, seen = time.time(), 0, {}
+    msgs = [{"role":"user","content":goal}]
+    for step in range(max_steps):
+        if time.time() - t0 &gt; max_secs: return "stop: time"
+        r = chat(msgs, tools)          # your model call
+        used += r.prompt_tokens + r.output_tokens
+        if used &gt; max_tokens: return "stop: tokens"
+        msgs.append(r.message)
+        if not r.tool_calls: return r.message["content"]
+        for c in r.tool_calls:
+            key = (c.name, json.dumps(c.args, sort_keys=True))
+            seen[key] = seen.get(key, 0) + 1
+            if seen[key] &gt;= 3: return f"stop: repeated {c.name}"
+            msgs.append(tool_msg(c, run_tool(c)))
+    return "stop: steps"</code></pre>Sorting keys makes equal argument dicts compare equal. Distinct stop reasons let your dashboard tell 'task too long' apart from 'stuck tool'.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is ReAct?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>ReAct is a pattern from Yao et al. (2022) where the model alternates between reasoning and acting: it writes a thought about what to do next, takes an action such as a tool call, reads the observation, and repeats until it can answer. The paper showed that interleaving the two reduces hallucination compared with reasoning alone, because the facts come from tool observations. In practice, most agents today use native tool calling in a loop, which is the same idea: decide, act, observe, decide again, with a stopping condition.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> Your agent's average cost per run doubled after a release, but success rate is unchanged. How do you investigate?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Start from the traces. Compare the before and after distributions of steps per run, tokens per step and tokens per observation, not just averages, because a small set of runaway runs can double the mean. Common causes: a tool now returns a much bigger payload, a prompt change made the model take extra verification steps, a tool started failing so the model retries, or history is no longer trimmed. Then fix the specific cause: trim observations, restore the summary step, fix the tool, and add a per-run token budget and an alert on cost per run so this is caught on day one next time.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> How would you design stopping conditions for a long-running agent, say one that works for 2 hours on a coding task?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Several layers. Hard limits in code: max steps, max tokens or dollars, and wall-clock time, each with its own stop reason. Progress checks: detect repeated tool calls and no-progress windows, for example no new file changes and no new test results in 10 steps, then either force a replan or stop. Checkpoints: persist state so a stop is resumable rather than lost work. A clear done condition the agent can verify, like 'tests pass', instead of 'the model feels done'. And human escalation: when it stops on a budget, it produces a summary of what it tried so a person can decide.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2210.03629" target="_blank" rel="noopener">ReAct: Synergizing Reasoning and Acting in Language Models — Yao et al., arXiv 2210.03629</a></li>
+      <li><a href="https://www.anthropic.com/engineering/building-effective-agents" target="_blank" rel="noopener">Building effective agents — Anthropic Engineering</a></li>
+      <li><a href="https://platform.claude.com/docs/en/about-claude/models/overview" target="_blank" rel="noopener">Models overview (pricing, context) — Claude Platform docs</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
   <p>Looping reactively works, but for complex goals it helps to think <em>before</em> acting — to lay out a plan and then execute it. Next: <strong>planning &amp; decomposition</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Think, act, look at the result, repeat, and always have a step limit.</p>
+<!-- ease:line:end -->
 </main>
 
 <script>
@@ -163,5 +319,12 @@ TOOLS <span class="o">=</span> {<span class="s">"calculator"</span>: calculator,
 </script>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<script src="../assets/ease/ease.js?v=1"></script>
+<script src="../assets/ease/play-t04.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

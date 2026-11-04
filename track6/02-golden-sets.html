@@ -12,6 +12,42 @@
 
   <span class="eyebrow">Track 6 · Lesson 6.2</span>
   <h1>Golden sets</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>A golden set is a list of real questions, each with a known good answer or a clear pass rule.</p>
+    <p>It is your team's shared definition of “working”.</p>
+    <p>It should cover every kind of question, including the tricky ones the system gets wrong.</p>
+    <p>Keep some cases locked away so nobody tunes the prompt to them.</p>
+    <p>Every time users find a new failure, add it as a new case.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>A golden set is like the answer key a teacher keeps for the end-of-term exam. The teacher picks questions from every chapter, including the tricky ones students always get wrong, and keeps the key locked so nobody memorises it. Each year the same exam tells the teacher whether the class got better.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>Questions from every chapter</td><td>Cases from every intent or category of real traffic</td></tr>
+      <tr><td>The tricky questions students always miss</td><td>Edge cases: out-of-scope, ambiguous, should-refuse</td></tr>
+      <tr><td>The answer key</td><td>The expected output or acceptance rule for each case</td></tr>
+      <tr><td>Keeping the exam paper locked</td><td>A held-out set you run only before a release</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A school exam stays the same for years, but your golden set must keep growing as users find new ways to ask things.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 308" role="img" aria-label="What goes into a 400-case golden set and how it is split" preserveAspectRatio="xMidYMid meet"><text x="20" y="20" text-anchor="start" class="b">The 400-case golden set from this page&#x27;s telecom example</text><text x="20" y="54" text-anchor="start" class="s b">What goes in</text><rect x="20.0" y="64" width="645.0" height="30" rx="5" class="fill-a"/><rect x="668.0" y="64" width="69.0" height="30" rx="5" class="fill-k"/><text x="342.5" y="84" text-anchor="middle" class="b" style="font-size:13px">360 real tickets</text><rect x="20" y="104" width="12" height="12" rx="3" class="fill-a"/><text x="40" y="115" text-anchor="start" class="s" style="font-size:13px">360 real tickets: sampled by intent share, at least 20 per intent</text><rect x="20" y="127" width="12" height="12" rx="3" class="fill-k"/><text x="40" y="138" text-anchor="start" class="s" style="font-size:13px">40 edge cases: out-of-scope, abusive, should refuse; 10 from past incidents</text><text x="20" y="178" text-anchor="start" class="s b">How it is used</text><rect x="20.0" y="188" width="537.0" height="30" rx="5" class="fill-c"/><rect x="560.0" y="188" width="177.0" height="30" rx="5" class="fill-p"/><text x="288.5" y="208" text-anchor="middle" class="b" style="font-size:13px">300 dev cases</text><text x="648.5" y="208" text-anchor="middle" class="b" style="font-size:13px">100 locked</text><rect x="20" y="228" width="12" height="12" rx="3" class="fill-c"/><text x="40" y="239" text-anchor="start" class="s" style="font-size:13px">300 dev cases: you look at these while you iterate</text><rect x="20" y="251" width="12" height="12" rx="3" class="fill-p"/><text x="40" y="262" text-anchor="start" class="s" style="font-size:13px">100 locked: run only before a release</text><text x="20" y="294" text-anchor="start" class="s ac-t">Every production incident becomes a new case, so the set keeps growing.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 393" role="img" aria-label="What goes into a 400-case golden set and how it is split" preserveAspectRatio="xMidYMid meet"><text x="12" y="20" text-anchor="start" class="b" style="font-size:14px">The 400-case golden set from</text><text x="12" y="38" text-anchor="start" class="b" style="font-size:14px">this page&#x27;s telecom example</text><text x="12" y="70" text-anchor="start" class="s b">What goes in</text><rect x="12.0" y="80" width="299.4" height="30" rx="5" class="fill-a"/><rect x="314.4" y="80" width="30.6" height="30" rx="5" class="fill-k"/><text x="161.7" y="100" text-anchor="middle" class="b" style="font-size:13px">360 real tickets</text><rect x="12" y="120" width="12" height="12" rx="3" class="fill-a"/><text x="32" y="131" text-anchor="start" class="s" style="font-size:13px">360 real tickets: sampled by intent share,</text><text x="32" y="148" text-anchor="start" class="s" style="font-size:13px">at least 20 per intent</text><rect x="12" y="160" width="12" height="12" rx="3" class="fill-k"/><text x="32" y="171" text-anchor="start" class="s" style="font-size:13px">40 edge cases: out-of-scope, abusive, should</text><text x="32" y="188" text-anchor="start" class="s" style="font-size:13px">refuse; 10 from past incidents</text><text x="12" y="228" text-anchor="start" class="s b">How it is used</text><rect x="12.0" y="238" width="249.0" height="30" rx="5" class="fill-c"/><rect x="264.0" y="238" width="81.0" height="30" rx="5" class="fill-p"/><text x="136.5" y="258" text-anchor="middle" class="b" style="font-size:13px">300 dev cases</text><rect x="12" y="278" width="12" height="12" rx="3" class="fill-c"/><text x="32" y="289" text-anchor="start" class="s" style="font-size:13px">300 dev cases: you look at these while you</text><text x="32" y="306" text-anchor="start" class="s" style="font-size:13px">iterate</text><rect x="12" y="318" width="12" height="12" rx="3" class="fill-p"/><text x="32" y="329" text-anchor="start" class="s" style="font-size:13px">100 locked: run only before a release</text><text x="12" y="361" text-anchor="start" class="s ac-t">Every production incident becomes a new</text><text x="12" y="379" text-anchor="start" class="s ac-t">case, so the set keeps growing.</text></svg>
+    <figcaption>Real traffic sampled with a floor per intent, plus edge cases on purpose, then split so 100 cases stay unseen while you tune. The numbers are this page's worked example.</figcaption>
+  </figure>
+  <div class="ez-play" data-ez-play="goldensize">
+    <div class="ease-label">Try it</div>
+    <p class="ez-hint">Move the number of cases and the pass rate. The 95% Wilson interval is computed live: the range where the true pass rate probably sits.</p>
+    <div class="ez-stage"></div>
+  </div>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">An eval is only as good as the examples it runs on. The golden set is that foundation — a curated set of inputs with known-good answers that becomes your team’s shared definition of “working.” Build it well and everything downstream gets trustworthy.</p>
 
   <h2>Why the golden set is the foundation</h2>
@@ -26,6 +62,10 @@
     <div class="box-label">Concept</div>
     <p>A <span class="term">golden set</span> (or eval set) is a labeled dataset of <em>(input, expected output / acceptance criterion)</em> pairs used to measure system quality. Good ones are <span class="term">representative</span> (cover real usage), include <span class="term">edge cases</span> and known failure modes, are <span class="term">held out</span> (the system isn’t tuned to overfit them), and are <span class="term">living</span> (you keep adding cases as you discover failures).</p>
   </div>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <h2>How to build one (it’s less work than you fear)</h2>
   <ul>
@@ -62,6 +102,13 @@ golden <span class="o">=</span> [
 <span class="c"># billing: 1/1  technical: 1/1  edge: 0/1  ← the abstain case is failing!</span></code></pre>
     <p>Scoring <em>per category</em> is a small move with a big payoff: it tells you <em>where</em> you’re failing (here, the abstain/edge case), not just an overall number that hides the problem.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Building a 400-case golden set from 2 million telecom support tickets</div>
+    <p>Assumptions: a telecom operator has 2 million support tickets from the last year, tagged into 12 intents. Traffic is skewed: "bill too high" is 30%, "port my number" is 1%.</p><ol><li><strong>Stratify, with a floor.</strong> Sampling by traffic share alone gives 400 x 0.01 = 4 number-porting cases, too few to measure. Rule: proportional share, but at least 20 cases per intent. Any intent whose share works out below 20 is raised to 20, and the remaining budget is split among the larger intents by share.</li><li><strong>Add the scary cases on purpose.</strong> Reserve 40 of the 400 for edge cases: out-of-scope, abusive, "should refuse", and 10 taken from last quarter's incident reports.</li><li><strong>Label cost.</strong> A subject-matter expert writes acceptance criteria in about 3 minutes per case: 400 x 3 = 1,200 minutes, or 20 hours. Have a second person label 100 of them; if the two agree on fewer than about 85% of criteria, the criteria are too vague and need rewriting.</li><li><strong>Split.</strong> 300 dev cases you look at while iterating, 100 locked cases you run only before a release, so you cannot overfit to them.</li><li><strong>Contamination check.</strong> Hash every input and compare against few-shot examples and any fine-tuning data. Drop or replace any match.</li><li><strong>Know your resolution.</strong> At an 85% pass rate on 400 cases, standard error is sqrt(0.85 x 0.15 / 400) = 0.018, so about +/- 3.5 points at 95%. Per-intent slices of 20 cases are far noisier (about +/- 16 points), so on small slices you read individual flips, not percentages.</li><li><strong>Keep it alive.</strong> Every production incident becomes a new case, tagged with its intent and the date it was added.</li></ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -100,6 +147,35 @@ golden <span class="o">=</span> [
         <div class="why">It should include the hard and edge cases you care about.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">You tune a prompt for three weeks against the same 60 cases and now pass 59 of them. A fresh sample of 60 real queries passes 44. What happened?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) 60 cases is always too small to measure anything.</span>
+        <div class="why">60 cases can detect large effects. The problem is reusing them for tuning, not their size.</div></li>
+      <li data-correct="false"><span class="opt">B) The fresh sample must be mislabelled.</span>
+        <div class="why">Possible, but a 25-point gap after weeks of tuning on one set is the classic overfitting signature. Check labels, but suspect the process first.</div></li>
+      <li data-correct="false"><span class="opt">C) The model changed overnight.</span>
+        <div class="why">Nothing points to a model change. The gap comes from tuning against the same cases.</div></li>
+      <li data-correct="true"><span class="opt">D) You overfit to the golden set; the prompt learned those cases rather than the task.</span>
+        <div class="why">Correct. Repeated tuning on one fixed set leaks the set into your choices. Keep a locked held-out split and refresh the dev set with new real cases.</div></li>
+    </ul>
+  </div>
+  <div class="quiz">
+    <p class="quiz-q">Two experts label the same 100 golden-set cases and agree on only 70. What is the best next step?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Rewrite the acceptance criteria so they are specific enough that two people would apply them the same way, then relabel.</span>
+        <div class="why">Correct. Low agreement between humans means the definition of 'good' is unclear. No metric can be more reliable than its labels.</div></li>
+      <li data-correct="false"><span class="opt">B) Drop the 30 disputed cases.</span>
+        <div class="why">The disputed cases are often the hard, important ones. Dropping them makes the set easier and less honest.</div></li>
+      <li data-correct="false"><span class="opt">C) Average the two labels and move on.</span>
+        <div class="why">Averaging hides the disagreement. The scores built on those labels will be noise.</div></li>
+      <li data-correct="false"><span class="opt">D) Let an LLM judge break the ties.</span>
+        <div class="why">If humans cannot agree on what good means, a judge just picks a side arbitrarily. Fix the criteria first.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -124,10 +200,93 @@ golden <span class="o">=</span> [
     <p>Treat the golden set like a living test suite owned by the team: versioned, reviewed, and growing. A team with a sharp, well-maintained golden set can move fast <em>and</em> safely; a team without one is flying blind no matter how good its prompts look.</p>
   </div>
 
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/06_evals.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/06_evals.py</code></pre>
+    <p><strong>What to look for:</strong> The golden set is the GOLD list at the top of labs/06_evals.py: 12 cases, each with expected doc ids and a must-contain fact, and 2 unanswerable cases that must be refused. Add one edge case of your own, rerun, and check it shows up in the per-case results. With 12 cases section 6 prints how wide the error bar is; that is the argument for growing the set.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>5) Judge position bias: same pair, swapped order
+  How long do card refunds take?      order1 picked B, order2 picked B  -&gt; FLIPPED
+  Return window for electronics?      order1 picked B, order2 picked A  -&gt; consistent
+  Express shipping price?             order1 picked B, order2 picked A  -&gt; consistent
+  When is standard shipping free?     order1 picked A, order2 picked B  -&gt; consistent
+  Duplicate charge reversal time?     order1 picked A, order2 picked B  -&gt; consistent
+  consistent verdicts: 4/5 = 80% (95% CI 38%-96%)   correct in both orders: 2/5 = 40% (95% CI 12%-77%)
+  n=5 pairs is a demo, not a measurement of this judge&#x27;s bias: the intervals span most of 0-100%.
+  Look: with no reference passage in the judge prompt, the judge has to guess which number is right.
+  Always judge both orders and count a win only when both agree; give the judge the reference.
+6) How wide is the error bar on 12 cases?
+  v1 accuracy 11/12 = 92% (95% CI 65%-99%)  (Wilson interval)
+  At n=400 the same accuracy would be roughly +/- 2.7%
+{&quot;v1_correct&quot;: 0.917, &quot;regressions&quot;: 12, &quot;judge_consistent&quot;: 4}</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/06_evals.txt">labs/outputs</a>. Source: <a href="../labs/06_evals.py">labs/06_evals.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> You have a 300-case budget and 6 intents with traffic shares 50%, 20%, 15%, 10%, 4%, 1%. Allocate cases with a floor of 20 per intent.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Pure proportional: 150, 60, 45, 30, 12, 3. The last two are under the floor, so set them to 20 each (40 cases). That leaves 260 for the first four, whose shares add to 95%. Scale: 50/95 x 260 = 137, 20/95 x 260 = 55, 15/95 x 260 = 41, 10/95 x 260 = 27. Total 137 + 55 + 41 + 27 + 20 + 20 = 300.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your RAG bot answers from a policy handbook that is revised every quarter. How do you keep golden-set answers from going stale?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Store each case's expected answer together with the source document ID and version it came from. When the handbook changes, diff the documents and flag every case whose source section changed; a human re-checks only those. For retrieval cases, store expected document IDs rather than raw text so they survive minor edits. Add a 'valid_from' date per case and fail the eval loudly if a case points at a retired document. This turns a quarterly rewrite into a targeted review of maybe 10-20% of cases.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Write the record schema you would use for a golden-set case in a multi-team repo, and justify each field.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Fields: id (stable, never reused, so history lines up); input (the exact user text or conversation); category (for per-slice scores); checks (list of must_include / must_not / expected_doc_ids / rubric, matching the output type); critical (bool, a hard gate if true); source (production trace ID, incident ID or synthetic, so you know provenance); added_on and added_by (for audits); split (dev or locked); data_version (handbook or schema version the answer depends on). Store as JSONL in git so every change is reviewed in a PR, and keep PII out by redacting the input before it is committed.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What makes a good golden set?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>It uses real inputs, not invented happy paths. It covers every category the product handles, so fixing one cannot silently break another. It includes edge cases such as out-of-scope questions and cases where the right answer is to refuse or say 'I don't know'. Each case has a clear acceptance check that two people would apply the same way. And it stays held out from tuning and training, while growing over time as production shows new failures. A sharp 50-300 cases usually beats thousands of random ones.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> You have no labelled data for a new feature. How do you bootstrap a golden set quickly without fooling yourself?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>I would start from real signal if there is any: logs, support tickets, sales emails. If not, I generate candidate questions from the source documents with a strong model, then have a domain expert select and correct them, writing the acceptance criteria by hand. I would deliberately write ten adversarial or out-of-scope cases. To avoid fooling myself I keep generated cases tagged as synthetic, measure them separately from real ones, and replace them with real production cases as soon as traffic exists. I would also have a second person label a sample to check the criteria are clear.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> How do you prevent a golden set from becoming a benchmark the team games?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Split it: a dev set people iterate on and a locked set that only CI and release reviews see. Refresh the dev set on a schedule with recent production cases. Track the gap between dev and locked scores; a growing gap means overfitting. Keep critical cases as pass or fail rather than letting them get averaged away. Rotate in fresh human-reviewed samples of live traffic monthly as an independent check. And review changes to the set itself in PRs, because deleting a hard case is the easiest way to make a number go up.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://platform.claude.com/docs/en/test-and-evaluate/develop-tests" target="_blank" rel="noopener">Define success criteria and build evaluations - Claude Platform Docs</a></li>
+      <li><a href="https://arxiv.org/abs/2310.17623" target="_blank" rel="noopener">Proving Test Set Contamination in Black Box Language Models - Oren et al., arXiv 2310.17623</a></li>
+      <li><a href="https://arxiv.org/abs/2211.09110" target="_blank" rel="noopener">Holistic Evaluation of Language Models (HELM) - Liang et al., arXiv 2211.09110</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
   <p>Keyword and exact-match criteria can’t judge open-ended quality like “is this answer helpful and faithful?” For that, you enlist a model as the grader. Next: <strong>LLM-as-judge</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> A golden set is the answer key you test against every time, and it keeps growing.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<script src="../assets/ease/ease.js?v=1"></script>
+<script src="../assets/ease/play-t06.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

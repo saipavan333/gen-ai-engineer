@@ -12,7 +12,43 @@
 
   <span class="eyebrow">Frontier &amp; Responsible AI · Lesson 13.2</span>
   <h1>The modern frontier</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>AI news changes every month, so learn the big directions, not the headlines.</p>
+    <p>Context windows got huge, agents got more reliable, and small open models got good.</p>
+    <p>Open-weight models are ones whose numbers (weights) you can download and run on your own machines.</p>
+    <p>Closed models you only reach through a company's API (application programming interface).</p>
+    <p>Picking between them is a real design choice about cost, privacy and control.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Choosing between a closed API model and an open-weight model is like choosing between eating at a restaurant and cooking at home. The restaurant has the best chef and no washing up, but you pay per plate, they change the menu when they like, and your order leaves the house. Cooking at home needs a kitchen and some skill, but you control the recipe and nobody else sees what you eat.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>Eating at the restaurant</td><td>Calling a closed model through its API</td></tr>
+      <tr><td>Paying per plate</td><td>Paying per token, for every call</td></tr>
+      <tr><td>The menu changing when they like</td><td>The provider decides when model versions change</td></tr>
+      <tr><td>Your order leaving the house</td><td>Your prompt, with any user data in it, goes to a third party</td></tr>
+      <tr><td>Owning the kitchen</td><td>Running open weights on your own GPUs, busy or idle</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> Home cooking is always cheaper per meal, while running your own model only gets cheaper at enough volume.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 310" role="img" aria-label="Closed API sends prompts outside your network; open weights run inside it" preserveAspectRatio="xMidYMid meet"><text x="402" y="22" text-anchor="end" class="s m">your network</text><text x="418" y="22" text-anchor="start" class="s m">outside</text><line x1="410" y1="30" x2="410" y2="132" class="ln wn dash"/><text x="20" y="44" text-anchor="start" class="b">Closed API model</text><rect x="20" y="54" width="160" height="70" rx="10" class="bx tn-b" /><g class="vzb"><text x="100" y="82.3" text-anchor="middle" class="b" style="font-size:14px">Your app</text><text x="100" y="106.3" text-anchor="middle" class="s" style="font-size:12px">prompt with user data</text></g><rect x="470" y="54" width="270" height="78" rx="10" class="bx tn-c" /><g class="vzb"><text x="605" y="78.3" text-anchor="middle" class="b" style="font-size:14px">Provider&#x27;s model</text><text x="605" y="102.3" text-anchor="middle" class="s" style="font-size:12px">their GPUs; they choose when versions</text><text x="605" y="118.3" text-anchor="middle" class="s" style="font-size:12px">change</text></g><line x1="184" y1="80" x2="457" y2="80" class="ln wn"/><polygon points="466,80 457,75.05 457,84.95" class="hd wn"/><line x1="466" y1="104" x2="193" y2="104" class="ln "/><polygon points="184,104 193,108.95 193,99.05" class="hd "/><text x="296" y="72" text-anchor="middle" class="s wn-t">prompt leaves your network</text><text x="296" y="122" text-anchor="middle" class="s m">answer comes back</text><text x="20" y="154" text-anchor="start" class="s">Pay per token (Sonnet 5.5: $2 in / $10 out per million). No servers to run. Needs a data processing agreement.</text><line x1="410" y1="170" x2="410" y2="272" class="ln wn dash"/><text x="20" y="184" text-anchor="start" class="b">Open-weight model</text><rect x="20" y="194" width="160" height="70" rx="10" class="bx tn-b" /><g class="vzb"><text x="100" y="222.3" text-anchor="middle" class="b" style="font-size:14px">Your app</text><text x="100" y="246.3" text-anchor="middle" class="s" style="font-size:12px">prompt with user data</text></g><rect x="240" y="194" width="150" height="78" rx="10" class="bx tn-g" /><g class="vzb"><text x="315" y="218.3" text-anchor="middle" class="b" style="font-size:14px">Your GPUs</text><text x="315" y="242.3" text-anchor="middle" class="s" style="font-size:12px">open weights you</text><text x="315" y="258.3" text-anchor="middle" class="s" style="font-size:12px">downloaded</text></g><line x1="184" y1="220" x2="227" y2="220" class="ln "/><polygon points="236,220 227,215.05 227,224.95" class="hd "/><line x1="236" y1="244" x2="193" y2="244" class="ln "/><polygon points="184,244 193,248.95 193,239.05" class="hd "/><text x="424" y="234" text-anchor="start" class="s ok-t">nothing crosses the line</text><text x="20" y="294" text-anchor="start" class="s">Pay for GPUs and engineers, busy or idle. You pick the versions. Data never leaves.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 366" role="img" aria-label="Closed API sends prompts outside your network; open weights run inside it" preserveAspectRatio="xMidYMid meet"><text x="12" y="22" text-anchor="start" class="b">Closed API model</text><rect x="12" y="34" width="150" height="62" rx="10" class="bx tn-b" /><g class="vzb"><text x="87" y="58.3" text-anchor="middle" class="b" style="font-size:14px">Your app</text><text x="87" y="82.3" text-anchor="middle" class="s" style="font-size:12px">prompt + user data</text></g><line x1="180" y1="20" x2="180" y2="110" class="ln wn dash"/><line x1="165" y1="56" x2="186" y2="56" class="ln wn"/><polygon points="195,56 186,51.05 186,60.95" class="hd wn"/><line x1="195" y1="76" x2="174" y2="76" class="ln "/><polygon points="165,76 174,80.95 174,71.05" class="hd "/><rect x="198" y="34" width="150" height="62" rx="10" class="bx tn-c" /><g class="vzb"><text x="273" y="58.3" text-anchor="middle" class="b" style="font-size:14px">Provider&#x27;s model</text><text x="273" y="82.3" text-anchor="middle" class="s" style="font-size:12px">their GPUs</text></g><text x="12" y="122" text-anchor="start" class="s" style="font-size:13px">Prompt leaves your network.</text><text x="12" y="140" text-anchor="start" class="s" style="font-size:13px">Pay per token ($2 / $10 per million</text><text x="12" y="158" text-anchor="start" class="s" style="font-size:13px">on Sonnet 5.5). No servers to run.</text><text x="12" y="198" text-anchor="start" class="b">Open-weight model</text><rect x="12" y="210" width="150" height="62" rx="10" class="bx tn-b" /><g class="vzb"><text x="87" y="234.3" text-anchor="middle" class="b" style="font-size:14px">Your app</text><text x="87" y="258.3" text-anchor="middle" class="s" style="font-size:12px">prompt + user data</text></g><line x1="165" y1="232" x2="186" y2="232" class="ln "/><polygon points="195,232 186,227.05 186,236.95" class="hd "/><line x1="195" y1="252" x2="174" y2="252" class="ln "/><polygon points="165,252 174,256.95 174,247.05" class="hd "/><rect x="5" y="204" width="350" height="74" rx="12" class="ln wn dash"/><rect x="198" y="210" width="150" height="62" rx="10" class="bx tn-g" /><g class="vzb"><text x="273" y="234.3" text-anchor="middle" class="b" style="font-size:14px">Your GPUs</text><text x="273" y="258.3" text-anchor="middle" class="s" style="font-size:12px">open weights</text></g><text x="12" y="298" text-anchor="start" class="s" style="font-size:13px">Everything stays inside.</text><text x="12" y="316" text-anchor="start" class="s" style="font-size:13px">Pay for GPUs and engineers,</text><text x="12" y="334" text-anchor="start" class="s" style="font-size:13px">busy or idle. You pick versions.</text></svg>
+    <figcaption>The red dashed line is the edge of your network. With a closed API the prompt crosses it on every call; with open weights nothing does, but you pay for the hardware whether it is busy or not.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">The field moves fast enough that specifics go stale in months. This lesson isn’t a news roundup — it’s a durable map of the shifts that matter to a builder, and a way to stay current without drowning in hype.</p>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <h2>The shifts worth tracking</h2>
   <p>A working engineer doesn’t need to chase every release, but should understand the directions the field is moving, because they change design decisions.</p>
@@ -25,7 +61,22 @@
   <p>One decision this surfaces is <span class="term">open-weight</span> vs <span class="term">closed</span> (API-only) models. Closed models (accessed over an API) often have the highest peak capability and require no infrastructure, but you send data to a third party, pay per token, and can’t control versioning. Open-weight models you run yourself give you control, privacy (data never leaves your environment), predictable cost at scale, and no vendor lock-in — at the price of running the infrastructure and, often, somewhat lower peak capability.</p>
   <p>The right answer is use-case-dependent: a privacy-sensitive internal tool may demand open/local; a low-volume feature needing top capability may favor a closed API. Being able to reason about that trade-off is a senior signal.</p>
 
-  <div class="box key">
+  
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Open-weight or API for an internal HR assistant at 30,000 employees</div>
+    <p>Assume <strong>30,000 employees</strong>, each asking <strong>5 questions a working day</strong>, with about <strong>6,000 input tokens</strong> (retrieved policy text plus history) and <strong>300 output tokens</strong> per question. Hardware costs below are placeholders you must replace with your own quotes.</p>
+<ol>
+<li><strong>Volume.</strong> 30,000 x 5 = 150,000 questions a day. Input = 150,000 x 6,000 = 900M tokens. Output = 150,000 x 300 = 45M tokens.</li>
+<li><strong>API cost.</strong> On Claude Sonnet 5.5 at $2 in / $10 out per million (<a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic models overview</a>): 900 x $2 = $1,800 plus 45 x $10 = $450, about <strong>$2,250/day</strong>, roughly $49,500 over 22 working days. Prompt caching on the shared instruction prefix and batch processing for non-urgent jobs would lower this.</li>
+<li><strong>Self-hosted cost.</strong> Suppose your infra team quotes $X per GPU-month and estimates the open model needs N GPUs to hit your latency at peak. Self-hosting wins when N x $X plus engineer time is below the API bill. Get both numbers from a load test, not a blog post.</li>
+<li><strong>Quality.</strong> Run the same 300-question HR eval on both. If the open model scores 90% and the API 94%, decide whether 4 points matters for HR answers. Often it does for policy, less for summaries.</li>
+<li><strong>Privacy and control.</strong> HR questions contain personal data. Self-hosting keeps it inside your network; an API needs a data processing agreement and a check of retention terms.</li>
+<li><strong>Long context check.</strong> A 1M-token window would let you paste the whole handbook. At 900M input tokens a day that is the expensive path; retrieval keeps each request near 6,000 tokens.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+<div class="box key">
     <div class="box-label">Key points</div>
     <ul>
       <li>Track <strong>directions, not headlines</strong>: long context, stronger agents, small/open models, multimodal-by-default, reasoning-as-a-dial.</li>
@@ -75,6 +126,22 @@
         <div class="why">You track the top layer lightly, not ignore it.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">A vendor announces a new model that tops a public leaderboard. What should you do before switching your production feature to it?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Switch immediately, since leaderboard rank means it is better at everything.</span>
+        <div class="why">Leaderboards cover specific tasks and can be gamed or saturated. They do not measure your use case.</div></li>
+      <li data-correct="false"><span class="opt">B) Switch only if it has a bigger context window.</span>
+        <div class="why">Context size is one factor; quality, cost and latency on your task matter more.</div></li>
+      <li data-correct="false"><span class="opt">C) Wait a year until the model is stable.</span>
+        <div class="why">Waiting by default means missing real gains. A quick eval answers the question in days.</div></li>
+      <li data-correct="true"><span class="opt">D) Run it on your own golden set and compare quality, cost per request and latency with the current model before deciding.</span>
+        <div class="why">Right. Public benchmarks measure someone else's tasks. Your eval on your data is the only result that tells you whether it is better for you.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box deep">
@@ -85,10 +152,91 @@
     <p>It’s also, not coincidentally, what makes you trustworthy to a team: the person who can calmly assess the frontier against real requirements is far more valuable than the one who chases every headline. Stay curious about the top layer, but invest in the bottom one — it’s where your durable value lives.</p>
   </div>
 
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/03_rag_local.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/03_rag_local.py</code></pre>
+    <p><strong>What to look for:</strong> The whole RAG lab runs on an open-weight model (qwen2.5:7b) and an open embedding model on your own machine, so no document leaves it. That is the open/local side of this lesson's trade-off. Each grounded answer is built from 3 retrieved chunks instead of the whole corpus. The lab prints no token counts and does not benchmark a closed API, so add up the chunk sizes yourself and run the quality comparison on your own data.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  out of the top 3. On this tiny corpus dense already wins; hybrid earns its keep on big corpora full of
+  near-identical codes (SKUs, error ids) that embeddings blur. Never assume: measure hit@k (lab 06).
+5) Grounded answers with citations, and a refusal when retrieval is weak
+  Q: I was charged twice for one order. What happens now?
+  A: If you were charged twice for one order, the duplicate payment is reversed automatically within 3 business days [pay-01#0]. If it is not reversed after 3 business days, raise a billing ticket with both transaction ids.
+     citations=[&#x27;pay-01#0&#x27;] all-cited-ids-were-retrieved=True
+  Q: Can I change my delivery address after the order has shipped?
+  A: No, you cannot change your delivery address after the order has shipped. According to [ship-03#0], the address can only be changed before the order is packed.
+     citations=[&#x27;ship-03#0&#x27;] all-cited-ids-were-retrieved=True
+  Q: Do you deliver to Antarctica by drone?
+  A: I don&#x27;t know based on our policies. (refused before calling the LLM: best cosine 0.27 &lt; 0.35)
+     citations=[] all-cited-ids-were-retrieved=True
+  Look: every factual sentence carries an id you can check; the off-topic question is refused
+  cheaply by the retrieval threshold, so the model never gets a chance to make something up.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/03_rag_local.txt">labs/outputs</a>. Source: <a href="../labs/03_rag_local.py">labs/03_rag_local.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> List three questions you would ask about any new model release before trying it on your product.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>(1) What capability does it add for my task: better reasoning, longer context, a new modality, cheaper price? (2) What does it cost per request and how fast is it at my prompt sizes? (3) How does it score on my golden set compared with what I run today? Optional fourth: does it change data handling or deployment, for example open weights I can host?</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your company forbids sending customer data to third parties. Sketch an architecture that still uses a strong model for some tasks.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Run an open-weight model inside your network for everything touching customer data: retrieval, summaries, classification. For tasks that need a stronger model, send only data that is not customer data (public docs, synthetic examples) or redact personal fields first and re-insert them locally after. Log what leaves the network. Evaluate whether the local model meets the bar on its own; often a retrieval upgrade closes more of the gap than a bigger model would.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Argue both sides: 'small models will make most enterprise API usage unnecessary'. Then state what evidence would settle it for your company.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>For: many enterprise tasks are classification, extraction and grounded Q&A, where small open models with good retrieval and fine-tuning reach the bar, at low cost and with full data control. Against: hard reasoning, coding and long-context tasks still favour frontier models; self-hosting needs operations skill; and API prices keep falling. Evidence: per-task evals comparing a tuned small model with an API model, with cost per 1,000 requests including hosting and staff time, and latency at peak. The answer is likely different for each task.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is an open-weight model and why would a company use one?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>An open-weight model is one whose trained parameters you can download and run on your own hardware, for example the Qwen2.5 family used in this course. Companies use them for privacy (data never leaves their environment), cost control at high volume, freedom to fine-tune, and no lock-in to a vendor's versioning. The trade-offs are running the infrastructure yourself and, often, lower peak capability than the best closed models.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> A colleague says 1M-token windows make RAG obsolete. How do you respond?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Large windows help with bounded material, like one long contract or a small codebase. But every token costs money and latency on every call, models can miss facts in the middle of long inputs, most corpora are far bigger than 1M tokens, and data changes. Prompt caching helps with a fixed prefix but not with a changing corpus. So long context shifts the balance, letting you retrieve fewer and bigger chunks, but retrieval stays the scalable default. I would test both on our questions.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> How do you keep a GenAI platform current without constant rewrites?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Put a thin abstraction between features and models, so a model is a configuration choice with its own prompt variants. Keep a golden set per feature and an automated eval harness, so a new model can be scored in hours. Track cost and latency per feature. Pin model versions and plan migrations, since providers retire models and change APIs. Review the landscape on a schedule rather than reacting to every launch. Decisions then come from measurements on our data.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://platform.claude.com/docs/en/about-claude/models/overview" target="_blank" rel="noopener">Models overview (current lineup, context, pricing) — Anthropic</a></li>
+      <li><a href="https://arxiv.org/abs/2412.15115" target="_blank" rel="noopener">Qwen2.5 Technical Report (2024) — arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2307.03172" target="_blank" rel="noopener">Lost in the Middle: How Language Models Use Long Contexts (Liu et al., 2023) — arXiv</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
   <p>Capability is only half of building well. The other half is building <em>responsibly</em>. Next: <strong>bias &amp; fairness.</strong></p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Rent the best chef by the plate, or own the kitchen: choose by privacy, volume and how good the answer must be.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

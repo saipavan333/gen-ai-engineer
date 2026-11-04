@@ -12,6 +12,37 @@
 
   <span class="eyebrow">Track 4 · Lesson 4.4</span>
   <h1>Planning &amp; decomposition</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>A purely reactive agent takes one step at a time and hopes it ends up somewhere good.</p>
+    <p>On big goals that wanders.</p>
+    <p>Planning means writing down the sub-tasks first, then working through them.</p>
+    <p>Plan-then-execute makes the list once. Plan-and-reflect checks after each step and changes the list when something surprises it.</p>
+    <p>A plan is also easy to inspect, so you can catch impossible steps before anything runs.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Planning is like packing for a school trip with a checklist: toothbrush, water bottle, jacket, then you pack and tick items off. If the forecast suddenly says rain, you add an umbrella to the list instead of ignoring the news.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The packing checklist</td><td>The plan: 2 to 5 ordered sub-tasks, as structured data</td></tr>
+      <tr><td>Packing and ticking items off</td><td>Executing each sub-task, often with the 4.3 agent loop</td></tr>
+      <tr><td>Adding an umbrella when it rains</td><td>Plan-and-reflect: replanning after a surprise</td></tr>
+      <tr><td>Checking the list makes sense</td><td>Validating the plan before running it</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> Your checklist doesn't hallucinate; a model's plan can include steps that are impossible or tools that don't exist, so you check the plan before acting on it.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 262" role="img" aria-label="Plan-and-reflect: plan, check, run a step, reflect, repeat" preserveAspectRatio="xMidYMid meet"><rect x="14" y="22" width="119.2" height="150" rx="10" class="bx tn-a" /><g class="vzb"><text x="73.6" y="64.25" text-anchor="middle" class="b">Goal</text><text x="73.6" y="90.25" text-anchor="middle" class="s" style="font-size:13px">“Write a short</text><text x="73.6" y="107.25" text-anchor="middle" class="s" style="font-size:13px">brief</text><text x="73.6" y="124.25" text-anchor="middle" class="s" style="font-size:13px">comparing two</text><text x="73.6" y="141.25" text-anchor="middle" class="s" style="font-size:13px">products”</text></g><circle cx="16" cy="24" r="11" class="badge"/><text x="16" y="28.5" text-anchor="middle" class="badge-t">1</text><line x1="137.2" y1="97" x2="154.2" y2="97" class="ln "/><polygon points="163.2,97 154.2,92.05 154.2,101.95" class="hd "/><rect x="167.2" y="22" width="119.2" height="150" rx="10" class="bx tn-c" /><g class="vzb"><text x="226.8" y="71.25" text-anchor="middle" class="b">Make the</text><text x="226.8" y="91.25" text-anchor="middle" class="b">plan</text><text x="226.8" y="117.25" text-anchor="middle" class="s" style="font-size:13px">2 to 5 ordered</text><text x="226.8" y="134.25" text-anchor="middle" class="s" style="font-size:13px">steps, as JSON</text></g><circle cx="169.2" cy="24" r="11" class="badge"/><text x="169.2" y="28.5" text-anchor="middle" class="badge-t">2</text><line x1="290.4" y1="97" x2="307.4" y2="97" class="ln "/><polygon points="316.4,97 307.4,92.05 307.4,101.95" class="hd "/><rect x="320.4" y="22" width="119.2" height="150" rx="10" class="bx tn-k" /><g class="vzb"><text x="380" y="54.25" text-anchor="middle" class="b">Check the</text><text x="380" y="74.25" text-anchor="middle" class="b">plan</text><text x="380" y="100.25" text-anchor="middle" class="s" style="font-size:13px">every step</text><text x="380" y="117.25" text-anchor="middle" class="s" style="font-size:13px">possible?</text><text x="380" y="134.25" text-anchor="middle" class="s" style="font-size:13px">every tool</text><text x="380" y="151.25" text-anchor="middle" class="s" style="font-size:13px">real?</text></g><circle cx="322.4" cy="24" r="11" class="badge"/><text x="322.4" y="28.5" text-anchor="middle" class="badge-t">3</text><line x1="443.6" y1="97" x2="460.6" y2="97" class="ln "/><polygon points="469.6,97 460.6,92.05 460.6,101.95" class="hd "/><rect x="473.6" y="22" width="119.2" height="150" rx="10" class="bx tn-b" /><g class="vzb"><text x="533.2" y="71.25" text-anchor="middle" class="b">Run the</text><text x="533.2" y="91.25" text-anchor="middle" class="b">next step</text><text x="533.2" y="117.25" text-anchor="middle" class="s" style="font-size:13px">with the 4.3</text><text x="533.2" y="134.25" text-anchor="middle" class="s" style="font-size:13px">agent loop</text></g><circle cx="475.6" cy="24" r="11" class="badge"/><text x="475.6" y="28.5" text-anchor="middle" class="badge-t">4</text><line x1="596.8" y1="97" x2="613.8" y2="97" class="ln "/><polygon points="622.8,97 613.8,92.05 613.8,101.95" class="hd "/><rect x="626.8" y="22" width="119.2" height="150" rx="10" class="bx tn-p" /><g class="vzb"><text x="686.4" y="47.25" text-anchor="middle" class="b">Reflect</text><text x="686.4" y="73.25" text-anchor="middle" class="s" style="font-size:13px">done? on</text><text x="686.4" y="90.25" text-anchor="middle" class="s" style="font-size:13px">track? if a</text><text x="686.4" y="107.25" text-anchor="middle" class="s" style="font-size:13px">page is</text><text x="686.4" y="124.25" text-anchor="middle" class="s" style="font-size:13px">missing,</text><text x="686.4" y="141.25" text-anchor="middle" class="s" style="font-size:13px">change the</text><text x="686.4" y="158.25" text-anchor="middle" class="s" style="font-size:13px">plan</text></g><circle cx="628.8" cy="24" r="11" class="badge"/><text x="628.8" y="28.5" text-anchor="middle" class="badge-t">5</text><polyline points="686.4,174 686.4,202 380,202 380,185" class="ln ac"/><polygon points="380,176 375.05,185 384.95,185" class="hd ac"/><text x="533.2" y="222" text-anchor="middle" class="s ac-t" style="font-size:14px">next step, or a revised plan (checked</text><text x="533.2" y="240" text-anchor="middle" class="s ac-t" style="font-size:14px">again)</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 525" role="img" aria-label="Plan-and-reflect: plan, check, run a step, reflect, repeat" preserveAspectRatio="xMidYMid meet"><rect x="12" y="16" width="280" height="82" rx="10" class="bx tn-a" /><g class="vzb"><text x="152" y="41.25" text-anchor="middle" class="b">Goal</text><text x="152" y="67.25" text-anchor="middle" class="s" style="font-size:13px">“Write a short brief comparing two</text><text x="152" y="84.25" text-anchor="middle" class="s" style="font-size:13px">products”</text></g><circle cx="14" cy="18" r="11" class="badge"/><text x="14" y="22.5" text-anchor="middle" class="badge-t">1</text><line x1="152" y1="101" x2="152" y2="120" class="ln "/><polygon points="152,129 156.95,120 147.05,120" class="hd "/><rect x="12" y="132" width="280" height="65" rx="10" class="bx tn-c" /><g class="vzb"><text x="152" y="157.25" text-anchor="middle" class="b">Make the plan</text><text x="152" y="183.25" text-anchor="middle" class="s" style="font-size:13px">2 to 5 ordered steps, as JSON</text></g><circle cx="14" cy="134" r="11" class="badge"/><text x="14" y="138.5" text-anchor="middle" class="badge-t">2</text><line x1="152" y1="200" x2="152" y2="219" class="ln "/><polygon points="152,228 156.95,219 147.05,219" class="hd "/><rect x="12" y="231" width="280" height="65" rx="10" class="bx tn-k" /><g class="vzb"><text x="152" y="256.25" text-anchor="middle" class="b">Check the plan</text><text x="152" y="282.25" text-anchor="middle" class="s" style="font-size:13px">every step possible? every tool real?</text></g><circle cx="14" cy="233" r="11" class="badge"/><text x="14" y="237.5" text-anchor="middle" class="badge-t">3</text><line x1="152" y1="299" x2="152" y2="318" class="ln "/><polygon points="152,327 156.95,318 147.05,318" class="hd "/><rect x="12" y="330" width="280" height="65" rx="10" class="bx tn-b" /><g class="vzb"><text x="152" y="355.25" text-anchor="middle" class="b">Run the next step</text><text x="152" y="381.25" text-anchor="middle" class="s" style="font-size:13px">with the 4.3 agent loop</text></g><circle cx="14" cy="332" r="11" class="badge"/><text x="14" y="336.5" text-anchor="middle" class="badge-t">4</text><line x1="152" y1="398" x2="152" y2="417" class="ln "/><polygon points="152,426 156.95,417 147.05,417" class="hd "/><rect x="12" y="429" width="280" height="82" rx="10" class="bx tn-p" /><g class="vzb"><text x="152" y="454.25" text-anchor="middle" class="b">Reflect</text><text x="152" y="480.25" text-anchor="middle" class="s" style="font-size:13px">done? on track? if a page is missing,</text><text x="152" y="497.25" text-anchor="middle" class="s" style="font-size:13px">change the plan</text></g><circle cx="14" cy="431" r="11" class="badge"/><text x="14" y="435.5" text-anchor="middle" class="badge-t">5</text><polyline points="294,470 326,470 326,263.5 305,263.5" class="ln ac"/><polygon points="296,263.5 305,268.45 305,258.55" class="hd ac"/><text x="340" y="366.75" text-anchor="middle" class="s ac-t" transform="rotate(-90 340 366.75)">next step, or a revised plan (checked again)</text></svg>
+    <figcaption>Plan-then-execute is boxes 1 to 4 with the steps run in order. Plan-and-reflect adds box 5 and the loop: after each step the agent checks progress and may rewrite the rest of the plan. The example goal is illustrative.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">Reactive loops can wander on big goals — taking a step, then another, hoping to stumble toward done. Planning fixes that: break the goal into explicit sub-tasks first, then execute them. It makes long tasks more reliable, debuggable, and sometimes parallelizable.</p>
 
   <h2>Why plan instead of just react</h2>
@@ -26,6 +57,10 @@
     <div class="box-label">Concept</div>
     <p><span class="term">Decomposition</span> is breaking a goal into smaller sub-tasks. <span class="term">Planning</span> is producing an ordered set of those sub-tasks before (or alongside) execution. <span class="term">Plan-then-execute</span> makes the plan once up front and runs it; <span class="term">plan-and-reflect</span> (or replanning) re-checks progress after steps and revises the plan when reality diverges. The right choice depends on how predictable the task is.</p>
   </div>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <h2>Three planning patterns</h2>
   <div class="tbl-wrap">
@@ -42,9 +77,19 @@
     <p>Ask the model for a plan as structured data, inspect it, then run each step. Separating planning from execution is what makes the agent debuggable.</p>
 <pre><code><span class="k">import</span> json, ollama
 
+<span class="k">def</span> <span class="f">ask</span>(prompt, system<span class="o">=</span><span class="kc">None</span>, model<span class="o">=</span><span class="s">"qwen2.5:7b"</span>):   <span class="c"># one chat call; returns the reply text</span>
+    msgs <span class="o">=</span> ([{<span class="s">"role"</span>: <span class="s">"system"</span>, <span class="s">"content"</span>: system}] <span class="k">if</span> system <span class="k">else</span> []) <span class="o">+</span> [{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: prompt}]
+    <span class="k">return</span> ollama.<span class="f">chat</span>(model<span class="o">=</span>model, messages<span class="o">=</span>msgs)[<span class="s">"message"</span>][<span class="s">"content"</span>]
+
+<span class="c"># Stand-ins so this runs on its own. In a real build, run_agent is the tool-using loop from Lesson 4.3</span>
+<span class="c"># (labs/04_agent_tools.py) and tool_schemas is its tool list.</span>
+tool_schemas <span class="o">=</span> []
+<span class="k">def</span> <span class="f">run_agent</span>(task, tools):
+    <span class="k">return</span> <span class="f">ask</span>(task)
+
 <span class="k">def</span> <span class="f">make_plan</span>(goal):
     prompt <span class="o">=</span> <span class="s">f'Break this goal into 2-5 ordered steps. Return JSON: {{"steps": ["...", "..."]}}.\nGoal: </span>{goal}<span class="s">'</span>
-    out <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"llama3.2"</span>,
+    out <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"qwen2.5:7b"</span>,
             messages<span class="o">=</span>[{<span class="s">"role"</span>:<span class="s">"user"</span>,<span class="s">"content"</span>:prompt}], format<span class="o">=</span><span class="s">"json"</span>)[<span class="s">"message"</span>][<span class="s">"content"</span>]
     <span class="k">return</span> json.<span class="f">loads</span>(out)[<span class="s">"steps"</span>]
 
@@ -62,6 +107,13 @@
 <span class="f">print</span>(<span class="f">run_planned_agent</span>(<span class="s">"Compare the warranties of the X200 and X300 blenders"</span>))</code></pre>
     <p>Because the plan is explicit data, you can log it, validate it, even let a human approve it before any tools run. That inspectability is the whole point of planning.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Planning a 12-competitor research brief as a task graph</div>
+    <p>Assumptions: a strategy team asks an agent for a pricing comparison of 12 competitors. Each 'research one competitor' sub-task takes about 4 minutes of agent time (searches, reads, extraction). Synthesis takes 3 minutes. The rate limit allows 4 sub-agents at once.</p><ol><li><strong>Purely reactive loop.</strong> One agent works through competitors in whatever order it drifts into: 12 x 4 = 48 minutes plus 3 for synthesis = <strong>51 minutes</strong>, and traces show it sometimes forgets one competitor.</li><li><strong>Plan as data.</strong> A planning call returns JSON: 12 research nodes (no dependencies between them) and 1 synthesis node depending on all 12. Code validates it: are all 12 names from the request present, does every step use a tool that exists, and is the step count under the cap?</li><li><strong>Run the graph.</strong> With 4 workers, 12 independent nodes run in 3 waves: 3 x 4 = 12 minutes. Add synthesis: <strong>15 minutes</strong>, about 3.4x faster. Coverage is checked by code, not by the model's memory.</li><li><strong>Reflect and replan.</strong> In wave 2, one competitor's pricing page is behind a login. The worker returns 'blocked', and the planner adds one node (search analyst coverage and archived pages) instead of failing the whole brief.</li><li><strong>Cost check.</strong> Planning adds one call. If that call is 2,000 input and 500 output tokens at claude-sonnet-5-5 rates ($2/M, $10/M, <a href="https://platform.claude.com/docs/en/about-claude/models/overview">Claude models overview</a>), it costs $0.009, far less than one wasted research branch.</li></ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -100,6 +152,22 @@
         <div class="why">It reduces some, but guards are still needed.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Your planner returns 7 steps, and step 4 uses a tool called fetch_salesforce that your agent does not have. What should happen?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Let the model call fetch_salesforce; the runtime will figure it out.</span>
+        <div class="why">There is no such function. The runtime will error, or worse, a fuzzy dispatcher will call something else.</div></li>
+      <li data-correct="false"><span class="opt">B) Run steps 1-3 and see what happens at step 4.</span>
+        <div class="why">You spend money on a plan already known to be broken, and may leave side effects half done.</div></li>
+      <li data-correct="false"><span class="opt">C) Give the agent every tool so plans never reference a missing one.</span>
+        <div class="why">That trades a planning error for an excessive-agency risk. Keep least privilege and validate plans instead.</div></li>
+      <li data-correct="true"><span class="opt">D) Validate the plan in code before executing: reject or repair steps that reference unknown tools, then replan.</span>
+        <div class="why">Correct. A plan is model output and can hallucinate tools or impossible steps. Checking it against the real tool registry before spending money is exactly why the plan is data you can inspect.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -119,14 +187,95 @@
 
   <div class="box deep">
     <div class="box-label">Deep dive: plans as task graphs, and the brittleness trap</div>
-    <p>For richer agents, a plan isn’t a flat list but a <strong>task graph</strong> (a DAG): sub-tasks with dependencies, so the system can run independent branches in parallel and only block where one task truly needs another’s output. This is how serious agent frameworks schedule work — “research competitor A, B, and C” fan out concurrently, then a “synthesize” node waits for all three. Thinking in dependencies, not just sequence, is what unlocks both speed and clarity.</p>
+    <p>For richer agents, a plan isn’t a flat list but a <strong>task graph</strong> (a DAG): sub-tasks with dependencies, so the system can run independent branches in parallel and only block where one task truly needs another’s output. This is how serious agent frameworks schedule work — “research competitor A, B, and C” fan out concurrently, then a “synthesize” node waits for all three. Thinking in dependencies, not just sequence, is what gives you both speed and clarity.</p>
     <p>The trap to avoid is <strong>plan brittleness</strong>: a beautifully detailed plan made before the agent has seen any real data is a confident guess, and confident guesses about an uncertain world go stale fast. The mature pattern is “plan loosely, reflect often” — sketch enough structure to stay organized, but treat the plan as revisable and re-check it against observations as you go. Over-planning upfront is the agent equivalent of writing a 50-page spec before talking to a user. Structure where it helps, adaptivity where reality intervenes — that balance is the craft of agent planning.</p>
   </div>
 
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/04_agent_tools.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/04_agent_tools.py</code></pre>
+    <p><strong>What to look for:</strong> The lab's agent is reactive, not planned, so use it as the baseline: give it a three-part request and read the trace to see whether it covers every part and in what order. Then add a planning call that returns a JSON list of steps, print it before running, and compare the traces. The lab does not build a task graph; that part is yours.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  Second scripted model: it calls issue_refund for Rs 1500 (over the Rs 1000 auto-approve line), then answers.
+    step 1: issue_refund({&#x27;order_id&#x27;: &#x27;ORD-55120&#x27;, &#x27;amount_rs&#x27;: 1500}) -&gt; {&#x27;status&#x27;: &#x27;pending_human_approval&#x27;, &#x27;order_id&#x27;: &#x27;ORD-55120&#x27;, &#x27;amount_rs&#x27;: 1500}
+    step 2: FINAL -&gt; Your refund request has been sent for approval.
+  Look: the code returned pending_human_approval and the audit log records NEEDS_HUMAN: money did not move.
+  (The claim checker above is a crude regex: it can flag a polite &#x27;shall I proceed?&#x27; as a promise. Read the
+  flagged lines yourself; in production you compare structured tool results, not text patterns.)
+Audit log (what actually moved money)
+   (&#x27;BLOCKED&#x27;, &#x27;ORD-55120&#x27;, 25000)
+   (&#x27;NEEDS_HUMAN&#x27;, &#x27;ORD-55120&#x27;, 1500)
+  unbacked claims detected: 1   ignored refund requests: 1
+  Look: the Rs 25000 request was blocked by code, whatever the model was persuaded to try.
+  And check every FINAL line against the tool results: a fluent agent can promise an action it never
+  took, or add numbers no tool returned (e.g. a refund timeline). Verify claims against the audit log.
+  Prompts guide the model; only code enforces policy.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/04_agent_tools.txt">labs/outputs</a>. Source: <a href="../labs/04_agent_tools.py">labs/04_agent_tools.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Draw the dependency graph for: 'Pull last month's sales from the warehouse, pull marketing spend from the ads API, compute ROI per channel, write a summary, email it to the CMO.' Which steps can run in parallel?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Nodes: A = pull sales, B = pull spend, C = compute ROI (needs A and B), D = write summary (needs C), E = email (needs D, plus human approval because it is an outbound message). A and B are independent and can run in parallel. Everything after is a chain. The critical path is max(A, B) + C + D + E.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> A plan-then-execute agent books meeting rooms. It fails 12% of the time because rooms get taken between planning and booking. Change the design.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Make booking a check-then-act step at execution time, not a decision fixed in the plan: the plan says 'book a room with at least 8 seats on floor 3 at 10:00', and the executor checks availability right before booking. On a conflict, the executor tries the next candidate and only replans if all candidates fail. Better still, use the booking API's atomic hold or reserve call so check and act cannot race. This is plan-and-reflect, applied only where the world changes under you.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Design a plan validator for an agent that writes SQL migrations. List the checks it runs before any step executes.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Checks: (1) schema: the plan parses into the expected JSON with steps, tool and arguments; (2) every tool exists and is allowed for this user; (3) step count and estimated cost are under budget; (4) dependencies form a DAG (no cycles) and every referenced output is produced by an earlier step; (5) risk tags: any DROP, DELETE or ALTER on a production table needs a human approval node before it; (6) a dry-run step (run against a staging copy or with EXPLAIN) comes before the real one; (7) a rollback step exists for each destructive step. Reject with a specific reason and ask the planner to repair.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> When would you add an explicit planning step to an agent?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>When tasks are long enough that a reactive loop loses track: many sub-tasks, a need to cover everything in a list, or a chance to run parts in parallel. A plan as structured data lets me validate it, show it to a human for approval, track progress and fan out independent steps. For short tasks where each step reveals the next, I skip it, because the extra call adds cost and latency and the plan would go stale immediately.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> What goes wrong with plan-then-execute in practice, and how do you fix it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Plans are made before the agent has seen any real data, so they go stale: a tool errors, a resource is gone, a search returns something unexpected. A rigid executor either fails or keeps going on a wrong assumption. Fixes: check the result after each step and replan when a step fails or an assumption breaks; keep plans coarse so executors decide details at run time; validate plans against the real tool registry and budget before execution; and cap replans, so a planner that keeps rewriting the plan does not become a new kind of infinite loop.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Design the orchestration for an agent that generates a 40-page due-diligence report from 200 documents.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>A planner produces a task graph: one extraction node per document batch, then section nodes (financials, legal, market) depending on the relevant extractions, then a consistency check, then assembly. Extraction runs in parallel under a concurrency limit, with structured outputs so section writers get typed data, not prose. Each section writer only sees its own inputs, which keeps contexts small. A checker node validates citations against source documents and flags contradictions between sections. Code tracks coverage: every document processed and every required section present. Budgets apply per node and overall, there are checkpoints so a failure restarts one node, not the whole report, and a human review before delivery.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2305.04091" target="_blank" rel="noopener">Plan-and-Solve Prompting — Wang et al., arXiv 2305.04091</a></li>
+      <li><a href="https://arxiv.org/abs/2205.10625" target="_blank" rel="noopener">Least-to-Most Prompting Enables Complex Reasoning in Large Language Models — Zhou et al., arXiv 2205.10625</a></li>
+      <li><a href="https://www.anthropic.com/engineering/building-effective-agents" target="_blank" rel="noopener">Building effective agents — Anthropic Engineering</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
   <p>Plans and loops both rely on the agent remembering what it has done and learned. But the context window is small and forgetful. Next: <strong>memory</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Write the to-do list first, then do it, and change the list when reality surprises you.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

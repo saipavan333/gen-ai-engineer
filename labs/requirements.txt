@@ -1,0 +1,12 @@
+# Runnable labs for the Applied GenAI Engineer course. Versions are the ones we ran on 2026-11-03 (Python 3.14).
+# Lower versions may work; mcp must be 2.x for lab 05 (FastMCP was renamed MCPServer in 2.0).
+ollama>=0.6          # Python client for the local Ollama server (ran 0.6.3)
+pydantic>=2.10       # schemas for structured output (ran 2.13.4)
+numpy>=2.0           # (ran 2.4.6)
+duckdb>=1.1          # vector search + text-to-SQL + SQL UDFs (ran 2.0.0)
+faiss-cpu>=1.9       # vector index cross-check in lab 03 (ran 1.15.1)
+sentence-transformers>=3.0   # all-MiniLM-L6-v2 embeddings, ~90 MB download on first use (ran 5.6.0)
+mcp>=2.0             # Model Context Protocol SDK, lab 05 (ran 2.3.0)
+peft>=0.13           # LoRA, lab 11 (ran 0.21.2)
+transformers>=4.45   # tiny GPT-2 model for lab 11 (ran 5.10.1)
+torch>=2.3           # CPU build is enough (ran 2.12.0)

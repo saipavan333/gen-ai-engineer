@@ -12,6 +12,38 @@
 
   <span class="eyebrow">Track 3 · Lesson 3.8</span>
   <h1>Evaluating retrieval quality</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>You can't improve retrieval by feel. You need a score.</p>
+    <p>Start with a golden set: a few dozen real questions, each labelled with the chunk that should come back.</p>
+    <p>Hit rate@k asks: did the right chunk show up in the top k at all?</p>
+    <p>MRR (mean reciprocal rank) asks: how near the top was it?</p>
+    <p>Change one thing, such as chunk size, re-run, and keep the change only if the numbers go up.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Grading a treasure hunt team. Recall asks: of the 3 treasures hidden, how many did they bring back? Precision asks: of the 5 things in their bag, how many are treasure and how many are rocks? MRR asks: how many steps until they found the first treasure? nDCG gives more points for treasure found early and for the gold over the silver.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The treasures hidden in the park</td><td>The labelled relevant chunks in the golden set</td></tr>
+      <tr><td>How many treasures came back</td><td>Recall@k (equal to hit rate@k with one relevant chunk per query)</td></tr>
+      <tr><td>Rocks in the bag</td><td>Precision@k: the share of the top k that is relevant</td></tr>
+      <tr><td>Steps until the first treasure</td><td>Reciprocal rank: 1/2 if the first hit is at rank 2</td></tr>
+      <tr><td>Not knowing where every treasure is</td><td>Incomplete labels: a 'miss' may be an unlabelled good chunk</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> In a treasure hunt you know where every treasure is; in retrieval your labels are often incomplete, so a "rock" might be an unlabelled treasure.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 261" role="img" aria-label="Scoring a small golden set: hit rate at 5 and mean reciprocal rank" preserveAspectRatio="xMidYMid meet"><text x="20" y="20" text-anchor="start" class="s b">Top 5 results per query: green = the chunk your label says is right</text><text x="276" y="40" text-anchor="middle" class="s m">#1</text><text x="334" y="40" text-anchor="middle" class="s m">#2</text><text x="392" y="40" text-anchor="middle" class="s m">#3</text><text x="450" y="40" text-anchor="middle" class="s m">#4</text><text x="508" y="40" text-anchor="middle" class="s m">#5</text><text x="552" y="40" text-anchor="start" class="s m">reciprocal rank (RR)</text><text x="20" y="75" text-anchor="start" class="s">“how long is the warranty?”</text><rect x="250" y="54" width="52" height="30" rx="5" class="bx"/><rect x="308" y="54" width="52" height="30" rx="5" class="fill-g"/><text x="334" y="74" text-anchor="middle" class="b">✓</text><rect x="366" y="54" width="52" height="30" rx="5" class="bx"/><rect x="424" y="54" width="52" height="30" rx="5" class="bx"/><rect x="482" y="54" width="52" height="30" rx="5" class="bx"/><text x="552" y="74" text-anchor="start" class="s ok-t">1/2 = 0.50</text><text x="20" y="119" text-anchor="start" class="s">“can I return it?”</text><rect x="250" y="98" width="52" height="30" rx="5" class="fill-g"/><text x="276" y="118" text-anchor="middle" class="b">✓</text><rect x="308" y="98" width="52" height="30" rx="5" class="bx"/><rect x="366" y="98" width="52" height="30" rx="5" class="bx"/><rect x="424" y="98" width="52" height="30" rx="5" class="bx"/><rect x="482" y="98" width="52" height="30" rx="5" class="bx"/><text x="552" y="118" text-anchor="start" class="s ok-t">1/1 = 1.00</text><text x="20" y="163" text-anchor="start" class="s">“how do I cancel billing?”</text><rect x="250" y="142" width="52" height="30" rx="5" class="bx"/><rect x="308" y="142" width="52" height="30" rx="5" class="bx"/><rect x="366" y="142" width="52" height="30" rx="5" class="bx"/><rect x="424" y="142" width="52" height="30" rx="5" class="bx"/><rect x="482" y="142" width="52" height="30" rx="5" class="bx"/><text x="552" y="162" text-anchor="start" class="s wn-t">0 (missed)</text><text x="20" y="196" text-anchor="start" class="s b">hit rate@5 = 2 of 3 queries found it = 0.67</text><text x="20" y="219" text-anchor="start" class="s b">MRR = mean reciprocal rank = (0.50 + 1.00 + 0) / 3 = 0.50</text><text x="20" y="242" text-anchor="start" class="s">precision@5 for query 1 = 1 relevant of 5 shown = 0.20</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 367" role="img" aria-label="Scoring a small golden set: hit rate at 5 and mean reciprocal rank" preserveAspectRatio="xMidYMid meet"><text x="12" y="20" text-anchor="start" class="s b" style="font-size:13px">Top 5 results per query</text><text x="12" y="37" text-anchor="start" class="s b" style="font-size:13px">green = the labelled right chunk</text><text x="34" y="52" text-anchor="middle" class="s m">#1</text><text x="84" y="52" text-anchor="middle" class="s m">#2</text><text x="134" y="52" text-anchor="middle" class="s m">#3</text><text x="184" y="52" text-anchor="middle" class="s m">#4</text><text x="234" y="52" text-anchor="middle" class="s m">#5</text><text x="274" y="52" text-anchor="start" class="s m">RR</text><text x="12" y="74" text-anchor="start" class="s">“how long is the warranty?”</text><rect x="12" y="86" width="44" height="30" rx="5" class="bx"/><rect x="62" y="86" width="44" height="30" rx="5" class="fill-g"/><text x="84" y="106" text-anchor="middle" class="b">✓</text><rect x="112" y="86" width="44" height="30" rx="5" class="bx"/><rect x="162" y="86" width="44" height="30" rx="5" class="bx"/><rect x="212" y="86" width="44" height="30" rx="5" class="bx"/><text x="274" y="106" text-anchor="start" class="s ok-t">1/2 = 0.50</text><text x="12" y="138" text-anchor="start" class="s">“can I return it?”</text><rect x="12" y="150" width="44" height="30" rx="5" class="fill-g"/><text x="34" y="170" text-anchor="middle" class="b">✓</text><rect x="62" y="150" width="44" height="30" rx="5" class="bx"/><rect x="112" y="150" width="44" height="30" rx="5" class="bx"/><rect x="162" y="150" width="44" height="30" rx="5" class="bx"/><rect x="212" y="150" width="44" height="30" rx="5" class="bx"/><text x="274" y="170" text-anchor="start" class="s ok-t">1/1 = 1.00</text><text x="12" y="202" text-anchor="start" class="s">“how do I cancel billing?”</text><rect x="12" y="214" width="44" height="30" rx="5" class="bx"/><rect x="62" y="214" width="44" height="30" rx="5" class="bx"/><rect x="112" y="214" width="44" height="30" rx="5" class="bx"/><rect x="162" y="214" width="44" height="30" rx="5" class="bx"/><rect x="212" y="214" width="44" height="30" rx="5" class="bx"/><text x="274" y="234" text-anchor="start" class="s wn-t">0 (missed)</text><text x="12" y="268" text-anchor="start" class="s b">hit rate@5 = 2 of 3 queries found it = 0.67</text><text x="12" y="291" text-anchor="start" class="s b">MRR = mean reciprocal rank = (0.50 + 1.00 + 0) /</text><text x="12" y="308" text-anchor="start" class="s b">3 = 0.50</text><text x="12" y="331" text-anchor="start" class="s">precision@5 for query 1 = 1 relevant of 5 shown</text><text x="12" y="348" text-anchor="start" class="s">= 0.20</text></svg>
+    <figcaption>Three queries from the lesson's golden set, with illustrative results. Computed: hit rate@5 = 0.67, MRR = 0.50. The third query is a recall failure; no prompt fix can repair it.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">This is the lesson that turns RAG from guesswork into engineering. Without measurement you’re tuning chunk sizes and rerankers by vibes. With it, every change is a number that went up or down — and you finally know whether you’re improving.</p>
 
   <h2>Why you must measure, and what to measure</h2>
@@ -24,8 +56,12 @@
 
   <div class="box concept">
     <div class="box-label">Concept</div>
-    <p>A <span class="term">golden set</span> is a small labeled dataset of queries paired with the chunk(s) that should be retrieved (and ideally a correct answer). On it you compute <span class="term">retrieval metrics</span>: <span class="term">recall@k</span> (did the relevant chunk appear in the top k?), <span class="term">precision@k</span> (what fraction of the top k were relevant?), and <span class="term">MRR</span> (mean reciprocal rank — how high up the first relevant chunk was, rewarding good ordering). For the answer you add <span class="term">end-to-end metrics</span>: faithfulness (supported by context?) and answer correctness/relevance.</p>
+    <p>A <span class="term">golden set</span> is a small labeled dataset of queries paired with the chunk(s) that should be retrieved (and ideally a correct answer). On it you compute <span class="term">retrieval metrics</span>: <span class="term">recall@k</span> (what fraction of the relevant chunks appeared in the top k? when each query has one relevant chunk this is the same as hit rate@k, "did it appear at all", which is what the harness below computes), <span class="term">precision@k</span> (what fraction of the top k were relevant?), and <span class="term">MRR</span> (mean reciprocal rank — how high up the first relevant chunk was, rewarding good ordering). For the answer you add <span class="term">end-to-end metrics</span>: faithfulness (supported by context?) and answer correctness/relevance.</p>
   </div>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <h2>Play with the metrics</h2>
   <p>Toggle which retrieved results are actually relevant and watch the metrics move. Build the intuition for what each one rewards.</p>
@@ -70,6 +106,13 @@ golden <span class="o">=</span> {
 <span class="c"># Now change chunk size OR add reranking, re-run, and compare the numbers.</span></code></pre>
     <p>This tiny harness is the engine of all RAG improvement: change one variable, re-measure, keep it only if the metric improved. It’s also the seed of Track 6 (Evals), which generalizes this to whole LLM systems.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Scoring a telco support RAG: one query by hand, then 400 queries with error bars</div>
+    <p>Assumptions: 2 M chunks, a 400-query golden set labelled by support leads, a judge priced at $2 / $10 per million input / output tokens (<a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic models overview, checked 2026-11-03</a>).</p><ol><li><strong>One query by hand.</strong> Relevant chunks {A, B, C}. Top 5 returned: [X, A, Y, B, Z].<ul><li>recall@5 = 2/3 = 0.667; precision@5 = 2/5 = 0.40; hit@5 = 1.</li><li>Reciprocal rank = 1/2 = 0.5 (first relevant at rank 2).</li><li>nDCG@5 (binary gains, log2 discount): DCG = 1/log2(3) + 1/log2(5) = 0.631 + 0.431 = 1.062. Ideal DCG (A, B, C at ranks 1-3) = 1 + 0.631 + 0.5 = 2.131. nDCG = 1.062 / 2.131 = 0.498.</li><li>Context precision as Ragas defines it (mean of precision@k at each relevant rank, <a href="https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/context_precision/">Ragas context precision docs</a>): (P@2 + P@4) / 2 = (0.5 + 0.5) / 2 = 0.50.</li></ul></li><li><strong>Average over 400 queries.</strong> Say recall@10 = 0.85. Standard error = sqrt(0.85 x 0.15 / 400) = 0.0179, so the 95% interval is about 0.85 plus or minus 0.035. A change to 0.87 is inside the noise.</li><li><strong>How many queries for plus or minus 1 point?</strong> n = 1.96<sup>2</sup> x 0.1275 / 0.01<sup>2</sup> = about 4,900. You rarely need that: compare old and new on the same queries (a paired test) and only the queries that flipped carry signal.</li><li><strong>Labelling cost.</strong> At about 3 minutes per query, 400 queries is 20 hours of expert time. Budget it like any other dataset.</li><li><strong>Generation side.</strong> Faithfulness judging per run: 400 x 3,500 input tokens = 1.4 M x $2 = $2.80, plus 400 x 200 output = 80,000 x $10 / 1 M = $0.80. About $3.60, cheap enough to run on every pull request.</li></ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -108,6 +151,35 @@ golden <span class="o">=</span> {
         <div class="why">It's returning the right docs, so it's working.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Two retrievers return the same 3 relevant chunks in the top 10. Retriever P puts them at ranks 1, 2, 3; retriever Q at ranks 1, 8, 9. Which metric tells them apart?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) recall@10, because P found more.</span>
+        <div class="why">Both found all three relevant chunks in the top 10, so recall@10 is 1.0 for both.</div></li>
+      <li data-correct="false"><span class="opt">B) MRR, because it rewards good ordering.</span>
+        <div class="why">MRR only looks at the first relevant result. Both have it at rank 1, so both get RR = 1.</div></li>
+      <li data-correct="false"><span class="opt">C) None; they are equally good.</span>
+        <div class="why">If you keep only the top 3 for the prompt, P gives the model all three facts and Q gives one. That difference is real and nDCG captures it.</div></li>
+      <li data-correct="true"><span class="opt">D) nDCG@10, because it discounts every relevant result by its rank, not just the first one.</span>
+        <div class="why">P and Q have the same recall@10 (3/3), the same precision@10 (0.3) and the same MRR (first hit at rank 1). Only nDCG rewards P for placing all three high.</div></li>
+    </ul>
+  </div>
+  <div class="quiz">
+    <p class="quiz-q">A team cuts retrieved chunks from 10 to 2. Context precision rises from 0.61 to 0.83 and faithfulness holds at 0.90, yet users say answers are now incomplete. Which metric should have warned them?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Faithfulness, which should have dropped.</span>
+        <div class="why">Faithfulness checks that claims are supported by the context given. Saying less from less context is still faithful, which is exactly why it missed the problem.</div></li>
+      <li data-correct="false"><span class="opt">B) None; incomplete answers cannot be measured.</span>
+        <div class="why">Context recall measures exactly this, and answer correctness against a reference answer would also catch it.</div></li>
+      <li data-correct="false"><span class="opt">C) Context precision, which should have dropped.</span>
+        <div class="why">Precision rewards a clean context. Returning fewer, more relevant chunks raises it, so it cannot see missing information.</div></li>
+      <li data-correct="true"><span class="opt">D) Context recall, which drops when answer-bearing chunks are no longer retrieved.</span>
+        <div class="why">Fewer chunks means less noise (precision up) but missing facts (recall down). Faithfulness stays high because the model only says what the 2 chunks support. Watch precision and recall together.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -133,6 +205,83 @@ golden <span class="o">=</span> {
 
   <p>You’ve built RAG end to end and learned to measure it. Time to pressure-test the whole track the way an interviewer would. On to the <strong>Track 3 interview check</strong>.</p>
 
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/06_evals.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/06_evals.py</code></pre>
+    <p><strong>What to look for:</strong> The lab computes recall@3, MRR and nDCG@3 on 10 answerable golden questions, an LLM-judge agreement count, and a per-case regression gate between two prompts. Check one query by hand with the formulas above. Then change k from 3 to 1 in metrics() and watch recall@k fall while MRR stays the same (MRR only cares about the first hit). Finally, remove one gold doc id: a correct chunk now counts as a miss, which shows how incomplete labels pull every metric down. With 12 cases, every number has a wide interval (section 6 prints it).</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>5) Judge position bias: same pair, swapped order
+  How long do card refunds take?      order1 picked B, order2 picked B  -&gt; FLIPPED
+  Return window for electronics?      order1 picked B, order2 picked A  -&gt; consistent
+  Express shipping price?             order1 picked B, order2 picked A  -&gt; consistent
+  When is standard shipping free?     order1 picked A, order2 picked B  -&gt; consistent
+  Duplicate charge reversal time?     order1 picked A, order2 picked B  -&gt; consistent
+  consistent verdicts: 4/5 = 80% (95% CI 38%-96%)   correct in both orders: 2/5 = 40% (95% CI 12%-77%)
+  n=5 pairs is a demo, not a measurement of this judge&#x27;s bias: the intervals span most of 0-100%.
+  Look: with no reference passage in the judge prompt, the judge has to guess which number is right.
+  Always judge both orders and count a win only when both agree; give the judge the reference.
+6) How wide is the error bar on 12 cases?
+  v1 accuracy 11/12 = 92% (95% CI 65%-99%)  (Wilson interval)
+  At n=400 the same accuracy would be roughly +/- 2.7%
+{&quot;v1_correct&quot;: 0.917, &quot;regressions&quot;: 12, &quot;judge_consistent&quot;: 4}</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/06_evals.txt">labs/outputs</a>. Source: <a href="../labs/06_evals.py">labs/06_evals.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Relevant chunks {B, D}. Ranked top 5: [B, X, Y, D, Z]. Compute recall@5, precision@5, reciprocal rank, nDCG@5 (binary) and Ragas-style context precision.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>recall@5 = 2/2 = 1.0. precision@5 = 2/5 = 0.4. RR = 1/1 = 1.0. DCG = 1/log2(2) + 1/log2(5) = 1 + 0.431 = 1.431. Ideal DCG with B and D at ranks 1-2 = 1 + 1/log2(3) = 1 + 0.631 = 1.631. nDCG@5 = 1.431 / 1.631 = 0.877. Context precision = mean of precision@k at relevant ranks = (P@1 + P@4) / 2 = (1.0 + 0.5) / 2 = 0.75. Notice recall and MRR are perfect but nDCG and context precision are not, because D sits at rank 4 behind two irrelevant chunks.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your RAG report reads: context recall 0.92, context precision 0.41, faithfulness 0.88, answer relevance 0.62. Diagnose and name the first two fixes.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Context recall 0.92: the needed facts usually reach the prompt, so retrieval coverage is fine. Context precision 0.41: they are buried among irrelevant chunks, often ranked below them. Faithfulness 0.88: the model mostly sticks to the context. Answer relevance 0.62: answers drift or pad, which fits a noisy context, since the model talks about the irrelevant chunks too. Fix 1: add a reranker and keep fewer chunks, which should lift context precision without hurting recall (check that it does). Fix 2: tighten the prompt to answer the question directly and briefly, and re-measure answer relevance. Leave the embedder alone; recall says it is not the problem.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> For each metric, name one way it can look good while the system is bad, and the guard you add: recall@k, MRR, nDCG, context precision, context recall, faithfulness, answer relevance.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p><ul><li><strong>recall@k</strong>: high at k = 50 while the prompt only gets 5. Guard: report recall at the k you actually feed the model.</li><li><strong>MRR</strong>: perfect when the first hit is at rank 1 even if the other needed chunks are missing. Guard: pair with recall or nDCG for multi-fact questions.</li><li><strong>nDCG</strong>: computed against incomplete labels, so a relevant but unlabelled chunk counts as a miss, and the ideal ranking only knows the labelled items. Guard: pool top results from several systems and label them.</li><li><strong>context precision</strong>: rises by returning fewer chunks. Guard: always read it next to context recall.</li><li><strong>context recall</strong> (Ragas): needs a reference answer and an LLM to attribute its claims, so a wrong reference or a sloppy judge corrupts it. Guard: spot-check attributions by hand.</li><li><strong>faithfulness</strong>: an answer that says little, or copies context verbatim, scores high, and a refusal has no claims at all, so depending on the implementation it is undefined or trivially perfect. Guard: track abstention rate and answer correctness separately.</li><li><strong>answer relevance</strong>: Ragas scores it by generating questions from the answer and comparing their embeddings to the user question, and its docs state it does not evaluate factual accuracy. An answer that restates the question scores well. Guard: pair it with faithfulness and correctness.</li></ul></p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> Explain recall@k, precision@k and MRR in one sentence each, and when each matters.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Recall@k is the fraction of the relevant chunks that appear in the top k; it matters when the model needs every piece of evidence. Precision@k is the fraction of the top k that are relevant; it matters because irrelevant chunks cost tokens and distract the model. MRR is the average of 1 over the rank of the first relevant result; it matters when you mostly need one good chunk near the top, as in single-fact FAQ answers. I report them at the k that actually goes into the prompt.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> What is nDCG and when would you use it over MRR?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>nDCG sums the relevance of each result divided by log2(rank + 1), so results lower down count less, then divides by the best possible score for that query so it lands between 0 and 1. Unlike MRR, it counts every relevant result, not just the first, and it supports graded relevance, for example 2 for the exact answer and 1 for useful background. I use it when questions need several chunks, when I have graded labels, or when comparing rerankers, since they change the order of all candidates. BEIR uses nDCG@10 as its headline metric for that reason.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Design the evaluation for a production RAG system, including the generation side. What are the failure modes of the metrics themselves?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Two layers. Retrieval: a labelled golden set from real queries, recall@k and nDCG@k at the k fed to the model, sliced by query type. Generation: the Ragas set, which are faithfulness, answer relevance, and context precision and recall, plus answer correctness against references for a subset. The Ragas paper (arXiv 2309.15217) shows these can run without human labels, but they are only as good as the judge, so I calibrate the judge against 50 to 100 human labels and pin the judge model and prompt. Known failure modes: incomplete labels deflate retrieval metrics; context precision games itself by returning less; faithfulness rewards saying nothing; answer relevance ignores correctness; and judges carry position, verbosity and self-preference biases. I report confidence intervals and compare versions on the same queries.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2309.15217" target="_blank" rel="noopener">Es et al., Ragas: Automated Evaluation of Retrieval Augmented Generation (2023) - arXiv</a></li>
+      <li><a href="https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/context_precision/" target="_blank" rel="noopener">Context Precision - Ragas documentation</a></li>
+      <li><a href="https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/context_recall/" target="_blank" rel="noopener">Context Recall - Ragas documentation</a></li>
+      <li><a href="https://arxiv.org/abs/2104.08663" target="_blank" rel="noopener">Thakur et al., BEIR benchmark (nDCG@10 as the standard retrieval metric) - arXiv</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Label a few real questions with their right answers, and score every change against them.</p>
+<!-- ease:line:end -->
 </main>
 
 <script>
@@ -189,5 +338,10 @@ golden <span class="o">=</span> {
 </script>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

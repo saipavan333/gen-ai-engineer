@@ -12,7 +12,43 @@
 
   <span class="eyebrow">Frontier &amp; Responsible AI · Lesson 13.1</span>
   <h1>Reasoning models &amp; test-time compute</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>A normal model starts writing its answer straight away.</p>
+    <p>A reasoning model first writes out its thinking, step by step, and checks itself before it answers.</p>
+    <p>That extra work at answer time is called test-time compute.</p>
+    <p>It makes models much better at maths, code and multi-step planning.</p>
+    <p>But thinking tokens cost money and time, so you only want it on hard problems.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>A standard model is a quiz contestant who must hit the buzzer immediately. A reasoning model is allowed to scribble on a notepad for a minute before answering. On a hard maths question the notepad wins; on 'what colour is the sky' it just wastes a minute. And you pay for every page of scribbling.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>Hitting the buzzer straight away</td><td>One quick pass: the model writes only the answer</td></tr>
+      <tr><td>Scribbling on the notepad</td><td>Thinking tokens written before the final answer</td></tr>
+      <tr><td>Paying for every page of scribbling</td><td>Thinking tokens are billed as output tokens</td></tr>
+      <tr><td>How long you are allowed to scribble</td><td>The effort level (<code>low</code> to <code>max</code>); the model decides how much to think</td></tr>
+      <tr><td>Not wasting a minute on 'what colour is the sky'</td><td>Routing easy requests to low effort or a cheaper model</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> The model's scribbling is not always shown to you, but you are still billed for it. And the scribbles are not a faithful record of how it got the answer: tidy-looking reasoning can sit on top of a wrong answer, so check the answer, not the notepad.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 346" role="img" aria-label="Thinking tokens before the answer, billed as output, steered by effort level" preserveAspectRatio="xMidYMid meet"><text x="12" y="22" text-anchor="start" class="s m">Tokens the model writes for one answer (illustrative sizes from the page&#x27;s example)</text><text x="12" y="68" text-anchor="start" class="b">Easy input, low effort</text><text x="12" y="86" text-anchor="start" class="s m">the model may skip thinking</text><rect x="230" y="62" width="30" height="22" rx="4" class="fill-g"/><text x="266" y="78" text-anchor="start" class="s b ok-t">answer 300</text><text x="230" y="106" text-anchor="start" class="s">billed output 300 tokens = $0.003, about 4 s at 80 tokens/s</text><text x="12" y="152" text-anchor="start" class="b">Hard problem, high effort</text><text x="12" y="170" text-anchor="start" class="s m">adaptive thinking runs long first</text><rect x="230" y="146" width="385.116" height="22" rx="4" class="fill-k"/><text x="234" y="142" text-anchor="start" class="s b k-t">thinking 4,000 tokens (often hidden)</text><rect x="618.116" y="146" width="30" height="22" rx="4" class="fill-g"/><text x="654.116" y="162" text-anchor="start" class="s b ok-t">answer 300</text><text x="230" y="190" text-anchor="start" class="s">billed output 4,300 tokens = $0.043, about 54 s at 80 tokens/s</text><text x="12" y="222" text-anchor="start" class="s ac-t">You steer it with output_config.effort:</text><rect x="12" y="236" width="142.4" height="30" rx="6" class="bx tn-b" /><text x="83.2" y="256" text-anchor="middle" class="s b mono">low</text><rect x="160.4" y="236" width="142.4" height="30" rx="6" class="bx tn-b" /><text x="231.6" y="256" text-anchor="middle" class="s b mono">medium</text><rect x="308.8" y="236" width="142.4" height="30" rx="6" class="bx tn-a" /><text x="380" y="256" text-anchor="middle" class="s b mono">high</text><rect x="457.2" y="236" width="142.4" height="30" rx="6" class="bx tn-b" /><text x="528.4" y="256" text-anchor="middle" class="s b mono">xhigh</text><rect x="605.6" y="236" width="142.4" height="30" rx="6" class="bx tn-b" /><text x="676.8" y="256" text-anchor="middle" class="s b mono">max</text><text x="380" y="282" text-anchor="middle" class="s ac-t" style="font-size:12px">default on Sonnet 5.5</text><line x1="14" y1="294" x2="737" y2="294" class="ln ac"/><polygon points="746,294 737,289.05 737,298.95" class="hd ac"/><text x="12" y="314" text-anchor="start" class="s">more thinking allowed → slower and more billed output, better on hard multi-step problems</text><text x="12" y="334" text-anchor="start" class="s wn-t">budget_tokens is rejected (400) on Claude 4.7 and later.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 464" role="img" aria-label="Thinking tokens before the answer, billed as output, steered by effort level" preserveAspectRatio="xMidYMid meet"><text x="12" y="20" text-anchor="start" class="b">Tokens written for one answer</text><text x="12" y="38" text-anchor="start" class="s m">(sizes from the page&#x27;s example)</text><text x="12" y="72" text-anchor="start" class="b">Easy input, low effort</text><text x="12" y="90" text-anchor="start" class="s m">the model may skip thinking</text><rect x="12" y="106" width="30" height="22" rx="4" class="fill-g"/><text x="48" y="122" text-anchor="start" class="s b ok-t">answer 300</text><text x="12" y="150" text-anchor="start" class="s">billed output 300 tokens = $0.003</text><text x="12" y="168" text-anchor="start" class="s m">about 4 s at 80 tokens/s</text><text x="12" y="204" text-anchor="start" class="b">Hard problem, high effort</text><text x="12" y="222" text-anchor="start" class="s m">adaptive thinking runs long first</text><rect x="12" y="238" width="215.814" height="22" rx="4" class="fill-k"/><text x="16" y="234" text-anchor="start" class="s b k-t">thinking 4,000 tokens (often hidden)</text><rect x="230.814" y="238" width="30" height="22" rx="4" class="fill-g"/><text x="266.814" y="254" text-anchor="start" class="s b ok-t">answer 300</text><text x="12" y="282" text-anchor="start" class="s">billed output 4,300 tokens = $0.043</text><text x="12" y="300" text-anchor="start" class="s m">about 54 s at 80 tokens/s</text><text x="12" y="340" text-anchor="start" class="s ac-t">Steer it with output_config.effort:</text><rect x="12" y="354" width="62.4" height="30" rx="6" class="bx tn-b" /><text x="43.2" y="374" text-anchor="middle" class="s b mono">low</text><rect x="80.4" y="354" width="62.4" height="30" rx="6" class="bx tn-b" /><text x="111.6" y="374" text-anchor="middle" class="s b mono">medium</text><rect x="148.8" y="354" width="62.4" height="30" rx="6" class="bx tn-a" /><text x="180" y="374" text-anchor="middle" class="s b mono">high</text><rect x="217.2" y="354" width="62.4" height="30" rx="6" class="bx tn-b" /><text x="248.4" y="374" text-anchor="middle" class="s b mono">xhigh</text><rect x="285.6" y="354" width="62.4" height="30" rx="6" class="bx tn-b" /><text x="316.8" y="374" text-anchor="middle" class="s b mono">max</text><text x="180" y="400" text-anchor="middle" class="s ac-t" style="font-size:12px">default on Sonnet 5.5</text><line x1="14" y1="412" x2="337" y2="412" class="ln ac"/><polygon points="346,412 337,407.05 337,416.95" class="hd ac"/><text x="12" y="432" text-anchor="start" class="s">more thinking, slower, more billed output →</text><text x="12" y="452" text-anchor="start" class="s wn-t">budget_tokens is rejected (400) on Claude 4.7 and later.</text></svg>
+    <figcaption>Thinking happens before the answer and is billed as output. The token counts and the 80 tokens a second are the page's assumptions; cost uses Claude Sonnet 5.5's $10 per million output tokens. Effort is a signal, not a hard cap: <code>max_tokens</code> is the hard limit.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">A major shift in the field: instead of only making models bigger, we now let them <em>think longer</em> at answer time. Understanding “reasoning models” and “test-time compute” keeps you current and helps you choose the right model for a job.</p>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <h2>Two ways to make a model smarter</h2>
   <p>For years, the recipe for a more capable model was “train a bigger one on more data.” That still works, but there’s a second lever that reshaped the field: spend more compute <em>when answering</em>, not just when training. A <span class="term">reasoning model</span> (sometimes called “o1-style,” after an early prominent one) is trained to produce a long internal <span class="term">chain-of-thought</span> — working through a problem step by step, checking itself, exploring approaches — before it commits to a final answer. That extra deliberation at inference is called <span class="term">test-time compute</span>: the model literally uses more tokens and time to think, and on hard problems that buys markedly better accuracy.</p>
@@ -37,7 +73,23 @@
 
   <div class="lab" data-lab="testtime"></div>
 
-  <div class="box key">
+  
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Routing 1 million requests a day between a fast model and a reasoning model</div>
+    <p>Assume an assistant gets <strong>1,000,000 requests a day</strong>, of which <strong>5%</strong> are genuinely hard (multi-step debugging, calculations), and a hard request uses about <strong>4,000 thinking tokens</strong> when the model thinks hard. All numbers except prices and API behaviour are assumptions.</p>
+<ol>
+<li><strong>How you control thinking now.</strong> On current Claude models you no longer set a token budget: <code>thinking: {type: "enabled", budget_tokens: N}</code> returns a 400 error on Claude 4.7 and later. You use adaptive thinking (the model decides whether and how much to think) and steer it with <code>output_config.effort</code>: <code>low</code>, <code>medium</code>, <code>high</code>, <code>xhigh</code> or <code>max</code>. The default is <code>high</code> on Claude Sonnet 5.5 and <code>medium</code> on Claude Opus 5.5 and Haiku 5.5 (<a href="https://platform.claude.com/docs/en/build-with-claude/effort">effort docs</a>; <a href="https://platform.claude.com/docs/en/build-with-claude/extended-thinking">extended thinking, now legacy</a>). Effort is a behavioural signal, not a hard cap; <code>max_tokens</code> is the hard limit on thinking plus answer.</li>
+<li><strong>Thinking is billed as output.</strong> Thinking tokens count as billed output tokens, visible in <code>usage.output_tokens_details.thinking_tokens</code>.</li>
+<li><strong>High effort on everything.</strong> On Claude Sonnet 5.5 at $10 per million output tokens (<a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic models overview</a>): 1,000,000 x 4,000 = 4 billion tokens = <strong>$40,000/day</strong> if every request thought that hard.</li>
+<li><strong>Route by difficulty.</strong> Send easy requests at <code>low</code> effort (where the model may skip thinking on easy inputs) and hard ones at <code>high</code>. If only the 50,000 hard requests think at about 4,000 tokens: 200M tokens = <strong>$2,000/day</strong>. Measure the real thinking tokens per effort level on your traffic; do not assume.</li>
+<li><strong>Price the router.</strong> A small classifier, or a cheap model call of about 200 input tokens, decides 'hard or not'. On a model priced from $0.10 per million input tokens, 1M x 200 = 200M tokens = about $20/day.</li>
+<li><strong>Measure the misroutes and the latency.</strong> On a labelled set of 1,000 requests, suppose the router sends 15% of hard requests to low effort: add an escalation rule (retry at higher effort if a check fails). And 4,000 thinking tokens at an assumed 80 tokens/second is about 50 seconds, so show progress or move hard jobs to an async queue.</li>
+</ol>
+<p><strong>History note:</strong> earlier Claude models used manual extended thinking with a <code>budget_tokens</code> number; it still works on some older models (for example Claude Sonnet 4.5 and Haiku 4.5) and is deprecated on the 4.6 models. Code written that way must migrate to adaptive thinking plus effort when it moves to a current model.</p>
+  </div>
+<!-- shape:scale:end -->
+<div class="box key">
     <div class="box-label">Key points</div>
     <ul>
       <li>Capability comes from two levers: <strong>bigger training</strong> and <strong>more test-time compute</strong> (thinking longer at answer time).</li>
@@ -87,6 +139,22 @@
         <div class="why">The key is spending compute to think, not raw size.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">You give a reasoning model a 'think step by step, list every assumption' prompt on top of its built-in thinking. Tokens double, accuracy is unchanged. What is the best reading?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Raise the effort level again until accuracy improves.</span>
+        <div class="why">If accuracy is flat, more thinking is likely to keep spending without gain. Find where the curve flattens on an eval first.</div></li>
+      <li data-correct="false"><span class="opt">B) Reasoning models cannot follow instructions.</span>
+        <div class="why">They follow instructions; the issue is redundant prompting.</div></li>
+      <li data-correct="false"><span class="opt">C) The model ignored the prompt, which means it is broken.</span>
+        <div class="why">It may have followed it; it just did not help. That is a result, not a fault.</div></li>
+      <li data-correct="true"><span class="opt">D) The model already reasons internally, so the extra CoT instruction mostly added tokens; measure and drop it unless an eval shows a gain.</span>
+        <div class="why">Right. Reasoning models are trained to think before answering. Classic CoT prompting is often redundant on them, so it should earn its place on an eval.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box deep">
@@ -97,10 +165,95 @@
     <p>Knowing that reasoning is now a dial you can turn, at a price, is what lets you make that call deliberately instead of defaulting to the most expensive model for everything.</p>
   </div>
 
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/12_self_consistency.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/12_self_consistency.py</code></pre>
+    <p><strong>What to look for:</strong> Self-consistency is test-time compute you control by hand: N samples and a vote. On our run accuracy stayed at 4 of 5 for every N while tokens grew linearly, and one vote went wrong because the most common answer was wrong. With n=5 problems this shows the mechanism and its failure, not a curve. The lab does not run a trained reasoning model or Claude's effort setting; qwen2.5:7b is a standard model.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  P2 gold=215    answers=[265.0, None, 215.0, 195.0, 195.0, 215.0, 195.0]
+  P3 gold=17     answers=[17.0, 17.0, 17.0, 17.0, 17.0, 17.0, 17.0]
+  P4 gold=540    answers=[540.0, 5.0, 540.0, 540.0, 540.0, 540.0, 540.0]
+  P5 gold=676.5  answers=[676.5, 676.5, 676.5, 676.5, 676.5, 676.5, 676.5]
+2) Accuracy vs number of samples (majority vote over the first N)
+  N=1: accuracy 4/5 = 80% (95% CI 38%-96%)   ~196 output tokens per problem
+  N=3: accuracy 4/5 = 80% (95% CI 38%-96%)   ~588 output tokens per problem
+  N=5: accuracy 4/5 = 80% (95% CI 38%-96%)   ~980 output tokens per problem
+  N=7: accuracy 4/5 = 80% (95% CI 38%-96%)   ~1,373 output tokens per problem
+  With n=5 problems these intervals are far too wide to compare N values: treat this as a demo of the
+  mechanism (and of a vote going wrong), not a measured accuracy curve. Real curves need hundreds of problems.
+  Look: more samples cost tokens linearly; accuracy gains are bumpy and flatten out. A vote only helps
+  when the model is right more often than any single wrong answer. Measure the curve on YOUR task before
+  paying for N=7 (or for a reasoning model&#x27;s long thinking) in production.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/12_self_consistency.txt">labs/outputs</a>. Source: <a href="../labs/12_self_consistency.py">labs/12_self_consistency.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> A reasoning model answers in 300 visible output tokens but the usage shows 3,300 output tokens. At $10 per million output tokens, what did the thinking cost per request and per 100,000 requests?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Thinking tokens = 3,300 - 300 = 3,000. Per request: 3,000 x $10 / 1,000,000 = $0.03. Per 100,000 requests: $3,000. Always read the usage field; visible text underestimates the bill.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Design a 'try cheap first, escalate if needed' flow for a coding assistant that writes unit-testable functions.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Step 1: fast model writes the function and tests. Step 2: run the tests in a sandbox. Step 3: if they pass, return. If they fail, send the code, the failing test output and the task to the reasoning model. Step 4: run tests again; if they still fail, return the best attempt with the failure shown. Track the escalation rate and cost per solved task. The tests are the cheap, objective check that makes escalation safe.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Snell et al. (2024) report that spending test-time compute well can beat simply using a larger model in some settings. What conditions make that more likely, and how would you test it for your workload?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>It is more likely when problems are of moderate difficulty for the smaller model, when there is a good way to check or score candidates (tests, verifiers), and when compute can be adapted per problem instead of spent evenly. Test it by building an eval set grouped by difficulty, then compare cost and accuracy for: small model once, small model with N samples plus a verifier, small model with reasoning on, and a larger model once. Plot accuracy against cost per task and pick the best point per difficulty group.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is a reasoning model?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>It is a model trained to produce a long internal chain of thought before its final answer: working through steps, checking itself, trying other approaches. That uses more tokens at answer time, called test-time compute, and gives better results on hard maths, coding and planning. The cost is higher price, because thinking tokens are billed, and more latency. For simple tasks a standard model is cheaper and just as good.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> How do you decide whether a feature should use a reasoning model?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Run an eval on representative cases with both options and compare accuracy, cost per request including thinking tokens, and latency. Reasoning tends to pay off on multi-step tasks with a clear right answer and low to moderate volume. For high-volume simple tasks, use a fast model or a low effort level. Often the answer is both: route by difficulty, or try low effort first and escalate when a check fails. On current Claude models you steer thinking with output_config.effort rather than a token budget, and you watch usage.output_tokens_details.thinking_tokens so cost does not surprise you.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> How does test-time compute change system design compared with the 'just pick a bigger model' era?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Compute becomes a per-request decision, not a fixed property of the deployed model. So you design routing, effort levels and verification: a difficulty classifier or cascade, an effort level per feature (low, medium, high and up, with max_tokens as the hard cap on thinking plus answer), verifiers such as tests or rule checks to decide when more compute is worth it, and async flows for long jobs. Run an effort sweep on your evals instead of carrying settings over between model versions, because levels are recalibrated. Observability must track thinking tokens and latency separately. Tools, grounding, bounded loops and evals stay essential.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2408.03314" target="_blank" rel="noopener">Scaling LLM Test-Time Compute Optimally can be More Effective than Scaling Model Parameters (Snell et al., 2024) — arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2501.12948" target="_blank" rel="noopener">DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning (2025) — arXiv</a></li>
+      <li><a href="https://platform.claude.com/docs/en/build-with-claude/effort" target="_blank" rel="noopener">Effort parameter (adaptive thinking) - Anthropic docs</a></li>
+      <li><a href="https://arxiv.org/abs/2203.11171" target="_blank" rel="noopener">Self-Consistency Improves Chain of Thought Reasoning (Wang et al., 2022) — arXiv</a></li>
+      <li><a href="https://platform.claude.com/docs/en/build-with-claude/effort" target="_blank" rel="noopener">Effort parameter (adaptive thinking) - Anthropic docs</a></li>
+      <li><a href="https://platform.claude.com/docs/en/build-with-claude/effort" target="_blank" rel="noopener">Effort parameter (adaptive thinking) - Anthropic docs</a></li>
+      <li><a href="https://platform.claude.com/docs/en/build-with-claude/extended-thinking" target="_blank" rel="noopener">Extended thinking (legacy budget_tokens) - Anthropic docs</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
   <p>Reasoning is one frontier shift; there are several worth a working engineer’s awareness. Next: <strong>the modern frontier.</strong></p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> A reasoning model thinks before it speaks, which helps on hard problems and costs you every word it thinks.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

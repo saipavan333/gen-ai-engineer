@@ -1,0 +1,39 @@
+
+======================================================================
+1) Same prompt, temperature 0, three different seeds  (model: qwen2.5:7b)
+======================================================================
+  seed=1: Bengaluru in July typically experiences hot and dry weather with temperatures often exceeding 30°C.
+  seed=2: Bengaluru in July typically experiences hot and dry weather with temperatures often exceeding 30°C.
+  seed=3: Bengaluru in July typically experiences hot and dry weather with temperatures often exceeding 30°C.
+  distinct outputs at T=0: 1
+  Look: T=0 is close to greedy but NOT a determinism guarantee. In one of our runs only 2 of 3 seeds
+  matched, in another all 3 did: GPU kernels, batching and tie-breaking can still change a token.
+  Never build a test on exact text.
+  Also check the FACT: Bengaluru in July is monsoon season (mild and wet). A fluent, confident
+  'hot and dry' answer is a hallucination - fluency is not accuracy (Lesson 1.6).
+
+======================================================================
+2) Same prompt, temperature 1.0, three different seeds
+======================================================================
+  seed=1: Bengaluru in July typically experiences warm to hot temperatures with occasional thunderstorms.
+  seed=2: Bengaluru in July typically experiences hot and humid weather with occasional thunderstorms.
+  seed=3: Bengaluru in July typically experiences hot and dry weather with temperatures often soaring above 30°C.
+  distinct outputs at T=1.0: 3  (sampling -> usually 2-3)
+
+======================================================================
+3) Same seed twice at T=1.0 -> reproducible on the same machine
+======================================================================
+  identical: True
+
+======================================================================
+4) Tokens are what you pay for: prompt vs output token counts
+======================================================================
+  short prompt: prompt_tokens=   36  output_tokens=  2  prefill_s=  0.52  answer='Paris'
+  long prompt : prompt_tokens=  639  output_tokens=  2  prefill_s=  0.22  answer='Paris'
+  Look: the long prompt costs many more input tokens and more prefill time for the same answer.
+
+======================================================================
+5) Streaming: time-to-first-token (TTFT) vs total time
+======================================================================
+  TTFT=0.36s  total=2.54s  chunks=16  decode_tokens_per_s=7.3
+  Look: streaming does not make generation faster; it shows the first words sooner.

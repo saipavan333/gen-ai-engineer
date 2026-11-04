@@ -12,6 +12,37 @@
 
   <span class="eyebrow">Track 2 · Lesson 2.3</span>
   <h1>Chain-of-thought &amp; reasoning</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Chain-of-thought (CoT) means asking the model to write its steps before the final answer.</p>
+    <p>The model writes one token at a time. Each token can only build on what is already written.</p>
+    <p>If it must answer at once, there is nowhere for the working to happen.</p>
+    <p>When it writes the steps first, every step becomes input that the answer can use.</p>
+    <p>It helps most on multi-step problems: maths, logic and planning.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Chain-of-thought is the maths teacher saying 'show your working'. Writing each step on paper means you can use the result of step 2 when you do step 3, instead of trying to hold everything in your head and blurting a final number. The paper is the model's context.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The maths teacher saying “show your working”</td><td>A prompt line such as “Think step by step”</td></tr>
+      <tr><td>The paper you write on</td><td>The context window: the written steps become input</td></tr>
+      <tr><td>Using step 2's result in step 3</td><td>Each new token is conditioned on all earlier tokens</td></tr>
+      <tr><td>Shouting the answer before working it out</td><td>Asking for “just the number” on a multi-step problem</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A student's written working is usually how they really solved it, while a model's written steps are not guaranteed to be the real reason it gave its answer.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 382" role="img" aria-label="Blurting versus writing the steps first on the bat-and-ball question" preserveAspectRatio="xMidYMid meet"><text x="14" y="20" text-anchor="start" class="b wn-t">A. Blurt the answer</text><rect x="14" y="32" width="127.2" height="112" rx="10" class="bx tn-b" /><g class="vzb"><text x="77.6" y="65.3" text-anchor="middle" class="b" style="font-size:14px">The question</text><text x="77.6" y="89.3" text-anchor="middle" class="s" style="font-size:12px">bat + ball =</text><text x="77.6" y="105.3" text-anchor="middle" class="s" style="font-size:12px">$1.10; the bat</text><text x="77.6" y="121.3" text-anchor="middle" class="s" style="font-size:12px">costs $1.00 more</text></g><line x1="144.2" y1="88" x2="153.2" y2="88" class="ln "/><polygon points="162.2,88 153.2,83.05 153.2,92.95" class="hd "/><rect x="165.2" y="32" width="127.2" height="112" rx="10" class="bx tn-k" /><g class="vzb"><text x="228.8" y="56.3" text-anchor="middle" class="b" style="font-size:14px">Answer at</text><text x="228.8" y="74.3" text-anchor="middle" class="b" style="font-size:14px">once</text><text x="228.8" y="98.3" text-anchor="middle" class="s" style="font-size:12px">first token must</text><text x="228.8" y="114.3" text-anchor="middle" class="s" style="font-size:12px">already be the</text><text x="228.8" y="130.3" text-anchor="middle" class="s" style="font-size:12px">answer</text></g><line x1="295.4" y1="88" x2="304.4" y2="88" class="ln "/><polygon points="313.4,88 304.4,83.05 304.4,92.95" class="hd "/><rect x="316.4" y="32" width="127.2" height="112" rx="10" class="bx tn-w" /><g class="vzb"><text x="380" y="65.3" text-anchor="middle" class="b" style="font-size:14px">“10 cents”</text><text x="380" y="89.3" text-anchor="middle" class="s" style="font-size:12px">wrong: the bat</text><text x="380" y="105.3" text-anchor="middle" class="s" style="font-size:12px">would be $1.10,</text><text x="380" y="121.3" text-anchor="middle" class="s" style="font-size:12px">total $1.20</text></g><text x="14" y="172" text-anchor="start" class="b ok-t">B. Show the working (chain-of-thought)</text><rect x="14" y="184" width="127.2" height="96" rx="10" class="bx tn-b" /><g class="vzb"><text x="77.6" y="209.3" text-anchor="middle" class="b" style="font-size:14px">The question</text><text x="77.6" y="233.3" text-anchor="middle" class="s" style="font-size:12px">bat + ball =</text><text x="77.6" y="249.3" text-anchor="middle" class="s" style="font-size:12px">$1.10; the bat</text><text x="77.6" y="265.3" text-anchor="middle" class="s" style="font-size:12px">costs $1.00 more</text></g><line x1="144.2" y1="232" x2="153.2" y2="232" class="ln "/><polygon points="162.2,232 153.2,227.05 153.2,236.95" class="hd "/><rect x="165.2" y="184" width="127.2" height="96" rx="10" class="bx tn-c" /><g class="vzb"><text x="228.8" y="208.3" text-anchor="middle" class="b" style="font-size:14px">Step 1,</text><text x="228.8" y="226.3" text-anchor="middle" class="b" style="font-size:14px">written</text><text x="228.8" y="250.3" text-anchor="middle" class="s" style="font-size:12px">ball = x, bat =</text><text x="228.8" y="266.3" text-anchor="middle" class="s" style="font-size:12px">x + 1.00</text></g><line x1="295.4" y1="232" x2="304.4" y2="232" class="ln "/><polygon points="313.4,232 304.4,227.05 304.4,236.95" class="hd "/><rect x="316.4" y="184" width="127.2" height="96" rx="10" class="bx tn-c" /><g class="vzb"><text x="380" y="208.3" text-anchor="middle" class="b" style="font-size:14px">Step 2,</text><text x="380" y="226.3" text-anchor="middle" class="b" style="font-size:14px">written</text><text x="380" y="250.3" text-anchor="middle" class="s" style="font-size:12px">x + (x + 1.00) =</text><text x="380" y="266.3" text-anchor="middle" class="s" style="font-size:12px">1.10</text></g><line x1="446.6" y1="232" x2="455.6" y2="232" class="ln "/><polygon points="464.6,232 455.6,227.05 455.6,236.95" class="hd "/><rect x="467.6" y="184" width="127.2" height="96" rx="10" class="bx tn-c" /><g class="vzb"><text x="531.2" y="208.3" text-anchor="middle" class="b" style="font-size:14px">Step 3,</text><text x="531.2" y="226.3" text-anchor="middle" class="b" style="font-size:14px">written</text><text x="531.2" y="250.3" text-anchor="middle" class="s" style="font-size:12px">2x = 0.10, so x</text><text x="531.2" y="266.3" text-anchor="middle" class="s" style="font-size:12px">= 0.05</text></g><line x1="597.8" y1="232" x2="606.8" y2="232" class="ln "/><polygon points="615.8,232 606.8,227.05 606.8,236.95" class="hd "/><rect x="618.8" y="184" width="127.2" height="96" rx="10" class="bx tn-g" /><g class="vzb"><text x="682.4" y="217.3" text-anchor="middle" class="b" style="font-size:14px">“5 cents”</text><text x="682.4" y="241.3" text-anchor="middle" class="s" style="font-size:12px">correct, built</text><text x="682.4" y="257.3" text-anchor="middle" class="s" style="font-size:12px">on steps 1 to 3</text></g><text x="14" y="310" text-anchor="start" class="s">What the model can read when it writes the final answer (the context grows step by step):</text><rect x="14" y="320" width="147.2" height="30" rx="5" class="bx tn-b" /><text x="87.6" y="340" text-anchor="middle" class="s b">question</text><rect x="165.2" y="320" width="147.2" height="30" rx="5" class="bx tn-c" /><text x="238.8" y="340" text-anchor="middle" class="s b">step 1</text><rect x="316.4" y="320" width="147.2" height="30" rx="5" class="bx tn-c" /><text x="390" y="340" text-anchor="middle" class="s b">step 2</text><rect x="467.6" y="320" width="147.2" height="30" rx="5" class="bx tn-c" /><text x="541.2" y="340" text-anchor="middle" class="s b">step 3</text><rect x="618.8" y="320" width="127.2" height="30" rx="5" class="bx tn-g" /><text x="682.4" y="340" text-anchor="middle" class="s b">answer</text><line x1="588.8" y1="366" x2="605.8" y2="366" class="ln ac"/><polygon points="614.8,366 605.8,361.05 605.8,370.95" class="hd ac"/><text x="582.8" y="370" text-anchor="end" class="s ac-t">each new token reads everything to its left</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 462" role="img" aria-label="Blurting versus writing the steps first on the bat-and-ball question" preserveAspectRatio="xMidYMid meet"><text x="12" y="18" text-anchor="start" class="b wn-t">A. Blurt</text><text x="188" y="18" text-anchor="start" class="b ok-t">B. Show the working</text><rect x="12" y="30" width="160" height="75" rx="10" class="bx tn-b" /><g class="vzb"><text x="92" y="53.35" text-anchor="middle" class="b" style="font-size:13px">The question</text><text x="92" y="76.35" text-anchor="middle" class="s" style="font-size:11px">bat + ball = $1.10; the</text><text x="92" y="91.35" text-anchor="middle" class="s" style="font-size:11px">bat costs $1.00 more</text></g><line x1="92" y1="107" x2="92" y2="116" class="ln "/><polygon points="92,125 96.95,116 87.05,116" class="hd "/><rect x="12" y="127" width="160" height="75" rx="10" class="bx tn-k" /><g class="vzb"><text x="92" y="150.35" text-anchor="middle" class="b" style="font-size:13px">Answer at once</text><text x="92" y="173.35" text-anchor="middle" class="s" style="font-size:11px">first token must already</text><text x="92" y="188.35" text-anchor="middle" class="s" style="font-size:11px">be the answer</text></g><line x1="92" y1="204" x2="92" y2="213" class="ln "/><polygon points="92,222 96.95,213 87.05,213" class="hd "/><rect x="12" y="224" width="160" height="75" rx="10" class="bx tn-w" /><g class="vzb"><text x="92" y="247.35" text-anchor="middle" class="b" style="font-size:13px">“10 cents”</text><text x="92" y="270.35" text-anchor="middle" class="s" style="font-size:11px">wrong: the bat would be</text><text x="92" y="285.35" text-anchor="middle" class="s" style="font-size:11px">$1.10, total $1.20</text></g><rect x="188" y="30" width="160" height="75" rx="10" class="bx tn-b" /><g class="vzb"><text x="268" y="53.35" text-anchor="middle" class="b" style="font-size:13px">The question</text><text x="268" y="76.35" text-anchor="middle" class="s" style="font-size:11px">bat + ball = $1.10; the</text><text x="268" y="91.35" text-anchor="middle" class="s" style="font-size:11px">bat costs $1.00 more</text></g><line x1="268" y1="107" x2="268" y2="116" class="ln "/><polygon points="268,125 272.95,116 263.05,116" class="hd "/><rect x="188" y="127" width="160" height="60" rx="10" class="bx tn-c" /><g class="vzb"><text x="268" y="150.35" text-anchor="middle" class="b" style="font-size:13px">Step 1, written</text><text x="268" y="173.35" text-anchor="middle" class="s" style="font-size:11px">ball = x, bat = x + 1.00</text></g><line x1="268" y1="189" x2="268" y2="198" class="ln "/><polygon points="268,207 272.95,198 263.05,198" class="hd "/><rect x="188" y="209" width="160" height="60" rx="10" class="bx tn-c" /><g class="vzb"><text x="268" y="232.35" text-anchor="middle" class="b" style="font-size:13px">Step 2, written</text><text x="268" y="255.35" text-anchor="middle" class="s" style="font-size:11px">x + (x + 1.00) = 1.10</text></g><line x1="268" y1="271" x2="268" y2="280" class="ln "/><polygon points="268,289 272.95,280 263.05,280" class="hd "/><rect x="188" y="291" width="160" height="60" rx="10" class="bx tn-c" /><g class="vzb"><text x="268" y="314.35" text-anchor="middle" class="b" style="font-size:13px">Step 3, written</text><text x="268" y="337.35" text-anchor="middle" class="s" style="font-size:11px">2x = 0.10, so x = 0.05</text></g><line x1="268" y1="353" x2="268" y2="362" class="ln "/><polygon points="268,371 272.95,362 263.05,362" class="hd "/><rect x="188" y="373" width="160" height="75" rx="10" class="bx tn-g" /><g class="vzb"><text x="268" y="396.35" text-anchor="middle" class="b" style="font-size:13px">“5 cents”</text><text x="268" y="419.35" text-anchor="middle" class="s" style="font-size:11px">correct, built on steps</text><text x="268" y="434.35" text-anchor="middle" class="s" style="font-size:11px">1 to 3</text></g><text x="14" y="325" text-anchor="start" class="s ac-t" style="font-size:13px">In B every written</text><text x="14" y="342" text-anchor="start" class="s ac-t" style="font-size:13px">step becomes input for</text><text x="14" y="359" text-anchor="start" class="s ac-t" style="font-size:13px">the next token, so the</text><text x="14" y="376" text-anchor="start" class="s ac-t" style="font-size:13px">answer is built on</text><text x="14" y="393" text-anchor="start" class="s ac-t" style="font-size:13px">real results, not one</text><text x="14" y="410" text-anchor="start" class="s ac-t" style="font-size:13px">risky leap.</text></svg>
+    <figcaption>Lane A must commit to an answer token with no work done, and the quick guess fails the check (the totals would be $1.20). Lane B writes three small steps first; the arithmetic shown is computed, and the answer 5 cents is read off step 3.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">For anything multi-step — math, logic, planning, careful analysis — one tweak reliably boosts accuracy: ask the model to reason before it answers. It’s simple, it’s backed by how the engine works, and it’s a staple of real prompts.</p>
 
   <h2>Why blurting fails</h2>
@@ -21,6 +52,10 @@
     <div class="box-label">Concept</div>
     <p><span class="term">Chain-of-thought</span> (CoT) prompting asks the model to produce its intermediate reasoning steps <em>before</em> the final answer. The simplest form is <span class="term">zero-shot CoT</span>: just add “Let’s think step by step.” The stronger form is <span class="term">few-shot CoT</span>: show a couple of examples that include worked reasoning, so the model imitates that reasoning style on the new problem.</p>
   </div>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <figure class="diagram">
     <img src="../assets/diagrams/t2-cot-compare.svg" alt="Give the model room to think. Answer directly: the apple word problem produces '6' in one leap, which is wrong. Think step by step: the same problem with 'Let's think step by step' produces the worked steps (Start 3 apples; Eat 1 → 2; Buy 2 bags of 4 → 2+8=10; Give away half → 5; Answer 5) which is correct.">
@@ -65,6 +100,21 @@ final <span class="o">=</span> out.<span class="f">strip</span>().<span class="f
 <span class="f">print</span>(<span class="s">"parsed →"</span>, final)</code></pre>
     <p>$40 × 0.75 = $30, then × 1.08 = <strong>$32.40</strong>. The reasoning makes the model far more likely to get there, and the “Final:” convention lets your code use the answer without the prose. This “reason in a scratchpad, then emit a clean answer” pattern is everywhere in production.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Is chain-of-thought worth it for 80,000 refund decisions a day?</div>
+    <p>Assume an e-commerce firm checks <strong>80,000 refund claims a day</strong> against multi-condition rules. Prices: Claude Sonnet 5.5, $10 per million output tokens (<a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic models overview</a>). Accuracy figures are assumptions you would measure on a labelled set.</p>
+<ol>
+<li><strong>Direct answer.</strong> About 5 output tokens per claim: 80,000 x 5 = 400,000 tokens = <strong>$4/day</strong>. Suppose a 500-claim eval shows <strong>82%</strong> correct.</li>
+<li><strong>Chain-of-thought.</strong> About 250 output tokens per claim: 80,000 x 250 = 20M tokens = <strong>$200/day</strong>. Suppose the eval shows <strong>94%</strong> correct.</li>
+<li><strong>Count the errors.</strong> Direct: 80,000 x 18% = 14,400 wrong decisions a day. CoT: 80,000 x 6% = 4,800. That is 9,600 fewer mistakes for $196 more, about 2 cents per avoided error. If a wrong refund decision costs even $1 in agent time or leakage, CoT wins easily.</li>
+<li><strong>Latency.</strong> At an assumed 60 tokens/second, 250 tokens is about 4 seconds versus near-instant. Fine for a back-office queue, maybe not for a live checkout.</li>
+<li><strong>Self-consistency.</strong> Sampling 5 chains and voting costs 5 x $200 = $1,000/day. Run it only on claims where the first chain's answer is near a rule boundary, say 10% of traffic, for about $100/day extra.</li>
+<li><strong>Do the arithmetic in code.</strong> Dates and amounts are computable. Let the model extract fields and pick which rule applies, and let Python do the date maths. That removes a whole class of reasoning slips for free.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box warn">
     <div class="box-label">Don’t over-trust the reasoning</div>
@@ -113,6 +163,22 @@ final <span class="o">=</span> out.<span class="f">strip</span>().<span class="f
         <div class="why">CoT helps regardless of temperature; it's about task type.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">You use self-consistency with 5 sampled chains but set temperature to 0 on a local model. Accuracy does not improve at all. Why?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Five chains are too few; you need at least 100.</span>
+        <div class="why">Gains usually show up with a handful of samples. The issue here is that the samples are identical.</div></li>
+      <li data-correct="false"><span class="opt">B) Self-consistency only works on reasoning models.</span>
+        <div class="why">It was introduced using standard models with chain-of-thought prompting.</div></li>
+      <li data-correct="true"><span class="opt">C) At temperature 0 all five chains are the same, so the vote has nothing to choose between; self-consistency needs diverse samples.</span>
+        <div class="why">Right. Voting only helps if the chains differ. Sample with temperature above 0 (for example 0.7) so different reasoning paths appear.</div></li>
+      <li data-correct="false"><span class="opt">D) The final answers must be in JSON for voting to work.</span>
+        <div class="why">You need a parseable final answer, not necessarily JSON. The problem is the lack of diversity.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -136,8 +202,85 @@ final <span class="o">=</span> out.<span class="f">strip</span>().<span class="f
     <p>The deeper lesson is about <em>faithfulness</em>. Research has shown a model’s stated reasoning doesn’t always reflect what actually drove its answer — it can rationalize. So treat CoT as two separate wins that usually but don’t always coincide: (1) it genuinely improves answers by giving the computation room to happen, and (2) it gives you a human-readable trace to inspect. Lean on (1) for accuracy, use (2) for debugging — but when stakes are high, close the loop with real verification: tools for anything computable, a second model or rules to check claims (Tracks 6–7), and self-consistency for judgment calls. That’s how you turn “sounds right” into “is right.”</p>
   </div>
 
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/12_self_consistency.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/12_self_consistency.py</code></pre>
+    <p><strong>What to look for:</strong> The lab samples 7 reasoning chains per problem from qwen2.5:7b on 5 word problems and majority-votes the first N. On our run accuracy was 4 of 5 at every N while tokens grew linearly, and on the clock-arithmetic problem the most common answer was wrong. With n=5 problems that is a demo of the mechanism, not an accuracy curve. Read the individual answers for that problem: neat-looking steps that reach a wrong number are the faithfulness warning from this lesson.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  P2 gold=215    answers=[265.0, None, 215.0, 195.0, 195.0, 215.0, 195.0]
+  P3 gold=17     answers=[17.0, 17.0, 17.0, 17.0, 17.0, 17.0, 17.0]
+  P4 gold=540    answers=[540.0, 5.0, 540.0, 540.0, 540.0, 540.0, 540.0]
+  P5 gold=676.5  answers=[676.5, 676.5, 676.5, 676.5, 676.5, 676.5, 676.5]
+2) Accuracy vs number of samples (majority vote over the first N)
+  N=1: accuracy 4/5 = 80% (95% CI 38%-96%)   ~196 output tokens per problem
+  N=3: accuracy 4/5 = 80% (95% CI 38%-96%)   ~588 output tokens per problem
+  N=5: accuracy 4/5 = 80% (95% CI 38%-96%)   ~980 output tokens per problem
+  N=7: accuracy 4/5 = 80% (95% CI 38%-96%)   ~1,373 output tokens per problem
+  With n=5 problems these intervals are far too wide to compare N values: treat this as a demo of the
+  mechanism (and of a vote going wrong), not a measured accuracy curve. Real curves need hundreds of problems.
+  Look: more samples cost tokens linearly; accuracy gains are bumpy and flatten out. A vote only helps
+  when the model is right more often than any single wrong answer. Measure the curve on YOUR task before
+  paying for N=7 (or for a reasoning model&#x27;s long thinking) in production.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/12_self_consistency.txt">labs/outputs</a>. Source: <a href="../labs/12_self_consistency.py">labs/12_self_consistency.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Write a CoT prompt for: 'A train leaves at 14:40 and the trip takes 2 h 35 min. When does it arrive?' with a parseable last line, and give the correct answer.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>'Work out the arrival time step by step. On the last line write exactly: Final: HH:MM.' Steps: 14:40 + 2 h = 16:40; 16:40 + 35 min = 17:15. Final: 17:15.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> A support bot uses CoT and sometimes shows its reasoning to customers, including lines like 'the customer is probably lying'. How do you keep the accuracy benefit without that risk?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Separate reasoning from the reply. Ask for reasoning inside a tag or field your code strips, and only show the final answer field, or use a model or API that keeps reasoning internal. Add an output check that blocks reasoning text from reaching the user. Also tell the model to phrase reasoning neutrally, since logs are read by staff too.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Turpin et al. (2023) showed CoT explanations can leave out the real cause of an answer, for example a bias planted in the few-shot examples. Design a small experiment to check whether your model's CoT is faithful on your task.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Take 100 cases. Create a biased variant of the prompt, for example every few-shot example's answer is option A. Run both prompts. If answers shift towards A in the biased version, read the explanations: if they rarely mention the examples' pattern as a reason, the CoT is not reporting what drove the answer. Report the shift rate and the share of explanations that mention the bias. The conclusion for production is to verify answers with checks rather than trusting explanations.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is chain-of-thought prompting and why does it help?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>It asks the model to write out intermediate reasoning steps before the final answer, either with a phrase like 'think step by step' or with examples that include worked steps. It helps because the model generates token by token: written steps become context, so the final answer can build on actual intermediate results instead of being guessed in one jump. It helps most on multi-step maths, logic and rule-checking, and adds little on simple lookups.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> When would you not use chain-of-thought?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>On simple single-step tasks like language detection, sentiment or field extraction, where it adds tokens and latency without improving accuracy. In tight latency budgets such as autocomplete. When the reasoning might leak to users and you cannot separate it. And with reasoning models that already think internally, where adding 'think step by step' is usually redundant. In every case, check on an eval rather than assuming.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> How do you make a multi-step LLM decision trustworthy in production?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Split it: the model extracts facts and picks rules, deterministic code computes anything computable. Use structured output for the decision and evidence fields. Where judgment is needed, sample several chains and vote, or have a second model check against the rules. Gate releases on an eval with labelled edge cases, and log each decision with its evidence for audit. Do not treat the chain-of-thought text as proof; it may not reflect the real cause of the answer. Send low-confidence or high-value cases to a human.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2201.11903" target="_blank" rel="noopener">Chain-of-Thought Prompting Elicits Reasoning in Large Language Models (Wei et al., 2022) — arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2205.11916" target="_blank" rel="noopener">Large Language Models are Zero-Shot Reasoners (Kojima et al., 2022) — arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2203.11171" target="_blank" rel="noopener">Self-Consistency Improves Chain of Thought Reasoning (Wang et al., 2022) — arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2305.04388" target="_blank" rel="noopener">Language Models Don't Always Say What They Think (Turpin et al., 2023) — arXiv</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
   <p>You can now shape the output and strengthen the reasoning. Next, we make outputs that software can actually consume: reliable <strong>structured output and JSON</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Let the model write its working first, because each written step is something the answer can lean on.</p>
+<!-- ease:line:end -->
 </main>
 
 <script>
@@ -177,5 +320,10 @@ final <span class="o">=</span> out.<span class="f">strip</span>().<span class="f
 </script>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

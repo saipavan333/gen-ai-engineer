@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 300" width="880" height="300" font-family="Inter, ui-sans-serif, Segoe UI, Roboto, DejaVu Sans, Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="g_plain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3f7fc"/></linearGradient>
+<linearGradient id="g_concept" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eff5ff"/><stop offset="1" stop-color="#dde9ff"/></linearGradient>
+<linearGradient id="g_example" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eefaf0"/><stop offset="1" stop-color="#d7f1de"/></linearGradient>
+<linearGradient id="g_key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6ea"/><stop offset="1" stop-color="#ffecca"/></linearGradient>
+<linearGradient id="g_warn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef1ef"/><stop offset="1" stop-color="#fde2dd"/></linearGradient>
+<linearGradient id="g_deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eafaf6"/><stop offset="1" stop-color="#d3f1ea"/></linearGradient>
+<marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+<rect x="0" y="0" width="880" height="300" fill="#ffffff"/>
+<text x="440.0" y="34" font-size="17" font-weight="bold" fill="#0f172a" text-anchor="middle">Databricks: Mosaic AI Vector Search + ai_query</text>
+<rect x="20.0" y="70" width="147.2" height="132" rx="12" fill="url(#g_plain)" stroke="#94a3b8" stroke-width="1.6"/>
+<text x="93.6" y="96" font-size="13.5" font-weight="bold" fill="#94a3b8" text-anchor="middle">Delta table</text>
+<text x="93.6" y="120" font-size="12.0" fill="#334155" text-anchor="middle">governed by</text>
+<text x="93.6" y="138" font-size="12.0" fill="#334155" text-anchor="middle">Unity Catalog</text>
+<line x1="170.2" y1="136.0" x2="190.2" y2="136.0" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+<rect x="193.2" y="70" width="147.2" height="132" rx="12" fill="url(#g_concept)" stroke="#4f46e5" stroke-width="1.6"/>
+<text x="266.8" y="96" font-size="11.0" font-weight="bold" fill="#4f46e5" text-anchor="middle">Vector Search index</text>
+<text x="266.8" y="120" font-size="12.0" fill="#334155" text-anchor="middle">built from the table</text>
+<text x="266.8" y="138" font-size="12.0" fill="#334155" text-anchor="middle">embeddings kept</text>
+<text x="266.8" y="156" font-size="12.0" fill="#334155" text-anchor="middle">in sync</text>
+<line x1="343.4" y1="136.0" x2="363.4" y2="136.0" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+<rect x="366.4" y="70" width="147.2" height="132" rx="12" fill="url(#g_deep)" stroke="#0f766e" stroke-width="1.6"/>
+<text x="440.0" y="96" font-size="13.5" font-weight="bold" fill="#0f766e" text-anchor="middle">vector_search()</text>
+<text x="440.0" y="120" font-size="11.5" font-family="ui-monospace, Consolas, monospace" fill="#334155" text-anchor="middle">query_text =&gt; ...</text>
+<text x="440.0" y="138" font-size="9.9" font-family="ui-monospace, Consolas, monospace" fill="#334155" text-anchor="middle">query_type =&gt; 'HYBRID'</text>
+<text x="440.0" y="156" font-size="11.5" font-family="ui-monospace, Consolas, monospace" fill="#334155" text-anchor="middle">num_results =&gt; 3</text>
+<line x1="516.6" y1="136.0" x2="536.6" y2="136.0" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+<rect x="539.6" y="70" width="147.2" height="132" rx="12" fill="url(#g_key)" stroke="#c2410c" stroke-width="1.6"/>
+<text x="613.2" y="96" font-size="13.5" font-weight="bold" fill="#c2410c" text-anchor="middle">ai_query()</text>
+<text x="613.2" y="120" font-size="12.0" fill="#334155" text-anchor="middle">endpoint, request</text>
+<text x="613.2" y="138" font-size="11.5" font-family="ui-monospace, Consolas, monospace" fill="#334155" text-anchor="middle">responseFormat</text>
+<text x="613.2" y="156" font-size="10.9" font-family="ui-monospace, Consolas, monospace" fill="#334155" text-anchor="middle">failOnError =&gt; false</text>
+<line x1="689.8" y1="136.0" x2="709.8" y2="136.0" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+<rect x="712.8" y="70" width="147.2" height="132" rx="12" fill="url(#g_example)" stroke="#15803d" stroke-width="1.6"/>
+<text x="786.4" y="96" font-size="13.5" font-weight="bold" fill="#15803d" text-anchor="middle">Result</text>
+<text x="786.4" y="120" font-size="12.0" fill="#334155" text-anchor="middle">answer + sources</text>
+<text x="786.4" y="138" font-size="12.0" fill="#334155" text-anchor="middle">trace + evaluate</text>
+<text x="786.4" y="156" font-size="12.0" fill="#334155" text-anchor="middle">with MLflow</text>
+<rect x="20" y="224" width="840" height="44" rx="10" fill="#f1f5f9" stroke="#cbd5e1"/>
+<text x="440.0" y="251" font-size="12.5" fill="#334155" text-anchor="middle">Needs your account: a workspace with Foundation Model APIs and a serverless or pro SQL warehouse (vector_search is not on classic warehouses).</text>
+</svg>

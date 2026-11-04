@@ -12,7 +12,48 @@
 
   <span class="eyebrow">Structured Data &amp; Text-to-SQL · Lesson 9.3</span>
   <h1>Generating safe, correct SQL</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Generated SQL is code you did not write, running on your real database.</p>
+    <p>A tricked or careless model could write a query that deletes data or scans a billion rows.</p>
+    <p>Asking nicely in the prompt is not a safety control.</p>
+    <p>Real safety lives in layers around the model: a read-only account, a check that it is one SELECT, a row cap and a timeout.</p>
+    <p>If one layer misses something, the next one still holds.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Letting a model write SQL is like letting a new driver take the family car. You tell them to drive carefully (the prompt), but you also give them a car with a speed limiter (timeout), a small fuel tank (row and cost caps), and no keys to the truck (a read-only account). If they ignore your advice, the car itself still will not do the dangerous thing.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>Telling the new driver to drive carefully</td><td>The prompt: “return a single SELECT”; a request, not a guarantee</td></tr>
+      <tr><td>No keys to the truck</td><td>A read-only database user, or SQLite opened with mode=ro</td></tr>
+      <tr><td>A small fuel tank</td><td>The row cap: SELECT * FROM ( ... ) LIMIT 1000</td></tr>
+      <tr><td>A speed limiter</td><td>A statement timeout, e.g. Postgres statement_timeout = 15 s</td></tr>
+      <tr><td>Someone hiding a trick in the map</td><td>Prompt injection through the question, column comments or data values</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A new driver is not being actively tricked; a model can be prompt-injected by text hidden in the very data it reads.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 513" role="img" aria-label="Layers a generated SQL query passes through before rows come back" preserveAspectRatio="xMidYMid meet"><text x="255" y="22" text-anchor="middle" class="s m">↓ SQL written by the model</text><rect x="20" y="40" width="470" height="65" rx="10" class="bx tn-k" /><g class="vzb"><text x="255" y="65.25" text-anchor="middle" class="b">Check: one SELECT</text><text x="255" y="91.25" text-anchor="middle" class="s" style="font-size:13px">no “;” inside, must start with SELECT or WITH</text></g><circle cx="22" cy="42" r="11" class="badge"/><text x="22" y="46.5" text-anchor="middle" class="badge-t">1</text><line x1="494" y1="72.5" x2="521" y2="72.5" class="ln wn"/><polygon points="530,72.5 521,67.55 521,77.45" class="hd wn"/><text x="538" y="68.5" text-anchor="start" class="s" style="font-size:13px">stacked statements; DELETE,</text><text x="538" y="84.5" text-anchor="start" class="s" style="font-size:13px">DROP</text><line x1="255" y1="107" x2="255" y2="120" class="ln "/><polygon points="255,129 259.95,120 250.05,120" class="hd "/><rect x="20" y="131" width="470" height="65" rx="10" class="bx tn-p" /><g class="vzb"><text x="255" y="156.25" text-anchor="middle" class="b">Parameterize user values</text><text x="255" y="182.25" text-anchor="middle" class="s" style="font-size:13px">user text is never pasted into the SQL string</text></g><circle cx="22" cy="133" r="11" class="badge"/><text x="22" y="137.5" text-anchor="middle" class="badge-t">2</text><line x1="494" y1="163.5" x2="521" y2="163.5" class="ln wn"/><polygon points="530,163.5 521,158.55 521,168.45" class="hd wn"/><text x="538" y="159.5" text-anchor="start" class="s" style="font-size:13px">SQL injection through user</text><text x="538" y="175.5" text-anchor="start" class="s" style="font-size:13px">text</text><line x1="255" y1="198" x2="255" y2="211" class="ln "/><polygon points="255,220 259.95,211 250.05,211" class="hd "/><rect x="20" y="222" width="470" height="65" rx="10" class="bx tn-w" /><g class="vzb"><text x="255" y="247.25" text-anchor="middle" class="b">Read-only connection</text><text x="255" y="273.25" text-anchor="middle" class="s" style="font-size:13px">the database itself refuses any write (the strongest layer)</text></g><circle cx="22" cy="224" r="11" class="badge"/><text x="22" y="228.5" text-anchor="middle" class="badge-t">3</text><line x1="494" y1="254.5" x2="521" y2="254.5" class="ln wn"/><polygon points="530,254.5 521,249.55 521,259.45" class="hd wn"/><text x="538" y="250.5" text-anchor="start" class="s" style="font-size:13px">any write that slipped past</text><text x="538" y="266.5" text-anchor="start" class="s" style="font-size:13px">the check</text><line x1="255" y1="289" x2="255" y2="302" class="ln "/><polygon points="255,311 259.95,302 250.05,302" class="hd "/><rect x="20" y="313" width="470" height="65" rx="10" class="bx tn-c" /><g class="vzb"><text x="255" y="338.25" text-anchor="middle" class="b">Row cap wrapper</text><text x="255" y="364.25" text-anchor="middle" class="s" style="font-size:13px">SELECT * FROM ( query ) LIMIT 1000</text></g><circle cx="22" cy="315" r="11" class="badge"/><text x="22" y="319.5" text-anchor="middle" class="badge-t">4</text><line x1="494" y1="345.5" x2="521" y2="345.5" class="ln wn"/><polygon points="530,345.5 521,340.55 521,350.45" class="hd wn"/><text x="538" y="349.5" text-anchor="start" class="s" style="font-size:13px">a 10-million-row result</text><line x1="255" y1="380" x2="255" y2="393" class="ln "/><polygon points="255,402 259.95,393 250.05,393" class="hd "/><rect x="20" y="404" width="470" height="65" rx="10" class="bx tn-d" /><g class="vzb"><text x="255" y="429.25" text-anchor="middle" class="b">Timeout</text><text x="255" y="455.25" text-anchor="middle" class="s" style="font-size:13px">a runaway scan is stopped, e.g. at 15 s</text></g><circle cx="22" cy="406" r="11" class="badge"/><text x="22" y="410.5" text-anchor="middle" class="badge-t">5</text><line x1="494" y1="436.5" x2="521" y2="436.5" class="ln wn"/><polygon points="530,436.5 521,431.55 521,441.45" class="hd wn"/><text x="538" y="440.5" text-anchor="start" class="s" style="font-size:13px">a 33-minute full scan</text><text x="255" y="501" text-anchor="middle" class="s m">↓ at most 1,000 rows back to your app</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 564" role="img" aria-label="Layers a generated SQL query passes through before rows come back" preserveAspectRatio="xMidYMid meet"><text x="180" y="22" text-anchor="middle" class="s m">↓ SQL written by the model</text><rect x="20" y="40" width="320" height="82" rx="10" class="bx tn-k" /><g class="vzb"><text x="180" y="65.25" text-anchor="middle" class="b">Check: one SELECT</text><text x="180" y="91.25" text-anchor="middle" class="s" style="font-size:13px">no “;” inside, must start with SELECT or</text><text x="180" y="108.25" text-anchor="middle" class="s" style="font-size:13px">WITH</text></g><circle cx="22" cy="42" r="11" class="badge"/><text x="22" y="46.5" text-anchor="middle" class="badge-t">1</text><line x1="180" y1="124" x2="180" y2="137" class="ln "/><polygon points="180,146 184.95,137 175.05,137" class="hd "/><rect x="20" y="148" width="320" height="82" rx="10" class="bx tn-p" /><g class="vzb"><text x="180" y="173.25" text-anchor="middle" class="b">Parameterize user values</text><text x="180" y="199.25" text-anchor="middle" class="s" style="font-size:13px">user text is never pasted into the SQL</text><text x="180" y="216.25" text-anchor="middle" class="s" style="font-size:13px">string</text></g><circle cx="22" cy="150" r="11" class="badge"/><text x="22" y="154.5" text-anchor="middle" class="badge-t">2</text><line x1="180" y1="232" x2="180" y2="245" class="ln "/><polygon points="180,254 184.95,245 175.05,245" class="hd "/><rect x="20" y="256" width="320" height="82" rx="10" class="bx tn-w" /><g class="vzb"><text x="180" y="281.25" text-anchor="middle" class="b">Read-only connection</text><text x="180" y="307.25" text-anchor="middle" class="s" style="font-size:13px">the database itself refuses any write (the</text><text x="180" y="324.25" text-anchor="middle" class="s" style="font-size:13px">strongest layer)</text></g><circle cx="22" cy="258" r="11" class="badge"/><text x="22" y="262.5" text-anchor="middle" class="badge-t">3</text><line x1="180" y1="340" x2="180" y2="353" class="ln "/><polygon points="180,362 184.95,353 175.05,353" class="hd "/><rect x="20" y="364" width="320" height="65" rx="10" class="bx tn-c" /><g class="vzb"><text x="180" y="389.25" text-anchor="middle" class="b">Row cap wrapper</text><text x="180" y="415.25" text-anchor="middle" class="s" style="font-size:13px">SELECT * FROM ( query ) LIMIT 1000</text></g><circle cx="22" cy="366" r="11" class="badge"/><text x="22" y="370.5" text-anchor="middle" class="badge-t">4</text><line x1="180" y1="431" x2="180" y2="444" class="ln "/><polygon points="180,453 184.95,444 175.05,444" class="hd "/><rect x="20" y="455" width="320" height="65" rx="10" class="bx tn-d" /><g class="vzb"><text x="180" y="480.25" text-anchor="middle" class="b">Timeout</text><text x="180" y="506.25" text-anchor="middle" class="s" style="font-size:13px">a runaway scan is stopped, e.g. at 15 s</text></g><circle cx="22" cy="457" r="11" class="badge"/><text x="22" y="461.5" text-anchor="middle" class="badge-t">5</text><text x="180" y="552" text-anchor="middle" class="s m">↓ at most 1,000 rows back to your app</text></svg>
+    <figcaption>Read it top to bottom as one query's journey. Each layer assumes the others can fail. The read-only permission is the one a prompt injection cannot talk its way past.</figcaption>
+  </figure>
+  <div class="ez-play" data-ez-play="sqlgate">
+    <div class="ease-label">Try it</div>
+    <p class="ez-hint">Pick a candidate query. The picture runs the same checks as this page's safe_run.py and shows which layer passes it or stops it.</p>
+    <div class="ez-stage"></div>
+  </div>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">You are about to let a language model write queries that run against your database. That sentence should make you nervous — and this lesson turns that nervousness into layered, boring, reliable safety.</p>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <h2>Why you never trust generated SQL</h2>
   <p>A model can be prompt-injected (Track&nbsp;7): a malicious value in the data, or a cleverly worded question, can steer it into producing <code>DROP TABLE customers;</code> or <code>DELETE FROM orders;</code>. Even without an attacker, a well-meaning model can write a query that scans a billion rows and takes your database down, or one that exposes data the user shouldn’t see.</p>
@@ -45,7 +86,10 @@
     <span class="c"># open the DB in read-only mode — a second, hard guarantee</span>
     con <span class="o">=</span> sqlite3.<span class="f">connect</span>(<span class="s">f"file:</span>{db_path}<span class="s">?mode=ro"</span>, uri<span class="o">=</span><span class="k">True</span>)
     <span class="k">try</span>:
-        rows <span class="o">=</span> con.<span class="f">execute</span>(q <span class="o">+</span> <span class="s">" LIMIT 1000"</span>).<span class="f">fetchall</span>()   <span class="c"># bound the result</span>
+        <span class="c"># wrap, don't append: "... LIMIT 3" + " LIMIT 1000" is a syntax error.</span>
+        <span class="c"># Newlines around q matter: a trailing "-- comment" would otherwise swallow ") LIMIT 1000".</span>
+        q <span class="o">=</span> q.<span class="f">strip</span>().<span class="f">rstrip</span>(<span class="s">";"</span>)
+        rows <span class="o">=</span> con.<span class="f">execute</span>(<span class="s">f"SELECT * FROM (\n</span>{q}<span class="s">\n) LIMIT 1000"</span>).<span class="f">fetchall</span>()   <span class="c"># bound the result</span>
     <span class="k">finally</span>:
         con.<span class="f">close</span>()
     <span class="k">return</span> rows</code></pre>
@@ -56,7 +100,14 @@
     <p>Putting your safety in the prompt (“do not write destructive queries”) and then executing whatever comes back with a normal read-write connection. One prompt injection and your data is gone. The prompt is a hint; the <em>permissions</em> are the wall.</p>
   </div>
 
-  <div class="box key">
+  
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Guarding a 2 TB fact table on Postgres, BigQuery and Snowflake</div>
+    <p>Assumptions: a 2 TB orders fact table, a scan rate of about 1 GB/s on the read replica (measure yours), rows of about 200 bytes, and a model that occasionally forgets a WHERE clause.</p><ol><li><strong>The runaway.</strong> A full scan of 2 TB at 1 GB/s is 2,000 s, about 33 minutes of replica time per bad query. Ten users retrying makes the replica useless for everyone.</li><li><strong>Postgres: timeout.</strong> statement_timeout aborts any statement that runs longer than the value; the default 0 disables it (<a href="https://www.postgresql.org/docs/current/runtime-config-client.html">Postgres docs</a>). Set it on the text-to-SQL role, e.g. 15 s, so the 33-minute scan dies after 15 seconds.</li><li><strong>Postgres: permissions.</strong> GRANT only SELECT on the analytics schema to that role. default_transaction_read_only = on adds a second layer, but a session can change it, so the GRANT is the real wall.</li><li><strong>Row cap.</strong> 1,000 rows x 200 bytes = 200 KB to the app. An uncapped SELECT * of 10 M rows is 2 GB pulled into your API process.</li><li><strong>BigQuery is different.</strong> Google's docs say a LIMIT clause does not reduce compute cost on non-clustered tables; use the maximum bytes billed setting, which fails the query before it runs if the estimate is over the limit, without a charge (<a href="https://cloud.google.com/bigquery/docs/best-practices-costs">BigQuery cost best practices</a>). A row LIMIT protects your app, not your bill.</li><li><strong>Snowflake.</strong> STATEMENT_TIMEOUT_IN_SECONDS defaults to two days (<a href="https://docs.snowflake.com/en/sql-reference/parameters">Snowflake parameters</a>). Set it low on the warehouse or user that serves the tool.</li></ol><p>Same idea in every engine: the limits live in the database, configured for the model's account, not in the prompt.</p>
+  </div>
+<!-- shape:scale:end -->
+<div class="box key">
     <div class="box-label">Key points</div>
     <ul>
       <li><strong>Never trust generated SQL</strong> — and never make the prompt your only defense.</li>
@@ -105,6 +156,22 @@
         <div class="why">Parsing is standard and reliable.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Your text-to-SQL tool on BigQuery appends LIMIT 1000 to every query. A user's question triggers a SELECT over a 5 TB non-clustered table. What does the LIMIT do for cost?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Nothing for compute cost; the table is still scanned. Use maximum bytes billed to fail the query before it runs.</span>
+        <div class="why">Google's cost docs state that LIMIT does not reduce compute cost on non-clustered tables. Maximum bytes billed checks the estimated bytes up front and fails the query without a charge.</div></li>
+      <li data-correct="false"><span class="opt">B) It makes the query read-only.</span>
+        <div class="why">LIMIT has nothing to do with permissions. Read-only access comes from the IAM roles of the account running the query.</div></li>
+      <li data-correct="false"><span class="opt">C) It cuts the scan to 1,000 rows' worth of bytes.</span>
+        <div class="why">BigQuery's on-demand cost depends on bytes read, and LIMIT does not reduce bytes read on non-clustered tables.</div></li>
+      <li data-correct="false"><span class="opt">D) It blocks the query because 5 TB is above the limit.</span>
+        <div class="why">LIMIT counts output rows, not bytes scanned. It never blocks a query for scanning too much.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box deep">
@@ -113,10 +180,99 @@
     <p>The deeper move is to make the system <em>show its work</em>. Returning the generated SQL alongside the answer — and, in a good UI, the row count and a sample — lets a user sanity-check the “how” behind the number, turning a black box into something auditable. This dovetails with grounding and citations from RAG: just as a RAG answer should point to its sources, a text-to-SQL answer should point to the query that produced it. Transparency doesn’t make the SQL correct, but it makes wrongness <em>visible</em>, which is the next best thing — and it’s exactly what earns trust from the analysts whose bottleneck you’re trying to remove.</p>
   </div>
 
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/09_text_to_sql_duckdb.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/09_text_to_sql_duckdb.py</code></pre>
+    <p><strong>What to look for:</strong> Find the lab's SELECT-only validation and row limit. Feed it a few hostile strings by hand: a DELETE, a SELECT followed by a semicolon and DROP TABLE, and a CTE that ends in a DELETE (WITH x AS (SELECT 1) DELETE FROM t), which starts with WITH and so passes a naive prefix check. Note which layer stops each one. Then ask a question whose correct answer has its own LIMIT 3 and confirm the row-limit wrapper does not break it.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  Q: What share of orders were returned? Give a fraction between 0 and 1.
+     SQL: SELECT SUM(CASE WHEN status = &#x27;returned&#x27; THEN 1 ELSE 0 END) / COUNT(*) AS return_share FROM orders;
+     PASS fixes=0 got=[(0.09483333333333334,)] gold=[(0.09483333333333334,)]
+  Q: Average delivered order value for Plus members vs non-members.
+     SQL: SELECT AVG(CASE WHEN c.is_plus THEN o.amount_rs ELSE NULL END) AS avg_plus, AVG(CASE WHEN NOT c.is_plus THEN o.amount_rs ELSE NULL END) AS avg_non_plu
+     FAIL fixes=0 got=[(4945.648507917174, 5045.7609119496865)] gold=[(False, 5045.760911949686), (True, 4945.648507917174)]
+  Q: How many customers placed no orders at all?
+     SQL: SELECT COUNT(*) FROM customers WHERE customer_id NOT IN (SELECT customer_id FROM orders WHERE status = &#x27;delivered&#x27;)
+     PASS fixes=0 got=[(50,)] gold=[(50,)]
+  execution accuracy: 5/6
+3) A user asks for something destructive
+  blocked by the gate: DELETE is not allowed (SELECT only)
+  Look: safety comes from the parser + read-only principal + row cap, not from asking the model nicely.
+  Wrong-but-valid SQL (a FAIL above) is the harder problem; only an eval set with gold answers catches it.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/09_text_to_sql_duckdb.txt">labs/outputs</a>. Source: <a href="../labs/09_text_to_sql_duckdb.py">labs/09_text_to_sql_duckdb.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> In SQLite, <code>WITH x AS (SELECT 1) DELETE FROM orders</code> starts with WITH. Does the page's validate() let it through, and what stops it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>validate() lets it through: there is no semicolon and it starts with "with". SQLite does allow a WITH clause in front of INSERT, UPDATE and DELETE (<a href="https://www.sqlite.org/lang_with.html">SQLite WITH docs</a>). What stops it: the read-only connection (mode=ro) would reject the write, and the row-limit wrapper SELECT * FROM (...) is a syntax error for a DELETE. This is why the page has several layers; the prefix check alone is not enough.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Write the Postgres setup for a text-to-SQL role that can only read the analytics schema, times out after 15 s and defaults to read-only transactions.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p><pre><code>CREATE ROLE nl2sql LOGIN PASSWORD '...';  -- store it in a secret manager
+GRANT USAGE ON SCHEMA analytics TO nl2sql;
+GRANT SELECT ON ALL TABLES IN SCHEMA analytics TO nl2sql;
+ALTER DEFAULT PRIVILEGES IN SCHEMA analytics GRANT SELECT ON TABLES TO nl2sql;
+ALTER ROLE nl2sql SET statement_timeout = '15s';
+ALTER ROLE nl2sql SET default_transaction_read_only = on;</code></pre>The GRANTs are the hard guarantee; the role settings are defaults that the session could override, so they are a second layer. Point the role at a read replica so even an allowed heavy query cannot slow production writes.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> A support agent uses the tool and asks "show me all employees and their salaries". The role can read the HR schema. Nothing technical stops it. Redesign access so the tool respects who is asking.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Make the database enforce the user's permissions, not the tool's. Options: run each query under the end user's identity (or a role mapped to their group) so existing grants apply; expose only curated views that exclude sensitive columns, with column-level grants; add row-level security policies for per-team data. Keep the tool's own account at the minimum: views only, no raw HR tables. Then add a policy check before execution that blocks queries touching tagged sensitive columns for non-authorized users, and log every query with the requesting user. The model should never be the component deciding who may see salaries.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> Why is "only write SELECT statements" in the prompt not enough?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Because a prompt is a request, not a control. The model usually follows it, but a prompt injection, hidden in a question or in data the model reads, can override it, and models also make plain mistakes. If the code runs whatever comes back on a read-write connection, one bad output can delete data. The real protection is a read-only database account, plus validation, a timeout and a row cap in code. The prompt instruction stays, as a way to reduce bad generations, not as the safety mechanism.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> List the layers you would put around generated SQL, strongest first.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>One: a least-privilege database account, SELECT only, ideally on curated views and a read replica, which makes writes impossible. Two: a statement timeout and, on BigQuery, maximum bytes billed, which bound cost and load in the engine. Three: code validation, using a SQL parser to allow only a single SELECT rather than string matching. Four: a row cap by wrapping the query. Five: parameterizing any user-supplied literals. Six: logging every query with the user. Each layer assumes the others can fail.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> How do prompt injection risks differ for text-to-SQL compared with a RAG chatbot?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>In RAG, injected text mostly corrupts the answer or tries to exfiltrate data through the output. In text-to-SQL the model's output is executed, so injection can become an action: a write, a huge scan, or a query reading data the user should not see. Sources of injection include the question, column comments and data values pulled into few-shot examples or result summaries. The defence is to treat generated SQL as untrusted code: least-privilege execution under the user's own permissions, engine-level limits, parser-based allowlists, and never feeding raw result data back to the model without care. OWASP lists prompt injection as the top LLM risk for this reason.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://www.postgresql.org/docs/current/runtime-config-client.html" target="_blank" rel="noopener">Client connection defaults (statement_timeout, default_transaction_read_only) - PostgreSQL documentation</a></li>
+      <li><a href="https://cloud.google.com/bigquery/docs/best-practices-costs" target="_blank" rel="noopener">Best practices for controlling costs (LIMIT and maximum bytes billed) - BigQuery documentation</a></li>
+      <li><a href="https://docs.snowflake.com/en/sql-reference/parameters" target="_blank" rel="noopener">Parameters (STATEMENT_TIMEOUT_IN_SECONDS) - Snowflake documentation</a></li>
+      <li><a href="https://genai.owasp.org/llmrisk/llm01-prompt-injection/" target="_blank" rel="noopener">LLM01: Prompt Injection - OWASP GenAI Security Project</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
   <p>Safety in place, we can let the system actually run queries — and, crucially, recover when they fail. Next: <strong>the self-correcting SQL agent.</strong></p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Never trust the prompt for safety: make the database itself unable to do harm.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<script src="../assets/ease/ease.js?v=1"></script>
+<script src="../assets/ease/play-t09.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

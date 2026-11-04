@@ -12,6 +12,42 @@
 
   <span class="eyebrow">Track 3 · Lesson 3.6</span>
   <h1>Hybrid search</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Dense search compares meaning using embeddings, so it finds “cancel my plan” when you type “stop paying”.</p>
+    <p>Sparse search compares exact words; the classic method is called BM25.</p>
+    <p>Dense search blurs exact codes like E-417, while BM25 misses paraphrases.</p>
+    <p>Hybrid search runs both and merges the two ranked lists into one.</p>
+    <p>A common merge rule, Reciprocal Rank Fusion (RRF), adds up rank positions instead of raw scores.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Two friends help you find a song. One remembers lyrics exactly but only if you say the precise words. The other understands "that sad song about a long drive" but mixes up titles. Ask both and combine their lists, and you find almost anything. RRF is the rule "a song both friends put near the top wins".</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The friend who understands vague hums</td><td>Dense retrieval: embeddings and cosine similarity</td></tr>
+      <tr><td>The friend who knows lyrics word for word</td><td>Sparse retrieval: BM25 keyword scoring</td></tr>
+      <tr><td>Combining their two lists</td><td>Fusion: RRF or a weighted mix of scores</td></tr>
+      <tr><td>“A song both put near the top wins”</td><td>RRF: sum of 1 / (60 + rank) over the lists</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> Friends can talk to each other and agree; RRF just adds up positions and never knows why either list ranked something.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 336" role="img" aria-label="Reciprocal rank fusion combines a dense and a BM25 ranking by rank" preserveAspectRatio="xMidYMid meet"><text x="20" y="20" text-anchor="start" class="b">Two ranked lists for one query</text><rect x="20" y="34" width="350" height="122" rx="10" class="bx tn-c" /><text x="30" y="56" text-anchor="start" class="s b">Dense (meaning)</text><text x="30" y="80" text-anchor="start" class="s">rank 1: chunk A</text><text x="30" y="106" text-anchor="start" class="s">rank 2: chunk B</text><text x="30" y="132" text-anchor="start" class="s">rank 30: chunk C</text><line x1="195" y1="158" x2="341.186" y2="188.18" class="ln ac"/><polygon points="350,190 342.187,183.333 340.185,193.028" class="hd ac"/><rect x="390" y="34" width="350" height="122" rx="10" class="bx tn-k" /><text x="400" y="56" text-anchor="start" class="s b">BM25 (exact words)</text><text x="400" y="80" text-anchor="start" class="s">rank 1: chunk C</text><text x="400" y="106" text-anchor="start" class="s">rank 4: chunk A</text><text x="400" y="132" text-anchor="start" class="s m">chunk B: not in its top 100</text><line x1="565" y1="158" x2="418.814" y2="188.18" class="ln ac"/><polygon points="410,190 419.815,193.028 417.813,183.333" class="hd ac"/><rect x="20" y="194" width="720" height="134" rx="10" class="bx tn-g" /><text x="30" y="216" text-anchor="start" class="s b">Fused by RRF: score = sum of 1 / (60 + rank) over the lists</text><text x="30" y="242" text-anchor="start" class="s">1. chunk A = 1/61 + 1/64 = 0.0320</text><text x="730" y="242" text-anchor="end" class="s m">on topic, shares some words</text><text x="30" y="272" text-anchor="start" class="s">2. chunk C = 1/90 + 1/61 = 0.0275</text><text x="730" y="272" text-anchor="end" class="s m">contains the exact error code</text><text x="30" y="302" text-anchor="start" class="s">3. chunk B = 1/62 = 0.0161</text><text x="730" y="302" text-anchor="end" class="s m">a close paraphrase</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 384" role="img" aria-label="Reciprocal rank fusion combines a dense and a BM25 ranking by rank" preserveAspectRatio="xMidYMid meet"><text x="12" y="20" text-anchor="start" class="b">Two ranked lists for one query</text><rect x="12" y="34" width="158" height="122" rx="10" class="bx tn-c" /><text x="22" y="56" text-anchor="start" class="s b">Dense (meaning)</text><text x="22" y="80" text-anchor="start" class="s">rank 1: chunk A</text><text x="22" y="106" text-anchor="start" class="s">rank 2: chunk B</text><text x="22" y="132" text-anchor="start" class="s">rank 30: chunk C</text><line x1="91" y1="158" x2="142.089" y2="185.709" class="ln ac"/><polygon points="150,190 144.449,181.358 139.729,190.06" class="hd ac"/><rect x="190" y="34" width="158" height="122" rx="10" class="bx tn-k" /><text x="200" y="56" text-anchor="start" class="s b">BM25 (exact words)</text><text x="200" y="80" text-anchor="start" class="s">rank 1: chunk C</text><text x="200" y="106" text-anchor="start" class="s">rank 4: chunk A</text><text x="200" y="132" text-anchor="start" class="s m">B: not in top 100</text><line x1="269" y1="158" x2="217.911" y2="185.709" class="ln ac"/><polygon points="210,190 220.271,190.06 215.551,181.358" class="hd ac"/><rect x="12" y="194" width="336" height="182" rx="10" class="bx tn-g" /><text x="22" y="216" text-anchor="start" class="s b">RRF: sum of 1 / (60 + rank)</text><text x="22" y="240" text-anchor="start" class="s">1. chunk A = 1/61 + 1/64 = 0.0320</text><text x="36" y="258" text-anchor="start" class="s m">(on topic, shares some words)</text><text x="22" y="286" text-anchor="start" class="s">2. chunk C = 1/90 + 1/61 = 0.0275</text><text x="36" y="304" text-anchor="start" class="s m">(contains the exact error code)</text><text x="22" y="332" text-anchor="start" class="s">3. chunk B = 1/62 = 0.0161</text><text x="36" y="350" text-anchor="start" class="s m">(a close paraphrase)</text></svg>
+    <figcaption>The lesson's three chunks, computed with k = 60. Fused order: A, C, B. Chunk C, which only BM25 ranked first, jumps above B, which only dense liked.</figcaption>
+  </figure>
+  <div class="ez-play" data-ez-play="hybrid">
+    <div class="ease-label">Try it</div>
+    <p class="ez-hint">Pick a query and slide alpha from all-BM25 (0) to all-dense (1). Try to find one alpha that ranks the right chunk first for both queries. RRF gets both right with no weight to tune.</p>
+    <div class="ez-stage"></div>
+  </div>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">Semantic search has a blind spot: exact strings. Product codes, names, error IDs, rare jargon — embeddings blur them together. Keyword search nails them but misses paraphrases. Hybrid search runs both and fuses the results, so you stop choosing between meaning and precision.</p>
 
   <h2>Why one kind of search isn’t enough</h2>
@@ -21,6 +57,10 @@
     <div class="box-label">Concept</div>
     <p><span class="term">Dense retrieval</span> uses embedding vectors and cosine similarity (semantic match). <span class="term">Sparse retrieval</span> uses keyword statistics — the classic algorithm is <span class="term">BM25</span>, which scores documents by how many query terms they contain, weighted by how rare and frequent those terms are. <span class="term">Hybrid search</span> runs both retrievers and <span class="term">fuses</span> their rankings into one list. A popular, robust fusion method is <span class="term">Reciprocal Rank Fusion</span> (RRF), which combines results by their <em>ranks</em> rather than their (incomparable) raw scores.</p>
   </div>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <figure class="diagram">
     <img src="../assets/diagrams/t3-hybrid.svg" alt="Hybrid search: a Query goes to both Dense/semantic search (embeddings, catches synonyms) and Sparse/keyword search (BM25, catches exact terms and IDs). Both feed into Fuse scores, which produces the Results. Dense finds 'cancel my plan' equals 'stop subscription'; sparse nails 'error E-417'. Together: both.">
@@ -69,6 +109,13 @@ bm25 <span class="o">=</span> <span class="f">BM25Okapi</span>([c.<span class="f
     <span class="k">return</span> [chunks[i] <span class="k">for</span> i <span class="k">in</span> fused[:top]]</code></pre>
     <p>RRF is the workhorse because it needs no score calibration — dense cosines (0–1) and BM25 scores (unbounded) aren’t comparable, but their <em>ranks</em> always are. Add a reranker (Lesson 3.5) on top of the fused list for the strongest pipeline.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Fusing BM25 and dense results for 4 M developer-docs chunks</div>
+    <p>Assumptions: 4 M chunks of API docs, a large share of queries containing identifiers like <code>ERR_2043</code> or <code>useEffect</code>, dense ANN p95 = 12 ms, BM25 p95 = 8 ms, top 100 from each.</p><ol><li><strong>Run both in parallel.</strong> Wall-clock is the slower of the two, 12 ms, not 20 ms. Fusion over at most 200 ids is microseconds.</li><li><strong>RRF with k = 60, ranks starting at 1</strong> (the form in Cormack et al., 2009). Three chunks:<ul><li>A: dense rank 1, BM25 rank 4. Score = 1/61 + 1/64 = 0.016393 + 0.015625 = 0.032018.</li><li>B: dense rank 2, not in BM25's top 100. Score = 1/62 = 0.016129.</li><li>C: BM25 rank 1 (exact error code match), dense rank 30. Score = 1/61 + 1/90 = 0.016393 + 0.011111 = 0.027504.</li></ul>Fused order: A, C, B. The exact-code chunk C jumps above B, which only dense liked.</li><li><strong>Why not add raw scores?</strong> Suppose A's cosine is 0.82 and BM25 gives C a score of 17.4. Adding them lets BM25's unbounded scale drown cosine completely. Ranks are comparable; raw scores are not.</li><li><strong>What k does.</strong> With k = 60, rank 1 scores 1/61 and rank 10 scores 1/70, only 13% less, so being in both lists matters more than being first in one. A small k such as 5 makes rank 1 (1/6) worth 2.5 times rank 10 (1/15), trusting each list's top more.</li><li><strong>Then rerank.</strong> Send the fused top 50 to the cross-encoder from Lesson 3.5 and keep 5.</li></ol><p>(The page's code counts ranks from 0, so its scores are 1/60, 1/61, ...; the ordering effect is negligible.)</p>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -107,6 +154,22 @@ bm25 <span class="o">=</span> <span class="f">BM25Okapi</span>([c.<span class="f
         <div class="why">It returns results — just poor ones for exact codes.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">With RRF (k = 60, ranks from 1), chunk X is rank 1 in BM25 only. Chunk Y is rank 5 in both dense and BM25. Which ranks higher after fusion?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) You cannot tell without the raw BM25 and cosine scores.</span>
+        <div class="why">That is the point of RRF: it needs only ranks, so raw scores are not required.</div></li>
+      <li data-correct="true"><span class="opt">B) Y: 1/65 + 1/65 = 0.0308 beats X's 1/61 = 0.0164.</span>
+        <div class="why">RRF rewards agreement. Being fairly high in both lists beats being first in one, which is exactly why it is robust when one retriever is fooled.</div></li>
+      <li data-correct="false"><span class="opt">C) They tie, because RRF ignores ranks.</span>
+        <div class="why">RRF uses only ranks; it ignores raw scores. The ranks give different totals here.</div></li>
+      <li data-correct="false"><span class="opt">D) X, because rank 1 always wins.</span>
+        <div class="why">Rank 1 in one list gives 1/61. Two appearances at rank 5 give almost twice that.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -130,8 +193,84 @@ bm25 <span class="o">=</span> <span class="f">BM25Okapi</span>([c.<span class="f
     <p>Two cautions. Fusion can’t rescue content that <em>neither</em> retriever finds — if the right chunk is missing from both candidate sets (bad chunking, wrong embedding model), hybrid won’t conjure it; you’re back to recall fundamentals. And more retrievers means more moving parts to tune and monitor; add hybrid because your evaluation shows a real gap on identifier or mixed queries, not because it sounds sophisticated. As always in RAG, let measurement — not vibes — decide which knobs you turn.</p>
   </div>
 
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/03_rag_local.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/03_rag_local.py</code></pre>
+    <p><strong>What to look for:</strong> Section 4 runs dense, hand-rolled BM25 and RRF hybrid on 20 gold queries and prints where the right document lands in each top 3, plus hit@3 with 95% intervals. On our run with n=20: dense 20/20, BM25 18/20 and hybrid 18/20. The 95% intervals overlap heavily (84-100% vs 70-97%), so this is not evidence that dense beats hybrid in general; it shows that fusion can lose a hit a good single retriever had. Change rrf_k in raglib.Index.hybrid from 60 to 5 and see how much the fused order shifts toward each list's top results.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  out of the top 3. On this tiny corpus dense already wins; hybrid earns its keep on big corpora full of
+  near-identical codes (SKUs, error ids) that embeddings blur. Never assume: measure hit@k (lab 06).
+5) Grounded answers with citations, and a refusal when retrieval is weak
+  Q: I was charged twice for one order. What happens now?
+  A: If you were charged twice for one order, the duplicate payment is reversed automatically within 3 business days [pay-01#0]. If it is not reversed after 3 business days, raise a billing ticket with both transaction ids.
+     citations=[&#x27;pay-01#0&#x27;] all-cited-ids-were-retrieved=True
+  Q: Can I change my delivery address after the order has shipped?
+  A: No, you cannot change your delivery address after the order has shipped. According to [ship-03#0], the address can only be changed before the order is packed.
+     citations=[&#x27;ship-03#0&#x27;] all-cited-ids-were-retrieved=True
+  Q: Do you deliver to Antarctica by drone?
+  A: I don&#x27;t know based on our policies. (refused before calling the LLM: best cosine 0.27 &lt; 0.35)
+     citations=[] all-cited-ids-were-retrieved=True
+  Look: every factual sentence carries an id you can check; the off-topic question is refused
+  cheaply by the retrieval threshold, so the model never gets a chance to make something up.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/03_rag_local.txt">labs/outputs</a>. Source: <a href="../labs/03_rag_local.py">labs/03_rag_local.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Compute RRF scores (k = 60, ranks from 1) for: P = dense 3, BM25 2; Q = dense 1 only; R = BM25 1 only. Give the fused order.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>P = 1/63 + 1/62 = 0.015873 + 0.016129 = 0.032002. Q = 1/61 = 0.016393. R = 1/61 = 0.016393. Order: P first, then Q and R tied. P wins because both retrievers agree on it.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your BM25 tokenizer lowercases and splits on whitespace. Users search for "ERR_2043" and "X200-BLK", and docs write "err 2043" and "X200 BLK". BM25 misses them. Fix it without hurting normal words.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Normalize identifiers the same way on both sides. Options: split on punctuation as well as spaces, so ERR_2043 becomes err, 2043 and X200-BLK becomes x200, blk; also index the joined form (err2043, x200blk) as an extra token so exact searches still match strongly. Apply the identical analyzer to queries and documents. Test on a golden set of identifier queries and a set of normal language queries, and check recall moves up on the first without dropping on the second. Sparse retrieval is only as good as its tokenizer.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Hybrid search improved identifier queries but worsened conversational ones by 4 points of recall@10. Design a fix and how you will tune it without overfitting.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Make fusion weighted or query-aware. Weighted RRF multiplies each list's contribution, e.g. score = w_dense/(k + r_dense) + w_bm25/(k + r_bm25). Alternatively classify the query (contains identifier-like tokens or not, by a regex) and choose weights per class. Tune the weights on a training split of the golden set, then report on a held-out split that was never used for tuning, sliced by query type. Keep the change only if the held-out conversational slice recovers and the identifier slice keeps its gain.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> When does keyword search beat embedding search?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>When the query depends on exact strings that carry little meaning: error codes, SKUs, function names, version numbers, rare names. Embeddings place ERR_2043 and ERR_2044 very close together, so dense search returns a near miss. BM25 scores documents by the exact terms they share with the query, weighted by how rare the terms are, so it nails the literal match. Embeddings win on paraphrase, where the user's words differ from the document's. That is why we often run both.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> Explain Reciprocal Rank Fusion and why it is popular.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>RRF combines several ranked lists by giving each document 1/(k + rank) for every list it appears in, then sorting by the sum. k is a constant, 60 in the original paper. It is popular because it needs no score calibration: BM25 scores are unbounded and cosine sits in a small range, so adding raw scores lets one scale dominate. Ranks are always comparable. It also rewards agreement between retrievers, which is a strong relevance signal. It is a few lines of code and a good default before trying learned fusion.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Would you build hybrid search for every RAG system? How do you decide?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>No. Hybrid adds a second index, a tokenizer to maintain, fusion weights to tune, and more to monitor. I decide from the query log and the eval. I tag a sample of real queries by type, and if identifiers or exact phrases are common, or if dense recall is weak on that slice, hybrid is worth it, which for technical or enterprise search it nearly always is. For a consumer FAQ of plain-language questions, dense plus a reranker may be enough. I also check whether my vector store offers native hybrid, which cuts the operational cost. Either way, it ships only if the sliced eval shows a real gain.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://plg.uwaterloo.ca/~gvcormac/cormacksigir09-rrf.pdf" target="_blank" rel="noopener">Cormack, Clarke and Buettcher, Reciprocal Rank Fusion outperforms Condorcet and individual rank learning methods (SIGIR 2009) - University of Waterloo</a></li>
+      <li><a href="https://arxiv.org/abs/2107.05720" target="_blank" rel="noopener">Formal et al., SPLADE: Sparse Lexical and Expansion Model for First Stage Ranking (2021) - arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2104.08663" target="_blank" rel="noopener">Thakur et al., BEIR benchmark (BM25 vs dense across domains) - arXiv</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
   <p>You can now find the right chunks reliably. The final step is making the model <em>use</em> them faithfully and tell you where each fact came from. Next: <strong>grounding &amp; citations</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Run a meaning search and a word search, then merge their rankings so you get both.</p>
+<!-- ease:line:end -->
 </main>
 
 <script>
@@ -168,5 +307,12 @@ bm25 <span class="o">=</span> <span class="f">BM25Okapi</span>([c.<span class="f
 </script>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<script src="../assets/ease/ease.js?v=1"></script>
+<script src="../assets/ease/play-t03.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

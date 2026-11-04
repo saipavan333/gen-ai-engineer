@@ -12,6 +12,37 @@
 
   <span class="eyebrow">Track 8 · Lesson 8.3</span>
   <h1>Caching</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Many apps get asked the same things again and again.</p>
+    <p>A cache is a store of answers you already paid for, kept so a repeat costs almost nothing.</p>
+    <p>An exact cache matches identical questions; a semantic cache matches questions with the same meaning.</p>
+    <p>Prompt caching is different: the provider reuses its work on a long, fixed start of your prompt, so each call is cheaper.</p>
+    <p>The risk is serving a stored answer to someone it doesn't fit.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>A school library has three tricks. If someone asks for the exact same book again, the librarian hands over the copy already on the desk (exact-match cache). If someone asks for 'that book about the boy wizard', she guesses it is the same as yesterday's request and hands that one over (semantic cache, fast but sometimes wrong). And if every student's homework starts with the same 50-page reading pack, she photocopies it once and keeps it ready instead of re-reading it for each student (prompt caching: the work on the shared start is reused, but each student still gets their own answer).</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The same book already on the desk</td><td>Exact-match cache: identical text, stored answer, no model call</td></tr>
+      <tr><td>Guessing 'the boy wizard book' means yesterday's book</td><td>Semantic cache: embedding similarity above a threshold, such as 0.92</td></tr>
+      <tr><td>The reading pack photocopied once for every student</td><td>Prompt caching: a byte-identical prefix read from cache at $0.10 per million on Sonnet 5.5, instead of $2</td></tr>
+      <tr><td>Each student still writing their own homework</td><td>With prompt caching the model still writes a fresh answer every time</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> The librarian can see the books, while a semantic cache only sees how similar two questions look, not whether the answer really fits. The photocopy is not kept forever either: a prompt cache only matches the exact start of the prompt, costs 1.25 times the normal price to write, and is thrown away after 5 minutes without a read (or 1 hour if you pay for that).</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 357" role="img" aria-label="Exact, semantic and prompt caching stacked, with cost per day" preserveAspectRatio="xMidYMid meet"><text x="14" y="20" text-anchor="start" class="s m">Each request falls through the layers until one can answer it</text><rect x="14" y="34" width="270" height="65" rx="10" class="bx tn-a" /><g class="vzb"><text x="149" y="59.25" text-anchor="middle" class="b">1. Exact-match cache</text><text x="149" y="85.25" text-anchor="middle" class="s" style="font-size:13px">same text seen before?</text></g><line x1="288" y1="66.5" x2="305" y2="66.5" class="ln ok"/><polygon points="314,66.5 305,61.55 305,71.45" class="hd ok"/><text x="320" y="60.5" text-anchor="start" class="s ok-t" style="font-size:13px">hit: 15% of</text><text x="320" y="77.5" text-anchor="start" class="s ok-t" style="font-size:13px">requests in</text><text x="320" y="94.5" text-anchor="start" class="s ok-t" style="font-size:13px">milliseconds, $0</text><line x1="149" y1="101" x2="149" y2="118" class="ln "/><polygon points="149,127 153.95,118 144.05,118" class="hd "/><text x="157" y="118" text-anchor="start" class="s m">miss</text><rect x="14" y="129" width="270" height="82" rx="10" class="bx tn-p" /><g class="vzb"><text x="149" y="154.25" text-anchor="middle" class="b">2. Semantic cache</text><text x="149" y="180.25" text-anchor="middle" class="s" style="font-size:13px">a similar question, similarity ≥</text><text x="149" y="197.25" text-anchor="middle" class="s" style="font-size:13px">0.92?</text></g><line x1="288" y1="170" x2="305" y2="170" class="ln ok"/><polygon points="314,170 305,165.05 305,174.95" class="hd ok"/><text x="320" y="164" text-anchor="start" class="s ok-t" style="font-size:13px">hit: 10% more in</text><text x="320" y="181" text-anchor="start" class="s ok-t" style="font-size:13px">milliseconds, $0</text><line x1="149" y1="213" x2="149" y2="230" class="ln "/><polygon points="149,239 153.95,230 144.05,230" class="hd "/><text x="157" y="230" text-anchor="start" class="s m">miss</text><rect x="14" y="241" width="270" height="82" rx="10" class="bx tn-c" /><g class="vzb"><text x="149" y="266.25" text-anchor="middle" class="b">3. Model call + prompt cache</text><text x="149" y="292.25" text-anchor="middle" class="s" style="font-size:13px">6,000-token fixed prefix read from</text><text x="149" y="309.25" text-anchor="middle" class="s" style="font-size:13px">cache at $0.10/M, the rest at $2/M</text></g><line x1="288" y1="282" x2="305" y2="282" class="ln ok"/><polygon points="314,282 305,277.05 305,286.95" class="hd ok"/><text x="320" y="276" text-anchor="start" class="s ok-t" style="font-size:13px">fresh answer,</text><text x="320" y="293" text-anchor="start" class="s ok-t" style="font-size:13px">then stored in</text><text x="320" y="310" text-anchor="start" class="s ok-t" style="font-size:13px">caches 1 and 2</text><text x="468" y="52" text-anchor="start" class="s b">Cost per day (computed)</text><text x="468" y="76" text-anchor="start" class="s">no caching</text><rect x="468" y="84" width="216" height="24" rx="3" class="fill-w"/><text x="690" y="101" text-anchor="start" class="s b">$3,500</text><text x="468" y="142" text-anchor="start" class="s">+ prompt cache</text><rect x="468" y="150" width="75.558" height="24" rx="3" class="fill-c"/><text x="549.558" y="167" text-anchor="start" class="s b">$1,224</text><text x="468" y="208" text-anchor="start" class="s">+ exact cache</text><rect x="468" y="216" width="63.9977" height="24" rx="3" class="fill-a"/><text x="537.998" y="233" text-anchor="start" class="s b">$1,037</text><text x="468" y="274" text-anchor="start" class="s">+ semantic cache</text><rect x="468" y="282" width="56.4686" height="24" rx="3" class="fill-p"/><text x="530.469" y="299" text-anchor="start" class="s b">$915</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 566" role="img" aria-label="Exact, semantic and prompt caching stacked, with cost per day" preserveAspectRatio="xMidYMid meet"><text x="14" y="20" text-anchor="start" class="s m">A request falls through the layers</text><rect x="14" y="34" width="332" height="65" rx="10" class="bx tn-a" /><g class="vzb"><text x="180" y="59.25" text-anchor="middle" class="b">1. Exact-match cache</text><text x="180" y="85.25" text-anchor="middle" class="s" style="font-size:13px">same text seen before?</text></g><text x="346" y="117" text-anchor="end" class="s ok-t">→ hit: 15% of requests</text><line x1="40" y1="101" x2="40" y2="124" class="ln "/><polygon points="40,133 44.95,124 35.05,124" class="hd "/><text x="48" y="121" text-anchor="start" class="s m">miss</text><rect x="14" y="139" width="332" height="65" rx="10" class="bx tn-p" /><g class="vzb"><text x="180" y="164.25" text-anchor="middle" class="b">2. Semantic cache</text><text x="180" y="190.25" text-anchor="middle" class="s" style="font-size:13px">a similar question, similarity ≥ 0.92?</text></g><text x="346" y="222" text-anchor="end" class="s ok-t">→ hit: 10% more</text><line x1="40" y1="206" x2="40" y2="229" class="ln "/><polygon points="40,238 44.95,229 35.05,229" class="hd "/><text x="48" y="226" text-anchor="start" class="s m">miss</text><rect x="14" y="244" width="332" height="82" rx="10" class="bx tn-c" /><g class="vzb"><text x="180" y="269.25" text-anchor="middle" class="b">3. Model call + prompt cache</text><text x="180" y="295.25" text-anchor="middle" class="s" style="font-size:13px">6,000-token fixed prefix read from cache at</text><text x="180" y="312.25" text-anchor="middle" class="s" style="font-size:13px">$0.10/M, the rest at $2/M</text></g><text x="346" y="344" text-anchor="end" class="s ok-t">fresh answer, then stored in caches 1 and 2</text><text x="14" y="372" text-anchor="start" class="s b">Cost per day, 200,000 requests (computed)</text><text x="14" y="400" text-anchor="start" class="s">no caching</text><rect x="14" y="406" width="270" height="16" rx="3" class="fill-w"/><text x="290" y="419" text-anchor="start" class="s b">$3,500</text><text x="14" y="444" text-anchor="start" class="s">+ prompt cache</text><rect x="14" y="450" width="94.4475" height="16" rx="3" class="fill-c"/><text x="114.448" y="463" text-anchor="start" class="s b">$1,224</text><text x="14" y="488" text-anchor="start" class="s">+ exact cache</text><rect x="14" y="494" width="79.9971" height="16" rx="3" class="fill-a"/><text x="99.9971" y="507" text-anchor="start" class="s b">$1,037</text><text x="14" y="532" text-anchor="start" class="s">+ semantic cache</text><rect x="14" y="538" width="70.5857" height="16" rx="3" class="fill-p"/><text x="90.5857" y="551" text-anchor="start" class="s b">$915</text></svg>
+    <figcaption>A request only reaches the model if both response caches miss, and even then the long fixed prefix is cheap. The costs use the page's HR-assistant assumptions: $3,500 a day falls to about $915. The semantic layer saves the least and carries the most risk.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">The fastest, cheapest LLM call is the one you never make. Many production workloads ask the same or similar things over and over — and caching turns those repeats into instant, near-free responses. It’s often the single biggest cost win available.</p>
 
   <h2>Why caching is so effective here</h2>
@@ -26,6 +57,10 @@
     <div class="box-label">Concept</div>
     <p>An <span class="term">exact cache</span> returns a stored answer when the request is identical (same prompt → same answer). A <span class="term">semantic cache</span> matches <em>similar</em> requests using embeddings (Track 1.3): if a new query is close enough to a cached one, reuse the answer. <span class="term">Prompt/prefix caching</span> (a provider/runtime feature) reuses the model’s computation for a shared prompt prefix (like a long fixed system prompt) across requests, cutting prefill cost. The <span class="term">hit rate</span> is the fraction of requests served from cache.</p>
   </div>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <div class="box example">
     <div class="box-label">Worked example — exact + semantic cache (free)</div>
@@ -51,6 +86,20 @@ sem_q, sem_v, sem_a <span class="o">=</span> [], <span class="kc">None</span>, [
     <span class="k">return</span> answer</code></pre>
     <p>The semantic threshold is the key knob: too low and you return a cached answer to a question that’s actually different (a wrong answer); too high and you miss real repeats. Tune it against your data (Track 6).</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Three caches on an HR policy assistant at 200,000 requests a day</div>
+    <p>Assumptions (ours): 200,000 requests a day on claude-sonnet-5-5; each request has a fixed 6,000-token prefix (system prompt + tool definitions + policy summary), 1,500 variable tokens (question + retrieved chunks) and 250 output tokens. Prices from <a href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching" target="_blank" rel="noopener">Anthropic prompt caching docs</a>: base input $2/M, 5-minute cache write $2.50/M, cache read $0.10/M (0.05x on Sonnet 5.5), output $10/M.</p>
+<ol>
+<li><strong>No caching.</strong> 7,500 x $2/M + 250 x $10/M = $0.015 + $0.0025 = $0.0175 a request, so <strong>$3,500 a day</strong>.</li>
+<li><strong>Provider prompt caching</strong> (the provider reuses its computation for an identical prefix; you still get a fresh answer). Traffic is continuous, so the 5-minute cache stays warm; even one rewrite every 5 minutes is 288 writes x 6,000 x $2.50/M = $4.32 a day. Per request: 6,000 x $0.10/M + 1,500 x $2/M + $0.0025 = $0.0006 + $0.003 + $0.0025 = $0.0061, so about <strong>$1,224 a day</strong> (65% saved). Condition: the prefix must be byte-identical, so put the date and user name after the cache breakpoint, and the prefix must meet the model's minimum (512 tokens on Sonnet 5.5).</li>
+<li><strong>Exact-match response cache</strong> (your own store; a hit skips the model entirely). Assume 15% of questions are identical after normalizing case and whitespace. 170,000 calls remain: 170,000 x $0.0061 = <strong>$1,037 a day</strong>, and hits return in milliseconds.</li>
+<li><strong>Semantic cache</strong> (embedding similarity above a threshold, say 0.92). Assume it adds another 10% of hits: 150,000 calls, <strong>$915 a day</strong>. The risk: a wrong hit serves an answer to a different question. HR answers differ by country, so the cache key must include country, policy version and prompt version.</li>
+<li><strong>Read the stack.</strong> Response caches decide whether you call the model; prompt caching makes the calls you still make cheaper and faster to first token. They stack. Total saving here: $3,500 to $915, about 74%, with the semantic layer contributing the smallest and riskiest slice.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box warn">
     <div class="box-label">Caching has correctness risks</div>
@@ -99,6 +148,35 @@ sem_q, sem_v, sem_a <span class="o">=</span> [], <span class="kc">None</span>, [
         <div class="why">Streaming changes delivery, not whether you pay.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Which statement correctly separates provider prompt caching from a response cache?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Prompt caching stores whole answers on the provider's side so repeated questions are free.</span>
+        <div class="why">The provider caches the processed prefix, not your answers. You still pay for uncached input and all output tokens.</div></li>
+      <li data-correct="false"><span class="opt">B) A response cache only works if the provider supports it.</span>
+        <div class="why">Exact and semantic response caches are your own code and storage, for example Redis. They work with any model, including local ones.</div></li>
+      <li data-correct="false"><span class="opt">C) They are the same thing with different names.</span>
+        <div class="why">They live in different places (provider vs your app) and save different things (prefill vs the whole call).</div></li>
+      <li data-correct="true"><span class="opt">D) Prompt caching reuses the provider's work on an identical prompt prefix and still generates a fresh answer; a response cache returns a stored answer and skips the model call.</span>
+        <div class="why">That is the key difference: one discounts the call, the other avoids it. They solve different problems and stack.</div></li>
+    </ul>
+  </div>
+  <div class="quiz">
+    <p class="quiz-q">Your Claude prompt-cache hit rate is near zero even though every request starts with the same 5,000-token system prompt. What is the most likely bug?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) The cache only works for the same user.</span>
+        <div class="why">Identical prefixes can hit across requests within your organisation. The problem is that the prefix is not identical.</div></li>
+      <li data-correct="true"><span class="opt">B) Something that changes per request, like a timestamp or user name, sits before the cache breakpoint, so the prefix is never identical.</span>
+        <div class="why">Prompt caching matches exact prefixes. Move volatile content after the breakpoint and keep the cached part byte-for-byte stable.</div></li>
+      <li data-correct="false"><span class="opt">C) The prompt is too long to cache.</span>
+        <div class="why">Long fixed prefixes are exactly what caching is for. The documented limits are minimums (for example 512 tokens on Sonnet 5.5), not maximums.</div></li>
+      <li data-correct="false"><span class="opt">D) Prompt caching only works with temperature 0.</span>
+        <div class="why">Caching is about the input prefix; sampling settings do not affect whether the prefix matches.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -123,10 +201,91 @@ sem_q, sem_v, sem_a <span class="o">=</span> [], <span class="kc">None</span>, [
     <p>Combine exact caching for identical repeats, prefix caching for your fixed system prompt/tools, and a conservative semantic cache for paraphrases, and you can cut both spend and latency substantially with almost no quality risk — provided you respect the boundaries (no personalized/time-sensitive caching, sane invalidation, tuned thresholds). It’s the rare optimization that makes things both cheaper <em>and</em> faster at once.</p>
   </div>
 
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/08_llmops.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/08_llmops.py</code></pre>
+    <p><strong>What to look for:</strong> Section 2 runs exact-match and semantic caching over 7 requests and prints the cache result and latency per request: exact hits take about 0.1 ms against about 6 s for a model call. Section 3 prints the paraphrase similarity (0.657) next to a different-intent question (0.523) and the semantic hit count at threshold 0.90 (0 on our run). Lower the threshold and check each new hit is the same intent. Provider prompt caching is not shown locally; price it with the Anthropic table instead.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  semantic similarity to the cached &#x27;track my order&#x27;: paraphrase=0.657  different intent (cancel)=0.523
+  semantic hits at threshold 0.9: 0
+  Look: a threshold low enough to catch the paraphrase would sit close to the wrong-intent score.
+  Serving &#x27;how to track&#x27; to someone who asked &#x27;how to cancel&#x27; is worse than a cache miss. Tune the
+  threshold on labelled pairs, scope caches per intent/tenant, and log every semantic hit for review.
+  traces written to traces.jsonl; first span:
+  {&quot;trace_id&quot;: &quot;54d669838c1f47758c9099aba0110b3f&quot;, &quot;name&quot;: &quot;chat qwen2.5:7b&quot;, &quot;gen_ai.operation.name&quot;: &quot;chat&quot;, &quot;gen_ai.provider.name&quot;: &quot;ollama&quot;, &quot;gen_ai.request.model&quot;: &quot;qwen2.5:7b&quot;, &quot;gen_ai.prompt.name&quot;: &quot;support_answer&quot;, &quot;gen_ai.prompt.version&quot;: 2, &quot;prompt.hash&quot;: &quot;5ab3d11ffb3b&quot;, &quot;user.id&quot;: &quot;u-123&quot;, 
+4) Prompt version rollout: v1 vs v2 on the same question, both traced
+  v1 hash=47ed77f326d6 -&gt; &quot;Yes, you can return innerwear as long as it meets your retailer&#x27;s return policy conditions, such as being unus&quot;
+  v2 hash=5ab3d11ffb3b -&gt; &#x27;Please contact support for specific return policies on innerwear.&#x27;
+  Check the facts too: store policy (labs/data/kb.json, ret-01) says innerwear cannot be returned. Neither
+  prompt has retrieval, so any &#x27;yes&#x27; is a hallucination; the version that defers to support is the safer one.
+  Look: the trace links every answer to an exact prompt hash and model, so a bad answer is debuggable,
+  and a rollout is a registry change you can roll back, not a code edit buried in a deploy.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/08_llmops.txt">labs/outputs</a>. Source: <a href="../labs/08_llmops.py">labs/08_llmops.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> On claude-opus-5-5 (base input $4/M, 5-minute cache write $5/M, cache read $0.20/M), a 10,000-token prefix is written once and then read 99 times. Compare the prefix cost with and without caching.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Without caching: 100 x 10,000 x $4/M = $4.00. With caching: one write 10,000 x $5/M = $0.05 plus 99 reads x 10,000 x $0.20/M = $0.198, total $0.248. That is about 94% less on the prefix. The write costs 1.25x base, so caching only loses money if the prefix is almost never read again within the TTL.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Design the cache key for an exact-match response cache in a multi-tenant SaaS help bot whose answers depend on the tenant's plan and on a prompt template that you update weekly.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Key = hash(tenant_id or plan tier, model ID, prompt template version, retrieval index version, normalized question). Tenant or plan stops one customer's answer leaking to another and stops a Pro answer being served to a Free user. Model ID and prompt version mean a prompt or model change naturally starts a fresh cache instead of serving answers produced by the old version. Index version invalidates when documents change. Add a TTL as a safety net. The why: every input that can change the right answer must be in the key, or the cache will eventually serve a wrong one.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> You want to tune a semantic cache threshold. Describe the experiment and the decision rule, given that a wrong cached answer costs 20x more (in support tickets) than a cache miss costs in tokens.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Collect a few thousand real query pairs from logs where the nearest cached neighbour exists, and label each pair 'same answer is correct' or not (humans or a careful judge, spot-checked). For each threshold from 0.80 to 0.98, compute hit rate and wrong-hit rate. Expected cost per query = miss_rate x c_miss + wrong_hit_rate x 20 x c_miss. Pick the threshold that minimises it, then add a margin because labels are noisy. With a 20x penalty you will usually land high (often 0.93 or more on MiniLM-style embeddings, but measure), and you may restrict the semantic layer to FAQ-type intents only.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What kinds of LLM responses should never be cached across users?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Anything personalised, anything time-sensitive, and anything where variety is the point. Personalised answers, like a summary of my orders, could leak one user's data to another. Time-sensitive answers, like stock levels or today's schedule, go stale. Creative tasks lose their value if everyone gets the same output. I also avoid caching answers that depend on permissions unless the permission scope is part of the cache key. Stable, shared facts like a return policy are the good candidates.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> Explain how you would combine prompt caching, exact caching and semantic caching in one RAG service.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Order matters. First an exact-match cache keyed on the normalized question plus tenant, model and prompt version; a hit returns in milliseconds and costs nothing. Next, for FAQ-type intents only, a semantic cache with a conservative threshold tuned on labelled pairs. On a miss I call the model, and the request is laid out so the system prompt and tool definitions form a stable prefix that the provider caches; retrieved chunks and the question go after the breakpoint. I log cache_read and cache_creation token counts and the response-cache hit rates, and invalidate response caches when the index or prompt changes.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Prompt caching cut your bill 60% in staging but only 10% in production. What could explain it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>The cache needs repeated identical prefixes within the TTL. In production the prefix might vary: per-tenant system prompts, feature flags or A/B variants injected early, tool lists that change order, or a timestamp at the top. Traffic may also be spread across many prefixes and regions, so each one goes cold between hits at a 5-minute TTL. I would compare cache_read_input_tokens against total input per prompt variant, normalise and sort anything that varies, move volatile parts after the breakpoint, consider the 1-hour TTL for sparse but steady traffic, and consolidate prompt variants where the A/B tests are finished.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching" target="_blank" rel="noopener">Prompt caching - Anthropic</a></li>
+      <li><a href="https://docs.vllm.ai/en/latest/features/automatic_prefix_caching.html" target="_blank" rel="noopener">Automatic Prefix Caching - vLLM docs</a></li>
+      <li><a href="https://github.com/zilliztech/GPTCache" target="_blank" rel="noopener">GPTCache: semantic cache for LLMs - Zilliz (GitHub)</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
   <p>Caching avoids calls; the next lever makes the calls you <em>do</em> make cheaper by not over-using your most expensive model. Next: <strong>model routing</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Don't pay twice for the same work: store answers, and let the provider reuse the shared start of your prompt.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

@@ -12,6 +12,37 @@
 
   <span class="eyebrow">Track 8 · Lesson 8.6</span>
   <h1>Batching &amp; throughput</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>A GPU can do a huge amount of work at once.</p>
+    <p>Serving one request at a time leaves most of it sitting idle.</p>
+    <p>Batching runs many requests together, so one GPU serves many users.</p>
+    <p>Continuous batching goes further: when one request finishes, a waiting one takes its place straight away.</p>
+    <p>The trade-off: each user's answer comes out a bit slower, but far more users get served.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>A school bus can carry 40 kids, but imagine the driver taking one kid at a time. The bus is always moving and the road is busy, yet almost nobody gets to school. Batching fills the seats, and continuous batching is a bus that lets kids hop on and off at every stop instead of waiting until all 40 seats are full.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The bus seats</td><td>Batch slots: requests decoded together in one GPU pass</td></tr>
+      <tr><td>Waiting until all 40 seats are full</td><td>Static batching: a batch runs until its longest request ends</td></tr>
+      <tr><td>Kids hopping on and off at every stop</td><td>Continuous batching: a freed slot takes the next request (vLLM does this)</td></tr>
+      <tr><td>Each passenger's growing bag of notes</td><td>The KV cache: memory per request that grows with its length</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A bus has a fixed number of seats, while a GPU's limit is memory for each passenger's notes (the KV cache), which grows as their conversation gets longer.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 498" role="img" aria-label="Gantt chart: static batching leaves slots idle, continuous batching refills them" preserveAspectRatio="xMidYMid meet"><text x="14" y="20" text-anchor="start" class="s m">8 waiting requests, a GPU with 4 batch slots (lengths illustrative)</text><text x="14" y="48" text-anchor="start" class="b">Static batching: done at step 15</text><text x="88" y="79" text-anchor="end" class="s m">slot 1</text><rect x="96" y="60" width="648" height="26" rx="3" class="bx tn-w"/><text x="88" y="111" text-anchor="end" class="s m">slot 2</text><rect x="96" y="92" width="648" height="26" rx="3" class="bx tn-w"/><text x="88" y="143" text-anchor="end" class="s m">slot 3</text><rect x="96" y="124" width="648" height="26" rx="3" class="bx tn-w"/><text x="88" y="175" text-anchor="end" class="s m">slot 4</text><rect x="96" y="156" width="648" height="26" rx="3" class="bx tn-w"/><rect x="97" y="61" width="343.6" height="24" rx="3" class="fill-c"/><text x="268.8" y="79" text-anchor="middle" class="s b" style="fill:var(--bg)">R1</text><rect x="97" y="93" width="84.4" height="24" rx="3" class="fill-c"/><text x="139.2" y="111" text-anchor="middle" class="s b" style="fill:var(--bg)">R2</text><rect x="97" y="125" width="127.6" height="24" rx="3" class="fill-c"/><text x="160.8" y="143" text-anchor="middle" class="s b" style="fill:var(--bg)">R3</text><rect x="97" y="157" width="84.4" height="24" rx="3" class="fill-c"/><text x="139.2" y="175" text-anchor="middle" class="s b" style="fill:var(--bg)">R4</text><rect x="442.6" y="61" width="300.4" height="24" rx="3" class="fill-a"/><text x="592.8" y="79" text-anchor="middle" class="s b" style="fill:var(--bg)">R5</text><rect x="442.6" y="93" width="84.4" height="24" rx="3" class="fill-a"/><text x="484.8" y="111" text-anchor="middle" class="s b" style="fill:var(--bg)">R6</text><rect x="442.6" y="125" width="84.4" height="24" rx="3" class="fill-a"/><text x="484.8" y="143" text-anchor="middle" class="s b" style="fill:var(--bg)">R7</text><rect x="442.6" y="157" width="127.6" height="24" rx="3" class="fill-a"/><text x="506.4" y="175" text-anchor="middle" class="s b" style="fill:var(--bg)">R8</text><text x="96" y="204" text-anchor="start" class="s wn-t">31 of 60 slot-steps idle (shaded): every slot waits for the longest request in its batch</text><text x="14" y="228" text-anchor="start" class="b">Continuous batching: done at step 9</text><text x="88" y="259" text-anchor="end" class="s m">slot 1</text><rect x="96" y="240" width="388.8" height="26" rx="3" class="bx tn-w"/><text x="88" y="291" text-anchor="end" class="s m">slot 2</text><rect x="96" y="272" width="388.8" height="26" rx="3" class="bx tn-w"/><text x="88" y="323" text-anchor="end" class="s m">slot 3</text><rect x="96" y="304" width="388.8" height="26" rx="3" class="bx tn-w"/><text x="88" y="355" text-anchor="end" class="s m">slot 4</text><rect x="96" y="336" width="388.8" height="26" rx="3" class="bx tn-w"/><rect x="97" y="241" width="343.6" height="24" rx="3" class="fill-c"/><text x="268.8" y="259" text-anchor="middle" class="s b" style="fill:var(--bg)">R1</text><rect x="97" y="273" width="84.4" height="24" rx="3" class="fill-c"/><text x="139.2" y="291" text-anchor="middle" class="s b" style="fill:var(--bg)">R2</text><rect x="97" y="305" width="127.6" height="24" rx="3" class="fill-c"/><text x="160.8" y="323" text-anchor="middle" class="s b" style="fill:var(--bg)">R3</text><rect x="97" y="337" width="84.4" height="24" rx="3" class="fill-c"/><text x="139.2" y="355" text-anchor="middle" class="s b" style="fill:var(--bg)">R4</text><rect x="183.4" y="273" width="300.4" height="24" rx="3" class="fill-a"/><text x="333.6" y="291" text-anchor="middle" class="s b" style="fill:var(--bg)">R5</text><rect x="183.4" y="337" width="84.4" height="24" rx="3" class="fill-a"/><text x="225.6" y="355" text-anchor="middle" class="s b" style="fill:var(--bg)">R6</text><rect x="226.6" y="305" width="84.4" height="24" rx="3" class="fill-a"/><text x="268.8" y="323" text-anchor="middle" class="s b" style="fill:var(--bg)">R7</text><rect x="269.8" y="337" width="127.6" height="24" rx="3" class="fill-a"/><text x="333.6" y="355" text-anchor="middle" class="s b" style="fill:var(--bg)">R8</text><text x="96" y="384" text-anchor="start" class="s ok-t">7 of 36 slot-steps idle (shaded): a freed slot takes the next request at once</text><line x1="96" y1="400" x2="744" y2="400" class="ln thin"/><line x1="96" y1="400" x2="96" y2="404" class="ln thin"/><text x="96" y="417" text-anchor="middle" class="s m">0</text><line x1="139.2" y1="400" x2="139.2" y2="404" class="ln thin"/><text x="139.2" y="417" text-anchor="middle" class="s m">1</text><line x1="182.4" y1="400" x2="182.4" y2="404" class="ln thin"/><text x="182.4" y="417" text-anchor="middle" class="s m">2</text><line x1="225.6" y1="400" x2="225.6" y2="404" class="ln thin"/><text x="225.6" y="417" text-anchor="middle" class="s m">3</text><line x1="268.8" y1="400" x2="268.8" y2="404" class="ln thin"/><text x="268.8" y="417" text-anchor="middle" class="s m">4</text><line x1="312" y1="400" x2="312" y2="404" class="ln thin"/><text x="312" y="417" text-anchor="middle" class="s m">5</text><line x1="355.2" y1="400" x2="355.2" y2="404" class="ln thin"/><text x="355.2" y="417" text-anchor="middle" class="s m">6</text><line x1="398.4" y1="400" x2="398.4" y2="404" class="ln thin"/><text x="398.4" y="417" text-anchor="middle" class="s m">7</text><line x1="441.6" y1="400" x2="441.6" y2="404" class="ln thin"/><text x="441.6" y="417" text-anchor="middle" class="s m">8</text><line x1="484.8" y1="400" x2="484.8" y2="404" class="ln thin"/><text x="484.8" y="417" text-anchor="middle" class="s m">9</text><line x1="528" y1="400" x2="528" y2="404" class="ln thin"/><text x="528" y="417" text-anchor="middle" class="s m">10</text><line x1="571.2" y1="400" x2="571.2" y2="404" class="ln thin"/><text x="571.2" y="417" text-anchor="middle" class="s m">11</text><line x1="614.4" y1="400" x2="614.4" y2="404" class="ln thin"/><text x="614.4" y="417" text-anchor="middle" class="s m">12</text><line x1="657.6" y1="400" x2="657.6" y2="404" class="ln thin"/><text x="657.6" y="417" text-anchor="middle" class="s m">13</text><line x1="700.8" y1="400" x2="700.8" y2="404" class="ln thin"/><text x="700.8" y="417" text-anchor="middle" class="s m">14</text><line x1="744" y1="400" x2="744" y2="404" class="ln thin"/><text x="744" y="417" text-anchor="middle" class="s m">15</text><text x="744" y="434" text-anchor="end" class="s m">decode steps →</text><text x="14" y="460" text-anchor="start" class="s" style="font-size:13px">Same 8 requests, same GPU: continuous batching finishes in 9 steps instead of 15, so the same GPU gets</text><text x="14" y="477" text-anchor="start" class="s" style="font-size:13px">through 1.7x as many requests in the same time.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 516" role="img" aria-label="Gantt chart: static batching leaves slots idle, continuous batching refills them" preserveAspectRatio="xMidYMid meet"><text x="14" y="20" text-anchor="start" class="s m">8 requests, 4 batch slots (illustrative)</text><text x="14" y="48" text-anchor="start" class="b">Static batching: done at step 15</text><text x="50" y="77" text-anchor="end" class="s m">slot 1</text><rect x="58" y="60" width="286" height="24" rx="3" class="bx tn-w"/><text x="50" y="107" text-anchor="end" class="s m">slot 2</text><rect x="58" y="90" width="286" height="24" rx="3" class="bx tn-w"/><text x="50" y="137" text-anchor="end" class="s m">slot 3</text><rect x="58" y="120" width="286" height="24" rx="3" class="bx tn-w"/><text x="50" y="167" text-anchor="end" class="s m">slot 4</text><rect x="58" y="150" width="286" height="24" rx="3" class="bx tn-w"/><rect x="59" y="61" width="150.533" height="22" rx="3" class="fill-c"/><text x="134.267" y="77" text-anchor="middle" class="s b" style="fill:var(--bg)">R1</text><rect x="59" y="91" width="36.1333" height="22" rx="3" class="fill-c"/><text x="77.0667" y="107" text-anchor="middle" class="s b" style="fill:var(--bg)">R2</text><rect x="59" y="121" width="55.2" height="22" rx="3" class="fill-c"/><text x="86.6" y="137" text-anchor="middle" class="s b" style="fill:var(--bg)">R3</text><rect x="59" y="151" width="36.1333" height="22" rx="3" class="fill-c"/><text x="77.0667" y="167" text-anchor="middle" class="s b" style="fill:var(--bg)">R4</text><rect x="211.533" y="61" width="131.467" height="22" rx="3" class="fill-a"/><text x="277.267" y="77" text-anchor="middle" class="s b" style="fill:var(--bg)">R5</text><rect x="211.533" y="91" width="36.1333" height="22" rx="3" class="fill-a"/><text x="229.6" y="107" text-anchor="middle" class="s b" style="fill:var(--bg)">R6</text><rect x="211.533" y="121" width="36.1333" height="22" rx="3" class="fill-a"/><text x="229.6" y="137" text-anchor="middle" class="s b" style="fill:var(--bg)">R7</text><rect x="211.533" y="151" width="55.2" height="22" rx="3" class="fill-a"/><text x="239.133" y="167" text-anchor="middle" class="s b" style="fill:var(--bg)">R8</text><text x="58" y="196" text-anchor="start" class="s wn-t">31 of 60 slot-steps idle (shaded)</text><text x="14" y="220" text-anchor="start" class="b">Continuous batching: done at step 9</text><text x="50" y="249" text-anchor="end" class="s m">slot 1</text><rect x="58" y="232" width="171.6" height="24" rx="3" class="bx tn-w"/><text x="50" y="279" text-anchor="end" class="s m">slot 2</text><rect x="58" y="262" width="171.6" height="24" rx="3" class="bx tn-w"/><text x="50" y="309" text-anchor="end" class="s m">slot 3</text><rect x="58" y="292" width="171.6" height="24" rx="3" class="bx tn-w"/><text x="50" y="339" text-anchor="end" class="s m">slot 4</text><rect x="58" y="322" width="171.6" height="24" rx="3" class="bx tn-w"/><rect x="59" y="233" width="150.533" height="22" rx="3" class="fill-c"/><text x="134.267" y="249" text-anchor="middle" class="s b" style="fill:var(--bg)">R1</text><rect x="59" y="263" width="36.1333" height="22" rx="3" class="fill-c"/><text x="77.0667" y="279" text-anchor="middle" class="s b" style="fill:var(--bg)">R2</text><rect x="59" y="293" width="55.2" height="22" rx="3" class="fill-c"/><text x="86.6" y="309" text-anchor="middle" class="s b" style="fill:var(--bg)">R3</text><rect x="59" y="323" width="36.1333" height="22" rx="3" class="fill-c"/><text x="77.0667" y="339" text-anchor="middle" class="s b" style="fill:var(--bg)">R4</text><rect x="97.1333" y="263" width="131.467" height="22" rx="3" class="fill-a"/><text x="162.867" y="279" text-anchor="middle" class="s b" style="fill:var(--bg)">R5</text><rect x="97.1333" y="323" width="36.1333" height="22" rx="3" class="fill-a"/><text x="115.2" y="339" text-anchor="middle" class="s b" style="fill:var(--bg)">R6</text><rect x="116.2" y="293" width="36.1333" height="22" rx="3" class="fill-a"/><text x="134.267" y="309" text-anchor="middle" class="s b" style="fill:var(--bg)">R7</text><rect x="135.267" y="323" width="55.2" height="22" rx="3" class="fill-a"/><text x="162.867" y="339" text-anchor="middle" class="s b" style="fill:var(--bg)">R8</text><text x="58" y="368" text-anchor="start" class="s ok-t">7 of 36 slot-steps idle (shaded)</text><line x1="58" y1="384" x2="344" y2="384" class="ln thin"/><line x1="58" y1="384" x2="58" y2="388" class="ln thin"/><text x="58" y="401" text-anchor="middle" class="s m">0</text><line x1="115.2" y1="384" x2="115.2" y2="388" class="ln thin"/><text x="115.2" y="401" text-anchor="middle" class="s m">3</text><line x1="172.4" y1="384" x2="172.4" y2="388" class="ln thin"/><text x="172.4" y="401" text-anchor="middle" class="s m">6</text><line x1="229.6" y1="384" x2="229.6" y2="388" class="ln thin"/><text x="229.6" y="401" text-anchor="middle" class="s m">9</text><line x1="286.8" y1="384" x2="286.8" y2="388" class="ln thin"/><text x="286.8" y="401" text-anchor="middle" class="s m">12</text><line x1="344" y1="384" x2="344" y2="388" class="ln thin"/><text x="344" y="401" text-anchor="middle" class="s m">15</text><text x="344" y="418" text-anchor="end" class="s m">decode steps →</text><text x="14" y="444" text-anchor="start" class="s" style="font-size:13px">Same 8 requests, same GPU: continuous batching</text><text x="14" y="461" text-anchor="start" class="s" style="font-size:13px">finishes in 9 steps instead of 15, so the same</text><text x="14" y="478" text-anchor="start" class="s" style="font-size:13px">GPU gets through 1.7x as many requests in the</text><text x="14" y="495" text-anchor="start" class="s" style="font-size:13px">same time.</text></svg>
+    <figcaption>Each bar is one request being decoded. With static batching, short requests finish and their slots sit idle (shaded) until the longest one ends. Continuous batching fills those gaps. The schedules are computed from the illustrative lengths.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">A GPU running one request at a time is mostly idle. Batching processes many requests together to keep it busy, dramatically increasing how many users one machine can serve. It’s the key to serving LLMs affordably at scale — and the source of the latency-vs-throughput trade-off you’ll constantly balance.</p>
 
   <h2>Why GPUs love batches</h2>
@@ -26,6 +57,10 @@
     <div class="box-label">Concept</div>
     <p><span class="term">Batching</span> processes multiple requests simultaneously on the GPU. <span class="term">Throughput</span> is how many requests (or tokens) you can serve per second; <span class="term">latency</span> is how long one request takes. These trade off: waiting to fill a batch can add a little latency to each request but greatly raises throughput. <span class="term">Continuous batching</span> (used by serving engines like <span class="term">vLLM</span>) is the modern approach — it dynamically adds and removes requests from the running batch as they arrive and finish, keeping the GPU maximally busy without making requests wait for a fixed batch to fill.</p>
   </div>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <div class="box note">
     <div class="box-label">Mostly the serving engine’s job</div>
@@ -37,7 +72,22 @@
 
   <div class="lab" data-lab="batching"></div>
 
-  <div class="box key">
+  
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: How many GPUs a self-hosted 7B model needs at 50,000 requests a day</div>
+    <p>Assumptions (ours, illustrative): 50,000 requests a day, 300 output tokens each, 15% of daily traffic in the peak hour. Throughput figures are round illustrative numbers for a 7B model on one 24 GB GPU; benchmark your own engine and hardware.</p>
+<ol>
+<li><strong>Peak demand.</strong> 50,000 x 15% = 7,500 requests in the peak hour = 2.08 requests/s. Output needed: 2.08 x 300 = <strong>625 tokens/s</strong>.</li>
+<li><strong>One request at a time.</strong> Say a single stream decodes at 40 tokens/s. You would need 625 / 40 = 15.6, so <strong>16 GPUs</strong>, each mostly idle because decode at batch size 1 is limited by memory bandwidth, not compute.</li>
+<li><strong>Continuous batching.</strong> Say the engine sustains 800 tokens/s aggregate at 32 concurrent sequences. 625 / 800 = 78% of <strong>one GPU</strong>; plan 2 for headroom and failover. That is an 8x cut in hardware.</li>
+<li><strong>What each user feels.</strong> 800 / 32 = 25 tokens/s per stream, slower than 40 but still faster than anyone reads. The trade is visible: throughput up 20x, per-user speed down 38%.</li>
+<li><strong>Memory check.</strong> 32 sequences x 4,000 tokens x 56 KB (Qwen2.5-7B KV per token, from Lesson 8.5) = 7.3 GB of KV, plus 4.7 GB of Q4 weights, fits in 24 GB. Paged KV allocation, as in vLLM's PagedAttention, is what lets the engine pack this many sequences without wasting memory on fragmentation.</li>
+<li><strong>The hosted equivalent.</strong> On an API you do not batch the GPU, but you can batch the bill: Anthropic's Message Batches API is 50% off, takes up to 100,000 requests or 256 MB per batch, and finishes within 24 hours, with most batches done in under an hour (<a href="https://platform.claude.com/docs/en/build-with-claude/batch-processing" target="_blank" rel="noopener">Anthropic batch docs</a>). Nightly evals and backfills belong there.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+<div class="box key">
     <div class="box-label">Key points</div>
     <ul>
       <li>A GPU serving one request is mostly idle; <strong>batching</strong> runs many requests together to use its parallelism.</li>
@@ -74,6 +124,22 @@
         <div class="why">Batching doesn't change output quality.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">You must classify 2 million support tickets by tomorrow morning using a hosted Claude model. Nobody waits on individual results. What is the most cost-effective choice?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Send them through the normal API as fast as possible with high concurrency.</span>
+        <div class="why">That pays full price and will hit rate limits. You gain speed nobody needs.</div></li>
+      <li data-correct="false"><span class="opt">B) Quantize the hosted model.</span>
+        <div class="why">You cannot quantize a provider's hosted model; quantization is a self-hosting lever.</div></li>
+      <li data-correct="false"><span class="opt">C) Stream every response to save time.</span>
+        <div class="why">Streaming improves perceived latency for a human reader; it does nothing for an offline job's cost.</div></li>
+      <li data-correct="true"><span class="opt">D) Submit them through the Message Batches API, which is 50% off and completes within 24 hours.</span>
+        <div class="why">Offline work with a deadline measured in hours is what batch APIs are for. 2 million requests is 20 batches at the 100,000-request limit.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -99,10 +165,91 @@
     <p>Throughput is just the self-hosting corner of that discipline — and continuous batching is the single biggest reason a self-hosted model can be cost-competitive at scale.</p>
   </div>
 
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/01_generate_and_sample.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/01_generate_and_sample.py</code></pre>
+    <p><strong>What to look for:</strong> The lab sends one request at a time, so it shows single-stream tokens/sec, the 'one kid on the bus' number. To see batching, restart Ollama with OLLAMA_NUM_PARALLEL=4 (documented in the Ollama FAQ; RAM grows with parallel x context length) and fire four lab calls at once from four terminals. Compare per-call tokens/sec with total tokens per second across all four. On a laptop CPU the gain is small; on a GPU it is large.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>2) Same prompt, temperature 1.0, three different seeds
+  seed=1: Bengaluru in July typically experiences warm to hot temperatures with occasional thunderstorms.
+  seed=2: Bengaluru in July typically experiences hot and humid weather with occasional thunderstorms.
+  seed=3: Bengaluru in July typically experiences hot and dry weather with temperatures often soaring above 30°C.
+  distinct outputs at T=1.0: 3  (sampling -&gt; usually 2-3)
+3) Same seed twice at T=1.0 -&gt; reproducible on the same machine
+  identical: True
+4) Tokens are what you pay for: prompt vs output token counts
+  short prompt: prompt_tokens=   36  output_tokens=  2  prefill_s=  0.52  answer=&#x27;Paris&#x27;
+  long prompt : prompt_tokens=  639  output_tokens=  2  prefill_s=  0.22  answer=&#x27;Paris&#x27;
+  Look: the long prompt costs many more input tokens and more prefill time for the same answer.
+5) Streaming: time-to-first-token (TTFT) vs total time
+  TTFT=0.36s  total=2.54s  chunks=16  decode_tokens_per_s=7.3
+  Look: streaming does not make generation faster; it shows the first words sooner.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/01_generate_and_sample.txt">labs/outputs</a>. Source: <a href="../labs/01_generate_and_sample.py">labs/01_generate_and_sample.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> A nightly eval run is 40,000 requests averaging 3,000 input and 400 output tokens on claude-sonnet-5-5 ($2 / $10). What does it cost on the normal API and through the Batch API?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Per request: 3,000 x 2/M + 400 x 10/M = $0.006 + $0.004 = $0.010. Normal: 40,000 x $0.010 = $400. Batch at 50% off: $200 a night, about $6,000 a month saved for one config change.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your vLLM server shows high throughput but users complain that responses sometimes stall for a few seconds mid-answer at peak. What is happening and which knobs do you look at?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>At peak the engine admits so many sequences that KV memory runs out, and it must pause or preempt some sequences (swap or recompute their KV) to make room; those users see a stall. Long prompts arriving and being prefilled can also delay decode steps for everyone. Knobs: cap max concurrent sequences, limit max model length, reserve a larger share of GPU memory for KV, enable chunked prefill if the engine supports it, and add replicas. Then watch p95 time-per-output-token, not just aggregate throughput.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Using Little's law, how many concurrent sequences must your engine hold at 5 requests/s if each request spends 0.5 s in prefill and generates 300 tokens at 25 tokens/s per stream? Does a 32-sequence engine cope?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Time in system per request = 0.5 + 300 / 25 = 12.5 s. Concurrency = 5 x 12.5 = 62.5 sequences. A 32-sequence engine cannot hold that: requests queue, TTFT climbs, and the queue grows without limit because arrivals exceed service. You need about 2 engines of 32 (and more with headroom), or shorter outputs: at 150 tokens, time in system is 6.5 s and concurrency 32.5, which just about fits one engine. Output length is a capacity lever as well as a cost lever.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> Why does batching increase throughput on a GPU?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>During decode, each step must read all the model's weights from GPU memory to produce one token. With one request, that big read produces one token, so the GPU's compute units mostly wait on memory. With 32 requests in a batch, the same weight read produces 32 tokens, one for each sequence. So tokens per second across all users rises a lot, and cost per request falls. The catch is that each user's own speed can drop a bit and memory for each sequence's KV cache limits how big the batch can get.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> What is continuous batching and how is it different from static batching?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Static batching collects N requests, runs them together until the longest one finishes, then starts the next batch. Short requests sit idle waiting for long ones, and new requests wait for the batch to drain. Continuous batching schedules at the level of each decode step: when a sequence finishes, its slot is filled immediately by a waiting request. GPU utilisation stays high and queueing delay drops. Engines like vLLM combine it with paged KV-cache management so many variable-length sequences share memory without fragmentation.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> How do you decide between a hosted API and self-hosting an open model for a high-volume workload?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>I compare cost per 1,000 requests at our real traffic shape. Hosted: list price, minus caching and batch discounts. Self-hosted: GPU cost divided by measured throughput at our concurrency and latency target, plus idle capacity at off-peak, redundancy and engineering time to run it. Then I add non-cost factors: data residency and privacy, the quality gap on our eval set, need for fine-tuning, and the provider's rate limits. Self-hosting tends to win at sustained high volume with a model we can tune; hosted wins for spiky traffic, frontier quality and small teams.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2309.06180" target="_blank" rel="noopener">Efficient Memory Management for Large Language Model Serving with PagedAttention (vLLM) - arXiv</a></li>
+      <li><a href="https://platform.claude.com/docs/en/build-with-claude/batch-processing" target="_blank" rel="noopener">Batch processing (Message Batches API) - Anthropic</a></li>
+      <li><a href="https://docs.ollama.com/faq" target="_blank" rel="noopener">Ollama FAQ (OLLAMA_NUM_PARALLEL) - Ollama docs</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
   <p>We’ve optimized the calls and the hardware. The last lever is the most universal: spend fewer tokens per call, on every call, forever. Next: <strong>budgeting tokens</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Batching keeps the GPU's seats full, and continuous batching refills a seat the moment it is free.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

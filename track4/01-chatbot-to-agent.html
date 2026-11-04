@@ -12,6 +12,38 @@
 
   <span class="eyebrow">Track 4 · Lesson 4.1</span>
   <h1>From chatbot to agent</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>A chatbot answers from what it already knows, in one reply.</p>
+    <p>An agent works toward a goal. It can use tools, such as a search, a calculator or your database.</p>
+    <p>It looks at what each tool returns and decides the next step, again and again, until the job is done.</p>
+    <p>That repeating cycle is called the agent loop.</p>
+    <p>More freedom means more power and more ways to fail, so give an agent only as much as the task needs.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>A chatbot is a librarian at a desk: you ask, they answer from what they already know, and that's it. An agent is the same librarian with a phone, a calculator and permission to walk into the stacks: they can go check, come back, and check again until your question is answered.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The librarian at the desk</td><td>A plain LLM: answers from the prompt and its training</td></tr>
+      <tr><td>The phone and the calculator</td><td>Tools: functions the model can ask your code to run</td></tr>
+      <tr><td>Walking to the stacks and back</td><td>One loop step: act, then observe the result</td></tr>
+      <tr><td>Checking again until it's answered</td><td>Repeating the loop toward the goal</td></tr>
+      <tr><td>Someone telling them to stop</td><td>Your code's guards: step limits, budgets</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A real librarian knows when they are lost; an LLM agent will keep walking the stacks happily unless your code tells it to stop.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 254" role="img" aria-label="Chatbot versus agent on the same request" preserveAspectRatio="xMidYMid meet"><rect x="20" y="14" width="348" height="168" rx="10" class="bx tn-b" /><text x="194" y="42" text-anchor="middle" class="b">Chatbot: one shot</text><circle cx="40" cy="63" r="3" class="dot tn-b"/><text x="52" y="68" text-anchor="start" style="font-size:14px">Reads the prompt once and replies</text><circle cx="40" cy="89" r="3" class="dot tn-b"/><text x="52" y="94" text-anchor="start" style="font-size:14px">Knows only its training data and what you</text><text x="52" y="112" text-anchor="start" style="font-size:14px">pasted</text><circle cx="40" cy="133" r="3" class="dot tn-b"/><text x="52" y="138" text-anchor="start" style="font-size:14px">“What&#x27;s 18% of this invoice?” → a guess</text><text x="52" y="156" text-anchor="start" style="font-size:14px">at the number</text><rect x="392" y="14" width="348" height="168" rx="10" class="bx tn-a" /><text x="566" y="42" text-anchor="middle" class="b">Agent: a loop with tools</text><circle cx="412" cy="63" r="3" class="dot tn-a"/><text x="424" y="68" text-anchor="start" style="font-size:14px">Decides an action, runs a tool, reads the</text><text x="424" y="86" text-anchor="start" style="font-size:14px">result, decides again</text><circle cx="412" cy="107" r="3" class="dot tn-a"/><text x="424" y="112" text-anchor="start" style="font-size:14px">Can look things up and check its own work</text><circle cx="412" cy="133" r="3" class="dot tn-a"/><text x="424" y="138" text-anchor="start" style="font-size:14px">Same question → calls a calculator, then</text><text x="424" y="156" text-anchor="start" style="font-size:14px">answers with the exact figure</text><text x="380" y="208" text-anchor="middle" class="s" style="font-size:14px">Autonomy is a dial: plain LLM, tool-augmented, agent loop, then multi-agent. Turn it only as</text><text x="380" y="226" text-anchor="middle" class="s" style="font-size:14px">far as the task needs.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 510" role="img" aria-label="Chatbot versus agent on the same request" preserveAspectRatio="xMidYMid meet"><rect x="20" y="14" width="320" height="168" rx="10" class="bx tn-b" /><text x="180" y="42" text-anchor="middle" class="b">Chatbot: one shot</text><circle cx="40" cy="63" r="3" class="dot tn-b"/><text x="52" y="68" text-anchor="start" style="font-size:14px">Reads the prompt once and replies</text><circle cx="40" cy="89" r="3" class="dot tn-b"/><text x="52" y="94" text-anchor="start" style="font-size:14px">Knows only its training data and what</text><text x="52" y="112" text-anchor="start" style="font-size:14px">you pasted</text><circle cx="40" cy="133" r="3" class="dot tn-b"/><text x="52" y="138" text-anchor="start" style="font-size:14px">“What&#x27;s 18% of this invoice?” → a</text><text x="52" y="156" text-anchor="start" style="font-size:14px">guess at the number</text><text x="180" y="204" text-anchor="middle" class="b m">vs</text><rect x="20" y="216" width="320" height="186" rx="10" class="bx tn-a" /><text x="180" y="244" text-anchor="middle" class="b">Agent: a loop with tools</text><circle cx="40" cy="265" r="3" class="dot tn-a"/><text x="52" y="270" text-anchor="start" style="font-size:14px">Decides an action, runs a tool, reads</text><text x="52" y="288" text-anchor="start" style="font-size:14px">the result, decides again</text><circle cx="40" cy="309" r="3" class="dot tn-a"/><text x="52" y="314" text-anchor="start" style="font-size:14px">Can look things up and check its own</text><text x="52" y="332" text-anchor="start" style="font-size:14px">work</text><circle cx="40" cy="353" r="3" class="dot tn-a"/><text x="52" y="358" text-anchor="start" style="font-size:14px">Same question → calls a calculator,</text><text x="52" y="376" text-anchor="start" style="font-size:14px">then answers with the exact figure</text><text x="180" y="428" text-anchor="middle" class="s" style="font-size:14px">Autonomy is a dial: plain LLM,</text><text x="180" y="446" text-anchor="middle" class="s" style="font-size:14px">tool-augmented, agent loop, then</text><text x="180" y="464" text-anchor="middle" class="s" style="font-size:14px">multi-agent. Turn it only as far as the</text><text x="180" y="482" text-anchor="middle" class="s" style="font-size:14px">task needs.</text></svg>
+    <figcaption>The difference is the loop. The agent's answer is built from tool results it observed, not from one pass over the prompt.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">A chatbot answers what you ask. An agent <em>accomplishes a goal</em> — it can look things up, run calculations, call APIs, and take multiple steps, deciding what to do next based on what it sees. This is how LLMs move from “talks well” to “gets things done.”</p>
 
   <h2>Why agents exist</h2>
@@ -26,6 +58,10 @@
     <div class="box-label">Concept</div>
     <p>An <span class="term">agent</span> is an LLM placed in a loop where it can call <span class="term">tools</span> (functions the model can invoke — a calculator, a search API, your database) and use their results to decide its next step. The repeating cycle of <em>decide an action → run it → observe the result → decide again</em> is the <span class="term">agent loop</span>. <span class="term">Autonomy</span> is how much the agent decides on its own versus following a fixed script — a spectrum, not a switch.</p>
   </div>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <h2>The autonomy spectrum</h2>
   <p>“Agent” isn’t binary. It’s a dial, and you should turn it only as far as the task needs:</p>
@@ -49,6 +85,10 @@
     <p>The smallest real agent: the model decides whether to use a calculator tool, we run it, and feed the result back. This previews tool calling (4.2) and the loop (4.3).</p>
 <pre><code><span class="k">import</span> json, ollama
 
+<span class="k">def</span> <span class="f">ask</span>(prompt, system<span class="o">=</span><span class="kc">None</span>, model<span class="o">=</span><span class="s">"qwen2.5:7b"</span>):   <span class="c"># one chat call; returns the reply text</span>
+    msgs <span class="o">=</span> ([{<span class="s">"role"</span>: <span class="s">"system"</span>, <span class="s">"content"</span>: system}] <span class="k">if</span> system <span class="k">else</span> []) <span class="o">+</span> [{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: prompt}]
+    <span class="k">return</span> ollama.<span class="f">chat</span>(model<span class="o">=</span>model, messages<span class="o">=</span>msgs)[<span class="s">"message"</span>][<span class="s">"content"</span>]
+
 <span class="k">def</span> <span class="f">calculator</span>(expression):
     <span class="k">return</span> <span class="f">str</span>(<span class="f">eval</span>(expression, {<span class="s">"__builtins__"</span>: {}}))   <span class="c"># toy tool (never eval untrusted input in prod!)</span>
 
@@ -57,7 +97,7 @@
 either {{"tool":"calculator","expression":"..."}} to compute,
 or {{"answer":"..."}} if you already know.
 Question: </span>{question}<span class="s">"""</span>
-    step <span class="o">=</span> json.<span class="f">loads</span>(ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"llama3.2"</span>,
+    step <span class="o">=</span> json.<span class="f">loads</span>(ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"qwen2.5:7b"</span>,
               messages<span class="o">=</span>[{<span class="s">"role"</span>:<span class="s">"user"</span>,<span class="s">"content"</span>:prompt}], format<span class="o">=</span><span class="s">"json"</span>)[<span class="s">"message"</span>][<span class="s">"content"</span>])
     <span class="k">if</span> <span class="s">"tool"</span> <span class="k">in</span> step:                                  <span class="c"># the model chose to act</span>
         result <span class="o">=</span> <span class="f">calculator</span>(step[<span class="s">"expression"</span>])           <span class="c"># we run the tool</span>
@@ -67,6 +107,13 @@ Question: </span>{question}<span class="s">"""</span>
 <span class="f">print</span>(<span class="f">agent</span>(<span class="s">"What is 23.5% of 1840?"</span>))   <span class="c"># model → calculator → "432.4"</span></code></pre>
     <p>Notice the shape: the model <em>decides</em> to act (structured output from Track 2.4), <em>your code</em> runs the action, and the result goes back into the model. That decide-act-observe shape is the seed of every agent — the next lessons make each part robust.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Pipeline or agent for 40,000 support tickets a day</div>
+    <p>Assumptions (stated, not measured): a SaaS company gets 40,000 tickets a day. Each needs a category and a draft reply. We price with claude-sonnet-5-5 at $2 per million input tokens and $10 per million output tokens (<a href="https://platform.claude.com/docs/en/about-claude/models/overview">Claude models overview</a>).</p><ol><li><strong>Fixed pipeline.</strong> One call: 3,000 input tokens (ticket + retrieved help articles) and 300 output tokens. Cost per ticket = 3,000 x $2/1M + 300 x $10/1M = $0.006 + $0.003 = <strong>$0.009</strong>. Per day: 40,000 x $0.009 = <strong>$360</strong>.</li><li><strong>Agent loop.</strong> Same ticket, but the model chooses tools over an average of 6 steps. Every step resends the whole conversation, and each step adds about 800 tokens (tool result + the model's last turn). Input over 6 steps = 6 x 3,000 + 800 x (0+1+2+3+4+5) = 18,000 + 12,000 = 30,000 tokens. Output = 6 x 200 = 1,200 tokens.</li><li>Agent cost per ticket = 30,000 x $2/1M + 1,200 x $10/1M = $0.060 + $0.012 = <strong>$0.072</strong>. Per day: <strong>$2,880</strong>, 8x the pipeline.</li><li>Latency follows the same shape: 6 sequential model calls instead of 1.</li><li>The decision: if 90% of tickets are password resets and refund-status lookups, route those through the pipeline and send only the open-ended 10% to the agent. Blended cost = 36,000 x $0.009 + 4,000 x $0.072 = $324 + $288 = <strong>$612/day</strong>.</li></ol><p>That is the least-autonomy rule in money: the agent is worth it only where the path is genuinely unknown in advance.</p>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -105,6 +152,22 @@ Question: </span>{question}<span class="s">"""</span>
         <div class="why">Randomness isn't agency.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Which task most clearly needs an agent loop rather than a fixed pipeline?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Find why last night's nightly ETL job failed and suggest a fix, using logs, the job config and the warehouse query history.</span>
+        <div class="why">Correct. Which tool to use next depends on what the previous one revealed (a log line points at a config, the config points at a query). The path is unknown until you walk it, which is what a loop is for.</div></li>
+      <li data-correct="false"><span class="opt">B) Classify each incoming email as spam or not spam.</span>
+        <div class="why">A fixed one-step classification. There is nothing for the model to decide about which action comes next.</div></li>
+      <li data-correct="false"><span class="opt">C) Translate 10,000 product descriptions from English to Hindi.</span>
+        <div class="why">Every item gets the same single step. A batch pipeline (or a batch API) is cheaper, faster and easier to test than an agent.</div></li>
+      <li data-correct="false"><span class="opt">D) Return the current USD to INR rate from one known API.</span>
+        <div class="why">One known tool, called once. That is tool-augmented at most; wrapping it in a loop only adds cost and failure modes.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -128,10 +191,91 @@ Question: </span>{question}<span class="s">"""</span>
     <p>This reframes the whole track. “Building an agent” is really building a small, well-instrumented system: define tools the model can’t misuse, design a loop that can’t run away, give it the memory it needs and no more, and verify what it does. The model’s job is to choose the next action; your job is to make every possible action safe, observable, and recoverable. Keep that division in mind and agents stop feeling like magic and start feeling like software — which is exactly what makes them shippable.</p>
   </div>
 
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/04_agent_tools.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/04_agent_tools.py</code></pre>
+    <p><strong>What to look for:</strong> Read the trace for each scenario: a lookup takes 2 model calls (one tool call, one answer), and the scripted section shows a stuck model hitting the step budget. Add a plain rewrite question to SCENARIOS and watch it finish in 1 call with no tool. That gap in calls (and tokens) is the autonomy cost this lesson is about.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  Second scripted model: it calls issue_refund for Rs 1500 (over the Rs 1000 auto-approve line), then answers.
+    step 1: issue_refund({&#x27;order_id&#x27;: &#x27;ORD-55120&#x27;, &#x27;amount_rs&#x27;: 1500}) -&gt; {&#x27;status&#x27;: &#x27;pending_human_approval&#x27;, &#x27;order_id&#x27;: &#x27;ORD-55120&#x27;, &#x27;amount_rs&#x27;: 1500}
+    step 2: FINAL -&gt; Your refund request has been sent for approval.
+  Look: the code returned pending_human_approval and the audit log records NEEDS_HUMAN: money did not move.
+  (The claim checker above is a crude regex: it can flag a polite &#x27;shall I proceed?&#x27; as a promise. Read the
+  flagged lines yourself; in production you compare structured tool results, not text patterns.)
+Audit log (what actually moved money)
+   (&#x27;BLOCKED&#x27;, &#x27;ORD-55120&#x27;, 25000)
+   (&#x27;NEEDS_HUMAN&#x27;, &#x27;ORD-55120&#x27;, 1500)
+  unbacked claims detected: 1   ignored refund requests: 1
+  Look: the Rs 25000 request was blocked by code, whatever the model was persuaded to try.
+  And check every FINAL line against the tool results: a fluent agent can promise an action it never
+  took, or add numbers no tool returned (e.g. a refund timeline). Verify claims against the audit log.
+  Prompts guide the model; only code enforces policy.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/04_agent_tools.txt">labs/outputs</a>. Source: <a href="../labs/04_agent_tools.py">labs/04_agent_tools.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> A fixed pipeline costs $0.009 per request. An agent averages 5 steps, starting at 2,500 input tokens and adding 600 tokens per step, with 150 output tokens per step. At $2/M input and $10/M output, what does the agent cost per request?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Input = 5 x 2,500 + 600 x (0+1+2+3+4) = 12,500 + 6,000 = 18,500 tokens, so $0.037. Output = 5 x 150 = 750 tokens, so $0.0075. Total about <strong>$0.0445</strong>, roughly 5x the pipeline. The term that grows fastest is the resent history, which is why step count matters more than output length.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your product manager wants an 'AI agent' that turns a sales call transcript into a CRM update with 6 fixed fields. Argue for the right level on the autonomy spectrum and sketch the design.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>This is a fixed extraction: same input type, same 6 fields, one write. Use structured output (schema-constrained JSON, Track 2) to extract the fields, validate them in code, and write to the CRM with ordinary code. No loop. Add a single human review step before the write if the CRM is a system of record. Reserve an agent for follow-ups like 'research this prospect's company', where the steps depend on what is found.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Design a router that decides, per request, whether to use the cheap pipeline or the agent. What signal do you route on, and how do you know the router itself is not losing quality?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Route on a cheap classifier (a small model or rules) that predicts 'single-step answerable' from the request and the retrieval score: high-confidence FAQ matches go to the pipeline, everything else to the agent. Measure it with a labelled set: for requests routed to the pipeline, compare answer quality against what the agent would have produced (offline replay). Track the share of pipeline answers that users escalate. If escalations rise, lower the confidence threshold. The router is a model, so it needs its own eval and a fallback (when unsure, send to the agent).</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is the difference between an LLM workflow and an agent?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>A workflow runs the model through code paths I wrote in advance: retrieve, then summarise, then format. An agent lets the model decide the next step at run time, picking tools and looping until it thinks it is done. Anthropic's 'Building effective agents' post draws the same line. Workflows are more predictable, cheaper and easier to test. Agents handle tasks where the steps cannot be known up front, like debugging or open research. I start with a workflow and only move to an agent when the task really needs the model to choose its own path.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> Your team built an agent for a task and it works, but it costs 8x the old pipeline. How do you decide whether to keep it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>I would split traffic by request type and measure quality and cost per type, not on average. Usually most requests are simple and the agent adds nothing there, so I route those to the pipeline and keep the agent for the hard tail. I would look at the trace data: how many steps each request type takes, and how often the agent's extra steps changed the final answer. If the agent's win is concentrated in 10-20% of requests, a router gets most of the quality at a fraction of the cost. I would also check that the pipeline's failures are not just pushed into a different place, like more escalations to humans.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> How would you explain to leadership why 'make everything an agent' is risky, with numbers?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Three numbers. Cost: each agent step resends the growing conversation, so a 6-step agent can cost 8x a single call, and Anthropic reports its agents use about 4x the tokens of chat. Reliability: if each step is 98% reliable, a 10-step run is about 0.98^10 = 82% reliable, so long chains fail more often than single calls. Risk surface: every tool the agent can call is an action someone can steer through prompt injection. Then the proposal: a portfolio. Fixed workflows for the known, high-volume paths, agents for the open-ended tail, and a router between them, with evals and cost dashboards for both.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://www.anthropic.com/engineering/building-effective-agents" target="_blank" rel="noopener">Building effective agents — Anthropic Engineering</a></li>
+      <li><a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank" rel="noopener">How we built our multi-agent research system — Anthropic Engineering</a></li>
+      <li><a href="https://platform.claude.com/docs/en/about-claude/models/overview" target="_blank" rel="noopener">Models overview (pricing, context) — Claude Platform docs</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
   <p>The foundation of every agent is the ability for the model to call a function reliably. Let’s make that precise and robust. Next: <strong>tool / function calling</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> A chatbot talks once; an agent loops through tools until the job is done.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

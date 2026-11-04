@@ -12,7 +12,42 @@
 
   <span class="eyebrow">Track 1 · Lesson 1.6</span>
   <h1>What LLMs can &amp; can't do</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>LLMs are great at working with text you hand them: rewriting, summarising, pulling out facts.</p>
+    <p>They are weak when they must recall something exactly, like a date, a price or last week's news.</p>
+    <p>When they don't know, they still answer in the same confident voice.</p>
+    <p>A made-up answer like that is called a hallucination.</p>
+    <p>The fix is engineering: put the facts in the prompt, give the model tools, and check what comes back.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>An LLM is like a very well-read friend who has never once said 'I don't know'. Ask them to rewrite your essay or summarise a letter you hand them and they are brilliant. Ask them a date or a number from memory and they will answer in the same confident voice whether they remember it or are making it up.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>Rewriting the essay you hand them</td><td>Tasks grounded in the prompt: summarise, extract, rewrite, classify</td></tr>
+      <tr><td>Answering a date from memory</td><td>Recall from frozen training data, which stops at the knowledge cutoff</td></tr>
+      <tr><td>The same confident voice either way</td><td>Fluent output whether right or wrong; no built-in 'unsure' signal</td></tr>
+      <tr><td>You checking their answer</td><td>Retrieval, tools, validation and evals built around the model</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A person usually has some feeling of being unsure; the model's fluent tone is the same either way, so you have to build the checking in yourself.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 409" role="img" aria-label="Routing a request by how much the model must recall on its own" preserveAspectRatio="xMidYMid meet"><rect x="20" y="172" width="230" height="65" rx="10" class="bx tn-c" /><g class="vzb"><text x="135" y="197.25" text-anchor="middle" class="b">Your request</text><text x="135" y="223.25" text-anchor="middle" class="s" style="font-size:13px">what kind of job is it?</text></g><rect x="440" y="18" width="300" height="85" rx="10" class="bx tn-g" /><g class="vzb"><text x="590" y="43.25" text-anchor="middle" class="b">The answer is in the text you</text><text x="590" y="63.25" text-anchor="middle" class="b">give it</text><text x="590" y="89.25" text-anchor="middle" class="s" style="font-size:13px">summarise, extract, rewrite: reliable</text></g><polyline points="252,204.5 310,204.5 380,60.5 428,60.5" class="ln "/><polygon points="437,60.5 428,55.55 428,65.45" class="hd "/><rect x="440" y="115" width="300" height="82" rx="10" class="bx tn-w" /><g class="vzb"><text x="590" y="140.25" text-anchor="middle" class="b">It needs exact facts from memory</text><text x="590" y="166.25" text-anchor="middle" class="s" style="font-size:13px">dates, prices, citations: may be stale</text><text x="590" y="183.25" text-anchor="middle" class="s" style="font-size:13px">or invented; retrieve them instead</text></g><polyline points="252,204.5 310,204.5 380,156 428,156" class="ln "/><polygon points="437,156 428,151.05 428,160.95" class="hd "/><rect x="440" y="209" width="300" height="85" rx="10" class="bx tn-k" /><g class="vzb"><text x="590" y="234.25" text-anchor="middle" class="b">It needs live data or exact</text><text x="590" y="254.25" text-anchor="middle" class="b">maths</text><text x="590" y="280.25" text-anchor="middle" class="s" style="font-size:13px">today&#x27;s price, a big sum: call a tool</text></g><polyline points="252,204.5 310,204.5 380,251.5 428,251.5" class="ln "/><polygon points="437,251.5 428,246.55 428,256.45" class="hd "/><rect x="440" y="306" width="300" height="85" rx="10" class="bx tn-p" /><g class="vzb"><text x="590" y="331.25" text-anchor="middle" class="b">It needs a judgment you can&#x27;t</text><text x="590" y="351.25" text-anchor="middle" class="b">check</text><text x="590" y="377.25" text-anchor="middle" class="s" style="font-size:13px">medical, legal: add a human review step</text></g><polyline points="252,204.5 310,204.5 380,348.5 428,348.5" class="ln "/><polygon points="437,348.5 428,343.55 428,353.45" class="hd "/></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 547" role="img" aria-label="Routing a request by how much the model must recall on its own" preserveAspectRatio="xMidYMid meet"><rect x="12" y="14" width="336" height="65" rx="10" class="bx tn-c" /><g class="vzb"><text x="180" y="39.25" text-anchor="middle" class="b">Your request</text><text x="180" y="65.25" text-anchor="middle" class="s" style="font-size:13px">what kind of job is it?</text></g><line x1="26" y1="79" x2="26" y2="93" class="ln"/><rect x="56" y="113" width="292" height="85" rx="10" class="bx tn-g" /><g class="vzb"><text x="202" y="138.25" text-anchor="middle" class="b">The answer is in the text you</text><text x="202" y="158.25" text-anchor="middle" class="b">give it</text><text x="202" y="184.25" text-anchor="middle" class="s" style="font-size:13px">summarise, extract, rewrite: reliable</text></g><line x1="26" y1="155.5" x2="44" y2="155.5" class="ln "/><polygon points="53,155.5 44,150.55 44,160.45" class="hd "/><rect x="56" y="212" width="292" height="102" rx="10" class="bx tn-w" /><g class="vzb"><text x="202" y="247.25" text-anchor="middle" class="b">It needs exact facts from memory</text><text x="202" y="273.25" text-anchor="middle" class="s" style="font-size:13px">dates, prices, citations: may be stale</text><text x="202" y="290.25" text-anchor="middle" class="s" style="font-size:13px">or invented; retrieve them instead</text></g><line x1="26" y1="263" x2="44" y2="263" class="ln "/><polygon points="53,263 44,258.05 44,267.95" class="hd "/><rect x="56" y="328" width="292" height="85" rx="10" class="bx tn-k" /><g class="vzb"><text x="202" y="353.25" text-anchor="middle" class="b">It needs live data or exact</text><text x="202" y="373.25" text-anchor="middle" class="b">maths</text><text x="202" y="399.25" text-anchor="middle" class="s" style="font-size:13px">today&#x27;s price, a big sum: call a tool</text></g><line x1="26" y1="370.5" x2="44" y2="370.5" class="ln "/><polygon points="53,370.5 44,365.55 44,375.45" class="hd "/><rect x="56" y="427" width="292" height="102" rx="10" class="bx tn-p" /><g class="vzb"><text x="202" y="460.75" text-anchor="middle" class="b">It needs a judgment you can&#x27;t</text><text x="202" y="480.75" text-anchor="middle" class="b">check</text><text x="202" y="506.75" text-anchor="middle" class="s" style="font-size:13px">medical, legal: add a human review step</text></g><line x1="26" y1="478" x2="44" y2="478" class="ln "/><polygon points="53,478 44,473.05 44,482.95" class="hd "/><line x1="26" y1="79" x2="26" y2="478" class="ln"/></svg>
+    <figcaption>A useful habit: before trusting an answer, ask where the facts came from. From the prompt is usually fine. From the model's memory needs checking.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">This is the lesson that keeps you employed. Knowing exactly where these models shine and where they quietly fail is the difference between a demo that wows and a product that embarrasses you in front of users. It’s also the most-probed area in interviews.</p>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <h2>Why limits matter more than capabilities</h2>
   <p>It’s easy to be impressed by what LLMs can do. The professional skill is knowing what they <em>can’t</em> — because that’s where products break. Almost every limitation follows directly from Lesson 1.1: the model predicts <strong>plausible</strong> next tokens, not <strong>true</strong> ones. When plausible and true line up, it looks brilliant. When they diverge, it fails confidently. Everything below is a corollary of that one fact.</p>
@@ -71,6 +106,21 @@ prompt <span class="o">=</span> <span class="s">f"Context: </span>{context}<span
 <span class="f">print</span>(<span class="s">"grounded:  "</span>, qa(prompt, max_new_tokens<span class="o">=</span><span class="n">30</span>)[<span class="n">0</span>][<span class="s">"generated_text"</span>])</code></pre>
     <p>The ungrounded call invents or fumbles an answer; the grounded call reports the real “3-year limited warranty,” because the fact is now in front of it and you’ve told it not to guess. That two-line difference — <em>supply the facts, forbid guessing</em> — is the entire spirit of RAG, which you’ll build for real in Track 3.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Grounding an HR policy bot for a 20,000-person company</div>
+    <p>Assume a company of <strong>20,000 employees</strong> asks its HR bot <strong>60,000 questions a month</strong>, and policies change every quarter. The rates below are assumptions you would replace with your own eval results.</p>
+<ol>
+<li><strong>Ungrounded baseline.</strong> Suppose a golden set of 300 real questions shows <strong>8%</strong> confidently wrong answers when the bot answers from memory. 60,000 x 8% = <strong>4,800 wrong answers a month</strong>, each one sounding certain.</li>
+<li><strong>Why memory fails here.</strong> The policies are private (never in training data) and change after any knowledge cutoff. This is the "recall" column of the lesson's diagram, so no prompt wording fixes it.</li>
+<li><strong>Ground it.</strong> Retrieve the current policy passages and instruct: answer only from them, cite the section, say "I don't know" otherwise. Suppose the eval now shows <strong>2% wrong</strong> and <strong>6% "I don't know"</strong>.</li>
+<li><strong>Do the new arithmetic.</strong> Wrong: 60,000 x 2% = 1,200 a month (down 75%). Abstentions: 60,000 x 6% = 3,600 a month, which you route to the HR inbox. If HR handles one in 4 minutes, that is 240 hours a month, so staff for it or improve the documents.</li>
+<li><strong>Close the loop.</strong> Log each "I don't know" with the question. The top 20 questions usually point at missing or badly written policy pages; fixing those lowers both numbers.</li>
+<li><strong>Keep it honest.</strong> Re-run the 300-question eval whenever policies, prompts or the model change. A grounding setup that passed last quarter can fail on this quarter's documents.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -109,6 +159,22 @@ prompt <span class="o">=</span> <span class="s">f"Context: </span>{context}<span
         <div class="why">Translation of provided text is well within its abilities.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Your bot gives the right refund policy 95% of the time when the policy is retrieved, but the team wants to raise accuracy by asking the model to also 'rate its confidence from 1 to 10' and hide answers under 7. What is the main problem?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) It will make the context window overflow.</span>
+        <div class="why">Asking for one extra number adds a handful of tokens.</div></li>
+      <li data-correct="false"><span class="opt">B) Confidence scores only work at temperature 0.</span>
+        <div class="why">Temperature changes variety, not whether self-reported confidence reflects truth.</div></li>
+      <li data-correct="false"><span class="opt">C) Models cannot output numbers.</span>
+        <div class="why">They can output numbers fine; the question is whether the number means anything.</div></li>
+      <li data-correct="true"><span class="opt">D) The stated confidence is generated text too, and is not reliably tied to correctness, so it needs to be checked on an eval before you trust it as a filter.</span>
+        <div class="why">Right. A self-reported score can help a little, but it is not a guaranteed calibration signal. Measure how well it separates right from wrong answers on a golden set first; retrieval scores and citation checks are often better signals.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -137,8 +203,89 @@ prompt <span class="o">=</span> <span class="s">f"Context: </span>{context}<span
 
   <p>That’s the engine, end to end: tokens, embeddings, context, attention, sampling, and the honest map of strengths and limits. Time to check it stuck — and to see what an interviewer would ask. On to the <strong>Track 1 interview check</strong>.</p>
 
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/03_rag_local.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/03_rag_local.py</code></pre>
+    <p><strong>What to look for:</strong> Find the refusal branch: when the best retrieval score is below the threshold, the lab answers that it does not know instead of guessing. Ask a question your documents cannot answer and confirm it abstains; then lower the threshold and watch it start producing an ungrounded answer. The [doc-id] citations show which supplied text each answer came from.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  out of the top 3. On this tiny corpus dense already wins; hybrid earns its keep on big corpora full of
+  near-identical codes (SKUs, error ids) that embeddings blur. Never assume: measure hit@k (lab 06).
+5) Grounded answers with citations, and a refusal when retrieval is weak
+  Q: I was charged twice for one order. What happens now?
+  A: If you were charged twice for one order, the duplicate payment is reversed automatically within 3 business days [pay-01#0]. If it is not reversed after 3 business days, raise a billing ticket with both transaction ids.
+     citations=[&#x27;pay-01#0&#x27;] all-cited-ids-were-retrieved=True
+  Q: Can I change my delivery address after the order has shipped?
+  A: No, you cannot change your delivery address after the order has shipped. According to [ship-03#0], the address can only be changed before the order is packed.
+     citations=[&#x27;ship-03#0&#x27;] all-cited-ids-were-retrieved=True
+  Q: Do you deliver to Antarctica by drone?
+  A: I don&#x27;t know based on our policies. (refused before calling the LLM: best cosine 0.27 &lt; 0.35)
+     citations=[] all-cited-ids-were-retrieved=True
+  Look: every factual sentence carries an id you can check; the off-topic question is refused
+  cheaply by the retrieval threshold, so the model never gets a chance to make something up.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/03_rag_local.txt">labs/outputs</a>. Source: <a href="../labs/03_rag_local.py">labs/03_rag_local.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Label each request 'transform' or 'recall' and say which needs grounding: (a) turn these meeting notes into action items; (b) what is our VPN server address; (c) explain recursion simply; (d) what did the CEO announce yesterday.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>(a) transform, the input is supplied, low risk. (b) recall of private data, needs grounding. (c) mostly transform of well-known knowledge, low risk, though checking examples is wise. (d) recall of an event after any cutoff, needs grounding with a search or news source. The test is always: is the needed information in the prompt?</p></div>
+    </details>
+    <p><strong>Transfer.</strong> A coding assistant suggests a library function that does not exist. Design two system-level checks that catch this before a user copies it.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>(1) Static check: run the generated code through a linter or type-checker against the installed library versions; an undefined attribute fails immediately. (2) Ground it: retrieve the library's real API docs for the version in use and tell the model to use only functions listed there. A third option is to run the code in a sandbox with a test. All three swap trust in fluent text for a machine check.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Kalai et al. (2025) argue that common training and evaluation setups reward guessing over abstaining. Explain the argument in your own words and what it implies for how you score your own evals.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>If a benchmark gives 1 point for a right answer and 0 for both a wrong answer and 'I don't know', a model that always guesses scores at least as well as one that abstains when unsure. Training and tuning against such scores pushes models to guess confidently. For your own evals, score wrong answers worse than abstentions (for example +1 right, 0 abstain, -1 wrong) on high-stakes tasks, and report abstention rate next to accuracy. Then a change that cuts hallucinations shows up as an improvement instead of being hidden.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is a hallucination and why does it happen?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>A hallucination is fluent, confident output that is wrong or made up, such as a fake citation or an API method that does not exist. It happens because the model is trained to produce likely text, not checked facts. When it lacks the information, the most likely continuation still sounds right, so it says something plausible in the same tone as a real fact. That is why confidence does not tell you correctness.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> How do you reduce hallucinations in a production assistant?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Ground it with retrieval and instruct it to answer only from the supplied passages, with citations, and to say it does not know otherwise. Give it tools for things it is bad at: calculators, search, our APIs. Validate outputs: check that citations exist and that quoted text appears in the sources, validate structured fields. Measure with a golden set that includes unanswerable questions, and track both accuracy and abstention. Design the UI to show sources. Lowering temperature, where the API still allows it, adds a little but does not fix the root cause.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> A stakeholder asks for a guarantee that the assistant will never give wrong answers. How do you respond?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>I would say no system built on a language model can promise zero errors, and then offer what we can commit to: a measured error rate on a representative eval set, a target we gate releases on, abstention when the evidence is missing, citations so users can verify, human review for high-stakes actions, and monitoring with sampled audits in production. I would also ask which errors are most costly, because we can trade more abstentions for fewer wrong answers on those. Turning 'never wrong' into measurable, risk-weighted targets is the real engineering conversation.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2509.04664" target="_blank" rel="noopener">Why Language Models Hallucinate (Kalai et al., 2025) — arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2005.11401" target="_blank" rel="noopener">Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks (Lewis et al., 2020) — arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2307.03172" target="_blank" rel="noopener">Lost in the Middle: How Language Models Use Long Contexts (Liu et al., 2023) — arXiv</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Trust an LLM with the text you give it, and check anything it has to remember on its own.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

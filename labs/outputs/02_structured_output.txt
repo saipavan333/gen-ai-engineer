@@ -1,0 +1,55 @@
+
+======================================================================
+A) Prompt-only JSON (no schema enforcement)
+======================================================================
+  #0: valid  '{"category":"delivery", "order_id":"ORD-55120", "urgency":"high", "summary":"Order not rec'
+  #1: valid  '{"category": "billing", "order_id": "ORD-77301", "urgency": "high", "summary": "Charged tw'
+  #2: valid  '{"category":"technical", "order_id":null, "urgency":"high", "summary":"App crashes on paym'
+  #3: valid  '{"category":"refund", "order_id":"ORD-10442", "urgency":"high", "summary":"Refund request '
+  #4: valid  '{"category":"delivery", "order_id":null, "urgency":"low", "summary":"Delivery guy polite."'
+  #5: valid  '{"category":"refund", "order_id":"ORD-90011", "urgency":"high", "summary":"Refund for ORD-'
+  #6: valid  '{"category": "delivery", "order_id": "ORD-31337", "urgency": "medium", "summary": "Request'
+  #7: valid  '{"category": "refund", "order_id": null, "urgency": "high", "summary": "Request to cancel '
+
+======================================================================
+A2) Same, but with the vague prompt most first drafts use
+======================================================================
+  #0: INVALID '```json\n{\n  "ticket_id": "TICKET-001",\n  "customer_name": "Unknown",\n  "order_number": "OR'  <- Invalid JSON: expected value at line 1 column 1
+  #1: INVALID '```json\n{\n  "ticket_id": "ORD-77301",\n  "customer_issue": "Charged twice",\n  "status": "op'  <- Invalid JSON: expected value at line 1 column 1
+  #2: INVALID '```json\n{\n  "ticket_id": "TICKET_12345",\n  "customer": "User",\n  "product": "App",\n  "issu'  <- Invalid JSON: expected value at line 1 column 1
+  #3: INVALID '```json\n{\n  "ticket_id": "ORD-10442",\n  "customer_complaint": "The mixer jar arrived crack'  <- Invalid JSON: expected value at line 1 column 1
+
+======================================================================
+B) Schema-constrained decoding (format = Ticket JSON Schema)
+======================================================================
+  #0: valid  {'category': 'delivery', 'order_id': 'ORD-55120', 'urgency': 'high', 'summary': "Order not received for sister's wedding"}
+  #1: valid  {'category': 'billing', 'order_id': 'ORD-77301', 'urgency': 'high', 'summary': 'Charged twice, need fix ASAP'}
+  #2: valid  {'category': 'technical', 'order_id': None, 'urgency': 'high', 'summary': 'App crashes on payments tab (Android 15)'}
+  #3: valid  {'category': 'refund', 'order_id': 'ORD-10442', 'urgency': 'high', 'summary': 'Refund request for cracked mixer jar ORD-10442'}
+  #4: valid  {'category': 'delivery', 'order_id': None, 'urgency': 'low', 'summary': 'Delivery guy polite.'}
+  #5: valid  {'category': 'refund', 'order_id': 'ORD-90011', 'urgency': 'high', 'summary': 'Refund for ORD-90011, 3 weeks overdue'}
+  #6: valid  {'category': 'delivery', 'order_id': 'ORD-31337', 'urgency': 'medium', 'summary': 'Request to change delivery address before shipment'}
+  #7: valid  {'category': 'refund', 'order_id': None, 'urgency': 'high', 'summary': 'Cancel subscription, refund last month'}
+
+======================================================================
+C) Schema-valid is not business-valid: validate rules, retry with the error
+======================================================================
+  rule violations repaired by retry: 0
+
+======================================================================
+D) Content check against gold labels (shape-valid does not mean right)
+======================================================================
+  #4: model said 'delivery', a human would file 'other': 'Just wanted to say the delivery guy was very polite. thanks!'
+  category accuracy: 7/8
+
+======================================================================
+Summary
+======================================================================
+  vague-prompt valid:       0/4 = 0% (95% CI 0%-49%)
+  prompt-only valid:        8/8 = 100% (95% CI 68%-100%)
+  schema-constrained valid: 8/8 = 100% (95% CI 68%-100%)
+  category accuracy (gold): 7/8 = 88% (95% CI 53%-98%)
+  On this model and these 8 emails a clear prompt already gives valid JSON every time, so the schema shows
+  NO measurable advantage here. Its value is the guarantee on the inputs you have not tested yet.
+  Look: constrained decoding guarantees the SHAPE. It does not guarantee the CONTENT is right;
+  that is what the business-rule check + retry (and your eval set) are for.

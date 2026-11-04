@@ -1,0 +1,42 @@
+
+======================================================================
+1) The safety gate on hostile or sloppy SQL (no LLM involved)
+======================================================================
+  row cap survives a trailing comment: 1000 rows (cap 1000)
+  SELECT 1                                             -> (True, 'ok')
+  DELETE FROM orders                                   -> (False, 'DELETE is not allowed (SELECT only)')
+  SELECT 1; DROP TABLE orders                          -> (False, '2 statements; exactly one is allowed')
+  WITH x AS (SELECT * FROM orders) SELECT COUNT(*) F   -> (True, 'ok')
+  UPDATE customers SET is_plus = true                  -> (False, 'UPDATE is not allowed (SELECT only)')
+  even if the gate missed one, the read-only connection refuses writes: InvalidInputException
+
+======================================================================
+2) Natural language -> SQL -> result, scored by execution accuracy
+======================================================================
+  Q: How many customers live in Hyderabad?
+     SQL: SELECT COUNT(*) FROM customers WHERE city = 'Hyderabad'
+     PASS fixes=0 got=[(68,)] gold=[(68,)]
+  Q: What was total revenue in 2025?
+     SQL: SELECT SUM(amount_rs) AS total_revenue_2025 FROM orders WHERE order_date BETWEEN '2025-01-01' AND '2025-12-31' AND status = 'delivered';
+     PASS fixes=0 got=[(Decimal('17534002.73'),)] gold=[(Decimal('17534002.73'),)]
+  Q: Which 3 cities had the most delivered revenue? Return city and revenue.
+     SQL: SELECT c.city, SUM(o.amount_rs) AS revenue FROM orders o JOIN customers c ON o.customer_id = c.customer_id WHERE o.status = 'delivered' GROUP BY c.cit
+     PASS fixes=1 got=[('Hyderabad', Decimal('3629135.21')), ('Bengaluru', Decimal('3563777.95')), ('K gold=[('Hyderabad', Decimal('3629135.21')), ('Bengaluru', Decimal('3563777.95')), ('K
+  Q: What share of orders were returned? Give a fraction between 0 and 1.
+     SQL: SELECT SUM(CASE WHEN status = 'returned' THEN 1 ELSE 0 END) / COUNT(*) AS return_share FROM orders;
+     PASS fixes=0 got=[(0.09483333333333334,)] gold=[(0.09483333333333334,)]
+  Q: Average delivered order value for Plus members vs non-members.
+     SQL: SELECT AVG(CASE WHEN c.is_plus THEN o.amount_rs ELSE NULL END) AS avg_plus, AVG(CASE WHEN NOT c.is_plus THEN o.amount_rs ELSE NULL END) AS avg_non_plu
+     FAIL fixes=0 got=[(4945.648507917174, 5045.7609119496865)] gold=[(False, 5045.760911949686), (True, 4945.648507917174)]
+  Q: How many customers placed no orders at all?
+     SQL: SELECT COUNT(*) FROM customers WHERE customer_id NOT IN (SELECT customer_id FROM orders WHERE status = 'delivered')
+     PASS fixes=0 got=[(50,)] gold=[(50,)]
+
+  execution accuracy: 5/6
+
+======================================================================
+3) A user asks for something destructive
+======================================================================
+  blocked by the gate: DELETE is not allowed (SELECT only)
+  Look: safety comes from the parser + read-only principal + row cap, not from asking the model nicely.
+  Wrong-but-valid SQL (a FAIL above) is the harder problem; only an eval set with gold answers catches it.

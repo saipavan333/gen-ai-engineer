@@ -12,6 +12,43 @@
 
   <span class="eyebrow">Track 6 · Lesson 6.3</span>
   <h1>LLM-as-judge</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Many answers have no single right wording, so a simple text match can't grade them.</p>
+    <p>LLM-as-judge means asking another model to grade the answer against a written checklist called a rubric.</p>
+    <p>It can score one answer, or pick the better of two.</p>
+    <p>Judges have habits: they may favour the first answer shown, or the longest one.</p>
+    <p>So you swap the order to test for that, and you check the judge against human grades before trusting it.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>An LLM judge is like a talent-show judge marking singers. A fair judge follows a scorecard. A tired judge starts liking whoever sang first, gives extra points to whoever sang longest, and quietly favours singers from their own music school. You check a judge by having them mark a few performances that expert judges already scored, and seeing how often they agree.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The judge's scorecard</td><td>The rubric: correct, complete, grounded, concise</td></tr>
+      <tr><td>Liking whoever sang first</td><td>Position bias in pairwise judging</td></tr>
+      <tr><td>Extra points for the longest song</td><td>Verbosity bias: longer answers scored higher</td></tr>
+      <tr><td>Favouring singers from their own school</td><td>Self-preference: rating its own model family higher</td></tr>
+      <tr><td>Checking against expert judges</td><td>Calibrating the judge against human labels (agreement, Cohen's kappa)</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A human judge can explain a bias when asked, but an LLM judge's written reason may sound fair even when its score is biased, so you must measure, not ask.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 252" role="img" aria-label="The swap test: judge the same pair in both orders" preserveAspectRatio="xMidYMid meet"><text x="20" y="22" text-anchor="start" class="s m">Same question, rubric and two answers. Only the order changes.</text><text x="20" y="80" text-anchor="start" class="b">Run 1</text><rect x="80" y="50" width="92" height="50" rx="10" class="bx tn-a" /><text x="126" y="72" text-anchor="middle" class="s" style="font-size:12px">slot 1</text><text x="126" y="90" text-anchor="middle" class="b" style="font-size:14px">answer A</text><rect x="182" y="50" width="92" height="50" rx="10" class="bx tn-k" /><text x="228" y="72" text-anchor="middle" class="s" style="font-size:12px">slot 2</text><text x="228" y="90" text-anchor="middle" class="b" style="font-size:14px">answer B</text><line x1="278" y1="75" x2="307" y2="75" class="ln "/><polygon points="316,75 307,70.05 307,79.95" class="hd "/><rect x="320" y="44" width="130" height="62" rx="10" class="bx tn-c" /><text x="385" y="70" text-anchor="middle" class="b">LLM judge</text><text x="385" y="90" text-anchor="middle" class="s">+ rubric</text><line x1="454" y1="75" x2="483" y2="75" class="ln "/><polygon points="492,75 483,70.05 483,79.95" class="hd "/><rect x="496" y="50" width="110" height="50" rx="10" class="bx tn-b" /><text x="551" y="72" text-anchor="middle" class="s" style="font-size:12px">slot 1 wins</text><text x="551" y="90" text-anchor="middle" class="b" style="font-size:14px">→ A wins</text><text x="20" y="164" text-anchor="start" class="b">Run 2</text><rect x="80" y="134" width="92" height="50" rx="10" class="bx tn-k" /><text x="126" y="156" text-anchor="middle" class="s" style="font-size:12px">slot 1</text><text x="126" y="174" text-anchor="middle" class="b" style="font-size:14px">answer B</text><rect x="182" y="134" width="92" height="50" rx="10" class="bx tn-a" /><text x="228" y="156" text-anchor="middle" class="s" style="font-size:12px">slot 2</text><text x="228" y="174" text-anchor="middle" class="b" style="font-size:14px">answer A</text><line x1="278" y1="159" x2="307" y2="159" class="ln "/><polygon points="316,159 307,154.05 307,163.95" class="hd "/><rect x="320" y="128" width="130" height="62" rx="10" class="bx tn-c" /><text x="385" y="154" text-anchor="middle" class="b">LLM judge</text><text x="385" y="174" text-anchor="middle" class="s">+ rubric</text><line x1="454" y1="159" x2="483" y2="159" class="ln "/><polygon points="492,159 483,154.05 483,163.95" class="hd "/><rect x="496" y="134" width="110" height="50" rx="10" class="bx tn-b" /><text x="551" y="156" text-anchor="middle" class="s" style="font-size:12px">slot 1 wins</text><text x="551" y="174" text-anchor="middle" class="b" style="font-size:14px">→ B wins</text><polyline points="608,75 640,75 640,112 641,112" class="ln "/><polygon points="650,112 641,107.05 641,116.95" class="hd "/><polyline points="608,159 640,159 640,122 641,122" class="ln "/><polygon points="650,122 641,117.05 641,126.95" class="hd "/><rect x="652" y="70" width="96" height="94" rx="10" class="bx tn-w" /><text x="700" y="96" text-anchor="middle" class="b" style="font-size:14px">Orders</text><text x="700" y="114" text-anchor="middle" class="b" style="font-size:14px">disagree:</text><text x="700" y="136" text-anchor="middle" class="s" style="font-size:13px">a flip, so</text><text x="700" y="152" text-anchor="middle" class="s" style="font-size:13px">count a tie</text><text x="20" y="222" text-anchor="start" class="s">Count a win only when both orders pick the same answer. A flip means the judge is</text><text x="20" y="240" text-anchor="start" class="s">rewarding the slot, not the answer (position bias). Check judges against human labels too.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 468" role="img" aria-label="The swap test: judge the same pair in both orders" preserveAspectRatio="xMidYMid meet"><text x="12" y="20" text-anchor="start" class="s m">Same question, rubric and answers.</text><text x="12" y="38" text-anchor="start" class="s m">Only the order changes.</text><text x="12" y="66" text-anchor="start" class="b">Run 1</text><rect x="12" y="74" width="104" height="46" rx="10" class="bx tn-a" /><text x="64" y="93" text-anchor="middle" class="s" style="font-size:12px">slot 1</text><text x="64" y="111" text-anchor="middle" class="b" style="font-size:14px">answer A</text><rect x="124" y="74" width="104" height="46" rx="10" class="bx tn-k" /><text x="176" y="93" text-anchor="middle" class="s" style="font-size:12px">slot 2</text><text x="176" y="111" text-anchor="middle" class="b" style="font-size:14px">answer B</text><line x1="232" y1="97" x2="243" y2="97" class="ln "/><polygon points="252,97 243,92.05 243,101.95" class="hd "/><rect x="256" y="70" width="92" height="54" rx="10" class="bx tn-c" /><text x="302" y="93" text-anchor="middle" class="b" style="font-size:13px">LLM judge</text><text x="302" y="111" text-anchor="middle" class="s" style="font-size:12px">+ rubric</text><line x1="302" y1="124" x2="302" y2="131" class="ln "/><polygon points="302,140 306.95,131 297.05,131" class="hd "/><rect x="196" y="142" width="152" height="40" rx="10" class="bx tn-b" /><text x="272" y="167" text-anchor="middle" class="b" style="font-size:13px">slot 1 wins → A</text><text x="12" y="210" text-anchor="start" class="b">Run 2</text><rect x="12" y="218" width="104" height="46" rx="10" class="bx tn-k" /><text x="64" y="237" text-anchor="middle" class="s" style="font-size:12px">slot 1</text><text x="64" y="255" text-anchor="middle" class="b" style="font-size:14px">answer B</text><rect x="124" y="218" width="104" height="46" rx="10" class="bx tn-a" /><text x="176" y="237" text-anchor="middle" class="s" style="font-size:12px">slot 2</text><text x="176" y="255" text-anchor="middle" class="b" style="font-size:14px">answer A</text><line x1="232" y1="241" x2="243" y2="241" class="ln "/><polygon points="252,241 243,236.05 243,245.95" class="hd "/><rect x="256" y="214" width="92" height="54" rx="10" class="bx tn-c" /><text x="302" y="237" text-anchor="middle" class="b" style="font-size:13px">LLM judge</text><text x="302" y="255" text-anchor="middle" class="s" style="font-size:12px">+ rubric</text><line x1="302" y1="268" x2="302" y2="275" class="ln "/><polygon points="302,284 306.95,275 297.05,275" class="hd "/><rect x="196" y="286" width="152" height="40" rx="10" class="bx tn-b" /><text x="272" y="311" text-anchor="middle" class="b" style="font-size:13px">slot 1 wins → B</text><rect x="12" y="340" width="336" height="56" rx="10" class="bx tn-w" /><text x="180" y="362" text-anchor="middle" class="b" style="font-size:14px">Orders disagree: a flip</text><text x="180" y="382" text-anchor="middle" class="s">→ count it as a tie, not a win</text><text x="12" y="414" text-anchor="start" class="s">Count a win only when both orders agree.</text><text x="12" y="432" text-anchor="start" class="s">A flip means the judge rewards the slot,</text><text x="12" y="450" text-anchor="start" class="s">not the answer: position bias.</text></svg>
+    <figcaption>Run each pair twice with the answers swapped. If the judge picks whatever sits in slot 1 both times, its verdict is about position, not quality. The page's worked example counts a win only when both orders agree.</figcaption>
+  </figure>
+  <div class="ez-play" data-ez-play="judgeswap">
+    <div class="ease-label">Try it</div>
+    <p class="ez-hint">Pick a pair and an order. The judge here is a made-up biased one: it adds a bonus to whatever sits in slot 1. Watch which pairs flip.</p>
+    <div class="ez-stage"></div>
+  </div>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">How do you score “is this answer helpful, faithful, and well-written?” at scale, when there’s no single right string? You use a model to grade the output. It’s the workhorse of modern evals — powerful, scalable, and full of pitfalls you must know about.</p>
 
   <h2>Why we need a model to grade models</h2>
@@ -26,6 +63,10 @@
     <div class="box-label">Concept</div>
     <p><span class="term">LLM-as-judge</span> uses a model to evaluate outputs. A <span class="term">rubric</span> is the explicit criteria it scores against (“correct? complete? grounded? concise?”). <span class="term">Reference-based</span> judging compares the answer to a known-good answer; <span class="term">reference-free</span> judging scores against the rubric alone. <span class="term">Pointwise</span> judging scores one answer; <span class="term">pairwise</span> judging picks the better of two (often more reliable). Because the judge is itself an LLM, you must <span class="term">validate</span> it against human labels before trusting it.</p>
   </div>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <h2>Judge an answer yourself</h2>
   <p>Question: <em>“What’s the refund window?”</em> Reference: <em>“30 days from delivery.”</em> Pick a candidate answer and see how a rubric-based judge scores it — and where judge biases creep in.</p>
@@ -55,7 +96,7 @@ Return JSON: {{"score": &lt;1-5&gt;, "reason": "&lt;one sentence&gt;"}}.
 QUESTION: {question}
 REFERENCE: {reference}
 ANSWER: {answer}"""</span>
-    out <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"llama3.2"</span>,
+    out <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"qwen2.5:7b"</span>,
             messages<span class="o">=</span>[{<span class="s">"role"</span>:<span class="s">"user"</span>,<span class="s">"content"</span>:prompt}], format<span class="o">=</span><span class="s">"json"</span>)[<span class="s">"message"</span>][<span class="s">"content"</span>]
     <span class="k">return</span> json.<span class="f">loads</span>(out)
 
@@ -64,6 +105,13 @@ v <span class="o">=</span> <span class="f">judge</span>(<span class="s">"What's 
 <span class="f">print</span>(v)   <span class="c"># {"score": 1, "reason": "States 14 days; reference says 30 — factually wrong."}</span></code></pre>
     <p>Run the judge over every golden-set case and average the scores — now you have a quality metric for open-ended outputs that you can track release over release.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Calibrating a nightly judge over 2,000 support answers</div>
+    <p>Assumptions: an insurer's claims assistant has a 2,000-case eval. A pairwise judge compares the current prompt (A) with a candidate (B) every night. Judge model: claude-sonnet-5-5 at $2 in / $10 out per million tokens (<a href="https://platform.claude.com/docs/en/about-claude/models/overview">Claude models overview</a>).</p><ol><li><strong>Position-bias control.</strong> Run each pair twice, A-then-B and B-then-A. Count a win only if both orders agree; otherwise call it a tie. This is the mitigation from <a href="https://arxiv.org/abs/2306.05685">Zheng et al. 2023, arXiv 2306.05685</a>, where GPT-4 as judge gave the same verdict after a swap only 65% of the time and Claude-v1 only 23.8%.</li><li><strong>Cost.</strong> 2,000 pairs x 2 orders = 4,000 calls. At about 1,500 input and 150 output tokens each: 6.0 M input x $2 = $12, plus 0.6 M output x $10 = $6. Total $18 a night, or $9 through the Batch API at 50% off.</li><li><strong>Calibrate against humans.</strong> Two reviewers label 400 sampled answers pass or fail. Compare with the judge: both pass 270, both fail 60, human pass but judge fail 30, human fail but judge pass 40.</li><li><strong>Raw agreement.</strong> (270 + 60) / 400 = 0.825. Looks good.</li><li><strong>Chance-corrected agreement.</strong> Humans pass 300/400 = 0.75; judge passes 310/400 = 0.775. Expected agreement by chance p_e = 0.75 x 0.775 + 0.25 x 0.225 = 0.6375. Cohen's kappa = (0.825 - 0.6375) / (1 - 0.6375) = 0.52. Moderate, not strong.</li><li><strong>Read the off-diagonal.</strong> The 40 cases the judge passed but humans failed are the dangerous ones. If most are long, confident but wrong answers, that is verbosity bias: add "length earns no credit" plus a reference answer, then re-measure.</li><li><strong>Pin it.</strong> Freeze the judge model ID and a hash of the judge prompt. Any change to either reruns this 400-case calibration before scores are compared with old ones. That stops rubric drift from looking like a quality change.</li></ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box warn">
     <div class="box-label">Judges are biased — know the traps</div>
@@ -97,8 +145,8 @@ v <span class="o">=</span> <span class="f">judge</span>(<span class="s">"What's 
   <div class="quiz">
     <p class="quiz-q">Your LLM judge agrees with humans 75% of the time. What should you check before trusting it?</p>
     <ul class="quiz-options">
-      <li data-correct="true"><span class="opt">Chance-corrected agreement (Cohen's κ) — two labels agree ~50% by chance.</span>
-        <div class="why">Correct. Raw agreement ignores the chance floor; κ removes it.</div></li>
+      <li data-correct="true"><span class="opt">Chance-corrected agreement (Cohen's κ): raters can agree a lot by chance alone, especially when most labels are 'pass'.</span>
+        <div class="why">Correct. Raw agreement ignores the chance floor; κ removes it. The floor depends on the label mix: with two balanced labels it is 50%, but if 80% of answers are 'pass' for both raters, chance agreement is 0.8 x 0.8 + 0.2 x 0.2 = 68%, so 75% raw agreement is barely better than guessing.</div></li>
       <li data-correct="false"><span class="opt">Nothing — 75% is fine.</span>
         <div class="why">Not without correcting for chance.</div></li>
       <li data-correct="false"><span class="opt">The model's size.</span>
@@ -107,6 +155,48 @@ v <span class="o">=</span> <span class="f">judge</span>(<span class="s">"What's 
         <div class="why">Speed is irrelevant to judge validity.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">You swap the order of answers A and B in a pairwise judge prompt and 30% of verdicts flip. What does that tell you, and what do you do?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) The judge has position bias; count a win only when both orders agree and treat disagreements as ties.</span>
+        <div class="why">Correct. A quality judgment should not depend on order. Zheng et al. (arXiv 2306.05685) recommend exactly this swap-and-agree rule.</div></li>
+      <li data-correct="false"><span class="opt">B) Always put the candidate answer first so it gets a fair chance.</span>
+        <div class="why">That bakes the bias into one direction and inflates the candidate's score.</div></li>
+      <li data-correct="false"><span class="opt">C) Raise the judge's temperature to average out the bias.</span>
+        <div class="why">Randomness adds noise; it does not remove a systematic preference for one slot. Many current APIs do not even accept a temperature setting.</div></li>
+      <li data-correct="false"><span class="opt">D) The answers are probably identical in quality, so the flips do not matter.</span>
+        <div class="why">Some flips may be near-ties, but 30% is too many to dismiss. You cannot tell which flips are ties without the swap rule.</div></li>
+    </ul>
+  </div>
+  <div class="quiz">
+    <p class="quiz-q">Your generator and your judge are the same model. The judge rates the system's answers higher than humans do. Which bias is most likely?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Verbosity bias.</span>
+        <div class="why">Possible as well, but the clue here is that the judge and the generator are the same model.</div></li>
+      <li data-correct="false"><span class="opt">B) Position bias.</span>
+        <div class="why">Position bias is about answer order in pairwise prompts, not about who wrote the answer.</div></li>
+      <li data-correct="false"><span class="opt">C) Leniency caused by too short a rubric.</span>
+        <div class="why">A vague rubric can make any judge lenient, but the same-model setup points to self-preference first.</div></li>
+      <li data-correct="true"><span class="opt">D) Self-preference: a model tends to rate outputs that look like its own more highly.</span>
+        <div class="why">Correct. Zheng et al. observed GPT-4 favouring itself by about 10% win rate and Claude-v1 by about 25%, while noting the data was limited. Use a judge from a different model family, or a panel of judges.</div></li>
+    </ul>
+  </div>
+  <div class="quiz">
+    <p class="quiz-q">Last month the judge scored v1 at 4.1/5. This month, after someone edited the judge prompt, it scores v1 at 3.6. What is the right conclusion?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) v1 got worse.</span>
+        <div class="why">v1 did not change; the ruler did. Comparing across judge versions confuses a measurement change with a quality change.</div></li>
+      <li data-correct="true"><span class="opt">B) Scores from different judge versions are not comparable; rerun both v1 and the new candidate under the current judge, and re-check it against human labels.</span>
+        <div class="why">Correct. That is rubric drift. Pin the judge model and prompt hash, and only compare numbers produced by the same judge version.</div></li>
+      <li data-correct="false"><span class="opt">C) Average the two numbers.</span>
+        <div class="why">Averaging two different rulers gives a number that measures nothing.</div></li>
+      <li data-correct="false"><span class="opt">D) The new judge is stricter, so it is better.</span>
+        <div class="why">Stricter is not the same as more accurate. Only agreement with human labels tells you which judge is better.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -130,8 +220,85 @@ v <span class="o">=</span> <span class="f">judge</span>(<span class="s">"What's 
     <p>A subtle risk worth naming: the judge and the system can share blind spots. If your generator and your judge are the same model family, the judge may rate confident hallucinations highly because it would make the same mistake — which is why using a different, ideally stronger, model as judge helps, and why human spot-checks remain essential. Treat the judge as a fast, scalable approximation of human judgment that you continuously verify, not as ground truth. Done this way, LLM-as-judge lets a small team measure quality across thousands of cases on every change — the capability that makes the eval flywheel actually spin.</p>
   </div>
 
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/06_evals.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/06_evals.py</code></pre>
+    <p><strong>What to look for:</strong> Find the position-bias test: it asks the judge the same A/B question in both orders and counts verdict flips. A high flip count means the judge is reacting to order, not quality. Change the judge prompt (add a rubric line or a reference answer) and rerun to see whether flips drop; note that qwen2.5:7b is a small judge, so expect more bias than a frontier model shows.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>5) Judge position bias: same pair, swapped order
+  How long do card refunds take?      order1 picked B, order2 picked B  -&gt; FLIPPED
+  Return window for electronics?      order1 picked B, order2 picked A  -&gt; consistent
+  Express shipping price?             order1 picked B, order2 picked A  -&gt; consistent
+  When is standard shipping free?     order1 picked A, order2 picked B  -&gt; consistent
+  Duplicate charge reversal time?     order1 picked A, order2 picked B  -&gt; consistent
+  consistent verdicts: 4/5 = 80% (95% CI 38%-96%)   correct in both orders: 2/5 = 40% (95% CI 12%-77%)
+  n=5 pairs is a demo, not a measurement of this judge&#x27;s bias: the intervals span most of 0-100%.
+  Look: with no reference passage in the judge prompt, the judge has to guess which number is right.
+  Always judge both orders and count a win only when both agree; give the judge the reference.
+6) How wide is the error bar on 12 cases?
+  v1 accuracy 11/12 = 92% (95% CI 65%-99%)  (Wilson interval)
+  At n=400 the same accuracy would be roughly +/- 2.7%
+{&quot;v1_correct&quot;: 0.917, &quot;regressions&quot;: 12, &quot;judge_consistent&quot;: 4}</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/06_evals.txt">labs/outputs</a>. Source: <a href="../labs/06_evals.py">labs/06_evals.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> A judge and a human label 200 answers. Both pass 120, both fail 40, human pass / judge fail 15, human fail / judge pass 25. Compute raw agreement and Cohen's kappa.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Raw agreement p_o = (120 + 40) / 200 = 0.80. Human pass rate = (120 + 15) / 200 = 0.675; judge pass rate = (120 + 25) / 200 = 0.725. Chance agreement p_e = 0.675 x 0.725 + 0.325 x 0.275 = 0.489 + 0.089 = 0.579. Kappa = (0.80 - 0.579) / (1 - 0.579) = 0.221 / 0.421 = 0.52. You can confirm with sklearn.metrics.cohen_kappa_score. Note that the 25 human-fail / judge-pass cases are the ones to read first: they are where the judge would let bad answers ship.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your judge scores support replies 1-5. Humans say the judge rewards polite but vague answers. Rewrite the setup to fix it.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>1) Move from one holistic 1-5 score to separate binary checks: answers the actual question (y/n), every factual claim supported by the reference or context (y/n), gives the next action (y/n). Binary checks drift less than a 5-point scale. 2) Add explicit 'do not reward' lines: politeness, length and apologies earn no credit. 3) Supply the reference answer so the judge compares facts, not tone. 4) Ask for the reason before the verdict in a fixed JSON schema. 5) Recalibrate on the same human-labelled sample and compare kappa before and after. Ship the new judge only if agreement went up.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Design a judge-validation protocol that a team must pass before an LLM judge can block merges in CI.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Calibration set: 300-500 cases sampled across categories and across known-good and known-bad outputs, each labelled by two humans; drop or fix cases where humans disagree. Metrics: Cohen's kappa against the human consensus (set a bar, for example 0.6 or higher, agreed with the team), plus the false-pass rate on critical cases, which should be near zero. Bias tests: swap order on pairwise prompts and measure flip rate; pad correct answers with filler and check scores do not rise; score outputs from the judge's own family versus another family and compare. Versioning: judge model ID and prompt hash stored with every score; any change triggers a rerun of the whole protocol. Monitoring: every month, humans relabel 50 fresh production cases and kappa is recomputed, so drift in the inputs is caught as well.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is LLM-as-a-judge and what are its main pitfalls?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>It means using a model to grade another model's output against a rubric, sometimes with a reference answer, returning a structured verdict you can aggregate. It scales open-ended evaluation far beyond what humans can review. The known pitfalls are position bias (preferring the first or second answer in a pair), verbosity bias (preferring longer answers), self-preference (rating its own family's outputs higher) and weak reasoning on maths or specialist facts. Mitigations: swap order and require agreement, tell the rubric to ignore length, use a different model family, give a reference answer, and check the judge against human labels before trusting it.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> Your judge agrees with humans 85% of the time. Is that good enough to gate releases?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Not by itself. Raw agreement ignores chance: if 80% of answers pass, two raters who both say 'pass' most of the time agree a lot by accident. I would compute Cohen's kappa, which corrects for that, and look at the confusion matrix, especially cases where the judge passes what humans fail, since those are bad releases getting through. I would also check that agreement holds per category, not only overall, and that the calibration set reflects current traffic. If kappa is solid and false passes on critical cases are near zero, I would gate on it, with periodic human relabelling to catch drift.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> How would you design an evaluation system that relies on LLM judges but stays trustworthy as models and prompts change every month?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Treat the judge as a versioned measuring instrument. Pin judge model ID and prompt hash with every score and never compare scores across judge versions; rescore baselines instead. Keep a human-labelled calibration set and require a kappa threshold and a near-zero critical false-pass rate before a new judge version is adopted. Prefer narrow binary checks over holistic scores, use pairwise with order swapping for A/B decisions, and use a judge from a different family than the generator, or a small panel of judges, to cut self-preference. Cheap code checks run first so the judge only handles what needs judgement. Finally, sample production monthly for fresh human labels, because the inputs drift even when the judge does not.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2306.05685" target="_blank" rel="noopener">Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena - Zheng et al., arXiv 2306.05685</a></li>
+      <li><a href="https://arxiv.org/abs/2305.17926" target="_blank" rel="noopener">Large Language Models are not Fair Evaluators - Wang et al., arXiv 2305.17926</a></li>
+      <li><a href="https://arxiv.org/abs/2404.18796" target="_blank" rel="noopener">Replacing Judges with Juries: Evaluating LLM Generations with a Panel of Diverse Models - Verga et al., arXiv 2404.18796</a></li>
+      <li><a href="https://scikit-learn.org/stable/modules/generated/sklearn.metrics.cohen_kappa_score.html" target="_blank" rel="noopener">sklearn.metrics.cohen_kappa_score - scikit-learn documentation</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
   <p>You can now score quality offline. But the truest signal comes from real users. Next we contrast measuring before vs. after you ship. Next: <strong>offline vs online evals</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> A model can grade answers for you, but test the grader for bias before you trust its marks.</p>
+<!-- ease:line:end -->
 </main>
 
 <script>
@@ -157,5 +324,12 @@ v <span class="o">=</span> <span class="f">judge</span>(<span class="s">"What's 
 </script>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<script src="../assets/ease/ease.js?v=1"></script>
+<script src="../assets/ease/play-t06.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

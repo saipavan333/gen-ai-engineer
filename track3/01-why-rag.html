@@ -12,6 +12,38 @@
 
   <span class="eyebrow">Track 3 · Lesson 3.1</span>
   <h1>Why RAG exists</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>A language model only knows what it read in training, and that stops at a cutoff date.</p>
+    <p>It has never seen your company's manuals or today's prices.</p>
+    <p>RAG (retrieval-augmented generation) fixes that by looking things up first.</p>
+    <p>For each question, the system finds the few most relevant passages in your documents and pastes them into the prompt.</p>
+    <p>The model then answers from those passages and points to the one it used.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>A bare LLM is a student taking a closed-book exam: it answers from memory, and when memory fails it bluffs. RAG turns it into an open-book exam where a librarian hands the student the three right pages before each question, and the student must point to the line they used.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The closed-book exam</td><td>A bare model answering from its training memory</td></tr>
+      <tr><td>The library of books</td><td>Your knowledge base, cut into chunks and indexed</td></tr>
+      <tr><td>The librarian picking three pages</td><td>The retriever: embed the question, take the top-k nearest chunks</td></tr>
+      <tr><td>Handing the pages to the student</td><td>Pasting the chunks into the prompt, numbered [1] [2] [3]</td></tr>
+      <tr><td>Pointing to the line used</td><td>Citations that tie each claim to a chunk</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A real librarian understands the question; the retriever only matches meaning numerically, so it can hand over the wrong pages with full confidence. And the student keeps nothing: the pages are pasted into this one prompt, the model learns nothing from them, and it can still ignore them and answer from memory, which is why citations get checked.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 304" role="img" aria-label="RAG: an offline indexing lane and an online question lane" preserveAspectRatio="xMidYMid meet"><text x="14" y="20" text-anchor="start" class="b">Offline: indexing (run once, and again when documents change)</text><rect x="14" y="32" width="153" height="78" rx="10" class="bx tn-b" /><g class="vzb"><text x="90.5" y="56.3" text-anchor="middle" class="b" style="font-size:14px">Your documents</text><text x="90.5" y="80.3" text-anchor="middle" class="s" style="font-size:12px">manuals, policies,</text><text x="90.5" y="96.3" text-anchor="middle" class="s" style="font-size:12px">tickets</text></g><line x1="170" y1="71" x2="195" y2="71" class="ln "/><polygon points="204,71 195,66.05 195,75.95" class="hd "/><rect x="207" y="32" width="153" height="78" rx="10" class="bx tn-c" /><g class="vzb"><text x="283.5" y="56.3" text-anchor="middle" class="b" style="font-size:14px">Chunk</text><text x="283.5" y="80.3" text-anchor="middle" class="s" style="font-size:12px">cut into short</text><text x="283.5" y="96.3" text-anchor="middle" class="s" style="font-size:12px">passages</text></g><line x1="363" y1="71" x2="388" y2="71" class="ln "/><polygon points="397,71 388,66.05 388,75.95" class="hd "/><rect x="400" y="32" width="153" height="78" rx="10" class="bx tn-c" /><g class="vzb"><text x="476.5" y="56.3" text-anchor="middle" class="b" style="font-size:14px">Embed</text><text x="476.5" y="80.3" text-anchor="middle" class="s" style="font-size:12px">each chunk becomes a</text><text x="476.5" y="96.3" text-anchor="middle" class="s" style="font-size:12px">vector</text></g><line x1="556" y1="71" x2="581" y2="71" class="ln "/><polygon points="590,71 581,66.05 581,75.95" class="hd "/><rect x="593" y="32" width="153" height="78" rx="10" class="bx tn-d" /><g class="vzb"><text x="669.5" y="56.3" text-anchor="middle" class="b" style="font-size:14px">Vector index</text><text x="669.5" y="80.3" text-anchor="middle" class="s" style="font-size:12px">vectors + text +</text><text x="669.5" y="96.3" text-anchor="middle" class="s" style="font-size:12px">source, stored</text></g><line x1="10" y1="136" x2="750" y2="136" class="grid dash"/><text x="14" y="166" text-anchor="start" class="b ac-t">Online: every question (milliseconds)</text><rect x="14" y="178" width="127.2" height="112" rx="10" class="bx tn-b" /><g class="vzb"><text x="77.6" y="219.3" text-anchor="middle" class="b" style="font-size:14px">Question</text><text x="77.6" y="243.3" text-anchor="middle" class="s" style="font-size:12px">“How long is the</text><text x="77.6" y="259.3" text-anchor="middle" class="s" style="font-size:12px">warranty?”</text></g><line x1="144.2" y1="234" x2="153.2" y2="234" class="ln "/><polygon points="162.2,234 153.2,229.05 153.2,238.95" class="hd "/><rect x="165.2" y="178" width="127.2" height="112" rx="10" class="bx tn-a" /><g class="vzb"><text x="228.8" y="219.3" text-anchor="middle" class="b" style="font-size:14px">Embed</text><text x="228.8" y="243.3" text-anchor="middle" class="s" style="font-size:12px">same model as</text><text x="228.8" y="259.3" text-anchor="middle" class="s" style="font-size:12px">the chunks</text></g><line x1="295.4" y1="234" x2="304.4" y2="234" class="ln "/><polygon points="313.4,234 304.4,229.05 304.4,238.95" class="hd "/><rect x="316.4" y="178" width="127.2" height="112" rx="10" class="bx tn-a" /><g class="vzb"><text x="380" y="210.3" text-anchor="middle" class="b" style="font-size:14px">Retrieve</text><text x="380" y="228.3" text-anchor="middle" class="b" style="font-size:14px">top-k</text><text x="380" y="252.3" text-anchor="middle" class="s" style="font-size:12px">the k nearest</text><text x="380" y="268.3" text-anchor="middle" class="s" style="font-size:12px">chunks</text></g><line x1="446.6" y1="234" x2="455.6" y2="234" class="ln "/><polygon points="464.6,234 455.6,229.05 455.6,238.95" class="hd "/><rect x="467.6" y="178" width="127.2" height="112" rx="10" class="bx tn-a" /><g class="vzb"><text x="531.2" y="202.3" text-anchor="middle" class="b" style="font-size:14px">Build the</text><text x="531.2" y="220.3" text-anchor="middle" class="b" style="font-size:14px">prompt</text><text x="531.2" y="244.3" text-anchor="middle" class="s" style="font-size:12px">rules + chunks</text><text x="531.2" y="260.3" text-anchor="middle" class="s" style="font-size:12px">[1] [2] +</text><text x="531.2" y="276.3" text-anchor="middle" class="s" style="font-size:12px">question</text></g><line x1="597.8" y1="234" x2="606.8" y2="234" class="ln "/><polygon points="615.8,234 606.8,229.05 606.8,238.95" class="hd "/><rect x="618.8" y="178" width="127.2" height="112" rx="10" class="bx tn-g" /><g class="vzb"><text x="682.4" y="219.3" text-anchor="middle" class="b" style="font-size:14px">Generate</text><text x="682.4" y="243.3" text-anchor="middle" class="s" style="font-size:12px">“3 years [1]”,</text><text x="682.4" y="259.3" text-anchor="middle" class="s" style="font-size:12px">cited</text></g><polyline points="669.5,112 669.5,146 410,146 410,166" class="ln ac"/><polygon points="410,175 414.95,166 405.05,166" class="hd ac"/><text x="661.5" y="164" text-anchor="end" class="s ac-t">search the index</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 521" role="img" aria-label="RAG: an offline indexing lane and an online question lane" preserveAspectRatio="xMidYMid meet"><text x="12" y="18" text-anchor="start" class="b">Offline: indexing</text><text x="198" y="18" text-anchor="start" class="b ac-t">Online: each question</text><rect x="12" y="30" width="150" height="75" rx="10" class="bx tn-b" /><g class="vzb"><text x="87" y="53.35" text-anchor="middle" class="b" style="font-size:13px">Your documents</text><text x="87" y="76.35" text-anchor="middle" class="s" style="font-size:11px">manuals, policies,</text><text x="87" y="91.35" text-anchor="middle" class="s" style="font-size:11px">tickets</text></g><line x1="87" y1="107" x2="87" y2="116" class="ln "/><polygon points="87,125 91.95,116 82.05,116" class="hd "/><rect x="12" y="127" width="150" height="75" rx="10" class="bx tn-c" /><g class="vzb"><text x="87" y="150.35" text-anchor="middle" class="b" style="font-size:13px">Chunk</text><text x="87" y="173.35" text-anchor="middle" class="s" style="font-size:11px">cut into short</text><text x="87" y="188.35" text-anchor="middle" class="s" style="font-size:11px">passages</text></g><line x1="87" y1="204" x2="87" y2="213" class="ln "/><polygon points="87,222 91.95,213 82.05,213" class="hd "/><rect x="12" y="224" width="150" height="75" rx="10" class="bx tn-c" /><g class="vzb"><text x="87" y="247.35" text-anchor="middle" class="b" style="font-size:13px">Embed</text><text x="87" y="270.35" text-anchor="middle" class="s" style="font-size:11px">each chunk becomes a</text><text x="87" y="285.35" text-anchor="middle" class="s" style="font-size:11px">vector</text></g><line x1="87" y1="301" x2="87" y2="310" class="ln "/><polygon points="87,319 91.95,310 82.05,310" class="hd "/><rect x="12" y="321" width="150" height="75" rx="10" class="bx tn-d" /><g class="vzb"><text x="87" y="344.35" text-anchor="middle" class="b" style="font-size:13px">Vector index</text><text x="87" y="367.35" text-anchor="middle" class="s" style="font-size:11px">vectors + text +</text><text x="87" y="382.35" text-anchor="middle" class="s" style="font-size:11px">source, stored</text></g><rect x="198" y="30" width="150" height="75" rx="10" class="bx tn-b" /><g class="vzb"><text x="273" y="53.35" text-anchor="middle" class="b" style="font-size:13px">Question</text><text x="273" y="76.35" text-anchor="middle" class="s" style="font-size:11px">“How long is the</text><text x="273" y="91.35" text-anchor="middle" class="s" style="font-size:11px">warranty?”</text></g><line x1="273" y1="107" x2="273" y2="116" class="ln "/><polygon points="273,125 277.95,116 268.05,116" class="hd "/><rect x="198" y="127" width="150" height="75" rx="10" class="bx tn-a" /><g class="vzb"><text x="273" y="150.35" text-anchor="middle" class="b" style="font-size:13px">Embed</text><text x="273" y="173.35" text-anchor="middle" class="s" style="font-size:11px">same model as the</text><text x="273" y="188.35" text-anchor="middle" class="s" style="font-size:11px">chunks</text></g><line x1="273" y1="204" x2="273" y2="213" class="ln "/><polygon points="273,222 277.95,213 268.05,213" class="hd "/><rect x="198" y="224" width="150" height="60" rx="10" class="bx tn-a" /><g class="vzb"><text x="273" y="247.35" text-anchor="middle" class="b" style="font-size:13px">Retrieve top-k</text><text x="273" y="270.35" text-anchor="middle" class="s" style="font-size:11px">the k nearest chunks</text></g><line x1="273" y1="286" x2="273" y2="295" class="ln "/><polygon points="273,304 277.95,295 268.05,295" class="hd "/><rect x="198" y="306" width="150" height="75" rx="10" class="bx tn-a" /><g class="vzb"><text x="273" y="329.35" text-anchor="middle" class="b" style="font-size:13px">Build the prompt</text><text x="273" y="352.35" text-anchor="middle" class="s" style="font-size:11px">rules + chunks [1] [2]</text><text x="273" y="367.35" text-anchor="middle" class="s" style="font-size:11px">+ question</text></g><line x1="273" y1="383" x2="273" y2="392" class="ln "/><polygon points="273,401 277.95,392 268.05,392" class="hd "/><rect x="198" y="403" width="150" height="60" rx="10" class="bx tn-g" /><g class="vzb"><text x="273" y="426.35" text-anchor="middle" class="b" style="font-size:13px">Generate</text><text x="273" y="449.35" text-anchor="middle" class="s" style="font-size:11px">“3 years [1]”, cited</text></g><polyline points="164,358.5 180,358.5 180,254 186,254" class="ln ac"/><polygon points="195,254 186,249.05 186,258.95" class="hd ac"/><text x="12" y="422" text-anchor="start" class="s ac-t" style="font-size:13px">The arrow from the</text><text x="12" y="439" text-anchor="start" class="s ac-t" style="font-size:13px">index into</text><text x="12" y="456" text-anchor="start" class="s ac-t" style="font-size:13px">“Retrieve” is the</text><text x="12" y="473" text-anchor="start" class="s ac-t" style="font-size:13px">only link between</text><text x="12" y="490" text-anchor="start" class="s ac-t" style="font-size:13px">the two lanes.</text></svg>
+    <figcaption>Two lanes. The top one runs ahead of time and builds the index. The bottom one runs per question. The only bridge between them is the search into the index, and both lanes must use the same embedding model.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">This is the technique that turns a general-purpose model into <em>your</em> expert — answering from your documents, your policies, today’s data — with citations you can check. It’s the single most common architecture in production GenAI, and it’s built entirely from things you already understand.</p>
 
   <h2>The problem RAG solves</h2>
@@ -26,6 +58,10 @@
     <div class="box-label">Concept</div>
     <p><span class="term">Retrieval-Augmented Generation</span> (RAG) is a pattern where, for each query, you <em>retrieve</em> the most relevant pieces of text from a knowledge source and put them in the prompt, so the model <em>generates</em> its answer grounded in those pieces. The collection of source text is your <span class="term">knowledge base</span>. <span class="term">Grounding</span> means the answer is based on supplied evidence rather than the model’s memory. <span class="term">Retrieval</span> is the act of finding the relevant pieces — which, as you’ll see, is just the embedding similarity from Track 1.3 at scale.</p>
   </div>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <h2>How it works, at a glance</h2>
   <p>The whole pattern is one loop: turn the question into a vector, find the nearest chunks in a vector store, paste them into the prompt, and let the model answer from them.</p>
@@ -65,12 +101,19 @@ D <span class="o">=</span> embed.<span class="f">encode</span>(docs, normalize_e
     prompt <span class="o">=</span> (<span class="s">"Answer ONLY from the context. Cite as [n]. "</span>
               <span class="s">"If the answer isn't there, say you don't know.\n\n"</span>
               <span class="s">f"Context:\n</span>{context}<span class="s">\n\nQuestion: </span>{q}<span class="s">"</span>)
-    <span class="k">return</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"llama3.2"</span>,
+    <span class="k">return</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"qwen2.5:7b"</span>,
                        messages<span class="o">=</span>[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: prompt}])[<span class="s">"message"</span>][<span class="s">"content"</span>]
 
 <span class="f">print</span>(<span class="f">rag</span>(<span class="s">"How long is the warranty?"</span>))   <span class="c"># -> "The warranty is 3 years [1]."</span></code></pre>
     <p>That’s genuinely it — retrieval is one matrix multiply (cosine), generation is one grounded prompt. Everything else in this track makes these two steps robust at real scale.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Long context vs RAG for a bank's 40,000-document policy bot</div>
+    <p>Assumptions: 40,000 policy and product documents, about 2,500 tokens each, 50,000 questions a day, model priced at $2 per million input tokens and $10 per million output (claude-sonnet-5-5 list price, <a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic models overview, checked 2026-11-03</a>).</p><ol><li><strong>Size the knowledge.</strong> 40,000 x 2,500 = 100 M tokens. The model's window is 1 M tokens, so "paste it all in" is not even possible: the corpus is 100 times the window.</li><li><strong>Pretend it fit anyway.</strong> A 1 M-token prompt costs 1 x $2 = $2 per question. At 50,000 questions that is $100,000 a day, before output.</li><li><strong>Now RAG.</strong> Retrieve 8 chunks of 400 tokens = 3,200 tokens, plus about 300 tokens of instructions and question = 3,500 input tokens. 3,500 / 1,000,000 x $2 = $0.007 per question, or $350 a day.</li><li><strong>Output is the same either way.</strong> 300 output tokens x $10 / 1 M = $0.003 per answer, $150 a day.</li><li><strong>Freshness.</strong> Say 500 documents change each week. You re-chunk and re-embed only those: 500 x 2,500 = 1.25 M tokens through a free local embedder. With fine-tuning you would retrain; with RAG you re-index a sliver.</li></ol><p>Result: RAG is about $500 a day all-in against an impossible (or $100,000) long-context design, and every answer can cite the policy it came from. The catch, which the rest of this track handles, is that the bot is now only as good as the 8 chunks it fetched.</p>
+  </div>
+<!-- shape:scale:end -->
+
 
   <h2>When to use RAG (and when not to)</h2>
   <p>RAG is the right tool when you need a model to use <strong>knowledge that is large, changing, private, or must be cited</strong>. But it’s one of three ways to give a model knowledge, and a senior engineer picks deliberately:</p>
@@ -125,6 +168,22 @@ D <span class="o">=</span> embed.<span class="f">encode</span>(docs, normalize_e
         <div class="why">You still prompt; RAG just adds retrieved context.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">A teammate says: "Our new model has a 1 M-token window, so we can drop RAG and paste the whole 100 M-token knowledge base." What is the best reply?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) It works if you raise the temperature so the model explores more of the context.</span>
+        <div class="why">Temperature only changes how tokens are sampled. It does not change what the model can read or how much fits.</div></li>
+      <li data-correct="false"><span class="opt">B) Fine-tune the model on the knowledge base instead.</span>
+        <div class="why">Fine-tuning is for behaviour and format. It is slow to update, cannot cite, and is the wrong tool for a large, changing set of facts.</div></li>
+      <li data-correct="false"><span class="opt">C) Fine, as long as you use prompt caching.</span>
+        <div class="why">Caching makes repeated prefixes cheaper but cannot make 100 M tokens fit in a 1 M window, and it does nothing for changing content or citations.</div></li>
+      <li data-correct="true"><span class="opt">D) The corpus is 100 times the window, and even content that fits costs far more per question and suffers lost-in-the-middle; retrieve the relevant few chunks instead.</span>
+        <div class="why">Window size is a hard ceiling (100 M tokens will not fit in 1 M), and below the ceiling you still pay for every pasted token on every call. RAG sends a few thousand tokens and keeps citations.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -148,10 +207,92 @@ D <span class="o">=</span> embed.<span class="f">encode</span>(docs, normalize_e
     <p>A useful way to hold it: <strong>RAG moves the hard problem from “does the model know?” to “can I find the right text?”</strong> — and finding the right text is a search-and-data problem you can engineer, test, and improve incrementally. That’s a much better place to stand than hoping a model memorized your docs. The model becomes a reliable reasoner over evidence you control, which is exactly the relationship you want with a system that’s brilliant but an unreliable witness.</p>
   </div>
 
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/03_rag_local.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/03_rag_local.py</code></pre>
+    <p><strong>What to look for:</strong> Run the lab end to end and find the grounded answer with its [doc-id] citations, then ask a question the corpus cannot answer and watch the refusal fire because the top retrieval score falls below the threshold. That pair (cited answer, honest refusal) is the whole promise of this lesson. Delete the relevant document from the corpus and rerun: the same question should flip from answered to refused, which shows the answer came from retrieval, not from the model's memory.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  out of the top 3. On this tiny corpus dense already wins; hybrid earns its keep on big corpora full of
+  near-identical codes (SKUs, error ids) that embeddings blur. Never assume: measure hit@k (lab 06).
+5) Grounded answers with citations, and a refusal when retrieval is weak
+  Q: I was charged twice for one order. What happens now?
+  A: If you were charged twice for one order, the duplicate payment is reversed automatically within 3 business days [pay-01#0]. If it is not reversed after 3 business days, raise a billing ticket with both transaction ids.
+     citations=[&#x27;pay-01#0&#x27;] all-cited-ids-were-retrieved=True
+  Q: Can I change my delivery address after the order has shipped?
+  A: No, you cannot change your delivery address after the order has shipped. According to [ship-03#0], the address can only be changed before the order is packed.
+     citations=[&#x27;ship-03#0&#x27;] all-cited-ids-were-retrieved=True
+  Q: Do you deliver to Antarctica by drone?
+  A: I don&#x27;t know based on our policies. (refused before calling the LLM: best cosine 0.27 &lt; 0.35)
+     citations=[] all-cited-ids-were-retrieved=True
+  Look: every factual sentence carries an id you can check; the off-topic question is refused
+  cheaply by the retrieval threshold, so the model never gets a chance to make something up.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/03_rag_local.txt">labs/outputs</a>. Source: <a href="../labs/03_rag_local.py">labs/03_rag_local.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Write the four steps of the RAG loop for one query, naming what goes in and out of each step.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p><ol><li><strong>Embed the query</strong>: text in, one vector out (same model as the documents).</li><li><strong>Retrieve</strong>: query vector in, top-k chunk ids plus scores out.</li><li><strong>Build the prompt</strong>: numbered chunks, instructions (answer only from context, cite, abstain), and the question.</li><li><strong>Generate</strong>: prompt in, answer with citations out.</li></ol>Why it matters: when an answer is wrong, these boundaries tell you where to look. Wrong chunks in step 2 is a retrieval bug; right chunks but wrong answer in step 4 is a grounding bug.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> An HR team has 30 policy PDFs (about 90,000 tokens in total) that change twice a year, and wants answers with page references. A colleague proposes a full vector-database RAG stack. Is that the right call?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Probably not at first. 90,000 tokens fits comfortably in a 1 M-token window, so the simplest version is long context: paste all 30 PDFs with page markers and ask for page citations. Do the cost check: 90,000 tokens x $2 per million = $0.18 per question on a $2/M model, so at 2,000 questions a month that is $360 a month, and prompt caching can cut repeated-prefix cost further. Move to RAG when (a) the corpus grows past what is cheap to paste, (b) questions get frequent enough that $0.18 each hurts, or (c) quality suffers from lost-in-the-middle. The senior point: RAG is a tool for large or fast-changing knowledge, not a default.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Your RAG bot answers "What is the overdraft fee?" with "$35 [2]", but chunk [2] says the fee is $25. List every place in the pipeline this could have gone wrong and the one check that tells you which.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Candidates: (1) <strong>Generation</strong> blended chunk [2] with the model's prior (a common US fee figure), (2) <strong>stale index</strong>: the document changed to $25 but another chunk still says $35 and the model cited the wrong number, (3) <strong>chunking</strong> split a table so the $35 belongs to a different product row, (4) <strong>citation slip</strong>: the claim came from chunk [3] but was tagged [2]. The deciding check is to print the full prompt that was sent (all chunks) and search it for "$35". If $35 is nowhere in the context, it is a faithfulness failure in generation: tighten grounding and add a claim-vs-source check. If $35 is in some chunk, it is a data problem (stale or mis-chunked content) and the fix is upstream. Logging the exact retrieved context per answer is what makes this a two-minute diagnosis instead of a guessing game.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is RAG and why would you use it instead of just asking the model?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>RAG, retrieval-augmented generation, fetches relevant passages from your own data at question time and puts them in the prompt, so the model answers from evidence instead of memory. You use it because a bare model has a training cutoff, has never seen your private documents, and guesses when it does not know. RAG fixes all three: the knowledge is current because you re-index when documents change, private because it lives in your store, and checkable because each answer can cite the passage it used. It changes the model's input, not its weights, so updating knowledge is cheap.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> How do you decide between long context, RAG and fine-tuning for a new use case?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>I ask what kind of thing the model is missing. If it is knowledge that is small, I paste it (long context) because it is simplest. If it is knowledge that is large, changing, private or must be cited, I use RAG. If it is behaviour (a format, a tone, a classification style) I consider fine-tuning, or first just a strong system prompt and few-shot examples. Then I do the arithmetic: corpus tokens against the context window, tokens per call times call volume times price, and how often content changes. Often the answer is a mix: RAG for facts plus a light fine-tune or prompt for style.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> A RAG prototype looks great in demos but users complain it is wrong 20% of the time. How do you run the investigation?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>First I stop changing things and build a labeled set: 200 to 300 real user questions, each with the passage that should answer it and a reference answer. Then I split the failure in two. Retrieval metrics (recall@k, MRR) tell me whether the right passage reached the prompt; generation metrics (faithfulness, answer relevance) tell me whether the model used it. If recall is low I work on chunking, embeddings, hybrid search and reranking. If recall is high but faithfulness is low I work on grounding, context order and citation checks. I also slice by query type, because the 20% is usually concentrated: identifiers, multi-hop questions, or stale documents. Every fix goes through the same eval before it ships.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2005.11401" target="_blank" rel="noopener">Lewis et al., Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks (2020) - arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2307.03172" target="_blank" rel="noopener">Liu et al., Lost in the Middle: How Language Models Use Long Contexts (2023) - arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2312.10997" target="_blank" rel="noopener">Gao et al., Retrieval-Augmented Generation for Large Language Models: A Survey (2023) - arXiv</a></li>
+      <li><a href="https://platform.claude.com/docs/en/about-claude/models/overview" target="_blank" rel="noopener">Models overview and pricing - Anthropic docs</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
   <p>The first lever on retrieval quality is how you cut your documents into pieces. Get this wrong and nothing downstream can save you. Next: <strong>chunking strategies</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> RAG looks up the right pages first, then lets the model answer from them with page numbers.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

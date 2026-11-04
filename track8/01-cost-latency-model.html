@@ -12,6 +12,37 @@
 
   <span class="eyebrow">Track 8 · Lesson 8.1</span>
   <h1>The cost &amp; latency model</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Every call to a language model costs two things: money and time.</p>
+    <p>Both are counted in tokens, the small chunks of text the model reads and writes.</p>
+    <p>You pay for the tokens you send in and the tokens that come back, and output tokens cost more each.</p>
+    <p>Time has two parts: reading your whole prompt (prefill), then writing the answer one token at a time (decode).</p>
+    <p>If you can count the tokens, you can predict the bill and the wait before you launch.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Think of a taxi meter. You pay a small fee for every kilometre you sit in the car on the way there (input tokens) and a bigger fee for every kilometre on the way back (output tokens), and the ride home is slow because the driver can only go one street at a time. A long address to read out makes the driver start late; a long ride home makes the whole trip long and pricey.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>Kilometres on the way there</td><td>Input tokens: your prompt, priced per million</td></tr>
+      <tr><td>The pricier kilometres on the way back</td><td>Output tokens: often several times the input price (Sonnet 5.5: $2 in, $10 out)</td></tr>
+      <tr><td>Reading out a long address before the driver sets off</td><td>Prefill: the model reads the whole prompt; this sets the time to first token (TTFT)</td></tr>
+      <tr><td>Driving home one street at a time</td><td>Decode: one token per step, so a long answer means a long wait</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A real taxi charges the same rate both ways, while an LLM's output rate is usually several times the input rate.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 356" role="img" aria-label="Timeline and bill of one request: prefill then decode; input and output cost" preserveAspectRatio="xMidYMid meet"><text x="20" y="22" text-anchor="start" class="b">One request: 3,000 tokens in, 300 tokens out, on Sonnet 5.5 ($2 / $10 per million)</text><text x="20" y="56" text-anchor="start" class="s b">TIME</text><text x="20" y="102" text-anchor="start" class="s m">what the</text><text x="20" y="118" text-anchor="start" class="s m">user waits for</text><rect x="150" y="80" width="58.6" height="34" rx="3" class="fill-c"/><rect x="213.739" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="230.017" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="246.294" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="262.572" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="278.85" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="295.128" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="311.406" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="327.683" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="343.961" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="360.239" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="376.517" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="392.794" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="409.072" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="425.35" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="441.628" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="457.906" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="474.183" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="490.461" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="506.739" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="523.017" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="539.294" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="555.572" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="571.85" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="588.128" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="604.406" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="620.683" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="636.961" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="653.239" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="669.517" y="84" width="6" height="26" rx="1" class="fill-a"/><rect x="685.794" y="84" width="6" height="26" rx="1" class="fill-a"/><line x1="150" y1="128" x2="736" y2="128" class="ln thin"/><line x1="150" y1="128" x2="150" y2="133" class="ln thin"/><text x="150" y="147" text-anchor="middle" class="s m">0 s</text><line x1="247.667" y1="128" x2="247.667" y2="133" class="ln thin"/><text x="247.667" y="147" text-anchor="middle" class="s m">1 s</text><line x1="345.333" y1="128" x2="345.333" y2="133" class="ln thin"/><text x="345.333" y="147" text-anchor="middle" class="s m">2 s</text><line x1="443" y1="128" x2="443" y2="133" class="ln thin"/><text x="443" y="147" text-anchor="middle" class="s m">3 s</text><line x1="540.667" y1="128" x2="540.667" y2="133" class="ln thin"/><text x="540.667" y="147" text-anchor="middle" class="s m">4 s</text><line x1="638.333" y1="128" x2="638.333" y2="133" class="ln thin"/><text x="638.333" y="147" text-anchor="middle" class="s m">5 s</text><line x1="736" y1="128" x2="736" y2="133" class="ln thin"/><text x="736" y="147" text-anchor="middle" class="s m">6 s</text><line x1="208.6" y1="160" x2="208.6" y2="127" class="ln ac"/><polygon points="208.6,118 203.65,127 213.55,127" class="hd ac"/><text x="202.6" y="174" text-anchor="start" class="s ac-t">first token at 0.6 s (TTFT)</text><text x="696.933" y="194" text-anchor="end" class="s">last token at 5.6 s</text><line x1="696.933" y1="180" x2="696.933" y2="127" class="ln "/><polygon points="696.933,118 691.983,127 701.883,127" class="hd "/><text x="179.3" y="72" text-anchor="middle" class="s b">prefill</text><text x="452.767" y="72" text-anchor="middle" class="s b">decode: 300 tokens, one at a time, at 60 tokens/s = 5 s</text><text x="150" y="218" text-anchor="start" class="s m">Prefill reads all 3,000 input tokens in one parallel pass, so a long prompt mostly delays the first token.</text><text x="20" y="256" text-anchor="start" class="s b">MONEY</text><rect x="150" y="242" width="390.667" height="34" rx="3" class="fill-c"/><rect x="542.667" y="242" width="193.333" height="34" rx="3" class="fill-a"/><text x="150" y="296" text-anchor="start" class="s">input: 3,000 x $2/M = $0.0060</text><text x="736" y="296" text-anchor="end" class="s">output: 300 x $10/M = $0.0030</text><text x="150" y="322" text-anchor="start" class="s b">Total $0.0090 a request. Output costs 5x more per token,</text><text x="150" y="340" text-anchor="start" class="s">yet input is 67% of this bill: there are 10x more input tokens.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 480" role="img" aria-label="Timeline and bill of one request: prefill then decode; input and output cost" preserveAspectRatio="xMidYMid meet"><text x="14" y="22" text-anchor="start" class="b">One request: 3,000 tokens in,</text><text x="14" y="41" text-anchor="start" class="b">300 out, on Sonnet 5.5</text><text x="14" y="72" text-anchor="start" class="s b">TIME</text><rect x="14" y="86" width="33" height="34" rx="3" class="fill-c"/><rect x="48.5833" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="57.75" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="66.9167" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="76.0833" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="85.25" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="94.4167" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="103.583" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="112.75" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="121.917" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="131.083" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="140.25" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="149.417" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="158.583" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="167.75" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="176.917" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="186.083" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="195.25" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="204.417" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="213.583" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="222.75" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="231.917" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="241.083" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="250.25" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="259.417" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="268.583" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="277.75" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="286.917" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="296.083" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="305.25" y="90" width="6" height="26" rx="1" class="fill-a"/><rect x="314.417" y="90" width="6" height="26" rx="1" class="fill-a"/><line x1="14" y1="134" x2="344" y2="134" class="ln thin"/><line x1="14" y1="134" x2="14" y2="139" class="ln thin"/><text x="14" y="153" text-anchor="middle" class="s m">0 s</text><line x1="69" y1="134" x2="69" y2="139" class="ln thin"/><text x="69" y="153" text-anchor="middle" class="s m">1 s</text><line x1="124" y1="134" x2="124" y2="139" class="ln thin"/><text x="124" y="153" text-anchor="middle" class="s m">2 s</text><line x1="179" y1="134" x2="179" y2="139" class="ln thin"/><text x="179" y="153" text-anchor="middle" class="s m">3 s</text><line x1="234" y1="134" x2="234" y2="139" class="ln thin"/><text x="234" y="153" text-anchor="middle" class="s m">4 s</text><line x1="289" y1="134" x2="289" y2="139" class="ln thin"/><text x="289" y="153" text-anchor="middle" class="s m">5 s</text><line x1="344" y1="134" x2="344" y2="139" class="ln thin"/><text x="344" y="153" text-anchor="middle" class="s m">6 s</text><line x1="47" y1="166" x2="47" y2="133" class="ln ac"/><polygon points="47,124 42.05,133 51.95,133" class="hd ac"/><text x="43" y="180" text-anchor="start" class="s ac-t">first token at 0.6 s (TTFT)</text><text x="322" y="200" text-anchor="end" class="s">last token at 5.6 s</text><line x1="322" y1="186" x2="322" y2="133" class="ln "/><polygon points="322,124 317.05,133 326.95,133" class="hd "/><rect x="14" y="213" width="14" height="14" rx="3" class="fill-c"/><text x="34" y="225" text-anchor="start" class="s">prefill: reads all 3,000 input</text><text x="34" y="242" text-anchor="start" class="s">tokens in one parallel pass</text><rect x="14" y="255" width="14" height="14" rx="3" class="fill-a"/><text x="34" y="267" text-anchor="start" class="s">decode: 300 tokens, one at a time,</text><text x="34" y="284" text-anchor="start" class="s">at 60 tokens/s = 5 s</text><text x="14" y="316" text-anchor="start" class="s b">MONEY</text><rect x="14" y="330" width="220" height="34" rx="3" class="fill-c"/><rect x="236" y="330" width="108" height="34" rx="3" class="fill-a"/><text x="14" y="384" text-anchor="start" class="s">input: 3,000 x $2/M = $0.0060</text><text x="344" y="402" text-anchor="end" class="s">output: 300 x $10/M = $0.0030</text><text x="14" y="428" text-anchor="start" class="s b">Total $0.0090 a request. Output costs 5x more per token,</text><text x="14" y="446" text-anchor="start" class="s">yet input is 67% of this bill (10x more</text><text x="14" y="464" text-anchor="start" class="s">input tokens).</text></svg>
+    <figcaption>Top: time. The wide block is prefill; each thin bar after it is a slice of the answer being written. Bottom: money for the same request. The token counts, prices and speeds are the page's own example; the dollar split is computed from them.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">A feature that works in a demo can be unaffordable or unbearably slow at scale. To ship for real, you need a mental model of where the dollars and the milliseconds actually go. Both come down to one thing you already understand: tokens.</p>
 
   <h2>Cost and latency are both about tokens</h2>
@@ -26,6 +57,10 @@
     <div class="box-label">Concept</div>
     <p>Providers price per token, usually with <strong>input tokens cheaper than output tokens</strong>. <span class="term">Latency</span> splits into <span class="term">prefill</span> (the model reads your whole prompt — this sets the <span class="term">time to first token</span>, TTFT) and <span class="term">decode</span> (it generates the answer one token at a time — this scales with output length). So a long <em>prompt</em> mainly raises TTFT and input cost; a long <em>answer</em> raises both decode latency and output cost. Output tokens are the expensive ones, on both axes.</p>
   </div>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <h2>Estimate your bill</h2>
   <p>Set the tokens, prices (use your provider’s — they vary), and traffic. Watch how output tokens and request volume drive the monthly cost.</p>
@@ -64,6 +99,21 @@ cost <span class="o">=</span> (in_tokens <span class="o">*</span> PRICE_IN <span
 <span class="f">print</span>(<span class="s">f"~$</span>{cost:.5f}<span class="s"> per request, ~$</span>{cost*20000*30:.0f}<span class="s">/month at 20k/day"</span>)</code></pre>
     <p>This five-line estimate is the single most useful habit in serving: it turns “is this affordable?” from a post-launch panic into a pre-launch number you can design against.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Pricing a telecom support assistant at 400,000 requests a day</div>
+    <p>Assumptions (ours, not a vendor's): 400,000 requests a day, 3,000 input tokens each (system prompt + retrieved help articles + question), 300 output tokens. Prices are the published Claude list prices on 2026-11-03 (<a href="https://platform.claude.com/docs/en/about-claude/models/overview" target="_blank" rel="noopener">Anthropic models overview</a>).</p>
+<ol>
+<li><strong>Per request on claude-sonnet-5-5 ($2 in / $10 out per million).</strong> Input: 3,000 x $2 / 1,000,000 = $0.006. Output: 300 x $10 / 1,000,000 = $0.003. Total <strong>$0.009</strong>.</li>
+<li><strong>Per month.</strong> $0.009 x 400,000 x 30 = <strong>$108,000</strong>.</li>
+<li><strong>Where the money sits.</strong> Output is 5x pricier per token, yet input is two thirds of this bill ($0.006 of $0.009) because there are 10x more input tokens. "Output dominates" is a per-token statement; always check the actual split.</li>
+<li><strong>Same traffic on other tiers.</strong> claude-opus-5-5 ($4 / $20): $0.012 + $0.006 = $0.018, so $216,000 a month. claude-haiku-5-5 (from $0.10 / $0.50, the rate for prompts up to 100K tokens per the <a href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching" target="_blank" rel="noopener">prompt caching pricing table</a>): $0.0003 + $0.00015 = $0.00045, so $5,400 a month. A 40x spread for the same token counts.</li>
+<li><strong>Latency, with illustrative speeds.</strong> Say prefill gives a 0.6 s TTFT and decode runs at 60 tokens/s (made-up round numbers; measure your own). 300 output tokens take 5 s, so the user waits about 5.6 s total. Cutting the answer to 150 tokens saves 2.5 s; cutting 1,000 input tokens saves far less time but $0.002 a request, which is $24,000 a month.</li>
+<li><strong>Count with the right tokenizer.</strong> tiktoken's cl100k_base is OpenAI's tokenizer. Anthropic says Claude Opus 4.7 and later models produce roughly 30% more tokens than earlier Claude models for the same text, and offers a free count_tokens endpoint (<a href="https://platform.claude.com/docs/en/build-with-claude/token-counting" target="_blank" rel="noopener">token counting docs</a>). A 30% miss on token counts is a 30% miss on the budget.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -102,6 +152,35 @@ cost <span class="o">=</span> (in_tokens <span class="o">*</span> PRICE_IN <span
         <div class="why">Latency scales with tokens, especially output.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">A request has 8,000 input tokens and 200 output tokens on a model priced at $2 per million input and $10 per million output. Which part costs more?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) You cannot tell without knowing the latency.</span>
+        <div class="why">Latency does not change the bill. Token counts and prices are enough.</div></li>
+      <li data-correct="false"><span class="opt">B) They cost the same because prices are balanced to make them equal.</span>
+        <div class="why">Nothing balances them. Cost is just tokens x price on each side; do the multiplication.</div></li>
+      <li data-correct="false"><span class="opt">C) Output, because output tokens always dominate the bill.</span>
+        <div class="why">Output dominates per token, not always per request. With a 40:1 input:output ratio the input side is 8x larger.</div></li>
+      <li data-correct="true"><span class="opt">D) Input: $0.016 versus $0.002 for output.</span>
+        <div class="why">8,000 x $2/M = $0.016 and 200 x $10/M = $0.002. Output is pricier per token, but input wins on volume here.</div></li>
+    </ul>
+  </div>
+  <div class="quiz">
+    <p class="quiz-q">You move a workload from an older Claude model to Claude Opus 4.7 or later and reuse token counts you measured last year with tiktoken. What is the risk?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) The only risk is latency, cost is unaffected.</span>
+        <div class="why">Billing is per token, so a token-count error is a cost error one for one.</div></li>
+      <li data-correct="false"><span class="opt">B) None, tokens are a universal unit across vendors.</span>
+        <div class="why">Tokenizers are model-specific. The same paragraph can be a different number of tokens on two models.</div></li>
+      <li data-correct="false"><span class="opt">C) Your estimate is too high, newer models always use fewer tokens.</span>
+        <div class="why">Anthropic documents the opposite direction for Opus 4.7 and later. Never assume; measure.</div></li>
+      <li data-correct="true"><span class="opt">D) Your estimate is too low: tiktoken is a different tokenizer, and Anthropic says newer Claude models produce roughly 30% more tokens than pre-4.7 models.</span>
+        <div class="why">Each model family tokenizes differently. Re-count with the provider's own counter (Anthropic's count_tokens endpoint is free) before you budget.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -125,8 +204,84 @@ cost <span class="o">=</span> (in_tokens <span class="o">*</span> PRICE_IN <span
     <p>This also clarifies the optimization priorities for the rest of this track. To cut <strong>cost</strong>, your levers are caching (don’t pay twice), routing (don’t use a big model when a small one works), smaller/quantized models, and token budgeting (trim the prompt) — covered next. To cut <strong>latency</strong>, you stream (for perceived speed), shrink prompts (for TTFT), shorten outputs (for decode time), and pick faster models. And — connecting to Track 6 — you don’t optimize blind: measure cost and latency per request (they’re guardrail metrics on every change), find the actual bottleneck, then apply the lever that targets it. Premature optimization wastes effort; measured optimization is where serving becomes engineering.</p>
   </div>
 
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/01_generate_and_sample.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/01_generate_and_sample.py</code></pre>
+    <p><strong>What to look for:</strong> The lab prints prompt_eval_count (input tokens), eval_count (output tokens), time-to-first-token and tokens/sec for each call. Paste a long block of text into the prompt and watch TTFT climb while tokens/sec stays flat; then ask for a longer answer and watch total time grow with eval_count. Multiply both counts by any price list to turn the run into a bill.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>2) Same prompt, temperature 1.0, three different seeds
+  seed=1: Bengaluru in July typically experiences warm to hot temperatures with occasional thunderstorms.
+  seed=2: Bengaluru in July typically experiences hot and humid weather with occasional thunderstorms.
+  seed=3: Bengaluru in July typically experiences hot and dry weather with temperatures often soaring above 30°C.
+  distinct outputs at T=1.0: 3  (sampling -&gt; usually 2-3)
+3) Same seed twice at T=1.0 -&gt; reproducible on the same machine
+  identical: True
+4) Tokens are what you pay for: prompt vs output token counts
+  short prompt: prompt_tokens=   36  output_tokens=  2  prefill_s=  0.52  answer=&#x27;Paris&#x27;
+  long prompt : prompt_tokens=  639  output_tokens=  2  prefill_s=  0.22  answer=&#x27;Paris&#x27;
+  Look: the long prompt costs many more input tokens and more prefill time for the same answer.
+5) Streaming: time-to-first-token (TTFT) vs total time
+  TTFT=0.36s  total=2.54s  chunks=16  decode_tokens_per_s=7.3
+  Look: streaming does not make generation faster; it shows the first words sooner.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/01_generate_and_sample.txt">labs/outputs</a>. Source: <a href="../labs/01_generate_and_sample.py">labs/01_generate_and_sample.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> A summarizer reads 12,000 input tokens and writes 400 output tokens on claude-sonnet-5-5 ($2 / $10 per million). Compute the cost per call and per 1 million calls.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Input: 12,000 x 2 / 1,000,000 = $0.024. Output: 400 x 10 / 1,000,000 = $0.004. Per call $0.028; per million calls $28,000. Input is 86% of the bill, so the first lever is a shorter or cached prompt, not a shorter summary.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Product wants answers to start appearing within 1 second. With your own measurements you find TTFT grows by about 0.1 s per 1,000 prompt tokens above a 0.3 s floor (illustrative numbers). What is the largest prompt that meets the target, and what does that tell you about RAG context size?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>0.3 + 0.1 x (tokens / 1,000) <= 1.0 gives tokens <= 7,000. So the retrieved context plus system prompt plus history must stay under about 7,000 tokens. That turns 'retrieve top-10 chunks' into a constraint: at 500 tokens a chunk and a 1,500-token system prompt you can afford about 11 chunks, minus history. The why: TTFT is set by prefill, and prefill scales with prompt length, so a latency target becomes a token budget.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> An agent averages 7 model calls per task. Call k re-sends a fixed 2,000-token prefix plus all earlier steps, and each step adds 600 tokens (tool output plus the model's reply). Output per call is 150 tokens. Give the input tokens for the whole task and the cost per task on claude-sonnet-5-5.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Call k sends 2,000 + 600 x (k - 1) input tokens. Sum over k = 1..7: 7 x 2,000 + 600 x (0+1+...+6) = 14,000 + 600 x 21 = 26,600 input tokens. Output: 7 x 150 = 1,050. Cost: 26,600 x 2/M = $0.0532 plus 1,050 x 10/M = $0.0105, so about $0.064 per task. The growth term (12,600 tokens) is almost half the input, which is why agents need history trimming and prompt caching. Per-call estimates hide this; always cost the task.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> How do you estimate the monthly cost of an LLM feature before launch?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>I count tokens per request with the target model's own tokenizer, split into input and output, and multiply each by its list price. Then I multiply by requests per day and by 30. For example 3,000 input and 300 output tokens on a $2/$10 per million model is $0.009 a request, so 100,000 requests a day is about $27,000 a month. I also add the extra calls a feature makes, like retries, judge calls or agent steps, because the bill is per task, not per call. Finally I check which side dominates so I know which lever to pull first.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> Users say the assistant 'takes forever to start'. Total response time is fine. Where do you look and what do you change?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>'Slow to start' is time to first token, and TTFT is mostly prefill plus queueing. I would pull traces and plot TTFT against prompt tokens. If they correlate, the prompt is too long: trim retrieved context, summarize history, and move the fixed system prompt and tool definitions into a provider prompt cache so the prefix is not re-processed. If TTFT is high even for short prompts, it is queueing or rate limiting at the provider or my own server, so I check concurrency limits and retries. Streaming then makes the improved first token the whole felt experience.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Finance asks you to cut LLM spend 50% next quarter without hurting quality. How do you plan it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>First I measure: cost per task broken down by feature, model, input vs output, and cached vs uncached tokens. Usually a few features and the input side dominate. Then I rank levers by saving per unit of risk: prompt caching for fixed prefixes, the Batch API (50% off at Anthropic) for anything not interactive, response caching for repeated questions, routing easy traffic to a cheaper tier, then trimming context. Each change goes through the eval gate so quality is proven, not assumed. I report expected and realised savings per lever, and I set per-feature budgets with alerts so the gain does not erode as traffic grows.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://platform.claude.com/docs/en/about-claude/models/overview" target="_blank" rel="noopener">Models overview (prices, context, output limits) - Anthropic</a></li>
+      <li><a href="https://platform.claude.com/docs/en/build-with-claude/token-counting" target="_blank" rel="noopener">Token counting - Anthropic</a></li>
+      <li><a href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching" target="_blank" rel="noopener">Prompt caching (pricing table incl. Haiku 5.5 tiers) - Anthropic</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
   <p>The cheapest latency win requires no model change at all — it just changes <em>when</em> the user sees the words. Next: <strong>streaming</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Count the tokens in and out, and you know both the bill and the wait.</p>
+<!-- ease:line:end -->
 </main>
 
 <script>
@@ -155,5 +310,10 @@ cost <span class="o">=</span> (in_tokens <span class="o">*</span> PRICE_IN <span
 </script>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

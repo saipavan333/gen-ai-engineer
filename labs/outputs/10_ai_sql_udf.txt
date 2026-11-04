@@ -1,0 +1,48 @@
+
+======================================================================
+1) Row-by-row LLM calls from SQL  (model: qwen2.5:7b)
+======================================================================
+  1 MX-750  positive  'None'
+  2 MX-750  negative  'Jar lid cracked; no follow-up.'
+  3 KT-20   mixed     'Handle gets hot.'
+  4 KT-20   negative  'Product failed post-warranty.'
+  5 MX-750  mixed     'Loud packaging.'
+  6 MX-750  positive  'None'
+  rows=6  llm_calls=10  cache_hits=2  wall=11.7s
+  Look: 6 rows x 2 AI columns = up to 12 model calls. Review 6 duplicates review 1, so the cache saved 2.
+  On 10 M rows that is 20 M calls: filter and dedupe BEFORE the AI function, never after.
+  Spot-check the issue column against the review text: a small model can add details the review never
+  says. An AI column is model output, so it needs the same eval set and spot checks as any other.
+
+======================================================================
+2) Aggregate AI output like any other column
+======================================================================
+   ('KT-20', 'mixed', 1)
+   ('KT-20', 'negative', 1)
+   ('MX-750', 'mixed', 1)
+   ('MX-750', 'negative', 1)
+   ('MX-750', 'positive', 2)
+  (served from cache: identical prompts are not re-sent)
+
+======================================================================
+3) Vector search in SQL: embed once into a column, query by cosine
+======================================================================
+   (4, Decimal('0.410'), 'Stopped working after the warranty ended, exactly one year.')
+   (2, Decimal('0.380'), 'Jar lid cracked in a week, customer care never called back.')
+   (3, Decimal('0.108'), 'Kettle is okay. Boils fast but the handle gets hot.')
+
+======================================================================
+4) The same pattern on your platforms  (needs your account - free trial / free tier)
+======================================================================
+  -- BigQuery (AI.GENERATE, docs read 2026-11-03)
+  SELECT review_id, AI.GENERATE(CONCAT('Classify sentiment as positive, negative or mixed: ', review)).result AS sentiment
+  FROM `my_project.shop.reviews`;
+  -- Snowflake Cortex (AI_COMPLETE)
+  SELECT review_id, AI_COMPLETE('claude-haiku-4-5', 'Classify sentiment as positive, negative or mixed: ' || review) AS sentiment
+  FROM shop.reviews;
+  -- Databricks SQL (ai_query)
+  SELECT review_id, ai_query('system.ai.meta-llama-3-3-70b-instruct', CONCAT('Classify sentiment as positive, negative or mixed: ', review)) AS sentiment
+  FROM shop.reviews;
+  Model and endpoint names change often: check the current list in each doc page before you run these.
+{"llm": 10, "cache_hits": 8}
+

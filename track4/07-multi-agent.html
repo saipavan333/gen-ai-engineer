@@ -12,6 +12,37 @@
 
   <span class="eyebrow">Track 4 · Lesson 4.7</span>
   <h1>Multi-agent &amp; orchestration</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>One agent with a dozen tools and roles gets confused.</p>
+    <p>A multi-agent system splits the work between focused specialists.</p>
+    <p>An orchestrator decides who does what and combines the results.</p>
+    <p>A handoff passes the job, and the context it needs, from one agent to another.</p>
+    <p>It adds cost and new ways to fail, so use it only when one agent really isn't enough.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>A multi-agent system is like a group project at school: one kid researches, one draws, one writes, and a leader stitches it together. When it works it's faster; when it doesn't, two kids research the same thing, nobody draws the map, and the leader's instructions were so vague everyone guessed.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The group leader</td><td>The orchestrator (or supervisor)</td></tr>
+      <tr><td>The kid who researches</td><td>A specialist: narrow role, its own prompt and tools</td></tr>
+      <tr><td>Passing your notes to the writer</td><td>A handoff: control plus the context it needs</td></tr>
+      <tr><td>Vague instructions, so everyone guessed</td><td>A thin handoff message: agents only know what they were sent</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> Kids can lean over and ask each other quick questions; agents only know what was written into the message they were handed.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 332" role="img" aria-label="The router pattern: one orchestrator, several specialists" preserveAspectRatio="xMidYMid meet"><rect x="20" y="125" width="230" height="82" rx="10" class="bx tn-a" /><g class="vzb"><text x="135" y="150.25" text-anchor="middle" class="b">Orchestrator</text><text x="135" y="176.25" text-anchor="middle" class="s" style="font-size:13px">classifies the request, picks</text><text x="135" y="193.25" text-anchor="middle" class="s" style="font-size:13px">a specialist</text></g><rect x="440" y="18" width="300" height="65" rx="10" class="bx tn-k" /><g class="vzb"><text x="590" y="43.25" text-anchor="middle" class="b">Billing specialist</text><text x="590" y="69.25" text-anchor="middle" class="s" style="font-size:13px">tools: invoices, refunds</text></g><polyline points="252,166 310,166 380,50.5 428,50.5" class="ln "/><polygon points="437,50.5 428,45.55 428,55.45" class="hd "/><rect x="440" y="95" width="300" height="65" rx="10" class="bx tn-c" /><g class="vzb"><text x="590" y="120.25" text-anchor="middle" class="b">Technical specialist</text><text x="590" y="146.25" text-anchor="middle" class="s" style="font-size:13px">tools: logs, docs search</text></g><polyline points="252,166 310,166 380,127.5 428,127.5" class="ln "/><polygon points="437,127.5 428,122.55 428,132.45" class="hd "/><rect x="440" y="172" width="300" height="65" rx="10" class="bx tn-d" /><g class="vzb"><text x="590" y="197.25" text-anchor="middle" class="b">Shipping specialist</text><text x="590" y="223.25" text-anchor="middle" class="s" style="font-size:13px">tools: order lookup, carrier tracking</text></g><polyline points="252,166 310,166 380,204.5 428,204.5" class="ln "/><polygon points="437,204.5 428,199.55 428,209.45" class="hd "/><rect x="440" y="249" width="300" height="65" rx="10" class="bx tn-w" /><g class="vzb"><text x="590" y="274.25" text-anchor="middle" class="b">No match</text><text x="590" y="300.25" text-anchor="middle" class="s" style="font-size:13px">hand off to a human</text></g><polyline points="252,166 310,166 380,281.5 428,281.5" class="ln "/><polygon points="437,281.5 428,276.55 428,286.45" class="hd "/></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 433" role="img" aria-label="The router pattern: one orchestrator, several specialists" preserveAspectRatio="xMidYMid meet"><rect x="12" y="14" width="336" height="65" rx="10" class="bx tn-a" /><g class="vzb"><text x="180" y="39.25" text-anchor="middle" class="b">Orchestrator</text><text x="180" y="65.25" text-anchor="middle" class="s" style="font-size:13px">classifies the request, picks a specialist</text></g><line x1="26" y1="79" x2="26" y2="93" class="ln"/><rect x="56" y="113" width="292" height="65" rx="10" class="bx tn-k" /><g class="vzb"><text x="202" y="138.25" text-anchor="middle" class="b">Billing specialist</text><text x="202" y="164.25" text-anchor="middle" class="s" style="font-size:13px">tools: invoices, refunds</text></g><line x1="26" y1="145.5" x2="44" y2="145.5" class="ln "/><polygon points="53,145.5 44,140.55 44,150.45" class="hd "/><rect x="56" y="192" width="292" height="65" rx="10" class="bx tn-c" /><g class="vzb"><text x="202" y="217.25" text-anchor="middle" class="b">Technical specialist</text><text x="202" y="243.25" text-anchor="middle" class="s" style="font-size:13px">tools: logs, docs search</text></g><line x1="26" y1="224.5" x2="44" y2="224.5" class="ln "/><polygon points="53,224.5 44,219.55 44,229.45" class="hd "/><rect x="56" y="271" width="292" height="65" rx="10" class="bx tn-d" /><g class="vzb"><text x="202" y="296.25" text-anchor="middle" class="b">Shipping specialist</text><text x="202" y="322.25" text-anchor="middle" class="s" style="font-size:13px">tools: order lookup, carrier tracking</text></g><line x1="26" y1="303.5" x2="44" y2="303.5" class="ln "/><polygon points="53,303.5 44,298.55 44,308.45" class="hd "/><rect x="56" y="350" width="292" height="65" rx="10" class="bx tn-w" /><g class="vzb"><text x="202" y="375.25" text-anchor="middle" class="b">No match</text><text x="202" y="401.25" text-anchor="middle" class="s" style="font-size:13px">hand off to a human</text></g><line x1="26" y1="382.5" x2="44" y2="382.5" class="ln "/><polygon points="53,382.5 44,377.55 44,387.45" class="hd "/><line x1="26" y1="79" x2="26" y2="382.5" class="ln"/></svg>
+    <figcaption>This is the router, the simplest of the lesson's four patterns. Each arrow is a handoff, and the specialist sees only what travels along it. Pipelines, supervisors and parallel fan-outs reuse the same parts.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">When one agent juggling a dozen tools and roles starts getting confused, the fix is often to split the work: focused specialist agents, coordinated by an orchestrator. Done right it’s cleaner and more reliable. Done reflexively it’s needless complexity — so we’ll be honest about when to reach for it.</p>
 
   <h2>Why split one agent into several</h2>
@@ -26,6 +57,10 @@
     <div class="box-label">Concept</div>
     <p>A <span class="term">multi-agent</span> system uses several LLM agents that collaborate. An <span class="term">orchestrator</span> (or supervisor) coordinates them — deciding which agent handles what and combining outputs. A <span class="term">specialist</span> is an agent with a narrow role and toolset. A <span class="term">handoff</span> is passing control (and context) from one agent to another. The coordination shape is the <span class="term">orchestration pattern</span>.</p>
   </div>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <h2>The orchestration patterns</h2>
   <div class="tbl-wrap">
@@ -54,6 +89,10 @@
     <p>An LLM classifies the request, then a focused specialist (its own system prompt + tools) handles it.</p>
 <pre><code><span class="k">import</span> json, ollama
 
+<span class="k">def</span> <span class="f">ask</span>(prompt, system<span class="o">=</span><span class="kc">None</span>, model<span class="o">=</span><span class="s">"qwen2.5:7b"</span>):   <span class="c"># one chat call; returns the reply text</span>
+    msgs <span class="o">=</span> ([{<span class="s">"role"</span>: <span class="s">"system"</span>, <span class="s">"content"</span>: system}] <span class="k">if</span> system <span class="k">else</span> []) <span class="o">+</span> [{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: prompt}]
+    <span class="k">return</span> ollama.<span class="f">chat</span>(model<span class="o">=</span>model, messages<span class="o">=</span>msgs)[<span class="s">"message"</span>][<span class="s">"content"</span>]
+
 SPECIALISTS <span class="o">=</span> {
     <span class="s">"billing"</span>:   <span class="s">"You are a billing specialist. Be precise about charges and refunds."</span>,
     <span class="s">"technical"</span>: <span class="s">"You are a technical support engineer. Diagnose and give clear steps."</span>,
@@ -62,7 +101,7 @@ SPECIALISTS <span class="o">=</span> {
 
 <span class="k">def</span> <span class="f">route</span>(request):
     prompt <span class="o">=</span> <span class="s">f'Classify into one of [billing, technical, sales]. Return JSON {{"team":"..."}}.\nRequest: </span>{request}<span class="s">'</span>
-    out <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"llama3.2"</span>,
+    out <span class="o">=</span> ollama.<span class="f">chat</span>(model<span class="o">=</span><span class="s">"qwen2.5:7b"</span>,
             messages<span class="o">=</span>[{<span class="s">"role"</span>:<span class="s">"user"</span>,<span class="s">"content"</span>:prompt}], format<span class="o">=</span><span class="s">"json"</span>)[<span class="s">"message"</span>][<span class="s">"content"</span>]
     <span class="k">return</span> json.<span class="f">loads</span>(out)[<span class="s">"team"</span>]
 
@@ -73,6 +112,13 @@ SPECIALISTS <span class="o">=</span> {
 <span class="f">print</span>(<span class="f">handle</span>(<span class="s">"I was charged twice this month"</span>))   <span class="c"># routed to billing</span></code></pre>
     <p>Each specialist prompt stays simple and testable. Adding a new team is one entry in the dictionary — that modularity is the practical payoff of multi-agent design.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Pricing a multi-agent research system at 50,000 queries a day</div>
+    <p>Anthropic reports that its agents use about 4x the tokens of a chat, and its multi-agent research system about 15x; its multi-agent setup beat a single agent by 90.2% on its internal research eval (<a href="https://www.anthropic.com/engineering/multi-agent-research-system">Anthropic, multi-agent research system</a>). Assumptions for our workload: a chat answer uses 5,000 tokens, 90% input and 10% output, priced at claude-sonnet-5-5 ($2/M in, $10/M out, <a href="https://platform.claude.com/docs/en/about-claude/models/overview">Claude models overview</a>), so a blended $2.80 per million tokens.</p><ol><li><strong>Per query.</strong> Chat: 5,000 tokens = $0.014. Single agent (4x): 20,000 = $0.056. Multi-agent (15x): 75,000 = <strong>$0.21</strong>.</li><li><strong>Per day at 50,000 queries.</strong> Chat $700; single agent $2,800; multi-agent <strong>$10,500</strong>.</li><li><strong>Coordination failures cost money too.</strong> Anthropic describes early versions spawning 50 subagents for simple queries, and subagents duplicating each other's searches because the lead's instructions were vague. Suppose 2 of 5 subagents duplicate work: about 40% of subagent spend is waste; if subagents are most of the $10,500, that is over $3,000 a day.</li><li><strong>Guards that pay for themselves.</strong> Scale effort to the query (a simple fact gets one agent, a broad comparison gets several), give each subagent an explicit objective, output format, tool list and boundaries, and cap subagents per query.</li><li><strong>The decision.</strong> If only 10% of queries are broad research, route those to multi-agent and the rest to a single agent: 5,000 x $0.21 + 45,000 x $0.056 = $1,050 + $2,520 = <strong>$3,570 a day</strong>, keeping the quality win where it exists.</li></ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box warn">
     <div class="box-label">Single-agent first</div>
@@ -116,6 +162,35 @@ SPECIALISTS <span class="o">=</span> {
         <div class="why">Multi-agent systems need more guards, not fewer.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">An orchestrator sends three research subagents the instruction 'research the chip shortage'. Two return near-identical findings on the same year and nobody covers pricing. What is the root cause?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Too few subagents; add five more.</span>
+        <div class="why">More agents with the same vague brief means more duplication and more cost.</div></li>
+      <li data-correct="false"><span class="opt">B) The subagents should use a bigger model.</span>
+        <div class="why">A stronger model still cannot know which slice of the task is its job if nobody said.</div></li>
+      <li data-correct="false"><span class="opt">C) Subagents should share a single conversation so they see everything.</span>
+        <div class="why">One giant shared context brings back the bloated-prompt problem multi-agent was meant to solve. Clear briefs plus a shared state store for results are the usual fix.</div></li>
+      <li data-correct="true"><span class="opt">D) Under-specified delegation: each subagent needed a distinct objective, scope boundaries and an output format.</span>
+        <div class="why">Correct. This is the coordination failure Anthropic describes: vague task descriptions led subagents to misread the task or repeat each other's searches. The fix lives in how the lead delegates.</div></li>
+    </ul>
+  </div>
+  <div class="quiz">
+    <p class="quiz-q">The MAST study of 1,600+ multi-agent traces groups failures into three categories. Which set is it?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) System design issues, inter-agent misalignment, and task verification.</span>
+        <div class="why">Correct. Cemri et al. (arXiv 2503.13657) found 14 failure modes in these 3 categories: bad role or flow design, agents talking past each other, and nobody properly checking that the task was done.</div></li>
+      <li data-correct="false"><span class="opt">B) Network errors, rate limits, and timeouts.</span>
+        <div class="why">Infrastructure failures happen, but the paper's taxonomy is about how agents are designed, coordinate and verify.</div></li>
+      <li data-correct="false"><span class="opt">C) Hallucination, toxicity, and bias.</span>
+        <div class="why">Those are single-model output problems. MAST is specifically about failures that arise from multi-agent structure.</div></li>
+      <li data-correct="false"><span class="opt">D) Model size, prompt length, and temperature.</span>
+        <div class="why">These are knobs, not the taxonomy. The study found failures that better models alone did not remove.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -140,8 +215,84 @@ SPECIALISTS <span class="o">=</span> {
     <p>The strategic read for the current year: the industry has cooled on sprawling multi-agent architectures and warmed to “one strong agent with great tools, memory, and guards, plus a few specialists only where roles are truly distinct.” The reasons are exactly the above — coordination overhead and lost context. So treat multi-agent as a targeted technique: use a router when request types are clearly different, a pipeline when there’s a real assembly line, parallelism for independent work — and resist the urge to model your org chart in agents. The best multi-agent system is usually the smallest one that the task genuinely requires.</p>
   </div>
 
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/04_agent_tools.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/04_agent_tools.py</code></pre>
+    <p><strong>What to look for:</strong> The lab runs one agent, not several, so it shows the parts a multi-agent system is made of: a trace per run, a step budget and an approval gate. Turn it into a two-agent pipeline by passing one run's final output as the next run's goal, and read both traces: anything the first agent knew but did not write into its final answer is lost at the handoff. The lab does not include an orchestrator.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  Second scripted model: it calls issue_refund for Rs 1500 (over the Rs 1000 auto-approve line), then answers.
+    step 1: issue_refund({&#x27;order_id&#x27;: &#x27;ORD-55120&#x27;, &#x27;amount_rs&#x27;: 1500}) -&gt; {&#x27;status&#x27;: &#x27;pending_human_approval&#x27;, &#x27;order_id&#x27;: &#x27;ORD-55120&#x27;, &#x27;amount_rs&#x27;: 1500}
+    step 2: FINAL -&gt; Your refund request has been sent for approval.
+  Look: the code returned pending_human_approval and the audit log records NEEDS_HUMAN: money did not move.
+  (The claim checker above is a crude regex: it can flag a polite &#x27;shall I proceed?&#x27; as a promise. Read the
+  flagged lines yourself; in production you compare structured tool results, not text patterns.)
+Audit log (what actually moved money)
+   (&#x27;BLOCKED&#x27;, &#x27;ORD-55120&#x27;, 25000)
+   (&#x27;NEEDS_HUMAN&#x27;, &#x27;ORD-55120&#x27;, 1500)
+  unbacked claims detected: 1   ignored refund requests: 1
+  Look: the Rs 25000 request was blocked by code, whatever the model was persuaded to try.
+  And check every FINAL line against the tool results: a fluent agent can promise an action it never
+  took, or add numbers no tool returned (e.g. a refund timeline). Verify claims against the audit log.
+  Prompts guide the model; only code enforces policy.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/04_agent_tools.txt">labs/outputs</a>. Source: <a href="../labs/04_agent_tools.py">labs/04_agent_tools.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> A pipeline has 4 agents in sequence; each produces a correct output 95% of the time given correct input. What is the end-to-end success rate, and what is it with 8 agents?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>0.95^4 = <strong>81.5%</strong>. 0.95^8 = <strong>66.3%</strong>. Errors compound along a chain, so every extra stage needs to earn its place, and a verifier stage that catches errors can be worth more than another specialist.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Two agents in a negotiation simulator keep agreeing with each other and the run never ends ('Sounds good!' 'Great, agreed!'). Name the failure and fix it.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>A conversation loop with no termination condition, a MAST-style system design issue. Fixes: a structured protocol where each turn must produce a typed object (offer, accept or reject) and the run ends on accept or after N rounds; an orchestrator in code that checks the state and stops; and a hard turn cap with a stop reason. Agents should not decide termination by chatting.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Design the handoff schema between a 'researcher' subagent and a 'writer' agent so context isn't lost.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Typed JSON, not prose: {objective (copied from the brief), findings: [{claim, source_url, quote, confidence}], open_questions, excluded (what was out of scope and why), constraints (date range, region), cost: {steps, tokens}}. The writer may only make claims that map to findings. The orchestrator validates the schema and checks that every assigned sub-question appears in findings or open_questions before handing over. Persist full findings to a shared store and pass references, so the writer can pull detail without the lead re-summarising and losing it.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> When would you choose a multi-agent design over a single agent?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>When the work splits into parts that are truly independent or need very different tools and instructions, and a single agent is measurably struggling: too many tools, a prompt trying to be three roles, or a task that benefits from parallel exploration like broad research. I would not use it for tasks with tight dependencies between steps, because handoffs lose context. I always start with one agent and only split when an eval shows the single agent failing in a way specialisation would fix.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> What are the most common coordination failures in multi-agent systems, and how do you prevent them?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Duplicated work, where subagents search the same thing because their briefs overlap. Lost context at handoffs, where a constraint mentioned early never reaches the agent that needs it. Conversations that never terminate. Over-spawning, where many agents are launched for a simple query. Nobody verifying that the overall task was completed. Prevention: explicit briefs with objective, scope, output format and tools; typed handoffs; termination and agent caps enforced in code; effort scaled to query complexity; and a verifier step against the original requirements. The MAST paper's three categories (design, inter-agent misalignment, verification) are a good checklist.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Your multi-agent research product has good quality, but token spend is 15x a chat and finance is unhappy. What do you do?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>First measure where the tokens go: per agent, per step, per query type. Then cut waste before cutting capability. Route simple queries to a single agent, which keeps the multi-agent premium for broad queries. Cap subagents and steps per query based on a complexity estimate. Trim observations and keep subagent contexts small. Use a cheaper model for subagents and keep the strong model for the lead and the verifier. Use prompt caching for repeated system prompts and tool schemas. Fix duplication by improving briefs. Then rerun the quality eval to confirm each cut, and report cost per successful answer rather than cost per query.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank" rel="noopener">How we built our multi-agent research system — Anthropic Engineering</a></li>
+      <li><a href="https://arxiv.org/abs/2503.13657" target="_blank" rel="noopener">Why Do Multi-Agent LLM Systems Fail? — Cemri et al., arXiv 2503.13657</a></li>
+      <li><a href="https://www.anthropic.com/engineering/building-effective-agents" target="_blank" rel="noopener">Building effective agents — Anthropic Engineering</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
   <p>Whether one agent or many, autonomy without guardrails is dangerous. The final engineering lesson of this track is how to keep agents safe, bounded, and trustworthy. Next: <strong>failure modes &amp; guards</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Split a big job between focused specialists, with one leader who hands out the work clearly.</p>
+<!-- ease:line:end -->
 </main>
 
 <script>
@@ -170,5 +321,10 @@ SPECIALISTS <span class="o">=</span> {
 </script>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

@@ -1,0 +1,1372 @@
+[
+ {
+  "n": "1.1",
+  "analogy": "Think of the phone keyboard that suggests the next word while you text. An LLM is that same game played by a player who has read a huge library, so its suggestions are good enough to finish whole essays one word at a time. It never plans the whole message; it just keeps picking the next suggestion and adding it on. The analogy breaks because a phone keyboard learns from your own texts as you type, while an LLM's weights are frozen after training and learn nothing from your chat.",
+  "scale": {
+   "title": "What 2 million support replies a day really costs, token by token",
+   "html": "<p>Assume a support platform drafts <strong>2,000,000 replies a day</strong>. Each request carries about <strong>1,500 input tokens</strong> (instructions plus the ticket) and each reply is about <strong>300 output tokens</strong>. These volumes are assumptions; plug in your own.</p>\n<ol>\n<li><strong>Count the forward passes.</strong> Autoregression means one model step per output token. 2,000,000 x 300 = <strong>600 million</strong> sequential next-token steps a day, spread across many GPUs.</li>\n<li><strong>Input is read in parallel, output is not.</strong> The 1,500 input tokens are processed together in one pass (the \"prefill\"). The 300 output tokens come one at a time. That is why a long answer feels slow even when the prompt is short.</li>\n<li><strong>Latency per reply.</strong> If the serving stack decodes at an assumed 60 tokens/second, 300 tokens take 300 / 60 = <strong>5 seconds</strong>. Halve the answer length and you halve the wait.</li>\n<li><strong>Price it.</strong> On Claude Sonnet 5.5 at $2 per million input and $10 per million output tokens (<a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\">Anthropic models overview</a>): input = 2,000,000 x 1,500 = 3 billion tokens = <strong>$6,000/day</strong>; output = 600 million tokens = <strong>$6,000/day</strong>. Output is one fifth the token count but costs the same, because each output token is 5x the price.</li>\n<li><strong>The lesson.</strong> Every \"word\" the model writes is one more predict-sample-append step you pay for in time and money. Asking for \"a 2-sentence reply\" is not just style; it is the cheapest optimisation you have.</li>\n</ol>"
+  },
+  "lab": {
+   "id": "01_generate_and_sample",
+   "look_for": "Section 5 streams a reply and prints time-to-first-token, total time, the number of streamed chunks and decode tokens/s; section 4 prints prompt_eval_count (input tokens, read in one pass) and eval_count (output tokens, generated one at a time). To feel autoregression, edit the streaming prompt to ask for a reply twice as long: total time grows roughly with eval_count while time-to-first-token barely moves."
+  },
+  "quiz": [
+   {
+    "q": "A base model (no instruction tuning) is given the prompt 'What is the capital of Japan?' and replies 'What is the capital of China? What is the capital of Korea?'. Why?",
+    "options": [
+     {
+      "t": "It continued the text the way a list of quiz questions usually continues, because it was only trained to predict the next token of documents.",
+      "correct": true,
+      "why": "Right. A base model has learned what text tends to come next, and a page of quiz questions is often followed by more questions. Instruction tuning is what teaches it that a question should be followed by an answer."
+     },
+     {
+      "t": "The model does not know the capital of Japan.",
+      "correct": false,
+      "why": "The fact is almost certainly in its weights. The issue is the format of the continuation, not missing knowledge."
+     },
+     {
+      "t": "The temperature was set too high.",
+      "correct": false,
+      "why": "High temperature adds randomness, but a base model behaves like this even at temperature 0. The behaviour comes from what it was trained to do."
+     },
+     {
+      "t": "The context window was too small to hold the question.",
+      "correct": false,
+      "why": "A one-line question fits in any context window. Size is not the problem here."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "A model writes a 600-token answer. How many times did it run the predict-sample-append loop, and how many times did it read your 2,000-token prompt from scratch if it uses a KV cache?",
+    "a": "It ran the loop 600 times, once per output token. With a KV cache (the standard trick of storing each token's attention keys and values) the 2,000-token prompt is processed once up front; each new step only computes the newest token and reuses the cached rest. Without a cache it would reprocess the growing text every step, which is why every serving stack caches."
+   },
+   {
+    "level": "Transfer",
+    "q": "Your product manager wants the bot to 'remember' a customer's preferences between sessions. Using only what this lesson taught, explain what has to happen in the system, and why retraining the model nightly is the wrong first idea.",
+    "a": "The weights are frozen at inference, so memory has to live outside the model: store the preferences in a database and put them back into the prompt at the start of each session (or retrieve them when relevant). Nightly retraining is slow, expensive, mixes one customer's data into a shared model, and still would not guarantee recall of a specific fact. Supplying text in the context is cheap, exact, and per-user."
+   },
+   {
+    "level": "Stretch",
+    "q": "Estimate how much text a model sees in pre-training versus what one person reads in a lifetime. Assume 15 trillion training tokens, 0.75 words per token, a reader doing 300 words/minute for 1 hour a day for 60 years. What does the ratio tell you about why the model knows so much and still makes things up?",
+    "a": "Training: 15e12 x 0.75 = about 11 trillion words. Person: 300 x 60 x 365 x 60 = about 394 million words. Ratio is roughly 28,000 lifetimes of reading. That breadth is why it can continue text on almost any topic. But it learned to produce likely text, not to keep a checked list of facts, so on rare or recent facts the likely continuation and the true one can split apart. Scale buys coverage, not a truth check. (The 15T figure is an assumption for the exercise; labs publish different numbers per model.)"
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "Explain what an LLM does when it generates a response, to a non-technical stakeholder.",
+    "a": "It looks at all the text so far and gives every possible next token a probability. The program picks one token, adds it to the text, and asks again. It repeats that until it hits a stop signal or a length limit. That loop is called autoregression. The model is not searching a database or the web; it is continuing text using patterns learned in training. That is why answers can sound confident and still be wrong, and why we add things like retrieval and checks around it."
+   },
+   {
+    "level": "Mid",
+    "q": "What is the difference between a base model and an instruction-tuned model, and when would you choose a base model?",
+    "a": "A base model is trained only on next-token prediction over raw text, so it continues documents. An instruction-tuned model is then fine-tuned on instruction and response pairs and shaped with human preference data, so it answers questions, follows formats, and refuses some requests. For products you nearly always want the instruction-tuned model. A base model is useful when you want pure continuation (autocomplete, code completion in the middle of a file), when you plan your own fine-tune and do not want an inherited chat style, or for research on what the pre-training learned."
+   },
+   {
+    "level": "Senior",
+    "q": "Why are output tokens slower and usually pricier than input tokens, and how does that change how you design a feature?",
+    "a": "Input tokens are processed in parallel in one prefill pass, which uses the GPU well. Output tokens are produced one at a time, each step depending on the last, so decoding is bound by memory bandwidth and is much less efficient per token. Providers price that in: output often costs several times input. Design consequences: keep answers short and structured, put verbosity limits in the prompt, stream so users see the first tokens early, move long reasoning to cheaper models or batch jobs, cache repeated prefixes, and measure time-to-first-token and tokens/sec separately because they have different causes."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Attention Is All You Need (Vaswani et al., 2017) — arXiv",
+    "u": "https://arxiv.org/abs/1706.03762"
+   },
+   {
+    "t": "Language Models are Few-Shot Learners (Brown et al., 2020) — arXiv",
+    "u": "https://arxiv.org/abs/2005.14165"
+   },
+   {
+    "t": "Training language models to follow instructions with human feedback (Ouyang et al., 2022) — arXiv",
+    "u": "https://arxiv.org/abs/2203.02155"
+   },
+   {
+    "t": "Models overview — Anthropic",
+    "u": "https://platform.claude.com/docs/en/about-claude/models/overview"
+   }
+  ]
+ },
+ {
+  "n": "1.2",
+  "analogy": "Tokens are like LEGO bricks. Common words come as one big ready-made brick, and rare words have to be built from several small bricks. The model only ever sees the bricks, never the individual plastic dots, which is why counting letters is hard for it. The analogy breaks because LEGO bricks are fixed shapes for everyone, while each model family has its own brick set, so the same sentence can be a different number of tokens on two models.",
+  "scale": {
+   "title": "Budgeting tokens for 40 million product descriptions in six languages",
+   "html": "<p>Assume a marketplace wants every product description rewritten by an LLM: <strong>40,000,000 descriptions</strong>, average <strong>120 English words</strong> each, plus translations into five other languages. Numbers are assumptions; the method is the point.</p>\n<ol>\n<li><strong>English input tokens.</strong> At about 0.75 words per token, 120 words is about 160 tokens. 40M x 160 = <strong>6.4 billion tokens</strong>.</li>\n<li><strong>Do not trust the rule of thumb for other scripts.</strong> Sample 1,000 real descriptions per language and count with the target model's tokenizer (for example <code>tiktoken</code> for OpenAI models). Suppose you measure 1.4x for Spanish and 2.5x for Hindi. Those multipliers are what you must budget, not the 4-characters rule.</li>\n<li><strong>Price one language.</strong> On Claude Sonnet 5.5 at $2 per million input tokens (<a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\">Anthropic models overview</a>), English input = 6.4B / 1M x $2 = <strong>$12,800</strong>. If outputs are similar length, at $10 per million output tokens that adds about <strong>$64,000</strong>.</li>\n<li><strong>Batch it.</strong> This is an offline job, so the Batch API at 50% off halves both: about $38,400 for English in and out.</li>\n<li><strong>Hindi costs more for the same meaning.</strong> At 2.5x tokens, the Hindi output alone is 2.5 x $64,000 x 0.5 (batch) = <strong>$80,000</strong>. Same products, same model, more than double the English bill.</li>\n<li><strong>Act on it.</strong> Put a per-language token multiplier in the cost model, cap output length in the prompt, and re-measure if you switch model families, because the tokenizer changes with them.</li>\n</ol>"
+  },
+  "lab": {
+   "id": "01_generate_and_sample",
+   "look_for": "The lab prints prompt_eval_count and eval_count, which are qwen2.5:7b's real token counts. Send the same sentence in English and in another language (or a block of JSON) and compare prompt_eval_count. Note that this is Qwen's tokenizer, so counts will differ from tiktoken's cl100k_base numbers in the lesson."
+  },
+  "quiz": [
+   {
+    "q": "To stay under a 1,000-token input limit, your app cuts every user message at 4,000 characters. Some requests still fail with 'input too long'. Why?",
+    "options": [
+     {
+      "t": "Characters per token is only an average for English prose; code, JSON, numbers and many non-English scripts use more tokens per character, so count tokens with the model's tokenizer instead.",
+      "correct": true,
+      "why": "Right. The 4-characters rule is an estimate. A 4,000-character block of Hindi or minified JSON can be well over 1,000 tokens. Measure in tokens, then truncate."
+     },
+     {
+      "t": "The tokenizer adds a random number of tokens to each request.",
+      "correct": false,
+      "why": "Tokenization is deterministic for a given tokenizer and text."
+     },
+     {
+      "t": "Spaces are not counted as characters, so the limit is really higher.",
+      "correct": false,
+      "why": "Spaces are characters and usually ride inside tokens. The problem is the varying characters-per-token ratio."
+     },
+     {
+      "t": "The model counts words, not tokens.",
+      "correct": false,
+      "why": "Limits are in tokens. Word counts are an even rougher proxy than characters."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "A 2,400-word English report goes into a prompt. Estimate the tokens, then say how much room is left in a 32,000-token window if you reserve 3,000 tokens for the answer and 800 for instructions.",
+    "a": "2,400 / 0.75 = 3,200 tokens. Used: 3,200 + 3,000 + 800 = 7,000. Left: 32,000 - 7,000 = 25,000 tokens. Treat it as an estimate and keep a 10% safety margin, because the real count depends on the tokenizer."
+   },
+   {
+    "level": "Transfer",
+    "q": "You log 10,000 real user prompts and find the mean is 1,100 tokens on cl100k_base. You plan to switch to a model with a different tokenizer. What do you do before you trust your cost forecast?",
+    "a": "Re-tokenize a sample of those same prompts with the new model's tokenizer (or send them and read the usage fields) and compute the ratio. A different vocabulary can change counts noticeably, especially for code, non-English text, and numbers. Update the forecast with the measured ratio, per language if your traffic is mixed. Never carry token counts across model families on faith."
+   },
+   {
+    "level": "Stretch",
+    "q": "Explain why the number 1234567 might be split into odd pieces and why that makes arithmetic hard, then propose a fix that does not need a bigger model.",
+    "a": "Tokenizers learn merges from frequency, so a long number can split into chunks like '123', '456', '7' that do not line up with place value, and two numbers of the same length may split differently. The model then has to do column arithmetic over chunks it never sees as digits. Fixes: give it a calculator tool, ask it to write the numbers digit by digit before computing, or do the maths in code and let the model only explain. A tool is the reliable one."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What is a token and why do we care about it as engineers?",
+    "a": "A token is a chunk of text from the model's fixed vocabulary, often a whole common word or a piece of a rarer one. The model reads and writes token ids, not characters. We care because tokens are how providers bill, how context windows are measured, and they drive latency since output is generated token by token. In English a token is about four characters or three quarters of a word, but code, JSON and many non-English scripts use more tokens for the same meaning."
+   },
+   {
+    "level": "Mid",
+    "q": "How does byte-pair encoding build a vocabulary, and what quirks does that cause in production?",
+    "a": "BPE starts from bytes and repeatedly merges the most frequent adjacent pair into a new token, for tens of thousands of merges. Frequent words become single tokens; rare words stay split. Quirks: leading spaces are part of tokens, so ' yes' and 'yes' differ, which matters for stop sequences and logit bias; numbers split unevenly, which hurts arithmetic; letter-level tasks like counting characters are hard; and under-represented languages fragment, which raises cost and eats context. Because it works on bytes, it never fails to encode anything."
+   },
+   {
+    "level": "Senior",
+    "q": "You are building a multilingual product. How do tokenizers affect your cost model, fairness, and model choice?",
+    "a": "Measure tokens per language on real traffic with each candidate model's tokenizer; the same meaning can cost 2x or more in some scripts. That changes the cost forecast, the context left for retrieval, and latency for those users, which is a fairness issue as well as a budget one. In model selection I would include tokens-per-meaning as a metric next to quality, cap output lengths per language, and consider models whose vocabularies cover the target scripts better. I would also make sure billing alerts and rate limits are set in tokens, not requests."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Neural Machine Translation of Rare Words with Subword Units (Sennrich et al., 2016) — arXiv",
+    "u": "https://arxiv.org/abs/1508.07909"
+   },
+   {
+    "t": "tiktoken — OpenAI (GitHub)",
+    "u": "https://github.com/openai/tiktoken"
+   },
+   {
+    "t": "Models overview (pricing, batch discount) — Anthropic",
+    "u": "https://platform.claude.com/docs/en/about-claude/models/overview"
+   }
+  ]
+ },
+ {
+  "n": "1.3",
+  "analogy": "Imagine a giant school hall where every sentence is a student, and students stand closer together the more alike their meaning is. 'My flight was cancelled' and 'The airline scrapped my trip' stand shoulder to shoulder, while 'I like pizza' is across the room. Searching becomes 'walk to where the question stands and look at who is nearby'. The analogy breaks because the real hall has hundreds of directions, not just left, right, forward and back, so 'nearby' can mean close in one sense and far in another.",
+  "scale": {
+   "title": "Embedding 1.2 million help-centre articles for semantic search",
+   "html": "<p>Assume a software company has <strong>1,200,000 help articles</strong> and splits each into about <strong>5 chunks</strong>. You embed each chunk with <code>all-MiniLM-L6-v2</code>, which outputs <strong>384-dimensional</strong> vectors (<a href=\"https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2\">model card</a>).</p>\n<ol>\n<li><strong>Vector count.</strong> 1.2M x 5 = <strong>6,000,000 vectors</strong>.</li>\n<li><strong>Raw storage.</strong> 6,000,000 x 384 dimensions x 4 bytes (float32) = 9,216,000,000 bytes, about <strong>9.2 GB</strong>. Stored as int8 it is about 2.3 GB, usually with a small recall loss you should measure.</li>\n<li><strong>Brute-force search cost.</strong> One query against every vector is 6,000,000 x 384 = about <strong>2.3 billion multiply-adds</strong>. Fine for a batch job, too slow for thousands of queries a second. This is why vector databases use approximate nearest-neighbour indexes (HNSW, IVF) that check only a small slice.</li>\n<li><strong>Normalise once.</strong> Scale every vector to length 1 at ingest. Then cosine similarity equals the dot product and the index can use the cheaper operation.</li>\n<li><strong>Embedding time.</strong> At an assumed 1,000 chunks/second on one GPU, 6M chunks take 6,000 seconds, about <strong>1.7 hours</strong>. Re-embedding happens every time you change the embedding model, so version your vectors with the model name.</li>\n<li><strong>Sanity check.</strong> Take 200 real user questions with known correct articles and measure recall@10 before launch. A paraphrase test like the lesson's password example is the quickest smoke test.</li>\n</ol>"
+  },
+  "lab": {
+   "id": "03_rag_local",
+   "look_for": "Watch the MiniLM vectors being created and the DuckDB array_cosine_similarity scores next to the FAISS scores for the same query; they should match, which shows cosine on normalised vectors is just a dot product. Rephrase a question with no shared words and see the right chunk still rank high, then compare with the hand-rolled BM25 ranking, which needs word overlap."
+  },
+  "quiz": [
+   {
+    "q": "You switch from embedding model A to model B for new documents but keep the old vectors from model A in the same index. What happens?",
+    "options": [
+     {
+      "t": "Search quality breaks, because vectors from two different models live in different spaces and their cosine scores are not comparable.",
+      "correct": true,
+      "why": "Right. Each embedding model learns its own coordinate system. Mixing them is like comparing GPS coordinates with street numbers. Re-embed the whole corpus when you change models."
+     },
+     {
+      "t": "Nothing, because cosine similarity ignores vector length.",
+      "correct": false,
+      "why": "Cosine ignores length but not direction. The directions themselves mean different things in two different models."
+     },
+     {
+      "t": "It works as long as both models output 384 dimensions.",
+      "correct": false,
+      "why": "Matching dimension counts only means the maths runs. Dimension 17 in model A and dimension 17 in model B encode unrelated things."
+     },
+     {
+      "t": "Search gets faster because the index is bigger.",
+      "correct": false,
+      "why": "Index size does not make mixed vectors meaningful, and bigger indexes are not faster."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "Normalise the vector [3, 4] to length 1, then compute its cosine similarity with [1, 0].",
+    "a": "Length = sqrt(9 + 16) = 5, so normalised = [0.6, 0.8]. Cosine with [1, 0] = 0.6 x 1 + 0.8 x 0 = 0.6 (both have length 1, so cosine is just the dot product). That angle is about 53 degrees."
+   },
+   {
+    "level": "Transfer",
+    "q": "Your semantic search returns 'How do I reset my password?' for the query 'reset my router'. Why might that happen and what would you add?",
+    "a": "Both share the 'reset' intent, and a small general model can weight that shared action more than the object. Fixes: add keyword search (BM25) and fuse the two rankings so the word 'router' counts; add metadata filters (product = networking); try a stronger or domain-tuned embedding model; and measure on a golden set so you know the fix helped. Embeddings capture meaning, but not always the meaning you care about."
+   },
+   {
+    "level": "Stretch",
+    "q": "Estimate the memory for 50 million 1,024-dimension float32 vectors, then propose two ways to make it fit on a 64 GB machine.",
+    "a": "50M x 1,024 x 4 bytes = 204.8 GB. Options: (1) quantise, int8 gives about 51 GB and product quantisation can go far lower; (2) use a model or setting with fewer dimensions (some models support shortened Matryoshka-style embeddings), for example 256 dimensions in float32 = 51 GB; (3) keep the index on disk with a disk-based ANN index. Whatever you pick, measure recall@k against the full-precision baseline before switching."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What is an embedding and how is it used in search?",
+    "a": "An embedding is a vector of numbers that represents the meaning of a text. An embedding model is trained so similar meanings get vectors pointing in similar directions. For search, you embed all documents once and store the vectors. At query time you embed the question and find the stored vectors with the highest cosine similarity. That finds paraphrases with no shared words, which keyword search misses."
+   },
+   {
+    "level": "Mid",
+    "q": "Cosine similarity, dot product, or Euclidean distance: which do you use and why?",
+    "a": "For text embeddings the default is cosine, because it compares direction and ignores length. In practice I normalise vectors to length 1 at ingest; then cosine and dot product give identical rankings and the dot product is cheaper, and Euclidean distance ranks the same way too. The real rule is to use the metric the embedding model was trained with, which the model card usually states, and to keep it consistent between ingest and query."
+   },
+   {
+    "level": "Senior",
+    "q": "How would you choose and roll out a new embedding model for a production RAG system with 100 million chunks?",
+    "a": "First build a golden set from real queries with labelled relevant chunks, and score candidates offline on recall@k and nDCG, plus latency and cost per million chunks. Check language coverage and max input length against our chunk size. If a new model wins, re-embed into a new versioned index in the background, dual-write new documents, shadow-query both indexes and compare, then switch traffic gradually. Vectors from different models cannot be mixed, so the cutover is index by index, with the old one kept for rollback."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks (Reimers and Gurevych, 2019) — arXiv",
+    "u": "https://arxiv.org/abs/1908.10084"
+   },
+   {
+    "t": "Sentence Transformers documentation — SBERT",
+    "u": "https://www.sbert.net/"
+   },
+   {
+    "t": "all-MiniLM-L6-v2 model card — Hugging Face",
+    "u": "https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2"
+   }
+  ]
+ },
+ {
+  "n": "1.4",
+  "analogy": "The context window is like the desk you study at. You can only work with the pages spread on the desk; anything still in the cupboard does not exist for you right now, and a bigger desk lets you spread out more pages. Attention is your eyes jumping between pages to connect 'it' on page 3 with 'the dog' on page 1. The analogy breaks because a person can get up and fetch a page from the cupboard, while the model cannot fetch anything on its own; your code has to put it on the desk.",
+  "scale": {
+   "title": "Paste the whole contract, or retrieve? Pricing 10,000 questions a day",
+   "html": "<p>Assume a legal team asks <strong>10,000 questions a day</strong> about a <strong>300-page contract</strong> (about 150,000 words, so about <strong>200,000 tokens</strong>). Current frontier models offer a <strong>1M-token</strong> window, so it fits (<a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\">Anthropic models overview</a>). Should you paste it every time?</p>\n<ol>\n<li><strong>Paste every time.</strong> On Claude Sonnet 5.5 at $2 per million input tokens: 200,000 tokens = $0.40 per question. x 10,000 = <strong>$4,000/day</strong>, before output.</li>\n<li><strong>Paste with prompt caching.</strong> The contract is the same prefix every time, so it can be cached. Cache reads on Sonnet 5.5 cost 5% of the base input price: 200,000 x $2 x 0.05 / 1M = $0.02 per question, about <strong>$200/day</strong> plus cache writes. Caching changes the economics a lot.</li>\n<li><strong>Retrieve instead.</strong> Send 8 chunks x 500 tokens + 1,000 tokens of instructions = 5,000 tokens = $0.01 per question = <strong>$100/day</strong>, and the prompt is 40x shorter, so latency drops too.</li>\n<li><strong>Attention cost.</strong> Naive attention work grows with length squared: (200,000 / 5,000)^2 = 40^2 = <strong>1,600x</strong> more attention compute per question for the pasted version. Real systems use optimised kernels, but long prompts still mean slower first tokens.</li>\n<li><strong>Accuracy, not just money.</strong> Facts buried mid-context can be missed (\"lost in the middle\"). Test both setups on 100 real questions before choosing.</li>\n<li><strong>Scale up.</strong> The firm's full archive of 2,000 such contracts is about 400M tokens. No window holds that. Retrieval is not optional at that size.</li>\n</ol>"
+  },
+  "lab": {
+   "id": "01_generate_and_sample",
+   "look_for": "Section 4 sends the same question with a short prompt and with about 640 tokens of padding, and prints prompt_eval_count and prefill seconds for each (36 vs 639 tokens and 0.55 s vs 1.49 s on our run) for the same one-word answer. That is the cost of context in one line. Lab 03 shows the other side of the trade: retrieve the relevant paragraph instead of pasting everything."
+  },
+  "quiz": [
+   {
+    "q": "A model has a 1M-token context window. Your team concludes 'we can drop retrieval and paste our 5 GB document store into every request'. What is the strongest objection?",
+    "options": [
+     {
+      "t": "5 GB of text is roughly a billion tokens, about 1,000 times the window, and even if it fit you would pay for and wait on every token on every call.",
+      "correct": true,
+      "why": "Right. At about 4 characters per token, 5 GB is around 1.25 billion tokens. A big window helps with one long document, not with a whole corpus, and cost and latency scale with every token you send."
+     },
+     {
+      "t": "Large context windows only work for code, not documents.",
+      "correct": false,
+      "why": "Long context works for any text. The objection is size, cost and accuracy, not content type."
+     },
+     {
+      "t": "Attention cannot reach tokens more than 8,000 positions back.",
+      "correct": false,
+      "why": "Within the window, attention can reach any position. The issue is that the corpus is far bigger than the window."
+     },
+     {
+      "t": "The model will refuse inputs longer than 100,000 tokens.",
+      "correct": false,
+      "why": "Models accept input up to their stated window. There is no such hidden 100K refusal."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "A chat app re-sends the whole conversation each turn. Each turn adds 400 tokens (user + assistant). How many input tokens does turn 30 send, and how many input tokens did the whole 30-turn chat cost in total?",
+    "a": "Turn 30 sends about 30 x 400 = 12,000 tokens of history (ignoring the system prompt). Total over the chat is 400 x (1 + 2 + ... + 30) = 400 x 465 = 186,000 input tokens. Cost grows with the square of the conversation length, which is why long chats get summarised or trimmed."
+   },
+   {
+    "level": "Transfer",
+    "q": "Design a history policy for a support bot with a 32,000-token window: system prompt 1,500 tokens, retrieved docs up to 6,000, answer reserve 1,500. What do you do when history exceeds the remaining space?",
+    "a": "Remaining for history = 32,000 - 1,500 - 6,000 - 1,500 = 23,000 tokens. Keep the last N turns verbatim (say 8,000 tokens), and replace older turns with a running summary (say 1,000 tokens) that is updated when turns fall out. Pin facts that must never drop (account id, the customer's stated problem) in a small structured block. Log when trimming happens so you can check quality on long sessions."
+   },
+   {
+    "level": "Stretch",
+    "q": "Explain, with the query/key/value picture from the deep dive, why a KV cache makes generating token 1,001 cheaper than recomputing everything, and what it costs in memory.",
+    "a": "Each past token's keys and values do not change once computed, so the server stores them. To generate the next token it only computes the new token's query, key and value, and attends from that one query to all cached keys. Without the cache it would recompute keys and values for all 1,000 earlier tokens every step. The cost is memory: the cache grows linearly with context length, layers and heads, and for long contexts it often limits how many users one GPU can serve at once."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What is a context window and what counts against it?",
+    "a": "It is the maximum number of tokens a model can take in one request. Everything counts: the system prompt, examples, conversation history, retrieved documents, tool results, and the answer the model writes. If the input uses most of the window, the answer gets cut short. Chat apps re-send history every turn, so long chats fill the window and old messages have to be trimmed or summarised."
+   },
+   {
+    "level": "Mid",
+    "q": "Context windows are now 1M tokens on frontier models. Does that make RAG obsolete?",
+    "a": "No. A big window is great for one long document or a small codebase. But you pay for every token on every call, latency grows with prompt length, and models can miss facts buried mid-context. Most corpora are far larger than any window, and they change, so you would rebuild the prompt constantly. Prompt caching softens the cost for a fixed prefix. My default is retrieval for large or changing data, long context for bounded material, and I decide with an eval on real questions."
+   },
+   {
+    "level": "Senior",
+    "q": "Why is long-context inference expensive, and what levers do you have as an application engineer?",
+    "a": "Prefill attention grows roughly with the square of sequence length, and the KV cache grows linearly, which limits concurrency per GPU. Output tokens then attend over that whole cache. Levers: send less (retrieval, reranking, summarised history), reuse prefixes with prompt caching, put stable content first so the cache hits, cap output length, route long-context jobs to batch APIs, and measure time-to-first-token separately from decode speed. On self-hosted models, tune max context per deployment so you are not reserving memory for windows you never use."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Attention Is All You Need (Vaswani et al., 2017) — arXiv",
+    "u": "https://arxiv.org/abs/1706.03762"
+   },
+   {
+    "t": "Lost in the Middle: How Language Models Use Long Contexts (Liu et al., 2023) — arXiv",
+    "u": "https://arxiv.org/abs/2307.03172"
+   },
+   {
+    "t": "Models overview (context windows, pricing, caching) — Anthropic",
+    "u": "https://platform.claude.com/docs/en/about-claude/models/overview"
+   }
+  ]
+ },
+ {
+  "n": "1.5",
+  "analogy": "Picture a bag of coloured marbles where each colour is a possible next word, and the model decides how many marbles of each colour go in. Temperature is how much you shake the odds: low temperature means almost every marble is the favourite colour, high temperature evens the colours out. Top-k and top-p throw the rarest colours out of the bag before you draw. The analogy breaks because the model refills the bag with new odds after every single draw, based on everything drawn so far.",
+  "scale": {
+   "title": "Decoding settings for three features on 500,000 requests a day",
+   "html": "<p>Assume one product has three LLM features: <strong>order-number extraction</strong> (300,000 requests/day), <strong>ticket summaries</strong> (100,000/day) and <strong>marketing taglines</strong> (100,000/day). Volumes are assumptions.</p>\n<ol>\n<li><strong>See what temperature does, with numbers.</strong> Take three logits [2, 1, 0]. At T = 1: e^2 = 7.39, e^1 = 2.72, e^0 = 1, sum 11.11, so probabilities 0.67 / 0.24 / 0.09. At T = 0.5 the logits become [4, 2, 0]: 54.6, 7.39, 1, sum 63.0, so 0.87 / 0.12 / 0.02. Halving T moved the favourite from 67% to 87%.</li>\n<li><strong>See top-p, with numbers.</strong> Next-token probabilities 0.50, 0.20, 0.10, 0.08, 0.05, then a long tail. With top-p 0.9: 0.50 + 0.20 + 0.10 + 0.08 = 0.88, still under 0.9, so add 0.05 to reach 0.93. Five tokens survive; the rest of the tail is gone.</li>\n<li><strong>Extraction on a local model.</strong> On Ollama, temperature 0 plus a fixed seed gives repeatable output for regression tests.</li>\n<li><strong>Extraction on a hosted reasoning model.</strong> On Anthropic API version 2026-10-21, sending <code>temperature</code>, <code>top_p</code> or <code>top_k</code> returns a 400 error, and Claude 4.7+ models accept only defaults (<a href=\"https://platform.claude.com/docs/en/api/migration-2026-10-21\">Anthropic API migration 2026-10-21</a>). Consistency comes from a JSON schema plus validation, and an eval that tracks exact-match rate per release.</li>\n<li><strong>Taglines.</strong> Want 5 options per request: 100,000 x 5 x 40 output tokens = 20M tokens. On Sonnet 5.5 at $10 per million output tokens (<a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\">Anthropic models overview</a>) that is <strong>$200/day</strong>. Asking for all five in one response, distinct from each other, often gives more variety than five independent samples and shares one input.</li>\n<li><strong>Write the setting down.</strong> Store decoding parameters next to the prompt version, so a change is reviewed like code.</li>\n</ol>"
+  },
+  "lab": {
+   "id": "01_generate_and_sample",
+   "look_for": "Sections 1-3 run the same prompt at temperature 0 and 1.0 with three seeds, then the same seed twice. On our runs temperature 0 gave identical text in one run and 2 different outputs out of 3 in another, while temperature 1.0 gave 3 different outputs and the same seed reproduced exactly. With n=3 seeds this is a demo, not a rate. Edit the temperatures in the lab to see the spread change. This is the local, knobs-still-exposed side of the 2026 reality check box."
+  },
+  "quiz": [
+   {
+    "q": "Your team migrates a feature to Anthropic API version 2026-10-21 and every request starts failing with a 400 error. The request body has temperature: 0. What is the fix?",
+    "options": [
+     {
+      "t": "Remove temperature (and top_p/top_k) from the request; on that API version they are rejected even at default values, so get consistency from structured outputs and evals instead.",
+      "correct": true,
+      "why": "Right. The migration guide says requests with these parameters return 400 on 2026-10-21. Drop them, and use a schema, validation and regression evals for consistency."
+     },
+     {
+      "t": "Change temperature to 0.01 so it is not exactly zero.",
+      "correct": false,
+      "why": "Any value is rejected on that API version, including the default."
+     },
+     {
+      "t": "Move temperature into the system prompt as text: 'use temperature 0'.",
+      "correct": false,
+      "why": "Writing a sampling setting in the prompt does nothing; sampling is not controlled by prompt text."
+     },
+     {
+      "t": "Switch from top_p to top_k.",
+      "correct": false,
+      "why": "All three sampling parameters are rejected on that version."
+     }
+    ]
+   },
+   {
+    "q": "With top-p = 0.9, the model's top token has probability 0.95. How many tokens are kept for sampling?",
+    "options": [
+     {
+      "t": "One, because the top token alone already covers at least 0.9 of the probability.",
+      "correct": true,
+      "why": "Right. Top-p keeps the smallest set whose probabilities reach p. When the model is confident, that set is a single token, which is why top-p adapts to confidence."
+     },
+     {
+      "t": "Ten, because top-p always keeps a fixed number.",
+      "correct": false,
+      "why": "That describes top-k. Top-p's set size changes with the distribution."
+     },
+     {
+      "t": "All tokens, because 0.9 is close to 1.",
+      "correct": false,
+      "why": "Top-p 1.0 keeps everything; 0.9 trims the tail as soon as the cumulative sum reaches 0.9."
+     },
+     {
+      "t": "None, because 0.95 is above the threshold.",
+      "correct": false,
+      "why": "The threshold is a minimum cumulative mass to reach, not a ceiling that removes tokens above it."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "Logits are [3, 1]. Compute the probability of the first token at T = 1 and at T = 2.",
+    "a": "T = 1: e^3 = 20.09, e^1 = 2.72, p = 20.09 / 22.81 = 0.88. T = 2: logits become [1.5, 0.5]: e^1.5 = 4.48, e^0.5 = 1.65, p = 4.48 / 6.13 = 0.73. Doubling temperature dropped the favourite from 88% to 73%, the flattening effect."
+   },
+   {
+    "level": "Transfer",
+    "q": "Your nightly regression test compares exact output strings from a hosted model and fails randomly. You cannot set temperature on that API. Redesign the test.",
+    "a": "Stop asserting exact strings. Ask for structured output (a JSON schema) and assert on fields: types, allowed values, and exact match only on fields that should be deterministic, like an extracted order number. For free text, score with rules or an LLM judge against a rubric, run each case several times, and gate on a pass rate (say 95%) rather than on one sample. Track the pass rate per release so drift shows up as a trend."
+   },
+   {
+    "level": "Stretch",
+    "q": "Explain why greedy decoding can produce repetitive loops in long generations, and why nucleus sampling was proposed as a fix.",
+    "a": "Greedy always takes the single most likely token. Once a phrase repeats, the context makes repeating it again even more likely, so greedy can get stuck in a loop. Holtzman et al. (2019) showed that human text is not made of only the most likely tokens, and that sampling from the full distribution picks junk from the long tail. Nucleus (top-p) sampling samples only from the smallest set covering p of the mass: it keeps variety where the model is unsure and cuts the junk tail."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What does temperature do?",
+    "a": "The model outputs scores called logits for every possible next token. Temperature divides those scores before softmax turns them into probabilities. Low temperature sharpens the distribution so the top token almost always wins, which suits extraction, classification and code. High temperature flattens it, giving more variety for brainstorming but more risk of nonsense. Temperature near 0 approximates greedy decoding. Note that some hosted APIs, such as Anthropic's 2026-10-21 version, no longer accept it."
+   },
+   {
+    "level": "Mid",
+    "q": "Is temperature 0 fully deterministic? How do you get reproducible outputs?",
+    "a": "Not always. Ties or near-ties between tokens, floating-point differences across GPUs, batching with other requests, and model updates can all change output even at temperature 0. On local models I set temperature 0 and a seed and pin the model version. On hosted APIs, especially ones that no longer expose sampling settings, I design for variation: structured outputs with a schema, validation, tests that assert on fields and pass rates, and evals run per release. Reproducibility is something you build into the system around the model."
+   },
+   {
+    "level": "Senior",
+    "q": "Hosted reasoning models increasingly remove sampling controls. How does that change your reliability strategy?",
+    "a": "Sampling settings were always a weak reliability tool; they reduce variance but not error. Without them, I lean on constrained output (JSON schema or strict tool definitions), validation with retry-and-feedback, deterministic code for anything computable, and evals as a release gate with pass-rate thresholds. For tasks that need variety, I ask for multiple distinct candidates in one call. For tasks that need exact repeatability, such as tests or audits, I cache responses by input hash or use a local model where I control decoding."
+   }
+  ],
+  "sources": [
+   {
+    "t": "The Curious Case of Neural Text Degeneration (Holtzman et al., 2019) — arXiv",
+    "u": "https://arxiv.org/abs/1904.09751"
+   },
+   {
+    "t": "Generation strategies — Hugging Face Transformers docs",
+    "u": "https://huggingface.co/docs/transformers/generation_strategies"
+   },
+   {
+    "t": "API migration guide 2026-10-21 (sampling parameters removed) — Anthropic",
+    "u": "https://platform.claude.com/docs/en/api/migration-2026-10-21"
+   },
+   {
+    "t": "Chat API (options such as temperature, seed) — Ollama",
+    "u": "https://docs.ollama.com/api/chat"
+   }
+  ]
+ },
+ {
+  "n": "1.6",
+  "analogy": "An LLM is like a very well-read friend who has never once said 'I don't know'. Ask them to rewrite your essay or summarise a letter you hand them and they are brilliant. Ask them a date or a number from memory and they will answer in the same confident voice whether they remember it or are making it up. The analogy breaks because a person usually has some feeling of being unsure; the model's fluent tone is the same either way, so you have to build the checking in yourself.",
+  "scale": {
+   "title": "Grounding an HR policy bot for a 20,000-person company",
+   "html": "<p>Assume a company of <strong>20,000 employees</strong> asks its HR bot <strong>60,000 questions a month</strong>, and policies change every quarter. The rates below are assumptions you would replace with your own eval results.</p>\n<ol>\n<li><strong>Ungrounded baseline.</strong> Suppose a golden set of 300 real questions shows <strong>8%</strong> confidently wrong answers when the bot answers from memory. 60,000 x 8% = <strong>4,800 wrong answers a month</strong>, each one sounding certain.</li>\n<li><strong>Why memory fails here.</strong> The policies are private (never in training data) and change after any knowledge cutoff. This is the \"recall\" column of the lesson's diagram, so no prompt wording fixes it.</li>\n<li><strong>Ground it.</strong> Retrieve the current policy passages and instruct: answer only from them, cite the section, say \"I don't know\" otherwise. Suppose the eval now shows <strong>2% wrong</strong> and <strong>6% \"I don't know\"</strong>.</li>\n<li><strong>Do the new arithmetic.</strong> Wrong: 60,000 x 2% = 1,200 a month (down 75%). Abstentions: 60,000 x 6% = 3,600 a month, which you route to the HR inbox. If HR handles one in 4 minutes, that is 240 hours a month, so staff for it or improve the documents.</li>\n<li><strong>Close the loop.</strong> Log each \"I don't know\" with the question. The top 20 questions usually point at missing or badly written policy pages; fixing those lowers both numbers.</li>\n<li><strong>Keep it honest.</strong> Re-run the 300-question eval whenever policies, prompts or the model change. A grounding setup that passed last quarter can fail on this quarter's documents.</li>\n</ol>"
+  },
+  "lab": {
+   "id": "03_rag_local",
+   "look_for": "Find the refusal branch: when the best retrieval score is below the threshold, the lab answers that it does not know instead of guessing. Ask a question your documents cannot answer and confirm it abstains; then lower the threshold and watch it start producing an ungrounded answer. The [doc-id] citations show which supplied text each answer came from."
+  },
+  "quiz": [
+   {
+    "q": "Your bot gives the right refund policy 95% of the time when the policy is retrieved, but the team wants to raise accuracy by asking the model to also 'rate its confidence from 1 to 10' and hide answers under 7. What is the main problem?",
+    "options": [
+     {
+      "t": "The stated confidence is generated text too, and is not reliably tied to correctness, so it needs to be checked on an eval before you trust it as a filter.",
+      "correct": true,
+      "why": "Right. A self-reported score can help a little, but it is not a guaranteed calibration signal. Measure how well it separates right from wrong answers on a golden set first; retrieval scores and citation checks are often better signals."
+     },
+     {
+      "t": "Models cannot output numbers.",
+      "correct": false,
+      "why": "They can output numbers fine; the question is whether the number means anything."
+     },
+     {
+      "t": "It will make the context window overflow.",
+      "correct": false,
+      "why": "Asking for one extra number adds a handful of tokens."
+     },
+     {
+      "t": "Confidence scores only work at temperature 0.",
+      "correct": false,
+      "why": "Temperature changes variety, not whether self-reported confidence reflects truth."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "Label each request 'transform' or 'recall' and say which needs grounding: (a) turn these meeting notes into action items; (b) what is our VPN server address; (c) explain recursion simply; (d) what did the CEO announce yesterday.",
+    "a": "(a) transform, the input is supplied, low risk. (b) recall of private data, needs grounding. (c) mostly transform of well-known knowledge, low risk, though checking examples is wise. (d) recall of an event after any cutoff, needs grounding with a search or news source. The test is always: is the needed information in the prompt?"
+   },
+   {
+    "level": "Transfer",
+    "q": "A coding assistant suggests a library function that does not exist. Design two system-level checks that catch this before a user copies it.",
+    "a": "(1) Static check: run the generated code through a linter or type-checker against the installed library versions; an undefined attribute fails immediately. (2) Ground it: retrieve the library's real API docs for the version in use and tell the model to use only functions listed there. A third option is to run the code in a sandbox with a test. All three swap trust in fluent text for a machine check."
+   },
+   {
+    "level": "Stretch",
+    "q": "Kalai et al. (2025) argue that common training and evaluation setups reward guessing over abstaining. Explain the argument in your own words and what it implies for how you score your own evals.",
+    "a": "If a benchmark gives 1 point for a right answer and 0 for both a wrong answer and 'I don't know', a model that always guesses scores at least as well as one that abstains when unsure. Training and tuning against such scores pushes models to guess confidently. For your own evals, score wrong answers worse than abstentions (for example +1 right, 0 abstain, -1 wrong) on high-stakes tasks, and report abstention rate next to accuracy. Then a change that cuts hallucinations shows up as an improvement instead of being hidden."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What is a hallucination and why does it happen?",
+    "a": "A hallucination is fluent, confident output that is wrong or made up, such as a fake citation or an API method that does not exist. It happens because the model is trained to produce likely text, not checked facts. When it lacks the information, the most likely continuation still sounds right, so it says something plausible in the same tone as a real fact. That is why confidence does not tell you correctness."
+   },
+   {
+    "level": "Mid",
+    "q": "How do you reduce hallucinations in a production assistant?",
+    "a": "Ground it with retrieval and instruct it to answer only from the supplied passages, with citations, and to say it does not know otherwise. Give it tools for things it is bad at: calculators, search, our APIs. Validate outputs: check that citations exist and that quoted text appears in the sources, validate structured fields. Measure with a golden set that includes unanswerable questions, and track both accuracy and abstention. Design the UI to show sources. Lowering temperature, where the API still allows it, adds a little but does not fix the root cause."
+   },
+   {
+    "level": "Senior",
+    "q": "A stakeholder asks for a guarantee that the assistant will never give wrong answers. How do you respond?",
+    "a": "I would say no system built on a language model can promise zero errors, and then offer what we can commit to: a measured error rate on a representative eval set, a target we gate releases on, abstention when the evidence is missing, citations so users can verify, human review for high-stakes actions, and monitoring with sampled audits in production. I would also ask which errors are most costly, because we can trade more abstentions for fewer wrong answers on those. Turning 'never wrong' into measurable, risk-weighted targets is the real engineering conversation."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Why Language Models Hallucinate (Kalai et al., 2025) — arXiv",
+    "u": "https://arxiv.org/abs/2509.04664"
+   },
+   {
+    "t": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks (Lewis et al., 2020) — arXiv",
+    "u": "https://arxiv.org/abs/2005.11401"
+   },
+   {
+    "t": "Lost in the Middle: How Language Models Use Long Contexts (Liu et al., 2023) — arXiv",
+    "u": "https://arxiv.org/abs/2307.03172"
+   }
+  ]
+ },
+ {
+  "n": "2.1",
+  "analogy": "A prompt is like the note you leave for a babysitter. 'Look after the kids' gets you anything; 'You're in charge (role), dinner at 6 (task), here's the allergy list (context), text me a one-line update at 9 (format), and if anything odd happens call me instead of guessing (an out)' gets you what you wanted. The system message is the note stuck on the fridge for every visit; the user message is what you say at the door tonight. The analogy breaks because the babysitter remembers last week, while the model only knows what is in this request.",
+  "scale": {
+   "title": "What a sloppy triage prompt costs at 250,000 tickets a day",
+   "html": "<p>Assume a helpdesk classifies <strong>250,000 tickets a day</strong> with a <strong>900-token</strong> system prompt and a ~150-token ticket. Prices are Claude Sonnet 5.5: $2 per million input tokens, $10 per million output tokens (<a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\">Anthropic models overview</a>). Volumes are assumptions.</p>\n<ol>\n<li><strong>No format line.</strong> Without a pinned format the model writes friendly paragraphs, about 200 output tokens. 250,000 x 200 = 50M output tokens = <strong>$500/day</strong>, and your code still has to parse prose.</li>\n<li><strong>Pin the format.</strong> \"Answer with exactly one word: high, medium, or low\" cuts output to about 3 tokens. 250,000 x 3 = 750,000 tokens = <strong>$7.50/day</strong>. One line of the prompt saved about $490 a day and made parsing trivial.</li>\n<li><strong>The system prompt is repeated input.</strong> 250,000 x 900 = 225M input tokens = <strong>$450/day</strong>.</li>\n<li><strong>Cache the stable part.</strong> The system prompt is identical across requests, so it can be cached. Cache reads on Sonnet 5.5 cost 5% of the input price: 225M x $2 x 0.05 / 1M = <strong>$22.50/day</strong> plus cache writes. This is another reason durable rules belong in the system message and changing data in the user message: a stable prefix caches, a shuffled one does not.</li>\n<li><strong>Test before shipping.</strong> Run both prompts on 200 labelled tickets. Track accuracy, the rate of answers outside the three labels, and output tokens. Ship the version that wins on all three.</li>\n</ol>"
+  },
+  "lab": {
+   "id": "02_structured_output",
+   "look_for": "Section A2 uses a vague 'extract as JSON' prompt and got 0 of 4 parseable outputs on our run (markdown fences, invented keys). Section A pins the exact keys in the prompt and section B passes the schema as Ollama's format: both got 8 of 8 valid on qwen2.5:7b. So the big win here came from a clear prompt; on these 8 emails the schema showed no extra advantage (95% intervals are printed). Its value is the guarantee on inputs you have not tested."
+  },
+  "quiz": [
+   {
+    "q": "You move the customer's ticket text into the system message and the fixed rules into the user message. Accuracy is the same. What did you most likely make worse?",
+    "options": [
+     {
+      "t": "Maintainability and caching: the system message now changes every request, so the stable prefix is lost and rules are harder to version.",
+      "correct": true,
+      "why": "Right. Durable rules in the system message give you one reusable, versioned, cacheable block. Putting changing data there breaks prompt caching and mixes data with rules."
+     },
+     {
+      "t": "The model can no longer read the ticket.",
+      "correct": false,
+      "why": "The model reads all messages; it can still see the ticket."
+     },
+     {
+      "t": "Temperature is now ignored.",
+      "correct": false,
+      "why": "Message placement has nothing to do with sampling settings."
+     },
+     {
+      "t": "The answer must now be in JSON.",
+      "correct": false,
+      "why": "Moving text between messages does not change the output format."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "Label each line of this prompt with its part (role, task, context, examples, format, out): 'You are a billing analyst.' / 'Decide if this invoice is overdue.' / 'Invoice: due 2026-10-01, paid: no.' / 'Reply overdue or not_overdue.' / 'If the due date is missing, reply unknown.'",
+    "a": "Role, task, context, format, out. No examples are present; adding one labelled invoice would be the next upgrade if outputs wobble."
+   },
+   {
+    "level": "Transfer",
+    "q": "A weak prompt 'write a product description for this blender' gives wildly different lengths and tones. Rebuild it for a shop that needs 50-word, plain-English, no-superlatives copy, and list what each part fixes.",
+    "a": "System: 'You write product copy for a kitchen shop. Plain English, no superlatives like best or amazing.' User: 'Write a product description for the blender below. Product facts: <facts>...</facts>. Exactly one paragraph, 45-55 words. Use only the facts given; if a fact is missing, leave it out.' Role sets the voice; the facts block stops invented specs; the word range pins length; 'only the facts' plus 'leave it out' is the out that prevents made-up wattage or warranty."
+   },
+   {
+    "level": "Stretch",
+    "q": "Write a small test plan to prove your rebuilt prompt is better than the weak one, with numbers you would report.",
+    "a": "Pick 50 real products, including edge cases (missing specs, very long spec sheets). Run both prompts on each, 3 times. Measure: word count in range (target 100%), banned-word rate, facts not in the input (manual or LLM-judge check), and output tokens. Report a table: weak vs rebuilt for each metric, plus 3 worst examples from each. Ship only if the rebuilt prompt wins on invented facts and length without losing readability in a quick human review."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What goes in a system message versus a user message?",
+    "a": "The system message holds things that apply to every turn: role, rules, tone, output format, safety constraints like answering only from context. The user message holds this turn's request and data: the question, the document, the ticket. Keeping them separate makes the prompt reusable, easier to version and test, and it keeps a stable prefix that providers can cache. It also helps keep untrusted user data clearly apart from your instructions."
+   },
+   {
+    "level": "Mid",
+    "q": "Your prompt works on your three test examples but fails in production. How do you debug it?",
+    "a": "Collect the failing production inputs and group them by failure type: wrong format, invented facts, wrong label, ignored instruction. Map each group to the part of the prompt that should have prevented it, for example missing context or no out for unknowns. Fix one part at a time and re-run a test set made from real traffic, including the failures, so you can see both the fix and any regressions. Version each prompt change. Three hand-picked examples were never a test set."
+   },
+   {
+    "level": "Senior",
+    "q": "How do you manage prompts across a team with many features in production?",
+    "a": "Treat prompts as code: templates in the repo with variables, owned per feature, reviewed in pull requests, with a version id logged on every request. Each prompt has an eval set and a pass threshold that runs in CI, so a wording change cannot ship if it regresses. Keep stable instructions first to benefit from caching, and keep model choice and decoding settings next to the prompt because they change behaviour together. Monitor production for drift and feed failures back into the eval set."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Prompt engineering overview — Anthropic",
+    "u": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/overview"
+   },
+   {
+    "t": "Prompting best practices — Anthropic",
+    "u": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices"
+   },
+   {
+    "t": "Chat API (messages and roles) — Ollama",
+    "u": "https://docs.ollama.com/api/chat"
+   }
+  ]
+ },
+ {
+  "n": "2.2",
+  "analogy": "Few-shot prompting is like showing a new kid at school two finished worksheets before handing them a blank one. They copy the layout, the way answers are written, even which boxes to leave empty. If both examples you showed had the answer 'yes', they may lean towards 'yes' too. The analogy breaks because the kid actually learns and remembers tomorrow, while the model forgets the examples as soon as the request ends.",
+  "scale": {
+   "title": "A 12-label intent classifier at 1 million messages a day",
+   "html": "<p>Assume a bank routes <strong>1,000,000 chat messages a day</strong> into <strong>12 intents</strong>. Each example shot is about <strong>40 tokens</strong>. Prices: Claude Sonnet 5.5, $2 per million input tokens, cache reads at 5% of that (<a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\">Anthropic models overview</a>). Volumes and accuracy are assumptions.</p>\n<ol>\n<li><strong>Static few-shot.</strong> Two examples per label x 12 labels = 24 shots x 40 = 960 tokens on every request. 1M x 960 = 960M tokens = <strong>$1,920/day</strong>.</li>\n<li><strong>Static few-shot, cached.</strong> The shots never change, so put them in the cached prefix: 960M x $2 x 0.05 / 1M = <strong>$96/day</strong> plus cache writes.</li>\n<li><strong>Dynamic few-shot.</strong> Retrieve the 6 most similar examples per message: 6 x 40 = 240 tokens, uncached because they differ each time. 1M x 240 = 240M = <strong>$480/day</strong>, plus an embedding lookup.</li>\n<li><strong>Compare.</strong> The cached static set is cheapest here. Dynamic shots earn their cost only if they lift accuracy. Suppose an eval on 1,200 labelled messages shows 91% static vs 95% dynamic: that is 40,000 fewer misroutes a day. If a misroute costs an agent 2 minutes, dynamic saves about 1,300 agent-hours a day, which dwarfs the token bill.</li>\n<li><strong>Check label balance.</strong> Count how often each label appears in the shots. If 'card_lost' appears 6 times and 'mortgage' once, expect a lean towards 'card_lost'. Calibration studies show models pick up exactly this kind of majority-label and recency bias from the examples (<a href=\"https://arxiv.org/abs/2102.09690\">Zhao et al., 2021</a>).</li>\n</ol>"
+  },
+  "lab": {
+   "id": "02_structured_output",
+   "look_for": "The lab's SYSTEM prompt has no examples. Add two example email-to-ticket pairs to it and rerun: with 8 of 8 already valid you will not see a parse-rate change, but watch section D's category accuracy against the gold labels (7 of 8 on our run; the compliment was filed as delivery). The lab does not test label bias; to see it, make all your examples share one label and count how the outputs shift."
+  },
+  "quiz": [
+   {
+    "q": "You shuffle the order of the same four few-shot examples and accuracy on your test set moves from 88% to 79%. What does that tell you?",
+    "options": [
+     {
+      "t": "Few-shot prompts can be sensitive to example order, so you should test a few orderings and pick one using an eval, not by eye.",
+      "correct": true,
+      "why": "Right. Research has shown that the order of demonstrations alone can swing results noticeably (Lu et al., 2021). Treat example order as a setting to evaluate."
+     },
+     {
+      "t": "The model is broken and should be replaced.",
+      "correct": false,
+      "why": "Order sensitivity is a known property of in-context learning, not a defect in one model."
+     },
+     {
+      "t": "Few-shot never works; use zero-shot instead.",
+      "correct": false,
+      "why": "One shuffle result does not condemn few-shot. Measure and pick a robust ordering, or retrieve examples per input."
+     },
+     {
+      "t": "The examples changed the model's weights in the wrong direction.",
+      "correct": false,
+      "why": "In-context learning does not change weights at all. The examples only shape this one request's output."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "You have 8 labels and want 2 shots each at about 35 tokens per shot. How many tokens do the examples add per request, and what is that per day at 200,000 requests?",
+    "a": "8 x 2 x 35 = 560 tokens per request. 200,000 x 560 = 112M input tokens a day. Multiply by your model's input price, and check whether caching the fixed examples applies, since that can cut this a lot."
+   },
+   {
+    "level": "Transfer",
+    "q": "Your extraction prompt has three examples, all where the date is present. Production emails often have no date and the model invents one. Fix the example set and explain why it works.",
+    "a": "Replace or add one example where the date is missing and the output is {\"date\": null}. The model continues demonstrated patterns; with no null example, 'null' is an unseen and low-probability output, so it guesses. Showing null once makes abstaining a normal move. Also check that the schema allows null, and add missing-date emails to your eval set."
+   },
+   {
+    "level": "Stretch",
+    "q": "Min et al. (2022) found that, for some classification tasks, replacing the gold labels in demonstrations with random labels hurt accuracy less than expected. What does this suggest examples are really teaching, and how should that change how you pick them?",
+    "a": "It suggests demonstrations often teach the format, the label space and the kind of inputs to expect, more than the exact input-to-label mapping. So pick examples that cover the real input distribution and every label, and keep the format identical. Do not assume correct labels alone guarantee the model learned your boundary; for subtle boundaries you still need clear instructions, tricky examples, an eval, and possibly fine-tuning."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What is the difference between zero-shot and few-shot prompting?",
+    "a": "Zero-shot gives the model only instructions. Few-shot adds a handful of worked examples, input then desired output, before the real input. Examples pin down the format, the labels and the style much more precisely than words, so few-shot usually makes classification and extraction more consistent. The cost is extra input tokens on every request, and the examples only apply to the requests that include them."
+   },
+   {
+    "level": "Mid",
+    "q": "How do you choose few-shot examples, and how many?",
+    "a": "Cover every label, include edge cases such as missing fields or 'unknown', keep the format exactly the same across examples, and balance the labels so the model does not lean one way. Start with 2 to 5 and add more only if an eval shows it helps. Test a few orderings, since order can matter. If you need many examples, retrieve the most similar few per input from an example bank, or consider fine-tuning."
+   },
+   {
+    "level": "Senior",
+    "q": "When do you move from few-shot prompting to fine-tuning?",
+    "a": "When an eval shows few-shot has plateaued below the bar, when the examples needed are too many to send on every call even with caching, when latency or cost per call matters at high volume, or when the behaviour is a stable style or format used everywhere. Fine-tuning needs a labelled dataset, an eval, and a retraining plan as data drifts. In between there is dynamic few-shot: retrieve examples per input. I would compare all three on the same eval with cost per 1,000 requests next to accuracy."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Language Models are Few-Shot Learners (Brown et al., 2020) — arXiv",
+    "u": "https://arxiv.org/abs/2005.14165"
+   },
+   {
+    "t": "Calibrate Before Use: Improving Few-Shot Performance of Language Models (Zhao et al., 2021) — arXiv",
+    "u": "https://arxiv.org/abs/2102.09690"
+   },
+   {
+    "t": "Rethinking the Role of Demonstrations (Min et al., 2022) — arXiv",
+    "u": "https://arxiv.org/abs/2202.12837"
+   },
+   {
+    "t": "Fantastically Ordered Prompts and Where to Find Them (Lu et al., 2021) — arXiv",
+    "u": "https://arxiv.org/abs/2104.08786"
+   }
+  ]
+ },
+ {
+  "n": "2.3",
+  "analogy": "Chain-of-thought is the maths teacher saying 'show your working'. Writing each step on paper means you can use the result of step 2 when you do step 3, instead of trying to hold everything in your head and blurting a final number. The paper is the model's context. The analogy breaks because a student's written working is usually how they really solved it, while a model's written steps are not guaranteed to be the real reason it gave its answer.",
+  "scale": {
+   "title": "Is chain-of-thought worth it for 80,000 refund decisions a day?",
+   "html": "<p>Assume an e-commerce firm checks <strong>80,000 refund claims a day</strong> against multi-condition rules. Prices: Claude Sonnet 5.5, $10 per million output tokens (<a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\">Anthropic models overview</a>). Accuracy figures are assumptions you would measure on a labelled set.</p>\n<ol>\n<li><strong>Direct answer.</strong> About 5 output tokens per claim: 80,000 x 5 = 400,000 tokens = <strong>$4/day</strong>. Suppose a 500-claim eval shows <strong>82%</strong> correct.</li>\n<li><strong>Chain-of-thought.</strong> About 250 output tokens per claim: 80,000 x 250 = 20M tokens = <strong>$200/day</strong>. Suppose the eval shows <strong>94%</strong> correct.</li>\n<li><strong>Count the errors.</strong> Direct: 80,000 x 18% = 14,400 wrong decisions a day. CoT: 80,000 x 6% = 4,800. That is 9,600 fewer mistakes for $196 more, about 2 cents per avoided error. If a wrong refund decision costs even $1 in agent time or leakage, CoT wins easily.</li>\n<li><strong>Latency.</strong> At an assumed 60 tokens/second, 250 tokens is about 4 seconds versus near-instant. Fine for a back-office queue, maybe not for a live checkout.</li>\n<li><strong>Self-consistency.</strong> Sampling 5 chains and voting costs 5 x $200 = $1,000/day. Run it only on claims where the first chain's answer is near a rule boundary, say 10% of traffic, for about $100/day extra.</li>\n<li><strong>Do the arithmetic in code.</strong> Dates and amounts are computable. Let the model extract fields and pick which rule applies, and let Python do the date maths. That removes a whole class of reasoning slips for free.</li>\n</ol>"
+  },
+  "lab": {
+   "id": "12_self_consistency",
+   "look_for": "The lab samples 7 reasoning chains per problem from qwen2.5:7b on 5 word problems and majority-votes the first N. On our run accuracy was 4 of 5 at every N while tokens grew linearly, and on the clock-arithmetic problem the most common answer was wrong. With n=5 problems that is a demo of the mechanism, not an accuracy curve. Read the individual answers for that problem: neat-looking steps that reach a wrong number are the faithfulness warning from this lesson."
+  },
+  "quiz": [
+   {
+    "q": "You use self-consistency with 5 sampled chains but set temperature to 0 on a local model. Accuracy does not improve at all. Why?",
+    "options": [
+     {
+      "t": "At temperature 0 all five chains are the same, so the vote has nothing to choose between; self-consistency needs diverse samples.",
+      "correct": true,
+      "why": "Right. Voting only helps if the chains differ. Sample with temperature above 0 (for example 0.7) so different reasoning paths appear."
+     },
+     {
+      "t": "Five chains are too few; you need at least 100.",
+      "correct": false,
+      "why": "Gains usually show up with a handful of samples. The issue here is that the samples are identical."
+     },
+     {
+      "t": "Self-consistency only works on reasoning models.",
+      "correct": false,
+      "why": "It was introduced using standard models with chain-of-thought prompting."
+     },
+     {
+      "t": "The final answers must be in JSON for voting to work.",
+      "correct": false,
+      "why": "You need a parseable final answer, not necessarily JSON. The problem is the lack of diversity."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "Write a CoT prompt for: 'A train leaves at 14:40 and the trip takes 2 h 35 min. When does it arrive?' with a parseable last line, and give the correct answer.",
+    "a": "'Work out the arrival time step by step. On the last line write exactly: Final: HH:MM.' Steps: 14:40 + 2 h = 16:40; 16:40 + 35 min = 17:15. Final: 17:15."
+   },
+   {
+    "level": "Transfer",
+    "q": "A support bot uses CoT and sometimes shows its reasoning to customers, including lines like 'the customer is probably lying'. How do you keep the accuracy benefit without that risk?",
+    "a": "Separate reasoning from the reply. Ask for reasoning inside a tag or field your code strips, and only show the final answer field, or use a model or API that keeps reasoning internal. Add an output check that blocks reasoning text from reaching the user. Also tell the model to phrase reasoning neutrally, since logs are read by staff too."
+   },
+   {
+    "level": "Stretch",
+    "q": "Turpin et al. (2023) showed CoT explanations can leave out the real cause of an answer, for example a bias planted in the few-shot examples. Design a small experiment to check whether your model's CoT is faithful on your task.",
+    "a": "Take 100 cases. Create a biased variant of the prompt, for example every few-shot example's answer is option A. Run both prompts. If answers shift towards A in the biased version, read the explanations: if they rarely mention the examples' pattern as a reason, the CoT is not reporting what drove the answer. Report the shift rate and the share of explanations that mention the bias. The conclusion for production is to verify answers with checks rather than trusting explanations."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What is chain-of-thought prompting and why does it help?",
+    "a": "It asks the model to write out intermediate reasoning steps before the final answer, either with a phrase like 'think step by step' or with examples that include worked steps. It helps because the model generates token by token: written steps become context, so the final answer can build on actual intermediate results instead of being guessed in one jump. It helps most on multi-step maths, logic and rule-checking, and adds little on simple lookups."
+   },
+   {
+    "level": "Mid",
+    "q": "When would you not use chain-of-thought?",
+    "a": "On simple single-step tasks like language detection, sentiment or field extraction, where it adds tokens and latency without improving accuracy. In tight latency budgets such as autocomplete. When the reasoning might leak to users and you cannot separate it. And with reasoning models that already think internally, where adding 'think step by step' is usually redundant. In every case, check on an eval rather than assuming."
+   },
+   {
+    "level": "Senior",
+    "q": "How do you make a multi-step LLM decision trustworthy in production?",
+    "a": "Split it: the model extracts facts and picks rules, deterministic code computes anything computable. Use structured output for the decision and evidence fields. Where judgment is needed, sample several chains and vote, or have a second model check against the rules. Gate releases on an eval with labelled edge cases, and log each decision with its evidence for audit. Do not treat the chain-of-thought text as proof; it may not reflect the real cause of the answer. Send low-confidence or high-value cases to a human."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models (Wei et al., 2022) — arXiv",
+    "u": "https://arxiv.org/abs/2201.11903"
+   },
+   {
+    "t": "Large Language Models are Zero-Shot Reasoners (Kojima et al., 2022) — arXiv",
+    "u": "https://arxiv.org/abs/2205.11916"
+   },
+   {
+    "t": "Self-Consistency Improves Chain of Thought Reasoning (Wang et al., 2022) — arXiv",
+    "u": "https://arxiv.org/abs/2203.11171"
+   },
+   {
+    "t": "Language Models Don't Always Say What They Think (Turpin et al., 2023) — arXiv",
+    "u": "https://arxiv.org/abs/2305.04388"
+   }
+  ]
+ },
+ {
+  "n": "2.4",
+  "analogy": "Structured output is like a form with labelled boxes instead of a blank page. 'Name: ___ Age: ___ Allergic to nuts: yes / no' gets answers a computer can file; 'tell me about yourself' gets a story someone has to read. Constrained decoding is like boxes that physically only accept digits where a number goes. The analogy breaks because a form cannot stop someone writing a wrong but valid answer, and neither can a schema: it guarantees the shape, not the truth.",
+  "scale": {
+   "title": "Extracting fields from 3 million invoices a month",
+   "html": "<p>Assume an accounts team processes <strong>3,000,000 invoices a month</strong> and extracts vendor, invoice number, date, total and currency. Failure rates are assumptions to replace with your own measurements.</p>\n<ol>\n<li><strong>Free-text prompting.</strong> Suppose 4% of replies fail to parse (prose around the JSON, trailing commas). 3M x 4% = <strong>120,000 broken records</strong> a month.</li>\n<li><strong>Constrain the shape.</strong> Pass a JSON schema as the format. Ollama accepts a schema in <code>format</code> (<a href=\"https://docs.ollama.com/capabilities/structured-outputs\">Ollama docs</a>), and hosted APIs have their own structured output features (<a href=\"https://platform.claude.com/docs/en/build-with-claude/structured-outputs\">Anthropic docs</a>). Parse failures drop to about zero.</li>\n<li><strong>Now count value errors.</strong> Valid JSON can still be wrong: a date as \"next Friday\", a total that does not match the line items, currency \"dollars\" instead of an ISO code. Suppose 1.5% fail validation: 3M x 1.5% = 45,000 a month.</li>\n<li><strong>Retry with the error.</strong> Send the validation message back once. Suppose 85% fix themselves: 45,000 x 0.85 = 38,250 recovered, at the cost of 45,000 extra calls (1.5% more volume).</li>\n<li><strong>Human queue.</strong> The remaining 6,750 a month, about 225 a day, go to a reviewer. At 1 minute each that is under 4 hours a day: affordable, and every case becomes a test example.</li>\n<li><strong>Design the schema to allow honesty.</strong> Make fields nullable where invoices really omit them, use enums for currency, and add a cross-check in code (sum of lines = total). A schema that forces every field pushes the model to invent values.</li>\n</ol>"
+  },
+  "lab": {
+   "id": "02_structured_output",
+   "look_for": "This lab is this lesson. Compare section A2 (vague prompt: 0 of 4 parseable), section A (keys pinned in the prompt: 8 of 8) and section B (schema passed as format: 8 of 8). Section C runs a business-rule check with retry-with-error-feedback; on our run no rule was broken, so it printed 0 repairs: the loop is there, but this data never triggered it. To see it fire, add an email whose order id the model is likely to mangle, or tighten a rule in business_rules()."
+  },
+  "quiz": [
+   {
+    "q": "With schema-constrained decoding switched on, the model returns {\"currency\": \"USD\", \"total\": 1250.0} for an invoice whose real total is 1,520. What does this show?",
+    "options": [
+     {
+      "t": "Constrained decoding guarantees valid shape and types, not correct values, so you still need value checks such as matching the total to the line items.",
+      "correct": true,
+      "why": "Right. The output passes the schema but is wrong. Cross-checks in code and grounding are what catch value errors."
+     },
+     {
+      "t": "Constrained decoding is broken and should be turned off.",
+      "correct": false,
+      "why": "It did its job: valid JSON with the right types. Catching wrong values was never its job."
+     },
+     {
+      "t": "The schema should use a string for total instead of a number.",
+      "correct": false,
+      "why": "Changing the type does not make the value correct; it just removes a useful type check."
+     },
+     {
+      "t": "The temperature was too low.",
+      "correct": false,
+      "why": "A higher temperature would add randomness, not accuracy."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "Write a Pydantic model for a support ticket with: intent (one of refund, billing, technical, other), urgent (bool), order_id (string or missing).",
+    "a": "<pre><code>from typing import Literal, Optional\nfrom pydantic import BaseModel\n\nclass Ticket(BaseModel):\n    intent: Literal[\"refund\", \"billing\", \"technical\", \"other\"]\n    urgent: bool\n    order_id: Optional[str] = None</code></pre>Literal turns the allowed intents into an enum the validator enforces, and Optional with a default of None lets the model honestly report a missing order id instead of inventing one."
+   },
+   {
+    "level": "Transfer",
+    "q": "Your retry loop sometimes runs 5 times on the same email and still fails, burning tokens. Improve the loop.",
+    "a": "Cap retries at 1 or 2. Make each retry message specific: quote the exact validation error and the field. If it still fails, stop and route the case to a fallback: a human queue, a stronger model, or a partial record with failed fields set to null and flagged. Log the input and errors so the case joins your test set. Also check the schema itself, because repeated failure on one field often means the schema demands something the input does not contain."
+   },
+   {
+    "level": "Stretch",
+    "q": "Explain how a grammar-constrained decoder decides which tokens are allowed at each step, and why it can make some outputs slightly worse in quality.",
+    "a": "The decoder tracks where it is in the grammar (a state machine built from the JSON schema). At each step it masks every token that would lead to an invalid continuation, then samples from what is left, renormalised (Willard and Louf, 2023, describe an efficient indexed version). Quality can dip because the mask may force awkward tokenisations or cut off the path the model would have taken to a good answer, especially if the schema forces fields in an unnatural order. Mitigations: order fields so reasoning-like fields come before conclusions, keep schemas simple, and evaluate quality, not just validity."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "How do you get reliable JSON out of an LLM?",
+    "a": "Describe the exact shape in the prompt with an example, use the runtime's structured output or JSON mode (for example passing a JSON schema as Ollama's format), parse and validate against a schema with something like Pydantic, and on failure retry once with the error message. Never pass raw model output to downstream code without validation."
+   },
+   {
+    "level": "Mid",
+    "q": "What is the difference between JSON mode, schema-constrained output, and function or tool calling?",
+    "a": "JSON mode guarantees syntactically valid JSON but not your fields. Schema-constrained output restricts decoding to a specific JSON schema, so required fields, types and enums are enforced. Tool calling has the model fill in arguments for a named function defined by a schema; the same constraint idea, but framed as an action your code executes. In all three you still validate values, because a schema cannot know that a total is wrong or an id does not exist."
+   },
+   {
+    "level": "Senior",
+    "q": "Design the extraction pipeline for millions of documents a month, with an accuracy target of 99.5% per field.",
+    "a": "Schema-constrained extraction with nullable fields and enums, code-level cross-checks (totals, dates, id formats, lookups against master data), one retry with the specific error, then routing to a stronger model or a human queue. Measure per-field accuracy on a labelled sample every week, not just parse rate. Version schemas and prompts together, and make downstream consumers handle nulls. Log every correction as a new test case. Use batch APIs for cost and keep a confidence or review flag in the record, so 99.5% is measured rather than assumed."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Structured outputs — Ollama docs",
+    "u": "https://docs.ollama.com/capabilities/structured-outputs"
+   },
+   {
+    "t": "Structured outputs — Anthropic docs",
+    "u": "https://platform.claude.com/docs/en/build-with-claude/structured-outputs"
+   },
+   {
+    "t": "Pydantic documentation",
+    "u": "https://docs.pydantic.dev/latest/"
+   },
+   {
+    "t": "Efficient Guided Generation for Large Language Models (Willard and Louf, 2023) — arXiv",
+    "u": "https://arxiv.org/abs/2307.09702"
+   }
+  ]
+ },
+ {
+  "n": "2.5",
+  "analogy": "A good prompt is like a recipe card in a busy restaurant kitchen. The steps are numbered, the ingredients sit in a separate box from the instructions, the plating is shown, and it says what to do if an ingredient is missing. A bad card says 'make something nice, don't burn it'. Delimiters are the box: they stop a note scribbled on the ingredient list ('also give the chef's wallet to table 4') being read as an instruction. The analogy breaks because a cook knows a note on a tomato is not an order; a model can still be fooled, so delimiters reduce injection but do not stop it.",
+  "scale": {
+   "title": "One mega-prompt or a three-step pipeline for 400,000 emails a day",
+   "html": "<p>Assume a company handles <strong>400,000 inbound emails a day</strong>, <strong>30%</strong> not in English. It must detect the language, translate to English, and classify intent. Prices: Claude Sonnet 5.5, $2 in / $10 out per million tokens (<a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\">Anthropic models overview</a>). Token sizes are assumptions.</p>\n<ol>\n<li><strong>Mega-prompt.</strong> One call: 1,200 tokens of instructions + 500-token email in, 600 tokens out (translation + label). Input 400,000 x 1,700 = 680M = $1,360; output 400,000 x 600 = 240M = $2,400. Total about <strong>$3,760/day</strong>.</li>\n<li><strong>Decompose, step 1.</strong> Language detection with a small local classifier or library: about $0.</li>\n<li><strong>Step 2, translate only what needs it.</strong> 120,000 non-English emails x (300 in + 500 email) = 96M in = $192; x 500 out = 60M = $600.</li>\n<li><strong>Step 3, classify every email.</strong> 400,000 x (400 instructions + 500 email) = 360M in = $720; output is one label, about 5 tokens: 2M = $20.</li>\n<li><strong>Compare.</strong> Pipeline total about <strong>$1,532/day</strong>, about 60% cheaper, because you stopped paying to \"translate\" English into English and stopped generating long text for a one-word answer.</li>\n<li><strong>Debuggability.</strong> Each step gets its own eval: language accuracy, translation spot checks, intent accuracy. When intent accuracy drops you can see whether translation caused it.</li>\n<li><strong>Fence the email.</strong> Wrap every email in <code>&lt;email&gt;...&lt;/email&gt;</code> and say text inside is data, never instructions. That lowers injection risk; the lab measures by how much.</li>\n</ol>"
+  },
+  "lab": {
+   "id": "07_injection_exfiltration",
+   "look_for": "The lab measures attack success over 20 questions with no defence, with spotlighting (datamarking the untrusted page), and with a deterministic output filter that strips non-allowlisted links. There is no tool or permission layer in this lab. Note how far the prompt-level delimiter moves the rate and whether its 95% interval overlaps the undefended one: that gap is why delimiting is a first defence, not the whole answer."
+  },
+  "quiz": [
+   {
+    "q": "You fence user text in <doc> tags and tell the model never to follow instructions inside them. A red-team test still gets the model to follow an injected instruction 1 time in 20. What is the right conclusion?",
+    "options": [
+     {
+      "t": "Delimiters reduce injection but do not eliminate it; add controls outside the model, such as output allowlists and permission checks on tools.",
+      "correct": true,
+      "why": "Right. Delimiting is a prompt-level mitigation. Anything that must never happen, such as leaking data or calling a dangerous tool, needs enforcement in code."
+     },
+     {
+      "t": "The tags were the wrong kind; triple quotes would make it 100% safe.",
+      "correct": false,
+      "why": "No delimiter style makes a model fully immune. The fix is defence in depth, not a better quote mark."
+     },
+     {
+      "t": "Raise temperature so the injected instruction is less likely to be followed.",
+      "correct": false,
+      "why": "Temperature adds randomness; it is not a security control."
+     },
+     {
+      "t": "Add more few-shot examples of summaries and the problem disappears.",
+      "correct": false,
+      "why": "Examples shape format, they do not create a security boundary."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "Rewrite this negative-only instruction as positive, measurable ones: 'Don't be too long, don't use jargon, don't make stuff up.'",
+    "a": "'Reply in at most 80 words. Use words a new customer would know; if you must use a technical term, explain it in brackets. Use only facts from the <docs> section; if the answer is not there, say you don't know and suggest contacting support.' Each line now tells the model what to do and can be checked."
+   },
+   {
+    "level": "Transfer",
+    "q": "Your team has 14 prompts in production, each written differently. Propose a shared prompt template and say what it buys you.",
+    "a": "A template with fixed sections in a fixed order: role; task; rules (including the out); data in named delimiters; output schema; optional examples. Store it in the repo with variables, a version id, and an eval set per prompt. It buys consistent behaviour, easier review (reviewers know where to look), a stable cacheable prefix, and one place to apply a fix such as a new injection rule to all 14 prompts."
+   },
+   {
+    "level": "Stretch",
+    "q": "Least-to-most prompting (Zhou et al., 2022) first asks the model to break a problem into subproblems, then solves them in order. Compare it to decomposing in code, and say when you would use each.",
+    "a": "Least-to-most lets the model choose the breakdown at run time, which suits problems whose structure varies per input, such as multi-hop questions. Code-level decomposition fixes the steps in advance, which is more predictable, testable and cheaper when the structure is known (detect, translate, classify). Use code decomposition for stable business pipelines, and least-to-most or an agent loop when you cannot know the steps ahead. You can combine them: fixed outer pipeline, model-planned inner step, with a step budget."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "Name three prompt anti-patterns and how to fix them.",
+    "a": "Vague quality words like 'make it good': replace with measurable requirements such as length and audience. Negative-only instructions like 'don't be long': say what to do, 'at most 80 words'. Unfenced data pasted next to instructions: wrap it in delimiters and say it is data only. Others: hidden second tasks in one sentence, no output format, and no out for missing information, which invites guessing."
+   },
+   {
+    "level": "Mid",
+    "q": "Why are delimiters recommended, and what are their limits?",
+    "a": "Delimiters such as XML-style tags mark where data starts and ends, so the model can tell your instructions from user or retrieved content. That reduces confusion and some prompt injection, and makes prompts easier to read and template. The limit is that the model can still be persuaded by text inside the fence; indirect injection through retrieved documents is well documented. So for anything sensitive you add controls outside the model: least-privilege tools, approval steps, output allowlists, and monitoring."
+   },
+   {
+    "level": "Senior",
+    "q": "How would you bring a large set of ad-hoc prompts under engineering control?",
+    "a": "Inventory them with owners and traffic. Move each into a template in the repo with a version id logged per request. Build an eval set per prompt from real traffic and failures, with a pass threshold in CI. Apply a shared checklist: role, task, fenced data, schema, out, key instruction at the start or end. Add security tests for injection on any prompt that touches untrusted text. Then iterate one change at a time against the eval. The aim is that no prompt change ships without a measured result."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Prompting best practices — Anthropic",
+    "u": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices"
+   },
+   {
+    "t": "Not what you've signed up for: indirect prompt injection (Greshake et al., 2023) — arXiv",
+    "u": "https://arxiv.org/abs/2302.12173"
+   },
+   {
+    "t": "Least-to-Most Prompting Enables Complex Reasoning (Zhou et al., 2022) — arXiv",
+    "u": "https://arxiv.org/abs/2205.10625"
+   }
+  ]
+ },
+ {
+  "n": "13.1",
+  "analogy": "A standard model is a quiz contestant who must hit the buzzer immediately. A reasoning model is allowed to scribble on a notepad for a minute before answering. On a hard maths question the notepad wins; on 'what colour is the sky' it just wastes a minute. And you pay for every page of scribbling. The analogy breaks because the model's scribbling is not always shown to you, but you are still billed for it.",
+  "scale": {
+   "title": "Routing 1 million requests a day between a fast model and a reasoning model",
+   "html": "<p>Assume an assistant gets <strong>1,000,000 requests a day</strong>, of which <strong>5%</strong> are genuinely hard (multi-step debugging, calculations), and a hard request uses about <strong>4,000 thinking tokens</strong> when the model thinks hard. All numbers except prices and API behaviour are assumptions.</p>\n<ol>\n<li><strong>How you control thinking now.</strong> On current Claude models you no longer set a token budget: <code>thinking: {type: \"enabled\", budget_tokens: N}</code> returns a 400 error on Claude 4.7 and later. You use adaptive thinking (the model decides whether and how much to think) and steer it with <code>output_config.effort</code>: <code>low</code>, <code>medium</code>, <code>high</code>, <code>xhigh</code> or <code>max</code>. The default is <code>high</code> on Claude Sonnet 5.5 and <code>medium</code> on Claude Opus 5.5 and Haiku 5.5 (<a href=\"https://platform.claude.com/docs/en/build-with-claude/effort\">effort docs</a>; <a href=\"https://platform.claude.com/docs/en/build-with-claude/extended-thinking\">extended thinking, now legacy</a>). Effort is a behavioural signal, not a hard cap; <code>max_tokens</code> is the hard limit on thinking plus answer.</li>\n<li><strong>Thinking is billed as output.</strong> Thinking tokens count as billed output tokens, visible in <code>usage.output_tokens_details.thinking_tokens</code>.</li>\n<li><strong>High effort on everything.</strong> On Claude Sonnet 5.5 at $10 per million output tokens (<a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\">Anthropic models overview</a>): 1,000,000 x 4,000 = 4 billion tokens = <strong>$40,000/day</strong> if every request thought that hard.</li>\n<li><strong>Route by difficulty.</strong> Send easy requests at <code>low</code> effort (where the model may skip thinking on easy inputs) and hard ones at <code>high</code>. If only the 50,000 hard requests think at about 4,000 tokens: 200M tokens = <strong>$2,000/day</strong>. Measure the real thinking tokens per effort level on your traffic; do not assume.</li>\n<li><strong>Price the router.</strong> A small classifier, or a cheap model call of about 200 input tokens, decides 'hard or not'. On a model priced from $0.10 per million input tokens, 1M x 200 = 200M tokens = about $20/day.</li>\n<li><strong>Measure the misroutes and the latency.</strong> On a labelled set of 1,000 requests, suppose the router sends 15% of hard requests to low effort: add an escalation rule (retry at higher effort if a check fails). And 4,000 thinking tokens at an assumed 80 tokens/second is about 50 seconds, so show progress or move hard jobs to an async queue.</li>\n</ol>\n<p><strong>History note:</strong> earlier Claude models used manual extended thinking with a <code>budget_tokens</code> number; it still works on some older models (for example Claude Sonnet 4.5 and Haiku 4.5) and is deprecated on the 4.6 models. Code written that way must migrate to adaptive thinking plus effort when it moves to a current model.</p>"
+  },
+  "lab": {
+   "id": "12_self_consistency",
+   "look_for": "Self-consistency is test-time compute you control by hand: N samples and a vote. On our run accuracy stayed at 4 of 5 for every N while tokens grew linearly, and one vote went wrong because the most common answer was wrong. With n=5 problems this shows the mechanism and its failure, not a curve. The lab does not run a trained reasoning model or Claude's effort setting; qwen2.5:7b is a standard model."
+  },
+  "quiz": [
+   {
+    "q": "You give a reasoning model a 'think step by step, list every assumption' prompt on top of its built-in thinking. Tokens double, accuracy is unchanged. What is the best reading?",
+    "options": [
+     {
+      "t": "The model already reasons internally, so the extra CoT instruction mostly added tokens; measure and drop it unless an eval shows a gain.",
+      "correct": true,
+      "why": "Right. Reasoning models are trained to think before answering. Classic CoT prompting is often redundant on them, so it should earn its place on an eval."
+     },
+     {
+      "t": "The model ignored the prompt, which means it is broken.",
+      "correct": false,
+      "why": "It may have followed it; it just did not help. That is a result, not a fault."
+     },
+     {
+      "t": "Raise the effort level again until accuracy improves.",
+      "correct": false,
+      "why": "If accuracy is flat, more thinking is likely to keep spending without gain. Find where the curve flattens on an eval first."
+     },
+     {
+      "t": "Reasoning models cannot follow instructions.",
+      "correct": false,
+      "why": "They follow instructions; the issue is redundant prompting."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "A reasoning model answers in 300 visible output tokens but the usage shows 3,300 output tokens. At $10 per million output tokens, what did the thinking cost per request and per 100,000 requests?",
+    "a": "Thinking tokens = 3,300 - 300 = 3,000. Per request: 3,000 x $10 / 1,000,000 = $0.03. Per 100,000 requests: $3,000. Always read the usage field; visible text underestimates the bill."
+   },
+   {
+    "level": "Transfer",
+    "q": "Design a 'try cheap first, escalate if needed' flow for a coding assistant that writes unit-testable functions.",
+    "a": "Step 1: fast model writes the function and tests. Step 2: run the tests in a sandbox. Step 3: if they pass, return. If they fail, send the code, the failing test output and the task to the reasoning model. Step 4: run tests again; if they still fail, return the best attempt with the failure shown. Track the escalation rate and cost per solved task. The tests are the cheap, objective check that makes escalation safe."
+   },
+   {
+    "level": "Stretch",
+    "q": "Snell et al. (2024) report that spending test-time compute well can beat simply using a larger model in some settings. What conditions make that more likely, and how would you test it for your workload?",
+    "a": "It is more likely when problems are of moderate difficulty for the smaller model, when there is a good way to check or score candidates (tests, verifiers), and when compute can be adapted per problem instead of spent evenly. Test it by building an eval set grouped by difficulty, then compare cost and accuracy for: small model once, small model with N samples plus a verifier, small model with reasoning on, and a larger model once. Plot accuracy against cost per task and pick the best point per difficulty group."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What is a reasoning model?",
+    "a": "It is a model trained to produce a long internal chain of thought before its final answer: working through steps, checking itself, trying other approaches. That uses more tokens at answer time, called test-time compute, and gives better results on hard maths, coding and planning. The cost is higher price, because thinking tokens are billed, and more latency. For simple tasks a standard model is cheaper and just as good."
+   },
+   {
+    "level": "Mid",
+    "q": "How do you decide whether a feature should use a reasoning model?",
+    "a": "Run an eval on representative cases with both options and compare accuracy, cost per request including thinking tokens, and latency. Reasoning tends to pay off on multi-step tasks with a clear right answer and low to moderate volume. For high-volume simple tasks, use a fast model or a low effort level. Often the answer is both: route by difficulty, or try low effort first and escalate when a check fails. On current Claude models you steer thinking with output_config.effort rather than a token budget, and you watch usage.output_tokens_details.thinking_tokens so cost does not surprise you."
+   },
+   {
+    "level": "Senior",
+    "q": "How does test-time compute change system design compared with the 'just pick a bigger model' era?",
+    "a": "Compute becomes a per-request decision, not a fixed property of the deployed model. So you design routing, effort levels and verification: a difficulty classifier or cascade, an effort level per feature (low, medium, high and up, with max_tokens as the hard cap on thinking plus answer), verifiers such as tests or rule checks to decide when more compute is worth it, and async flows for long jobs. Run an effort sweep on your evals instead of carrying settings over between model versions, because levels are recalibrated. Observability must track thinking tokens and latency separately. Tools, grounding, bounded loops and evals stay essential."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Scaling LLM Test-Time Compute Optimally can be More Effective than Scaling Model Parameters (Snell et al., 2024) — arXiv",
+    "u": "https://arxiv.org/abs/2408.03314"
+   },
+   {
+    "t": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning (2025) — arXiv",
+    "u": "https://arxiv.org/abs/2501.12948"
+   },
+   {
+    "t": "Effort parameter (adaptive thinking) - Anthropic docs",
+    "u": "https://platform.claude.com/docs/en/build-with-claude/effort"
+   },
+   {
+    "t": "Self-Consistency Improves Chain of Thought Reasoning (Wang et al., 2022) — arXiv",
+    "u": "https://arxiv.org/abs/2203.11171"
+   },
+   {
+    "t": "Effort parameter (adaptive thinking) - Anthropic docs",
+    "u": "https://platform.claude.com/docs/en/build-with-claude/effort"
+   },
+   {
+    "t": "Effort parameter (adaptive thinking) - Anthropic docs",
+    "u": "https://platform.claude.com/docs/en/build-with-claude/effort"
+   },
+   {
+    "t": "Extended thinking (legacy budget_tokens) - Anthropic docs",
+    "u": "https://platform.claude.com/docs/en/build-with-claude/extended-thinking"
+   }
+  ]
+ },
+ {
+  "n": "13.2",
+  "analogy": "Choosing between a closed API model and an open-weight model is like choosing between eating at a restaurant and cooking at home. The restaurant has the best chef and no washing up, but you pay per plate, they change the menu when they like, and your order leaves the house. Cooking at home needs a kitchen and some skill, but you control the recipe and nobody else sees what you eat. The analogy breaks because home cooking is always cheaper per meal, while running your own model only gets cheaper at enough volume.",
+  "scale": {
+   "title": "Open-weight or API for an internal HR assistant at 30,000 employees",
+   "html": "<p>Assume <strong>30,000 employees</strong>, each asking <strong>5 questions a working day</strong>, with about <strong>6,000 input tokens</strong> (retrieved policy text plus history) and <strong>300 output tokens</strong> per question. Hardware costs below are placeholders you must replace with your own quotes.</p>\n<ol>\n<li><strong>Volume.</strong> 30,000 x 5 = 150,000 questions a day. Input = 150,000 x 6,000 = 900M tokens. Output = 150,000 x 300 = 45M tokens.</li>\n<li><strong>API cost.</strong> On Claude Sonnet 5.5 at $2 in / $10 out per million (<a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\">Anthropic models overview</a>): 900 x $2 = $1,800 plus 45 x $10 = $450, about <strong>$2,250/day</strong>, roughly $49,500 over 22 working days. Prompt caching on the shared instruction prefix and batch processing for non-urgent jobs would lower this.</li>\n<li><strong>Self-hosted cost.</strong> Suppose your infra team quotes $X per GPU-month and estimates the open model needs N GPUs to hit your latency at peak. Self-hosting wins when N x $X plus engineer time is below the API bill. Get both numbers from a load test, not a blog post.</li>\n<li><strong>Quality.</strong> Run the same 300-question HR eval on both. If the open model scores 90% and the API 94%, decide whether 4 points matters for HR answers. Often it does for policy, less for summaries.</li>\n<li><strong>Privacy and control.</strong> HR questions contain personal data. Self-hosting keeps it inside your network; an API needs a data processing agreement and a check of retention terms.</li>\n<li><strong>Long context check.</strong> A 1M-token window would let you paste the whole handbook. At 900M input tokens a day that is the expensive path; retrieval keeps each request near 6,000 tokens.</li>\n</ol>"
+  },
+  "lab": {
+   "id": "03_rag_local",
+   "look_for": "The whole RAG lab runs on an open-weight model (qwen2.5:7b) and an open embedding model on your own machine, so no document leaves it. That is the open/local side of this lesson's trade-off. Each grounded answer is built from 3 retrieved chunks instead of the whole corpus. The lab prints no token counts and does not benchmark a closed API, so add up the chunk sizes yourself and run the quality comparison on your own data."
+  },
+  "quiz": [
+   {
+    "q": "A vendor announces a new model that tops a public leaderboard. What should you do before switching your production feature to it?",
+    "options": [
+     {
+      "t": "Run it on your own golden set and compare quality, cost per request and latency with the current model before deciding.",
+      "correct": true,
+      "why": "Right. Public benchmarks measure someone else's tasks. Your eval on your data is the only result that tells you whether it is better for you."
+     },
+     {
+      "t": "Switch immediately, since leaderboard rank means it is better at everything.",
+      "correct": false,
+      "why": "Leaderboards cover specific tasks and can be gamed or saturated. They do not measure your use case."
+     },
+     {
+      "t": "Wait a year until the model is stable.",
+      "correct": false,
+      "why": "Waiting by default means missing real gains. A quick eval answers the question in days."
+     },
+     {
+      "t": "Switch only if it has a bigger context window.",
+      "correct": false,
+      "why": "Context size is one factor; quality, cost and latency on your task matter more."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "List three questions you would ask about any new model release before trying it on your product.",
+    "a": "(1) What capability does it add for my task: better reasoning, longer context, a new modality, cheaper price? (2) What does it cost per request and how fast is it at my prompt sizes? (3) How does it score on my golden set compared with what I run today? Optional fourth: does it change data handling or deployment, for example open weights I can host?"
+   },
+   {
+    "level": "Transfer",
+    "q": "Your company forbids sending customer data to third parties. Sketch an architecture that still uses a strong model for some tasks.",
+    "a": "Run an open-weight model inside your network for everything touching customer data: retrieval, summaries, classification. For tasks that need a stronger model, send only data that is not customer data (public docs, synthetic examples) or redact personal fields first and re-insert them locally after. Log what leaves the network. Evaluate whether the local model meets the bar on its own; often a retrieval upgrade closes more of the gap than a bigger model would."
+   },
+   {
+    "level": "Stretch",
+    "q": "Argue both sides: 'small models will make most enterprise API usage unnecessary'. Then state what evidence would settle it for your company.",
+    "a": "For: many enterprise tasks are classification, extraction and grounded Q&A, where small open models with good retrieval and fine-tuning reach the bar, at low cost and with full data control. Against: hard reasoning, coding and long-context tasks still favour frontier models; self-hosting needs operations skill; and API prices keep falling. Evidence: per-task evals comparing a tuned small model with an API model, with cost per 1,000 requests including hosting and staff time, and latency at peak. The answer is likely different for each task."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What is an open-weight model and why would a company use one?",
+    "a": "An open-weight model is one whose trained parameters you can download and run on your own hardware, for example the Qwen2.5 family used in this course. Companies use them for privacy (data never leaves their environment), cost control at high volume, freedom to fine-tune, and no lock-in to a vendor's versioning. The trade-offs are running the infrastructure yourself and, often, lower peak capability than the best closed models."
+   },
+   {
+    "level": "Mid",
+    "q": "A colleague says 1M-token windows make RAG obsolete. How do you respond?",
+    "a": "Large windows help with bounded material, like one long contract or a small codebase. But every token costs money and latency on every call, models can miss facts in the middle of long inputs, most corpora are far bigger than 1M tokens, and data changes. Prompt caching helps with a fixed prefix but not with a changing corpus. So long context shifts the balance, letting you retrieve fewer and bigger chunks, but retrieval stays the scalable default. I would test both on our questions."
+   },
+   {
+    "level": "Senior",
+    "q": "How do you keep a GenAI platform current without constant rewrites?",
+    "a": "Put a thin abstraction between features and models, so a model is a configuration choice with its own prompt variants. Keep a golden set per feature and an automated eval harness, so a new model can be scored in hours. Track cost and latency per feature. Pin model versions and plan migrations, since providers retire models and change APIs. Review the landscape on a schedule rather than reacting to every launch. Decisions then come from measurements on our data."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Models overview (current lineup, context, pricing) — Anthropic",
+    "u": "https://platform.claude.com/docs/en/about-claude/models/overview"
+   },
+   {
+    "t": "Qwen2.5 Technical Report (2024) — arXiv",
+    "u": "https://arxiv.org/abs/2412.15115"
+   },
+   {
+    "t": "Lost in the Middle: How Language Models Use Long Contexts (Liu et al., 2023) — arXiv",
+    "u": "https://arxiv.org/abs/2307.03172"
+   }
+  ]
+ },
+ {
+  "n": "13.3",
+  "analogy": "Imagine a school grading machine that is right 90% of the time overall, but it was mostly tested on neat handwriting, so it fails more often for kids with messy writing. The class average looks fine while some kids are marked down again and again. Checking fairness means looking at the results for each group of kids, not just the class average. The analogy breaks because with people, unlike handwriting, the groups can be hidden behind proxies like a name or a postcode that the system never openly 'looks at'.",
+  "scale": {
+   "title": "Auditing a resume screener before it touches 200,000 applications a year",
+   "html": "<p>Assume an employer gets <strong>200,000 applications a year</strong> and an LLM scores each as advance / reject. Before launch you run a matched-pair audit. Rates are assumptions to illustrate the arithmetic.</p>\n<ol>\n<li><strong>Build matched pairs.</strong> Take 500 real resumes, strip names, then insert names signalling 4 groups. 500 x 4 = <strong>2,000 runs</strong>. Qualifications are identical across each set of four.</li>\n<li><strong>Compute selection rates.</strong> Suppose advance rates are 32%, 31%, 30% and 23%.</li>\n<li><strong>Adverse impact ratio.</strong> Divide each by the highest: 23 / 32 = <strong>0.72</strong>. US federal guidelines generally treat a selection rate below four-fifths (0.8) of the highest group's rate as evidence of adverse impact (<a href=\"https://www.law.cornell.edu/cfr/text/29/1607.4\">29 CFR 1607.4(D)</a>). This one fails.</li>\n<li><strong>Is it noise?</strong> With n = 500 per group, the standard error of a 30% rate is sqrt(0.3 x 0.7 / 500) = about <strong>2 points</strong>, so a 95% interval is about plus or minus 4 points. A 9-point gap is well outside that.</li>\n<li><strong>Size the harm.</strong> If a quarter of the 200,000 applicants are in the affected group, 50,000 people x (32% - 23%) = about <strong>4,500 qualified people</strong> a year not advanced who would have been at the top group's rate.</li>\n<li><strong>Fix and re-measure.</strong> Remove names and other proxies before scoring, tighten the rubric to stated job criteria, add human review of all rejects near the cutoff, and re-run the same 2,000-run audit. Write the before and after into the model card.</li>\n</ol>"
+  },
+  "lab": {
+   "id": "06_evals",
+   "look_for": "The lab does not run a per-group fairness audit, but its tools are the ones you need. The position-bias test (swap A/B order, count verdict flips) is the same matched-input idea: change something that should not matter and count how often the output changes. The regression gate per case shows how to block a release when a slice gets worse."
+  },
+  "quiz": [
+   {
+    "q": "You remove the 'gender' field from a hiring model's input, and the audit still shows a large gap between men and women. What is the most likely explanation?",
+    "options": [
+     {
+      "t": "Other inputs act as proxies, such as names, clubs, gaps in employment or word choice, so the model can still pick up the attribute indirectly.",
+      "correct": true,
+      "why": "Right. Removing a field is not the same as removing the information. You find proxies with matched-input tests and per-group evaluation, then remove or neutralise them."
+     },
+     {
+      "t": "The audit is wrong because the model cannot see gender.",
+      "correct": false,
+      "why": "The model cannot see the field, but it can see correlated signals. The audit is measuring real behaviour."
+     },
+     {
+      "t": "Gaps always disappear with a bigger model.",
+      "correct": false,
+      "why": "Larger models still learn patterns from their data, biased ones included. Size is not a fairness fix."
+     },
+     {
+      "t": "The gap means fairness cannot be measured.",
+      "correct": false,
+      "why": "You just measured it. The next step is finding the cause."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "Group A is approved 60% of the time and group B 45%. Compute the adverse impact ratio and say whether it passes the four-fifths rule of thumb.",
+    "a": "45 / 60 = 0.75. That is below 0.8, so under the four-fifths guideline this would generally be treated as evidence of adverse impact and needs investigation. Also check sample sizes, since small groups make ratios noisy."
+   },
+   {
+    "level": "Transfer",
+    "q": "Your content moderation model flags posts. Design a disaggregated eval for dialect bias.",
+    "a": "Collect a labelled set of posts in several English dialects with the same mix of truly harmful and harmless content, labelled by annotators familiar with each dialect. Measure the false-positive rate (harmless posts flagged) per dialect, plus matched pairs: the same harmless message written in different dialects. Report rates with confidence intervals. If one dialect's false-positive rate is much higher, fix it (prompt rubric, examples, threshold per category, human review) and re-measure."
+   },
+   {
+    "level": "Stretch",
+    "q": "Kleinberg et al. (2016) show some fairness criteria cannot all hold at once when base rates differ. Explain the trade-off in plain words with a lending example, and how you would pick a criterion.",
+    "a": "If two groups repay at different rates, a score cannot generally be equally calibrated for both groups (a score of 0.7 means 70% repay in each) and also give both groups equal false-positive and false-negative rates. You must choose. In lending, calibration supports accurate pricing, while equal false-negative rates protect creditworthy people from being refused. Choose based on the harm that matters most, the law in your market, and input from affected people; document the choice and its cost in the model card rather than claiming the system is 'fair' in every sense."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "Where does bias in LLMs come from?",
+    "a": "Mainly from training data: human text reflects stereotypes and imbalances, and groups that are under-represented get worse performance. It can also come from fine-tuning data, from how prompts are written, and from the product design, for example using the model to make a decision it should not make alone. The model is not malicious; it reflects its data, which is why bias is subtle and has to be measured."
+   },
+   {
+    "level": "Mid",
+    "q": "How do you test an LLM feature for bias before launch?",
+    "a": "Disaggregated evaluation: measure accuracy, error rates and outcomes per relevant group, not just overall. Matched-input tests: inputs identical except for a sensitive attribute or proxy such as a name, checking that outputs do not change. Use enough samples to compute confidence intervals and compare against a clear threshold such as the four-fifths ratio where it applies. Include affected-domain experts in defining the test cases. Then fix, re-measure and document results in a model card."
+   },
+   {
+    "level": "Senior",
+    "q": "Leadership wants to fully automate a decision about people with an LLM. How do you handle it?",
+    "a": "First, check whether the use is high-risk under the law in our markets, which brings documentation, oversight and testing duties. Then measure: disaggregated evals and matched-pair audits on realistic data. If gaps exist and cannot be closed reliably, recommend assistive use, where the model drafts and a person decides, with an appeal route. Either way, add monitoring of outcomes by group in production, logging for audit, and a model card that states limits. Sometimes the responsible design is not automating the decision at all."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Gender Shades: Intersectional Accuracy Disparities in Commercial Gender Classification (Buolamwini and Gebru, 2018) — PMLR",
+    "u": "https://proceedings.mlr.press/v81/buolamwini18a.html"
+   },
+   {
+    "t": "Model Cards for Model Reporting (Mitchell et al., 2019) — arXiv",
+    "u": "https://arxiv.org/abs/1810.03993"
+   },
+   {
+    "t": "Inherent Trade-Offs in the Fair Determination of Risk Scores (Kleinberg et al., 2016) — arXiv",
+    "u": "https://arxiv.org/abs/1609.05807"
+   },
+   {
+    "t": "29 CFR 1607.4 (four-fifths rule) — Cornell Legal Information Institute",
+    "u": "https://www.law.cornell.edu/cfr/text/29/1607.4"
+   }
+  ]
+ },
+ {
+  "n": "13.4",
+  "analogy": "AI rules work like rules for vehicles. A bicycle needs almost nothing, a car needs a licence and a yearly check, a school bus needs a specially trained driver and strict inspections, and some vehicles are simply banned from the road. The law cares about what the vehicle is used for and how much harm it can do, not how clever its engine is. The analogy breaks because one AI model can be the bicycle in one product and the school bus in another, so the tier belongs to the use, not the model.",
+  "scale": {
+   "title": "A compliance plan for an EU loan-scoring feature",
+   "html": "<p>Assume a lender in the EU uses an LLM-based system to help score <strong>50,000 loan applications a month</strong>. Credit scoring of people is listed as a high-risk use. Dates below are from the European Commission's AI Act page (<a href=\"https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai\">European Commission</a>), checked 2026-11-03; this is engineering literacy, not legal advice.</p>\n<ol>\n<li><strong>Know the timeline.</strong> The Act entered into force on 1 August 2024. Prohibited practices applied from 2 February 2025, general-purpose AI model obligations from 2 August 2025, and the Act became generally applicable on 2 August 2026. After the 2026 \"AI Omnibus\" amendment, rules for high-risk use cases in sensitive areas (Annex III) apply from <strong>2 December 2027</strong>. That is your deadline, so plan backwards from it.</li>\n<li><strong>Record-keeping.</strong> Log every decision with inputs, model and prompt version, retrieved evidence, output, and any human override. At about 4 KB per record: 50,000 x 4 KB = 200 MB a month, about 2.4 GB a year. Storage is cheap; the work is making records complete and searchable.</li>\n<li><strong>Accuracy and bias testing.</strong> A quarterly eval of 2,000 labelled applications, broken down by group (Lesson 13.3), with results kept as evidence.</li>\n<li><strong>Human oversight.</strong> Every reject goes to an officer who can override. If 30% are rejects, that is 15,000 reviews a month; at 5 minutes each, 1,250 hours, about 8 full-time staff. Budget for it now.</li>\n<li><strong>Documentation.</strong> Model card, data sources, known limits, and the test reports, versioned with each release.</li>\n<li><strong>Transparency.</strong> Tell applicants AI is involved and how to ask for a human review.</li>\n</ol>"
+  },
+  "lab": {
+   "id": "08_llmops",
+   "look_for": "The lab writes one JSONL span per request with OpenTelemetry-style fields (model, prompt name, version and content hash, token counts, cache status, guard verdicts, latency) and keeps a versioned prompt registry. That is the raw material of record-keeping. Note what is missing: the spans do not store the prompt or answer text, so you could tell which prompt version and model produced a decision, but not rebuild the exact output. Decide deliberately what to log, given PII. The lab does not produce compliance documents."
+  },
+  "quiz": [
+   {
+    "q": "Your team builds a general-purpose chatbot and a customer later uses it to screen job applicants in the EU. Which statement best reflects the risk-based approach?",
+    "options": [
+     {
+      "t": "The use decides the tier: screening applicants is a high-risk use, so that deployment carries high-risk obligations even though the chatbot itself is general.",
+      "correct": true,
+      "why": "Right. Obligations follow the use and its potential for harm. The same model can be minimal risk in one deployment and high risk in another."
+     },
+     {
+      "t": "General-purpose chatbots are always minimal risk, whatever they are used for.",
+      "correct": false,
+      "why": "The tier follows the use case. Using it for hiring decisions changes the obligations."
+     },
+     {
+      "t": "Only the model's size decides the obligations.",
+      "correct": false,
+      "why": "Risk tiers depend on use and impact, not parameter count."
+     },
+     {
+      "t": "Hiring tools are banned outright.",
+      "correct": false,
+      "why": "Hiring is a high-risk area with strict obligations, not a prohibited practice."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "Place each in a likely EU AI Act tier with one obligation: (a) an AI that writes marketing images published to the public; (b) an exam-proctoring system that flags students for cheating; (c) a product recommendation widget.",
+    "a": "(a) Transparency tier: AI-generated content must be identifiable, and some content must be clearly labelled. (b) Education is a high-risk area: risk management, accuracy and bias testing, human oversight before any sanction, logging. (c) Minimal risk: no special obligations under the Act, though privacy law still applies to the data used. Check specifics with counsel; this is the reasoning pattern."
+   },
+   {
+    "level": "Transfer",
+    "q": "Map four high-risk duties to engineering artefacts your team already produces or could produce.",
+    "a": "Accuracy and robustness testing: the eval suite and its reports in CI. Record-keeping: request traces with prompt and model versions. Human oversight: the review queue and override log. Documentation of limits: the model card and data sheet, versioned per release. Data governance: lineage and quality checks in the data pipeline. Most of the work is making these complete, kept, and findable by an auditor."
+   },
+   {
+    "level": "Stretch",
+    "q": "The high-risk deadline moved after the 2026 AI Omnibus amendment. What does that teach you about building compliance into a product, and how would you track rule changes?",
+    "a": "Dates and details change, but the duties (testing, logging, oversight, documentation) stayed the same in direction. So build those capabilities into the platform now, where they are cheap, rather than racing a deadline later. Track changes by assigning an owner who checks the official Commission pages and legal counsel's updates on a schedule, records the date checked next to every date your docs quote, and reviews the product's tier whenever its use changes."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What does 'risk-based' mean in AI regulation?",
+    "a": "Rules scale with the potential harm of the use. Under the EU AI Act a small set of uses is banned, high-risk uses like hiring, credit and education carry strict duties such as testing, logging, documentation and human oversight, limited-risk uses mostly need transparency, like telling users they are talking to an AI, and most other uses have no special obligations. The tier follows what the system is used for, not which model it uses."
+   },
+   {
+    "level": "Mid",
+    "q": "You are building an LLM feature for a bank. What do you put in place from day one for governance?",
+    "a": "Classify the use case's risk tier with legal. Then build in: an eval suite with per-group results, versioned prompts and models logged on every request, full decision traces with retention rules, a human review and override path, documentation of data sources and known limits (a model card), and privacy controls for personal data under GDPR. All of this is ordinary good engineering; doing it from day one is far cheaper than retrofitting before an audit."
+   },
+   {
+    "level": "Senior",
+    "q": "How would you run AI governance across many teams without slowing everyone down?",
+    "a": "Make the compliant path the easy path. Provide shared platform pieces: a model gateway that logs traces and versions automatically, an eval harness with standard fairness slices, a prompt registry, and templates for model cards. Add a short intake form that sets each use case's risk tier and the controls it needs, with heavier review only for high-risk uses. Align with an external framework such as the NIST AI RMF for structure, and keep a register of AI systems. Review regulations on a schedule with legal so dates and duties stay current."
+   }
+  ],
+  "sources": [
+   {
+    "t": "AI Act: regulatory framework and application timeline — European Commission",
+    "u": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+   },
+   {
+    "t": "AI Risk Management Framework — NIST",
+    "u": "https://www.nist.gov/itl/ai-risk-management-framework"
+   },
+   {
+    "t": "Model Cards for Model Reporting (Mitchell et al., 2019) — arXiv",
+    "u": "https://arxiv.org/abs/1810.03993"
+   }
+  ]
+ }
+]

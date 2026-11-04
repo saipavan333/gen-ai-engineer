@@ -12,6 +12,37 @@
 
   <span class="eyebrow">Track 7 · Lesson 7.5</span>
   <h1>Content safety</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Content moderation is a separate checker that scores text for harm: hate, harassment, self-harm, violence and similar.</p>
+    <p>You check twice: the user's message on the way in, and the model's reply on the way out.</p>
+    <p>The checker is a separate model, such as the free Llama Guard, so it can catch the main model's mistakes.</p>
+    <p>Checkers also block harmless messages by mistake.</p>
+    <p>So measure both: harmful text that got through, and good text you turned away.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Content moderation is like having two lifeguards at a pool, one checking who comes through the gate and one watching the water. Even a well-trained swimmer can get into trouble, so the water lifeguard is there no matter what.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The lifeguard at the gate</td><td>Input moderation on the user's message</td></tr>
+      <tr><td>The lifeguard watching the water</td><td>Output moderation on the model's reply</td></tr>
+      <tr><td>Even good swimmers get into trouble</td><td>A well-aligned model can still produce harmful output</td></tr>
+      <tr><td>Turning away swimmers who were fine</td><td>False positives: harmless messages blocked</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> Lifeguards rarely stop someone who is fine, but a moderation model often blocks harmless messages, so you have to count how many good swimmers you turned away, not just how many rescues you made.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 157" role="img" aria-label="Content moderation on both sides of the model" preserveAspectRatio="xMidYMid meet"><rect x="14" y="22" width="119.2" height="119" rx="10" class="bx tn-b" /><g class="vzb"><text x="73.6" y="55.75" text-anchor="middle" class="b">User</text><text x="73.6" y="75.75" text-anchor="middle" class="b">message</text><text x="73.6" y="101.75" text-anchor="middle" class="s" style="font-size:13px">arrives from</text><text x="73.6" y="118.75" text-anchor="middle" class="s" style="font-size:13px">the internet</text></g><circle cx="16" cy="24" r="11" class="badge"/><text x="16" y="28.5" text-anchor="middle" class="badge-t">1</text><line x1="137.2" y1="81.5" x2="154.2" y2="81.5" class="ln "/><polygon points="163.2,81.5 154.2,76.55 154.2,86.45" class="hd "/><rect x="167.2" y="22" width="119.2" height="119" rx="10" class="bx tn-k" /><g class="vzb"><text x="226.8" y="47.25" text-anchor="middle" class="b">Input</text><text x="226.8" y="67.25" text-anchor="middle" class="b">moderation</text><text x="226.8" y="93.25" text-anchor="middle" class="s" style="font-size:13px">unsafe? refuse</text><text x="226.8" y="110.25" text-anchor="middle" class="s" style="font-size:13px">before the</text><text x="226.8" y="127.25" text-anchor="middle" class="s" style="font-size:13px">model sees it</text></g><circle cx="169.2" cy="24" r="11" class="badge"/><text x="169.2" y="28.5" text-anchor="middle" class="badge-t">2</text><line x1="290.4" y1="81.5" x2="307.4" y2="81.5" class="ln "/><polygon points="316.4,81.5 307.4,76.55 307.4,86.45" class="hd "/><rect x="320.4" y="22" width="119.2" height="119" rx="10" class="bx tn-c" /><g class="vzb"><text x="380" y="65.75" text-anchor="middle" class="b">Main model</text><text x="380" y="91.75" text-anchor="middle" class="s" style="font-size:13px">writes the</text><text x="380" y="108.75" text-anchor="middle" class="s" style="font-size:13px">reply</text></g><circle cx="322.4" cy="24" r="11" class="badge"/><text x="322.4" y="28.5" text-anchor="middle" class="badge-t">3</text><line x1="443.6" y1="81.5" x2="460.6" y2="81.5" class="ln "/><polygon points="469.6,81.5 460.6,76.55 460.6,86.45" class="hd "/><rect x="473.6" y="22" width="119.2" height="119" rx="10" class="bx tn-k" /><g class="vzb"><text x="533.2" y="47.25" text-anchor="middle" class="b">Output</text><text x="533.2" y="67.25" text-anchor="middle" class="b">moderation</text><text x="533.2" y="93.25" text-anchor="middle" class="s" style="font-size:13px">unsafe reply?</text><text x="533.2" y="110.25" text-anchor="middle" class="s" style="font-size:13px">replace it</text><text x="533.2" y="127.25" text-anchor="middle" class="s" style="font-size:13px">with a refusal</text></g><circle cx="475.6" cy="24" r="11" class="badge"/><text x="475.6" y="28.5" text-anchor="middle" class="badge-t">4</text><line x1="596.8" y1="81.5" x2="613.8" y2="81.5" class="ln "/><polygon points="622.8,81.5 613.8,76.55 613.8,86.45" class="hd "/><rect x="626.8" y="22" width="119.2" height="119" rx="10" class="bx tn-g" /><g class="vzb"><text x="686.4" y="47.25" text-anchor="middle" class="b">User sees</text><text x="686.4" y="67.25" text-anchor="middle" class="b">the reply</text><text x="686.4" y="93.25" text-anchor="middle" class="s" style="font-size:13px">count blocks</text><text x="686.4" y="110.25" text-anchor="middle" class="s" style="font-size:13px">and false</text><text x="686.4" y="127.25" text-anchor="middle" class="s" style="font-size:13px">blocks</text></g><circle cx="628.8" cy="24" r="11" class="badge"/><text x="628.8" y="28.5" text-anchor="middle" class="badge-t">5</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 491" role="img" aria-label="Content moderation on both sides of the model" preserveAspectRatio="xMidYMid meet"><rect x="12" y="16" width="336" height="65" rx="10" class="bx tn-b" /><g class="vzb"><text x="180" y="41.25" text-anchor="middle" class="b">User message</text><text x="180" y="67.25" text-anchor="middle" class="s" style="font-size:13px">arrives from the internet</text></g><circle cx="14" cy="18" r="11" class="badge"/><text x="14" y="22.5" text-anchor="middle" class="badge-t">1</text><line x1="180" y1="84" x2="180" y2="103" class="ln "/><polygon points="180,112 184.95,103 175.05,103" class="hd "/><rect x="12" y="115" width="336" height="65" rx="10" class="bx tn-k" /><g class="vzb"><text x="180" y="140.25" text-anchor="middle" class="b">Input moderation</text><text x="180" y="166.25" text-anchor="middle" class="s" style="font-size:13px">unsafe? refuse before the model sees it</text></g><circle cx="14" cy="117" r="11" class="badge"/><text x="14" y="121.5" text-anchor="middle" class="badge-t">2</text><line x1="180" y1="183" x2="180" y2="202" class="ln "/><polygon points="180,211 184.95,202 175.05,202" class="hd "/><rect x="12" y="214" width="336" height="65" rx="10" class="bx tn-c" /><g class="vzb"><text x="180" y="239.25" text-anchor="middle" class="b">Main model</text><text x="180" y="265.25" text-anchor="middle" class="s" style="font-size:13px">writes the reply</text></g><circle cx="14" cy="216" r="11" class="badge"/><text x="14" y="220.5" text-anchor="middle" class="badge-t">3</text><line x1="180" y1="282" x2="180" y2="301" class="ln "/><polygon points="180,310 184.95,301 175.05,301" class="hd "/><rect x="12" y="313" width="336" height="65" rx="10" class="bx tn-k" /><g class="vzb"><text x="180" y="338.25" text-anchor="middle" class="b">Output moderation</text><text x="180" y="364.25" text-anchor="middle" class="s" style="font-size:13px">unsafe reply? replace it with a refusal</text></g><circle cx="14" cy="315" r="11" class="badge"/><text x="14" y="319.5" text-anchor="middle" class="badge-t">4</text><line x1="180" y1="381" x2="180" y2="400" class="ln "/><polygon points="180,409 184.95,400 175.05,400" class="hd "/><rect x="12" y="412" width="336" height="65" rx="10" class="bx tn-g" /><g class="vzb"><text x="180" y="437.25" text-anchor="middle" class="b">User sees the reply</text><text x="180" y="463.25" text-anchor="middle" class="s" style="font-size:13px">count blocks and false blocks</text></g><circle cx="14" cy="414" r="11" class="badge"/><text x="14" y="418.5" text-anchor="middle" class="badge-t">5</text></svg>
+    <figcaption>Two independent checks around one model. The checker is purpose-built and separate from the main model, so a jailbroken reply still has to get past it.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">Even a well-behaved model can be pushed into producing harmful content, and a public app that does so under your brand is a serious problem. Content moderation is the independent safety net: classifiers that check what comes in and what goes out, separate from the model itself.</p>
 
   <h2>Why moderate both sides</h2>
@@ -26,6 +57,10 @@
     <div class="box-label">Concept</div>
     <p><span class="term">Content moderation</span> uses a classifier to score text for unsafe categories (hate, harassment, self-harm, sexual content, violence, illegal activity, etc.). <span class="term">Input moderation</span> screens user messages before the model; <span class="term">output moderation</span> screens the model’s responses before the user. These are usually separate, purpose-built models (e.g., the free, open-source <span class="term">Llama Guard</span>, or hosted moderation endpoints) — independent of your main model, so they catch its mistakes.</p>
   </div>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <div class="box example">
     <div class="box-label">Worked example — moderation gates (free, Ollama / Llama Guard)</div>
@@ -44,6 +79,13 @@
     <span class="k">return</span> answer</code></pre>
     <p>The output gate is the crucial backstop: even if a jailbreak coaxes the model into unsafe text, an independent classifier inspects the result and blocks it before it reaches the user. Belt and suspenders.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Setting a moderation threshold for a kids' learning app with 500,000 messages a day</div>
+    <p>Assumptions: 500,000 messages a day, of which about 1% (5,000) are actually unsafe. You built an eval set of 2,000 labelled messages, half unsafe and half edgy-but-fine, and measured the classifier at two thresholds. The rates below are example measurements, not published figures.</p><ol><li><strong>Threshold A (strict).</strong> Catches 92% of unsafe messages, wrongly blocks 6% of safe ones.<br>Missed unsafe: 5,000 x 0.08 = 400 a day. Wrongly blocked: 495,000 x 0.06 = 29,700 a day.</li><li><strong>Threshold B (looser).</strong> Catches 85%, wrongly blocks 1%.<br>Missed unsafe: 5,000 x 0.15 = 750 a day. Wrongly blocked: 495,000 x 0.01 = 4,950 a day.</li><li><strong>Read the trade.</strong> B lets 350 more unsafe messages through per day but stops wrongly blocking about 24,750 children asking normal questions. Neither is free.</li><li><strong>Split by category.</strong> For a kids' app you might use the strict threshold for sexual content and self-harm, where a miss is serious, and the looser one for mild insults, where false blocks hurt learning most.</li><li><strong>Route, do not only block.</strong> Self-harm signals go to a supportive scripted reply with help resources, not a cold refusal.</li><li><strong>Cost and latency.</strong> Running a local classifier such as Llama Guard 3 (<a href="https://ollama.com/library/llama-guard3">available on Ollama</a>) on input and output adds two classification calls per message. Measure the added p95 latency and run the input check in parallel with retrieval to hide most of it.</li><li><strong>Re-measure monthly.</strong> Sample 500 production messages, label them, and recompute both rates, because slang and topics drift.</li></ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box note">
     <div class="box-label">Tune the threshold for your context</div>
@@ -87,6 +129,22 @@
         <div class="why">Alignment helps but isn't a guarantee; you add checks.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">Your moderation filter blocks 8% of legitimate questions in a health-information app. What is the right first move?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Turn moderation off for health questions.</span>
+        <div class="why">That removes the backstop entirely, including for genuinely harmful requests in that domain.</div></li>
+      <li data-correct="true"><span class="opt">B) Measure false positives by category on a labelled set of real questions, then adjust the policy or threshold for the categories causing them.</span>
+        <div class="why">Correct. Over-blocking is a measurable error just like missed harm. Tune with data per category.</div></li>
+      <li data-correct="false"><span class="opt">C) Ask the main model whether each blocked message was really unsafe.</span>
+        <div class="why">That brings back the shared-blind-spot problem and does not tell you which category is miscalibrated.</div></li>
+      <li data-correct="false"><span class="opt">D) Accept it; safety always comes first.</span>
+        <div class="why">Blocking 8% of real users is a product failure and pushes people to less careful sources. Both error types matter.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -110,10 +168,91 @@
     <p>Layer it with the rest of the track. Moderation sits alongside the model’s own refusals, your system prompt, and per-turn re-checking for jailbreaks — no single one is trusted. And remember moderation is only the content layer: it stops harmful <em>text</em>, but it doesn’t stop prompt injection (the text may be perfectly “safe” while still hijacking your app) or unsafe <em>actions</em>. So content safety is necessary but not sufficient; it’s one independent guard among several, and its job is specifically to keep harmful content from entering or leaving. Wire it on both sides, measure it, tune it to your domain, and treat its thresholds as living configuration.</p>
   </div>
 
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/08_llmops.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/08_llmops.py</code></pre>
+    <p><strong>What to look for:</strong> The lab's guards are narrow: input_guard blocks a few injection phrases, masks PII and caps length; output_guard replaces any answer containing a link. There is no safety classifier, so an unsafe request that avoids those phrases passes. Send one clearly unsafe request and one edgy-but-fine one (a biology homework question) and see that neither guard reacts: a concrete picture of why this lesson's moderation layer is a separate component.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  semantic similarity to the cached &#x27;track my order&#x27;: paraphrase=0.657  different intent (cancel)=0.523
+  semantic hits at threshold 0.9: 0
+  Look: a threshold low enough to catch the paraphrase would sit close to the wrong-intent score.
+  Serving &#x27;how to track&#x27; to someone who asked &#x27;how to cancel&#x27; is worse than a cache miss. Tune the
+  threshold on labelled pairs, scope caches per intent/tenant, and log every semantic hit for review.
+  traces written to traces.jsonl; first span:
+  {&quot;trace_id&quot;: &quot;54d669838c1f47758c9099aba0110b3f&quot;, &quot;name&quot;: &quot;chat qwen2.5:7b&quot;, &quot;gen_ai.operation.name&quot;: &quot;chat&quot;, &quot;gen_ai.provider.name&quot;: &quot;ollama&quot;, &quot;gen_ai.request.model&quot;: &quot;qwen2.5:7b&quot;, &quot;gen_ai.prompt.name&quot;: &quot;support_answer&quot;, &quot;gen_ai.prompt.version&quot;: 2, &quot;prompt.hash&quot;: &quot;5ab3d11ffb3b&quot;, &quot;user.id&quot;: &quot;u-123&quot;, 
+4) Prompt version rollout: v1 vs v2 on the same question, both traced
+  v1 hash=47ed77f326d6 -&gt; &quot;Yes, you can return innerwear as long as it meets your retailer&#x27;s return policy conditions, such as being unus&quot;
+  v2 hash=5ab3d11ffb3b -&gt; &#x27;Please contact support for specific return policies on innerwear.&#x27;
+  Check the facts too: store policy (labs/data/kb.json, ret-01) says innerwear cannot be returned. Neither
+  prompt has retrieval, so any &#x27;yes&#x27; is a hallucination; the version that defers to support is the safer one.
+  Look: the trace links every answer to an exact prompt hash and model, so a bad answer is debuggable,
+  and a rollout is a registry change you can roll back, not a code edit buried in a deploy.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/08_llmops.txt">labs/outputs</a>. Source: <a href="../labs/08_llmops.py">labs/08_llmops.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> A moderator flags 1,200 messages a day; humans review them and find 300 truly unsafe. Separately, a sample shows it misses about 100 unsafe messages a day. Compute precision and recall.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Precision = true positives / flagged = 300 / 1,200 = 0.25. Recall = true positives / all unsafe = 300 / (300 + 100) = 0.75. The filter catches three quarters of the harm but 75% of what it flags is fine, so 900 legitimate messages are blocked or queued each day. Whether that is acceptable depends on what happens to flagged messages: a soft review queue tolerates low precision better than a hard block does.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Streaming responses show tokens as they are generated, but your output moderator needs full text. How do you moderate a streamed answer?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Options: 1) buffer and check in chunks, for example every sentence or 200 tokens, so the user sees text with a short delay and you can stop the stream and replace what was shown if a chunk fails; 2) run a fast lightweight check on each chunk and the full classifier on the complete answer, retracting if the final check fails; 3) for high-risk categories or audiences, do not stream at all. Log every retraction because it shows where the model needed the backstop.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Design the moderation policy and evaluation for an internal tool used by a trust-and-safety team who must read abusive content to do their job.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Moderation here protects the business without blocking the work. Policy: the tool may summarise and classify abusive content and quote it; it must not generate new abusive content, and it must not help find real people's private details. Use a custom policy in the safety classifier that distinguishes quoting or analysing from creating. Access is limited to the T&S team with audit logs. Eval: 300 real analysis tasks that must succeed (quoting slurs inside a classification is allowed) and 200 generation requests that must be refused. Track task success and leak rate separately, and review with the T&S lead monthly, because they know what blocks their work.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> Why moderate both input and output?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Input moderation blocks clearly disallowed requests before you spend a model call on them and lets you respond appropriately. Output moderation is the backstop: even with a safe input, or after a jailbreak, the model can still produce harmful text, and the output check catches it before the user sees it. They catch different failures, so using both gives defence in depth. Both should use an independent classifier, not the main model judging itself.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> How do you choose moderation thresholds?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Build a labelled eval set from your own domain with both unsafe messages and legitimate edgy ones. Measure recall on unsafe content and false-positive rate on legitimate content, per category, at several thresholds. Convert the rates into daily counts at your traffic so the trade-off is concrete. Then pick thresholds per category based on the cost of each error for your users: strict for self-harm or sexual content in a kids' app, looser for mild language. Re-measure regularly because language and attack patterns drift.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> You need moderation for a product in 12 languages, including Hindi, Tamil and mixed Hinglish. How do you approach it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>First, measure; do not assume an English-tuned classifier works. Build a labelled set per language, including code-mixed and transliterated text, with native-speaker reviewers. Compare candidate classifiers per language on recall and false-positive rate. Normalise inputs (Unicode, transliteration) before classifying. Where a language underperforms, options are fine-tuning a safety classifier on local data, adding a translation step before classification as a fallback, or routing low-confidence cases to human review. Report metrics per language on every release, because averages hide that one language is badly protected.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2312.06674" target="_blank" rel="noopener">Llama Guard: LLM-based Input-Output Safeguard for Human-AI Conversations - Inan et al., arXiv 2312.06674</a></li>
+      <li><a href="https://ollama.com/library/llama-guard3" target="_blank" rel="noopener">llama-guard3 - Ollama library</a></li>
+      <li><a href="https://arxiv.org/abs/2309.07875" target="_blank" rel="noopener">Safety-Tuned LLaMAs: Lessons From Improving the Safety of Large Language Models that Follow Instructions - Bianchi et al., arXiv 2309.07875</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
   <p>Moderation checks whether output is <em>harmful</em>. But even harmless-looking output is dangerous if you feed it into code, queries, or actions unchecked. Next: <strong>output validation</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Check what goes into the model and what comes out, with a separate checker on each side.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

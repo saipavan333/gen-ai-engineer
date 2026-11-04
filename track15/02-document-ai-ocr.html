@@ -12,7 +12,42 @@
 
   <span class="eyebrow">Multimodal AI · Lesson 10.2</span>
   <h1>Document AI &amp; OCR</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>A scanned invoice is a picture, not data your systems can use.</p>
+    <p>Document AI turns that picture into clean fields, such as vendor, total and due date.</p>
+    <p>OCR (optical character recognition) copies every character exactly but doesn't know what any of it means.</p>
+    <p>A VLM understands the layout and can return the fields as JSON, but it can misread a digit.</p>
+    <p>For money, use both, check the sums, and send anything that disagrees to a person.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>OCR is like a friend who reads out every word on a receipt in order, perfectly, but has no idea which number is the total. A VLM is like a friend who glances at the receipt and says 'the total is 42 dollars', but might misread a digit. You want both friends: one to understand, one to double-check the exact characters.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The friend who reads every word in order</td><td>OCR, e.g. Tesseract: exact text, no structure</td></tr>
+      <tr><td>The friend who just says “the total is $42”</td><td>A VLM asked for JSON fields from the image</td></tr>
+      <tr><td>Comparing what the two friends said</td><td>Cross-check OCR digits against the VLM's total and account number</td></tr>
+      <tr><td>Asking a grown-up when they disagree</td><td>Schema validation, sum checks, then human review for failures</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> Friends can disagree and both be wrong, so for money you still need a sum check or a human.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 264" role="img" aria-label="OCR and a VLM read the same invoice; checks decide pay or human review" preserveAspectRatio="xMidYMid meet"><rect x="14" y="70" width="150" height="78" rx="10" class="bx tn-k" /><g class="vzb"><text x="89" y="94.3" text-anchor="middle" class="b" style="font-size:14px">Invoice image</text><text x="89" y="118.3" text-anchor="middle" class="s" style="font-size:12px">2 pages, 1000 x 1400</text><text x="89" y="134.3" text-anchor="middle" class="s" style="font-size:12px">px</text></g><rect x="214" y="16" width="190" height="78" rx="10" class="bx tn-c" /><g class="vzb"><text x="309" y="40.3" text-anchor="middle" class="b" style="font-size:14px">OCR (e.g. Tesseract)</text><text x="309" y="64.3" text-anchor="middle" class="s" style="font-size:12px">exact characters, no idea</text><text x="309" y="80.3" text-anchor="middle" class="s" style="font-size:12px">which number is the total</text></g><rect x="214" y="112" width="190" height="94" rx="10" class="bx tn-p" /><g class="vzb"><text x="309" y="136.3" text-anchor="middle" class="b" style="font-size:14px">VLM</text><text x="309" y="160.3" text-anchor="middle" class="s" style="font-size:12px">reads the layout, returns</text><text x="309" y="176.3" text-anchor="middle" class="s" style="font-size:12px">JSON: vendor, total, due</text><text x="309" y="192.3" text-anchor="middle" class="s" style="font-size:12px">date</text></g><polyline points="166,109 188,109 188,55 202,55" class="ln "/><polygon points="211,55 202,50.05 202,59.95" class="hd "/><polyline points="166,109 188,109 188,159 202,159" class="ln "/><polygon points="211,159 202,154.05 202,163.95" class="hd "/><rect x="454" y="30" width="140" height="126" rx="10" class="bx tn-w" /><g class="vzb"><text x="524" y="54.3" text-anchor="middle" class="b" style="font-size:14px">Checks</text><text x="524" y="78.3" text-anchor="middle" class="s" style="font-size:12px">schema valid;</text><text x="524" y="94.3" text-anchor="middle" class="s" style="font-size:12px">items + tax =</text><text x="524" y="110.3" text-anchor="middle" class="s" style="font-size:12px">total; OCR digits</text><text x="524" y="126.3" text-anchor="middle" class="s" style="font-size:12px">= VLM digits;</text><text x="524" y="142.3" text-anchor="middle" class="s" style="font-size:12px">vendor exists</text></g><polyline points="406,55 430,55 430,93 442,93" class="ln "/><polygon points="451,93 442,88.05 442,97.95" class="hd "/><polyline points="406,159 430,159 430,93 442,93" class="ln "/><polygon points="451,93 442,88.05 442,97.95" class="hd "/><rect x="630" y="16" width="116" height="62" rx="10" class="bx tn-g" /><g class="vzb"><text x="688" y="40.3" text-anchor="middle" class="b" style="font-size:14px">Pay</text><text x="688" y="64.3" text-anchor="middle" class="s" style="font-size:12px">all pass</text></g><rect x="630" y="96" width="116" height="78" rx="10" class="bx tn-w" /><g class="vzb"><text x="688" y="120.3" text-anchor="middle" class="b" style="font-size:14px">Person</text><text x="688" y="144.3" text-anchor="middle" class="s" style="font-size:12px">any fails: 288</text><text x="688" y="160.3" text-anchor="middle" class="s" style="font-size:12px">a day</text></g><polyline points="596,93 612,93 612,47 618,47" class="ln ok"/><polygon points="627,47 618,42.05 618,51.95" class="hd ok"/><polyline points="596,93 612,93 612,135 618,135" class="ln wn"/><polygon points="627,135 618,130.05 618,139.95" class="hd wn"/><text x="14" y="226" text-anchor="start" class="s" style="font-size:13px">4,800 invoices a day (the page&#x27;s example). If 6% fail a check, a person reviews 288 a day: about one</text><text x="14" y="243" text-anchor="start" class="s" style="font-size:13px">full-time job.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 503" role="img" aria-label="OCR and a VLM read the same invoice; checks decide pay or human review" preserveAspectRatio="xMidYMid meet"><rect x="14" y="16" width="332" height="62" rx="10" class="bx tn-k" /><g class="vzb"><text x="180" y="40.3" text-anchor="middle" class="b" style="font-size:14px">Invoice image</text><text x="180" y="64.3" text-anchor="middle" class="s" style="font-size:12px">2 pages, 1000 x 1400 px</text></g><line x1="120" y1="80" x2="101.738" y2="102.066" class="ln "/><polygon points="96,109 105.552,105.222 97.9247,98.9105" class="hd "/><line x1="240" y1="80" x2="258.262" y2="102.066" class="ln "/><polygon points="264,109 262.075,98.9105 254.448,105.222" class="hd "/><rect x="14" y="112" width="158" height="94" rx="10" class="bx tn-c" /><g class="vzb"><text x="93" y="136.3" text-anchor="middle" class="b" style="font-size:14px">OCR</text><text x="93" y="160.3" text-anchor="middle" class="s" style="font-size:12px">exact characters, no</text><text x="93" y="176.3" text-anchor="middle" class="s" style="font-size:12px">idea which is the</text><text x="93" y="192.3" text-anchor="middle" class="s" style="font-size:12px">total</text></g><rect x="188" y="112" width="158" height="94" rx="10" class="bx tn-p" /><g class="vzb"><text x="267" y="144.3" text-anchor="middle" class="b" style="font-size:14px">VLM</text><text x="267" y="168.3" text-anchor="middle" class="s" style="font-size:12px">reads the layout,</text><text x="267" y="184.3" text-anchor="middle" class="s" style="font-size:12px">returns JSON fields</text></g><line x1="93" y1="208" x2="132.341" y2="232.274" class="ln "/><polygon points="140,237 134.94,228.061 129.741,236.487" class="hd "/><line x1="267" y1="208" x2="227.659" y2="232.274" class="ln "/><polygon points="220,237 230.259,236.487 225.06,228.061" class="hd "/><rect x="14" y="240" width="332" height="78" rx="10" class="bx tn-w" /><g class="vzb"><text x="180" y="264.3" text-anchor="middle" class="b" style="font-size:14px">Checks before payment</text><text x="180" y="288.3" text-anchor="middle" class="s" style="font-size:12px">schema valid · line items + tax = total · OCR</text><text x="180" y="304.3" text-anchor="middle" class="s" style="font-size:12px">digits = VLM digits · vendor exists</text></g><line x1="93" y1="320" x2="93" y2="340" class="ln ok"/><polygon points="93,349 97.95,340 88.05,340" class="hd ok"/><line x1="267" y1="320" x2="267" y2="340" class="ln wn"/><polygon points="267,349 271.95,340 262.05,340" class="hd wn"/><rect x="14" y="352" width="158" height="62" rx="10" class="bx tn-g" /><g class="vzb"><text x="93" y="376.3" text-anchor="middle" class="b" style="font-size:14px">Pay</text><text x="93" y="400.3" text-anchor="middle" class="s" style="font-size:12px">all checks pass</text></g><rect x="188" y="352" width="158" height="78" rx="10" class="bx tn-w" /><g class="vzb"><text x="267" y="376.3" text-anchor="middle" class="b" style="font-size:14px">Person reviews</text><text x="267" y="400.3" text-anchor="middle" class="s" style="font-size:12px">if any check fails:</text><text x="267" y="416.3" text-anchor="middle" class="s" style="font-size:12px">288 a day at 6%</text></g><text x="14" y="448" text-anchor="start" class="s" style="font-size:13px">4,800 invoices a day (the page&#x27;s example). If</text><text x="14" y="465" text-anchor="start" class="s" style="font-size:13px">6% fail a check, a person reviews 288 a day:</text><text x="14" y="482" text-anchor="start" class="s" style="font-size:13px">about one full-time job.</text></svg>
+    <figcaption>Two imperfect readers check each other, then plain code checks the arithmetic. Only invoices that pass everything get paid automatically. Volumes are the page's accounts-payable example.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">Turning documents into structured data — invoices, forms, receipts, contracts — is the highest-value multimodal use case in business, and one VLMs changed overnight. This lesson covers OCR, the new VLM-based approach, and how to make extraction trustworthy.</p>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <h2>The problem: documents aren’t data</h2>
   <p>A scanned invoice is a picture, not a database row. To <em>use</em> it — to pay it, audit it, total it — someone has to turn “this image” into “vendor: Acme, total: $4,210, due: 2025-07-01.” That translation, done by hand, is a vast amount of human labor across finance, insurance, healthcare, and logistics. <span class="term">Document AI</span> is the task of doing it automatically: from a document image, produce clean structured fields.</p>
@@ -43,7 +78,22 @@ data <span class="o">=</span> Invoice(<span class="o">**</span>json.<span class=
   <h2>Best of both: OCR + VLM</h2>
   <p>For accuracy-critical fields, combine them. OCR is often more <em>reliable</em> at exact character transcription (an account number, a precise amount), while the VLM is better at <em>understanding</em> which field is which and handling layout. A strong pattern is to use the VLM for structure and OCR to verify the exact digits — cross-checking the two, and flagging disagreements for human review. This is defense in depth again: two imperfect readers catch each other’s mistakes.</p>
 
-  <div class="box key">
+  
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Extracting fields from 1.2 million invoices a year for an accounts-payable team</div>
+    <p>Assumptions (ours): 1.2M invoices a year over 250 working days, 2 pages each, rendered at 1000 x 1400 px. Token rule from <a href="https://platform.claude.com/docs/en/build-with-claude/vision" target="_blank" rel="noopener">Anthropic vision docs</a>: ceil(w/28) x ceil(h/28). Prices: claude-sonnet-5-5 $2 / $10 per million (<a href="https://platform.claude.com/docs/en/about-claude/models/overview" target="_blank" rel="noopener">models overview</a>); Batch API 50% off (<a href="https://platform.claude.com/docs/en/build-with-claude/batch-processing" target="_blank" rel="noopener">batch docs</a>).</p>
+<ol>
+<li><strong>Daily volume.</strong> 1,200,000 / 250 = <strong>4,800 invoices a day</strong>.</li>
+<li><strong>Tokens per invoice.</strong> Per page: ceil(1000/28) x ceil(1400/28) = 36 x 50 = 1,800 tokens. Two pages: 3,600. Add a 600-token instruction and schema: 4,200 input. Output JSON with line items: 300 tokens.</li>
+<li><strong>Model cost.</strong> 4,200 x $2/M + 300 x $10/M = $0.0084 + $0.003 = $0.0114 an invoice. 4,800 x $0.0114 = $54.72 a day, <strong>$13,680 a year</strong>. Invoices are not interactive, so batch them overnight: <strong>$6,840 a year</strong>.</li>
+<li><strong>Checks before payment.</strong> (a) Schema validation, (b) the sum of line items plus tax equals the total, (c) OCR digits agree with the VLM on total and bank account, (d) vendor exists in the vendor master. Anything failing goes to a person.</li>
+<li><strong>The real cost is people.</strong> If 6% fail a check (assumption): 288 reviews a day x 1.5 minutes = 7.2 hours, about <strong>one full-time reviewer</strong>, which costs more than the model. Cutting the false-flag rate from 6% to 3% saves half a person; cutting tokens by 20% saves about $1,400 a year.</li>
+<li><strong>Measure field-level accuracy.</strong> On a 500-invoice golden set, report accuracy per field and per vendor layout, after normalising (4210 = 4210.00; dates to ISO). A 99% total but 85% due-date score tells you where to work.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+<div class="box key">
     <div class="box-label">Key points</div>
     <ul>
       <li><strong>Document AI</strong> = image of a document → clean structured fields; it’s the highest-value multimodal use case.</li>
@@ -92,6 +142,22 @@ data <span class="o">=</span> Invoice(<span class="o">**</span>json.<span class=
         <div class="why">Doesn't provide an independent check.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">An extractor returns valid JSON: total 1,240.00, and line items that sum to 1,420.00. Schema validation passes. What should happen?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Retry with a higher temperature until the numbers match.</span>
+        <div class="why">Rerolling until numbers agree can produce a consistent but wrong pair. Use an independent check (OCR, human).</div></li>
+      <li data-correct="true"><span class="opt">B) Flag it for review: the arithmetic check failed, so at least one number was misread.</span>
+        <div class="why">Valid shape is not correct content. Cross-field checks like sums catch digit swaps that a schema cannot.</div></li>
+      <li data-correct="false"><span class="opt">C) Pay 1,420.00, since line items are more reliable than totals.</span>
+        <div class="why">Either could be the misread. You cannot pick one without evidence.</div></li>
+      <li data-correct="false"><span class="opt">D) Pay 1,240.00, since the total field is what the schema asked for.</span>
+        <div class="why">The two numbers disagree; paying either one without checking risks real money.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box deep">
@@ -102,10 +168,92 @@ data <span class="o">=</span> Invoice(<span class="o">**</span>json.<span class=
     <p>So you don’t just maximize accuracy — you tune the system to prefer “I’m not sure, please check” over confident wrong answers on the fields that matter. Designing extraction around <em>calibrated uncertainty and human handoff</em>, not just raw accuracy, is what turns a flashy demo into something a finance team will actually trust with their invoices.</p>
   </div>
 
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/02_structured_output.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/02_structured_output.py</code></pre>
+    <p><strong>What to look for:</strong> No local vision model is installed for this course, so no lab sends an image. This lab is the second half of document AI: messy text in, a Pydantic schema passed to Ollama as format, validation, and a business-rule check with retry (which did not need to fire on our 8 emails). Invoice extraction fails in the same ways. It does not do OCR or read images. To try OCR locally, Tesseract is free, and its output text can be fed into this lab's pipeline as the 'email'.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>C) Schema-valid is not business-valid: validate rules, retry with the error
+  rule violations repaired by retry: 0
+D) Content check against gold labels (shape-valid does not mean right)
+  #4: model said &#x27;delivery&#x27;, a human would file &#x27;other&#x27;: &#x27;Just wanted to say the delivery guy was very polite. thanks!&#x27;
+  category accuracy: 7/8
+Summary
+  vague-prompt valid:       0/4 = 0% (95% CI 0%-49%)
+  prompt-only valid:        8/8 = 100% (95% CI 68%-100%)
+  schema-constrained valid: 8/8 = 100% (95% CI 68%-100%)
+  category accuracy (gold): 7/8 = 88% (95% CI 53%-98%)
+  On this model and these 8 emails a clear prompt already gives valid JSON every time, so the schema shows
+  NO measurable advantage here. Its value is the guarantee on the inputs you have not tested yet.
+  Look: constrained decoding guarantees the SHAPE. It does not guarantee the CONTENT is right;
+  that is what the business-rule check + retry (and your eval set) are for.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/02_structured_output.txt">labs/outputs</a>. Source: <a href="../labs/02_structured_output.py">labs/02_structured_output.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> How many Claude visual tokens is an A4 page scanned at 150 DPI (1240 x 1754 px)? Is it under the high-resolution tier limits?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>ceil(1240/28) = 45 (44.3 rounds up), ceil(1754/28) = 63 (62.6 rounds up), so 45 x 63 = 2,835 tokens. The long edge 1754 is under 2,576 px and 2,835 is under 4,784 tokens, so it is not resized on Claude 4.7+ models. On older standard-tier models (max 1,568 tokens) it would be downscaled, which can make small print harder to read.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your golden set shows 99.2% accuracy on total, 97% on vendor, but 81% on due_date. List likely causes and fixes.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Causes: date formats differ by country (03/04 is March 4 or April 3), invoices print several dates (issue, delivery, due), and some give terms ('Net 30') instead of a date. Fixes: ask for the raw date string and the format you think it is, then normalise in code using the vendor's country; ask for due_date only when explicitly labelled and otherwise compute it from issue_date plus payment terms; add per-vendor hints for the worst layouts. Re-measure per vendor. The general point: break accuracy down by field, then fix the field-specific cause.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Design the confidence routing for invoice auto-pay so that fewer than 1 in 10,000 paid invoices has a wrong amount, while keeping human review under 5%. What do you need to measure to know you hit it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Route an invoice to auto-pay only if all independent checks agree: VLM total equals OCR total, line items sum to the total, the amount is within the vendor's historical range, and the bank account matches the vendor master. Everything else goes to review. To prove the 1-in-10,000 target you need a big audited sample: with zero errors observed, the rule of three says you need about 30,000 audited auto-paid invoices to claim the error rate is below 1 in 10,000 at 95% confidence. Measure review rate weekly, and the error rate on a random audit of auto-paid invoices. If review exceeds 5%, find which check fires most and improve that reader, not the threshold.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is the difference between OCR and document AI?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>OCR turns pixels into text: it finds characters and words and where they are, but it does not know what they mean. Document AI goes further and turns a document into structured fields, like vendor, total and due date, by understanding layout and context. Classic document AI was OCR plus rules per layout. Today a VLM can read the page and return JSON directly. In production you often use both: the VLM for structure and OCR to double-check exact digits.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> How would you evaluate an invoice extraction system?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Build a golden set of real invoices with hand-verified fields, covering many vendors and layouts. Measure exact-match accuracy per field after normalising formats, and break it down by vendor and document quality. Separate errors by cost: a missing field flagged for review is cheap, a confident wrong amount is expensive, so I track the wrong-and-not-flagged rate separately. I also measure review rate and time per review, because that is the operating cost. Every production correction goes back into the golden set.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Your company processes 50 document types from thousands of vendors. Would you fine-tune a document model or use a general VLM with prompts? How do you decide?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Start with a general VLM plus schemas, because it covers the long tail of layouts with no training and lets us ship and collect labelled data fast. Measure per document type. For the few types with very high volume, a stable layout and accuracy or cost problems, a fine-tuned smaller model or a specialised extractor may beat the general model on cost and latency. The decision is per type, using the eval: accuracy, cost per document, latency and review rate. Corrections from human review are the training data, so the system can move types to cheaper models as evidence accumulates.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://platform.claude.com/docs/en/build-with-claude/vision" target="_blank" rel="noopener">Vision (image token cost) - Anthropic</a></li>
+      <li><a href="https://platform.claude.com/docs/en/build-with-claude/pdf-support" target="_blank" rel="noopener">PDF support - Anthropic</a></li>
+      <li><a href="https://docs.ollama.com/capabilities/structured-outputs" target="_blank" rel="noopener">Structured outputs - Ollama docs</a></li>
+      <li><a href="https://tesseract-ocr.github.io/" target="_blank" rel="noopener">Tesseract OCR documentation</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
   <p>Vision covered — now the other sense. Next: <strong>audio: speech-to-text and text-to-speech.</strong></p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Let one reader understand the document and another check the exact digits, then verify before you pay.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

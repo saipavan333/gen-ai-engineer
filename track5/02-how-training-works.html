@@ -12,6 +12,43 @@
 
   <span class="eyebrow">Track 5 · Lesson 5.2</span>
   <h1>How training actually works</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>A model is a huge pile of numbers called weights.</p>
+    <p>Training shows it an example, lets it guess, and scores how wrong the guess was: the loss.</p>
+    <p>Then it nudges every weight a tiny bit in the direction that lowers the loss. This is gradient descent.</p>
+    <p>The learning rate is the size of each nudge: too small is slow, too big overshoots.</p>
+    <p>Repeat this millions of times, and check on held-out examples that it learned the task, not the answers.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Training is like learning to shoot a basketball. You shoot, see how far you missed, adjust your arm a little, and shoot again, thousands of times. Big adjustments make you overshoot; tiny ones take forever.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>Taking a shot</td><td>The forward pass: the model makes a prediction</td></tr>
+      <tr><td>How far you missed</td><td>The loss: one number for how wrong the prediction was</td></tr>
+      <tr><td>Which way to move your arm</td><td>The gradient, worked out for every weight by backpropagation</td></tr>
+      <tr><td>How much you change your arm</td><td>The learning rate: the size of each step</td></tr>
+      <tr><td>Shots you have never practised</td><td>The validation set: held-out examples that catch memorising</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> You adjust one arm, while the model adjusts billions of numbers at once, and it can 'get good' by memorising the exact shots in practice rather than learning to shoot, which is why you test it on shots it has never seen.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 308" role="img" aria-label="Gradient descent on one weight with three learning rates" preserveAspectRatio="xMidYMid meet"><text x="20" y="20" text-anchor="start" class="s m">Loss = (w − 3)², start at w = 0. Each dot is one step; positions computed.</text><rect x="20" y="64" width="236" height="190" rx="8" class="bx tn-b" /><polyline points="20.0,74.0 23.9,85.8 27.9,97.2 31.8,108.2 35.7,118.8 39.7,129.0 43.6,138.8 47.5,148.2 51.5,157.2 55.4,165.8 59.3,174.0 63.3,181.8 67.2,189.2 71.1,196.2 75.1,202.8 79.0,209.0 82.9,214.8 86.9,220.2 90.8,225.2 94.7,229.8 98.7,234.0 102.6,237.8 106.5,241.2 110.5,244.2 114.4,246.8 118.3,249.0 122.3,250.8 126.2,252.2 130.1,253.2 134.1,253.8 138.0,254.0 141.9,253.8 145.9,253.2 149.8,252.2 153.7,250.8 157.7,249.0 161.6,246.8 165.5,244.2 169.5,241.2 173.4,237.8 177.3,234.0 181.3,229.8 185.2,225.2 189.1,220.2 193.1,214.8 197.0,209.0 200.9,202.8 204.9,196.2 208.8,189.2 212.7,181.8 216.7,174.0 220.6,165.8 224.5,157.2 228.5,148.2 232.4,138.8 236.3,129.0 240.3,118.8 244.2,108.2 248.1,97.2 252.1,85.8 256.0,74.0" class="ln thin"/><line x1="138.0" y1="250.0" x2="138.0" y2="260.0" class="ln ok"/><text x="138" y="274" text-anchor="middle" class="s ok-t" style="font-size:12px">best w = 3</text><line x1="67.2" y1="189.2" x2="70.7905" y2="195.444" class="ln ac thin"/><polygon points="74.28,201.512 74.128,193.525 67.453,197.363" class="hd ac thin"/><line x1="74.28" y1="201.512" x2="76.883" y2="205.586" class="ln ac thin"/><polygon points="80.652,211.485 80.1273,203.513 73.6387,207.659" class="hd ac thin"/><line x1="80.652" y1="211.485" x2="82.3346" y2="213.855" class="ln ac thin"/><polygon points="86.3868,219.563 85.4739,211.626 79.1953,216.083" class="hd ac thin"/><line x1="86.3868" y1="219.563" x2="87.2128" y2="220.61" class="ln ac thin"/><polygon points="91.5481,226.106 90.2356,218.225 84.1901,222.994" class="hd ac thin"/><line x1="91.5481" y1="226.106" x2="91.5794" y2="226.141" class="ln ac thin"/><polygon points="96.1933,231.406 94.4747,223.604 88.6841,228.679" class="hd ac thin"/><line x1="96.1933" y1="231.406" x2="95.4902" y2="230.684" class="ln ac thin"/><polygon points="100.374,235.699 98.2484,227.998 92.732,233.37" class="hd ac thin"/><circle cx="67.2" cy="189.2" r="6" class="fill-k"/><circle cx="74.3" cy="201.5" r="5" class="fill-a"/><circle cx="80.7" cy="211.5" r="5" class="fill-a"/><circle cx="86.4" cy="219.6" r="5" class="fill-a"/><circle cx="91.5" cy="226.1" r="5" class="fill-a"/><circle cx="96.2" cy="231.4" r="5" class="fill-a"/><circle cx="100.4" cy="235.7" r="5" class="fill-a"/><text x="22" y="54" text-anchor="start" class="b wn-t" style="font-size:14px">learning rate 0.05: too small</text><text x="30" y="294" text-anchor="start" class="s">loss 9 → 2.54 after 6 steps</text><rect x="268" y="64" width="236" height="190" rx="8" class="bx tn-b" /><polyline points="268.0,74.0 271.9,85.8 275.9,97.2 279.8,108.2 283.7,118.8 287.7,129.0 291.6,138.8 295.5,148.2 299.5,157.2 303.4,165.8 307.3,174.0 311.3,181.8 315.2,189.2 319.1,196.2 323.1,202.8 327.0,209.0 330.9,214.8 334.9,220.2 338.8,225.2 342.7,229.8 346.7,234.0 350.6,237.8 354.5,241.2 358.5,244.2 362.4,246.8 366.3,249.0 370.3,250.8 374.2,252.2 378.1,253.2 382.1,253.8 386.0,254.0 389.9,253.8 393.9,253.2 397.8,252.2 401.7,250.8 405.7,249.0 409.6,246.8 413.5,244.2 417.5,241.2 421.4,237.8 425.3,234.0 429.3,229.8 433.2,225.2 437.1,220.2 441.1,214.8 445.0,209.0 448.9,202.8 452.9,196.2 456.8,189.2 460.7,181.8 464.7,174.0 468.6,165.8 472.5,157.2 476.5,148.2 480.4,138.8 484.3,129.0 488.3,118.8 492.2,108.2 496.1,97.2 500.1,85.8 504.0,74.0" class="ln thin"/><line x1="386.0" y1="250.0" x2="386.0" y2="260.0" class="ln ok"/><text x="386" y="274" text-anchor="middle" class="s ok-t" style="font-size:12px">best w = 3</text><line x1="315.2" y1="189.2" x2="367.127" y2="246.232" class="ln ac thin"/><polygon points="371.84,251.408 369.974,243.64 364.281,248.824" class="hd ac thin"/><line x1="371.84" y1="251.408" x2="376.331" y2="252.394" class="ln ac thin"/><polygon points="383.168,253.896 377.157,248.634 375.505,256.155" class="hd ac thin"/><line x1="383.168" y1="253.896" x2="378.44" y2="253.689" class="ln ac thin"/><polygon points="385.434,253.996 378.609,249.842 378.271,257.535" class="hd ac thin"/><line x1="385.434" y1="253.996" x2="378.887" y2="253.938" class="ln ac thin"/><polygon points="385.887,254 378.921,250.088 378.853,257.788" class="hd ac thin"/><circle cx="315.2" cy="189.2" r="6" class="fill-k"/><circle cx="371.8" cy="251.4" r="5" class="fill-a"/><circle cx="383.2" cy="253.9" r="5" class="fill-a"/><circle cx="385.4" cy="254.0" r="5" class="fill-a"/><circle cx="385.9" cy="254.0" r="5" class="fill-a"/><text x="270" y="54" text-anchor="start" class="b ok-t" style="font-size:14px">learning rate 0.4: about right</text><text x="278" y="294" text-anchor="start" class="s">loss 9 → 0.00 after 4 steps</text><rect x="516" y="64" width="236" height="190" rx="8" class="bx tn-b" /><polyline points="516.0,74.0 519.9,85.8 523.9,97.2 527.8,108.2 531.7,118.8 535.7,129.0 539.6,138.8 543.5,148.2 547.5,157.2 551.4,165.8 555.3,174.0 559.3,181.8 563.2,189.2 567.1,196.2 571.1,202.8 575.0,209.0 578.9,214.8 582.9,220.2 586.8,225.2 590.7,229.8 594.7,234.0 598.6,237.8 602.5,241.2 606.5,244.2 610.4,246.8 614.3,249.0 618.3,250.8 622.2,252.2 626.1,253.2 630.1,253.8 634.0,254.0 637.9,253.8 641.9,253.2 645.8,252.2 649.7,250.8 653.7,249.0 657.6,246.8 661.5,244.2 665.5,241.2 669.4,237.8 673.3,234.0 677.3,229.8 681.2,225.2 685.1,220.2 689.1,214.8 693.0,209.0 696.9,202.8 700.9,196.2 704.8,189.2 708.7,181.8 712.7,174.0 716.6,165.8 720.5,157.2 724.5,148.2 728.4,138.8 732.3,129.0 736.3,118.8 740.2,108.2 744.1,97.2 748.1,85.8 752.0,74.0" class="ln thin"/><line x1="634.0" y1="250.0" x2="634.0" y2="260.0" class="ln ok"/><text x="634" y="274" text-anchor="middle" class="s ok-t" style="font-size:12px">best w = 3</text><line x1="563.2" y1="189.2" x2="704.909" y2="176.23" class="ln ac thin"/><polygon points="711.88,175.592 704.558,172.396 705.26,180.064" class="hd ac thin"/><line x1="711.88" y1="175.592" x2="555.297" y2="159.828" class="ln ac thin"/><polygon points="548.332,159.126 554.911,163.658 555.682,155.997" class="hd ac thin"/><line x1="548.332" y1="159.126" x2="721.277" y2="139.973" class="ln ac thin"/><polygon points="728.235,139.203 720.854,136.147 721.701,143.8" class="hd ac thin"/><line x1="728.235" y1="139.203" x2="537.29" y2="115.942" class="ln ac thin"/><polygon points="530.342,115.095 536.825,119.764 537.756,112.12" class="hd ac thin"/><circle cx="563.2" cy="189.2" r="6" class="fill-k"/><circle cx="711.9" cy="175.6" r="5" class="fill-a"/><circle cx="548.3" cy="159.1" r="5" class="fill-a"/><circle cx="728.2" cy="139.2" r="5" class="fill-a"/><circle cx="530.3" cy="115.1" r="5" class="fill-a"/><text x="518" y="54" text-anchor="start" class="b wn-t" style="font-size:14px">learning rate 1.05: too big</text><text x="526" y="294" text-anchor="start" class="s">loss 9 → 19.29 after 4 steps</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 750" role="img" aria-label="Gradient descent on one weight with three learning rates" preserveAspectRatio="xMidYMid meet"><text x="12" y="20" text-anchor="start" class="s m">Loss = (w − 3)², start at w = 0.</text><text x="12" y="38" text-anchor="start" class="s m">Each dot is one step; positions computed.</text><rect x="12" y="78" width="336" height="150" rx="8" class="bx tn-b" /><polyline points="12.0,88.0 17.6,97.2 23.2,106.0 28.8,114.6 34.4,122.8 40.0,130.8 45.6,138.4 51.2,145.7 56.8,152.7 62.4,159.4 68.0,165.8 73.6,171.8 79.2,177.6 84.8,183.0 90.4,188.2 96.0,193.0 101.6,197.5 107.2,201.7 112.8,205.6 118.4,209.2 124.0,212.4 129.6,215.4 135.2,218.0 140.8,220.4 146.4,222.4 152.0,224.1 157.6,225.5 163.2,226.6 168.8,227.4 174.4,227.8 180.0,228.0 185.6,227.8 191.2,227.4 196.8,226.6 202.4,225.5 208.0,224.1 213.6,222.4 219.2,220.4 224.8,218.0 230.4,215.4 236.0,212.4 241.6,209.2 247.2,205.6 252.8,201.7 258.4,197.5 264.0,193.0 269.6,188.2 275.2,183.0 280.8,177.6 286.4,171.8 292.0,165.8 297.6,159.4 303.2,152.7 308.8,145.7 314.4,138.4 320.0,130.8 325.6,122.8 331.2,114.6 336.8,106.0 342.4,97.2 348.0,88.0" class="ln thin"/><line x1="180.0" y1="224.0" x2="180.0" y2="234.0" class="ln ok"/><text x="180" y="248" text-anchor="middle" class="s ok-t" style="font-size:12px">best w = 3</text><line x1="79.2" y1="177.6" x2="84.205" y2="182.355" class="ln ac thin"/><polygon points="89.28,187.176 86.8567,179.564 81.5533,185.146" class="hd ac thin"/><line x1="89.28" y1="187.176" x2="93.0316" y2="190.384" class="ln ac thin"/><polygon points="98.352,194.933 95.5335,187.457 90.5296,193.31" class="hd ac thin"/><line x1="98.352" y1="194.933" x2="100.969" y2="196.946" class="ln ac thin"/><polygon points="106.517,201.215 103.317,193.895 98.6213,199.998" class="hd ac thin"/><line x1="106.517" y1="201.215" x2="108.11" y2="202.319" class="ln ac thin"/><polygon points="113.865,206.304 110.302,199.154 105.918,205.484" class="hd ac thin"/><line x1="113.865" y1="206.304" x2="114.538" y2="206.724" class="ln ac thin"/><polygon points="120.479,210.427 116.575,203.457 112.502,209.991" class="hd ac thin"/><line x1="120.479" y1="210.427" x2="120.326" y2="210.341" class="ln ac thin"/><polygon points="126.431,213.766 122.209,206.983 118.442,213.699" class="hd ac thin"/><circle cx="79.2" cy="177.6" r="6" class="fill-k"/><circle cx="89.3" cy="187.2" r="5" class="fill-a"/><circle cx="98.4" cy="194.9" r="5" class="fill-a"/><circle cx="106.5" cy="201.2" r="5" class="fill-a"/><circle cx="113.9" cy="206.3" r="5" class="fill-a"/><circle cx="120.5" cy="210.4" r="5" class="fill-a"/><circle cx="126.4" cy="213.8" r="5" class="fill-a"/><text x="14" y="68" text-anchor="start" class="b wn-t" style="font-size:14px">learning rate 0.05: too small</text><text x="22" y="268" text-anchor="start" class="s">loss 9 → 2.54 after 6 steps</text><rect x="12" y="312" width="336" height="150" rx="8" class="bx tn-b" /><polyline points="12.0,322.0 17.6,331.2 23.2,340.0 28.8,348.6 34.4,356.8 40.0,364.8 45.6,372.4 51.2,379.7 56.8,386.7 62.4,393.4 68.0,399.8 73.6,405.8 79.2,411.6 84.8,417.0 90.4,422.2 96.0,427.0 101.6,431.5 107.2,435.7 112.8,439.6 118.4,443.2 124.0,446.4 129.6,449.4 135.2,452.0 140.8,454.4 146.4,456.4 152.0,458.1 157.6,459.5 163.2,460.6 168.8,461.4 174.4,461.8 180.0,462.0 185.6,461.8 191.2,461.4 196.8,460.6 202.4,459.5 208.0,458.1 213.6,456.4 219.2,454.4 224.8,452.0 230.4,449.4 236.0,446.4 241.6,443.2 247.2,439.6 252.8,435.7 258.4,431.5 264.0,427.0 269.6,422.2 275.2,417.0 280.8,411.6 286.4,405.8 292.0,399.8 297.6,393.4 303.2,386.7 308.8,379.7 314.4,372.4 320.0,364.8 325.6,356.8 331.2,348.6 336.8,340.0 342.4,331.2 348.0,322.0" class="ln thin"/><line x1="180.0" y1="458.0" x2="180.0" y2="468.0" class="ln ok"/><text x="180" y="482" text-anchor="middle" class="s ok-t" style="font-size:12px">best w = 3</text><line x1="79.2" y1="411.6" x2="153.838" y2="456.383" class="ln ac thin"/><polygon points="159.84,459.984 155.818,453.081 151.857,459.684" class="hd ac thin"/><line x1="159.84" y1="459.984" x2="169.018" y2="461.085" class="ln ac thin"/><polygon points="175.968,461.919 169.477,457.263 168.559,464.908" class="hd ac thin"/><line x1="175.968" y1="461.919" x2="172.196" y2="461.829" class="ln ac thin"/><polygon points="179.194,461.997 172.288,457.98 172.103,465.678" class="hd ac thin"/><line x1="179.194" y1="461.997" x2="172.839" y2="461.966" class="ln ac thin"/><polygon points="179.839,462 172.857,458.116 172.82,465.816" class="hd ac thin"/><circle cx="79.2" cy="411.6" r="6" class="fill-k"/><circle cx="159.8" cy="460.0" r="5" class="fill-a"/><circle cx="176.0" cy="461.9" r="5" class="fill-a"/><circle cx="179.2" cy="462.0" r="5" class="fill-a"/><circle cx="179.8" cy="462.0" r="5" class="fill-a"/><text x="14" y="302" text-anchor="start" class="b ok-t" style="font-size:14px">learning rate 0.4: about right</text><text x="22" y="502" text-anchor="start" class="s">loss 9 → 0.00 after 4 steps</text><rect x="12" y="546" width="336" height="150" rx="8" class="bx tn-b" /><polyline points="12.0,556.0 17.6,565.2 23.2,574.0 28.8,582.6 34.4,590.8 40.0,598.8 45.6,606.4 51.2,613.7 56.8,620.7 62.4,627.4 68.0,633.8 73.6,639.8 79.2,645.6 84.8,651.0 90.4,656.2 96.0,661.0 101.6,665.5 107.2,669.7 112.8,673.6 118.4,677.2 124.0,680.4 129.6,683.4 135.2,686.0 140.8,688.4 146.4,690.4 152.0,692.1 157.6,693.5 163.2,694.6 168.8,695.4 174.4,695.8 180.0,696.0 185.6,695.8 191.2,695.4 196.8,694.6 202.4,693.5 208.0,692.1 213.6,690.4 219.2,688.4 224.8,686.0 230.4,683.4 236.0,680.4 241.6,677.2 247.2,673.6 252.8,669.7 258.4,665.5 264.0,661.0 269.6,656.2 275.2,651.0 280.8,645.6 286.4,639.8 292.0,633.8 297.6,627.4 303.2,620.7 308.8,613.7 314.4,606.4 320.0,598.8 325.6,590.8 331.2,582.6 336.8,574.0 342.4,565.2 348.0,556.0" class="ln thin"/><line x1="180.0" y1="692.0" x2="180.0" y2="702.0" class="ln ok"/><text x="180" y="716" text-anchor="middle" class="s ok-t" style="font-size:12px">best w = 3</text><line x1="79.2" y1="645.6" x2="283.889" y2="635.366" class="ln ac thin"/><polygon points="290.88,635.016 283.696,631.52 284.081,639.211" class="hd ac thin"/><line x1="290.88" y1="635.016" x2="65.0214" y2="622.594" class="ln ac thin"/><polygon points="58.032,622.209 64.81,626.438 65.2329,618.75" class="hd ac thin"/><line x1="58.032" y1="622.209" x2="307.178" y2="607.136" class="ln ac thin"/><polygon points="314.165,606.713 306.945,603.293 307.41,610.979" class="hd ac thin"/><line x1="314.165" y1="606.713" x2="39.4033" y2="588.428" class="ln ac thin"/><polygon points="32.4187,587.963 39.1476,592.269 39.6589,584.586" class="hd ac thin"/><circle cx="79.2" cy="645.6" r="6" class="fill-k"/><circle cx="290.9" cy="635.0" r="5" class="fill-a"/><circle cx="58.0" cy="622.2" r="5" class="fill-a"/><circle cx="314.2" cy="606.7" r="5" class="fill-a"/><circle cx="32.4" cy="588.0" r="5" class="fill-a"/><text x="14" y="536" text-anchor="start" class="b wn-t" style="font-size:14px">learning rate 1.05: too big</text><text x="22" y="736" text-anchor="start" class="s">loss 9 → 19.29 after 4 steps</text></svg>
+    <figcaption>Same bowl, same start, three step sizes. Each step moves w by learning rate × slope. At 0.05 it crawls, at 0.4 it lands almost on 3, and at 1.05 every step jumps past the bottom and lands higher than before.</figcaption>
+  </figure>
+  <div class="ez-play" data-ez-play="descent">
+    <div class="ease-label">Try it</div>
+    <p class="ez-hint">Now two weights. Move the learning rate and the step count. The path is computed step by step on a bowl that is steep in one direction and gentle in the other.</p>
+    <div class="ez-stage"></div>
+  </div>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">Fine-tuning stops being mysterious once you see what “training” really is: a loop that nudges numbers downhill to make the model less wrong. You don’t need the calculus — you need the mental model, because it explains data, overfitting, and every knob you’ll touch.</p>
 
   <h2>Training is just “guess, measure, adjust,” repeated</h2>
@@ -26,6 +63,10 @@
     <div class="box-label">Concept — the words you’ll hear</div>
     <p>The <span class="term">forward pass</span> is the model making a prediction. The <span class="term">loss</span> is a number measuring how wrong it was (lower is better). The <span class="term">gradient</span> points in the direction that increases loss, so we step the <em>opposite</em> way — this is <span class="term">gradient descent</span>. <span class="term">Backpropagation</span> is the efficient method for computing those gradients across all the weights. The <span class="term">learning rate</span> is how big each step is. An <span class="term">epoch</span> is one full pass over your training data. You split data into a <span class="term">training set</span> (to learn from) and a <span class="term">validation set</span> (held out, to check honestly).</p>
   </div>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <h2>Roll the ball downhill</h2>
   <p>Here’s gradient descent on the simplest possible “model”: one weight, with loss = (weight − 3)². The lowest point is at 3. Take steps and watch it descend — then crank the learning rate too high and watch it overshoot. This <em>is</em> training, minus the billions of weights.</p>
@@ -58,6 +99,13 @@ lr <span class="o">=</span> <span class="n">0.1</span>            <span class="c
 <span class="c"># w marches toward 3.0 and loss toward 0 — that's learning.</span></code></pre>
     <p>Real training is this exact loop, but <code>w</code> is billions of weights, the loss is “how wrong was the next-token prediction,” and the gradient is computed by backpropagation. Same idea, more numbers.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: The training budget for a 7B model on 20,000 examples</div>
+    <p>Assumptions: you fine-tune Qwen2.5-7B (the model card lists 7.61B parameters, <a href="https://huggingface.co/Qwen/Qwen2.5-7B">model card</a>) on 20,000 instruction-response examples of about 600 tokens each, with an effective batch size of 32.</p><ol><li><strong>Tokens per epoch.</strong> 20,000 x 600 = 12 million tokens.</li><li><strong>Optimizer steps.</strong> 20,000 / 32 = 625 steps per epoch. Three epochs = 1,875 weight updates. Each one is the loop from this lesson: forward pass, loss, backprop, nudge.</li><li><strong>Validation cadence.</strong> Hold out 2,000 examples (10%). Evaluate every 125 steps, giving 15 validation points across the run, enough to see where validation loss bottoms out.</li><li><strong>Memory for full fine-tuning.</strong> Hugging Face's memory guide counts about 6 bytes per parameter for mixed-precision weights, 8 for Adam's two optimizer states and 4 for gradients: 18 bytes per parameter before activations (<a href="https://huggingface.co/docs/transformers/model_memory_anatomy">HF memory anatomy</a>). 7.61B x 18 = about <strong>137 GB</strong>, more than any single consumer GPU, which is why Lesson 5.4 exists.</li><li><strong>Reading the curves.</strong> Say validation loss falls to 0.92 at step 1,000, then rises to 0.98 by step 1,875 while training loss keeps falling. Keep the step-1,000 checkpoint: that's early stopping, and stopping there would have saved nearly half the compute.</li><li><strong>Learning rate.</strong> TRL's SFTConfig defaults to 2e-5 for full fine-tuning, and its docs suggest about 1e-4 when training adapters, because only new parameters are learning (<a href="https://huggingface.co/docs/trl/sft_trainer">TRL SFT docs</a>).</li></ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box key">
     <div class="box-label">Key points</div>
@@ -96,6 +144,22 @@ lr <span class="o">=</span> <span class="n">0.1</span>            <span class="c
         <div class="why">Loss is a training error metric, unrelated to billing.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">You have 8,000 examples, batch size 16 and gradient accumulation 4. How many optimizer steps are in one epoch?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) 8,000</span>
+        <div class="why">That would be one update per example (batch size 1). Batching averages many examples into each step.</div></li>
+      <li data-correct="false"><span class="opt">B) 500</span>
+        <div class="why">That's 8,000 / 16. It ignores gradient accumulation, which combines 4 micro-batches into one optimizer step.</div></li>
+      <li data-correct="true"><span class="opt">C) 125</span>
+        <div class="why">Correct. Effective batch = 16 x 4 = 64 examples per weight update, so 8,000 / 64 = 125 steps per epoch.</div></li>
+      <li data-correct="false"><span class="opt">D) 2,000</span>
+        <div class="why">That's 8,000 / 4. Accumulation multiplies the batch, it doesn't replace it.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -119,8 +183,84 @@ lr <span class="o">=</span> <span class="n">0.1</span>            <span class="c
     <p>The deepest idea here is that the goal isn’t low <em>training</em> loss — it’s <em>generalization</em>, doing well on data the model never saw. A model can drive training loss to near zero by memorizing, which is useless (it’ll fail on real inputs). That’s why the held-out validation set is sacred: it’s your only honest read on whether the model learned the <em>pattern</em> or just the <em>answers</em>. Everything in fine-tuning — data quality, regularization, early stopping, evaluation (Lesson 5.6) — is in service of generalization. Keep that north star and the knobs make sense: each one is a lever for “learn the pattern, don’t memorize the examples.”</p>
   </div>
 
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/11_lora_tiny.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/11_lora_tiny.py</code></pre>
+    <p><strong>What to look for:</strong> Watch the printed losses at 0, 100, 200 and 300 LoRA steps: count-down loss falls from about 10.9 to 0.1, which is this lesson's loop running for real. Edit train() to use lr=3e-2 instead of 3e-3 and rerun to see the loss jump around or blow up. The data is generated on the fly and the model is toy on purpose, so the numbers show the mechanism, not real-world quality.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>  base model: 798,848 params. Pre-training it on &#x27;count UP&#x27; sequences (0123456789012...)
+  base loss  count-up=0.097   count-down=10.885  &lt;- it never saw &#x27;down&#x27;
+  LoRA r=8 on attention + MLP: trainable=65,536 of 864,384 (7.6%)
+    after   0 LoRA steps: count-down loss=10.878  count-up loss=0.098
+    after 100 LoRA steps: count-down loss=0.100  count-up loss=9.747
+    after 200 LoRA steps: count-down loss=0.098  count-up loss=10.912
+    after 300 LoRA steps: count-down loss=0.097  count-up loss=10.695
+  frozen base tensors changed during LoRA training: 0  (expect 0)
+  adapter switched OFF: count-up loss=0.098  count-down loss=10.882  &lt;- the old skill is back: forgetting lived in the adapter, not the base
+  saved adapter: 266 KB  vs base model ~3120 KB in fp32
+  merge_and_unload: max logit difference after merging = 2.86e-06  (merged = same model, no adapter overhead)
+  Look: count-down loss falls while the base stays byte-identical. But count-up loss rose: with the adapter
+  on, the model forgot the old skill. That is why you eval BOTH the new task and the old ones (Lesson 5.6),
+  and why keeping adapters separate (swap or disable per task) is a real advantage of LoRA.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/11_lora_tiny.txt">labs/outputs</a>. Source: <a href="../labs/11_lora_tiny.py">labs/11_lora_tiny.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Using the HF figure of 18 bytes per parameter for mixed-precision training with Adam, estimate memory (before activations) to fully fine-tune a 1.5B model and a 70B model.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>1.5B x 18 = <strong>27 GB</strong>: tight even on a 24 GB GPU, so you'd need an 8-bit optimizer or a smaller batch. 70B x 18 = <strong>1,260 GB</strong>: a multi-node job. Activations come on top and grow with batch size and sequence length. This arithmetic is why LoRA and QLoRA dominate applied fine-tuning.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your run's training loss is flat at 2.3 from step 0 to step 500. List three likely causes and how you'd check each.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>(1) Learning rate far too low, or the scheduler stuck in warmup: print the logged learning rate. (2) Nothing is actually trainable, for example adapters not attached or everything frozen: print the trainable parameter count (PEFT's print_trainable_parameters). (3) Labels are all masked, or the data is broken, for example every label is -100 or the prompts are empty: decode one batch of input_ids and labels and read them. A flat loss is almost always a plumbing bug, not 'the model can't learn'.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Design the checkpoint and early-stopping policy for a 3-epoch run where each validation pass costs 4 minutes and the run takes 6 hours.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Evaluate every ~10% of the run (about every 36 minutes), so roughly 10 validation passes = 40 minutes of overhead, about 11%. Save a checkpoint at each eval, but keep only the best 2 by validation loss plus the latest (save_total_limit) to bound disk. Stop when validation loss hasn't improved for 2 consecutive evals (patience = 2), and load the best checkpoint at the end. Also log a task metric on a small held-out sample at each eval, because validation loss and task quality don't always move together.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is the difference between training loss and validation loss, and why do you need both?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Training loss is measured on the examples the model is learning from; validation loss is measured on held-out examples it never trains on. Training loss almost always goes down, because the model can memorise. Validation loss tells you whether it is learning something that generalises. When training loss keeps falling and validation loss starts rising, the model is overfitting, and that's where I'd stop or pick the best checkpoint.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> Walk me through what happens in one optimizer step when fine-tuning an LLM.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>A batch of tokenised examples goes through the model (forward pass), producing next-token probabilities at every position. Cross-entropy loss compares those with the actual next tokens, ignoring masked positions such as padding or prompt tokens. Backpropagation computes the gradient of the loss with respect to every trainable parameter. With gradient accumulation, gradients from several micro-batches are summed before updating. The optimizer, usually AdamW, uses the gradients plus its running averages to update the weights by an amount scaled by the learning rate, the scheduler adjusts the learning rate, and gradients are cleared.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> A fine-tune looks great on validation loss but the business metric didn't move. How do you reason about it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Loss measures how likely the model finds the reference tokens, not whether outputs are useful. Possible gaps: the validation set doesn't look like production traffic, the metric depends on a few key tokens (a label, a number) that loss averages away, or the model learned the reference style without the substance. I'd build a task-level eval on real production samples, check the decoding settings and chat template used at serving match training, and look at failure cases by hand. Then I'd select checkpoints on the task metric, not just loss.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://huggingface.co/docs/transformers/model_memory_anatomy" target="_blank" rel="noopener">GPU memory usage during training — Hugging Face Transformers docs</a></li>
+      <li><a href="https://huggingface.co/docs/trl/sft_trainer" target="_blank" rel="noopener">SFT Trainer — Hugging Face TRL docs</a></li>
+      <li><a href="https://huggingface.co/Qwen/Qwen2.5-7B" target="_blank" rel="noopener">Qwen2.5-7B model card — Hugging Face</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
   <p>The single biggest determinant of whether your fine-tune works isn’t the algorithm — it’s the data you feed it. Next: <strong>data preparation</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Training is guess, measure how wrong, nudge the numbers a little, and repeat.</p>
+<!-- ease:line:end -->
 </main>
 
 <script>
@@ -165,5 +305,12 @@ lr <span class="o">=</span> <span class="n">0.1</span>            <span class="c
 </script>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<script src="../assets/ease/ease.js?v=1"></script>
+<script src="../assets/ease/play-t05.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

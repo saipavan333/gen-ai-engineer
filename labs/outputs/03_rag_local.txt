@@ -1,0 +1,81 @@
+
+======================================================================
+1) Chunking: fixed-size cuts facts in half, sentence-aware chunks keep them whole
+======================================================================
+  fixed 12 words:
+    | Refunds go back to the original payment method. UPI and wallet refunds
+    | arrive within 2 business days of the return being picked up. Card
+    | refunds take 5 to 7 business days. Cash-on-delivery orders are refunded to
+    | your store wallet or a bank account you add.
+  sentence-aware:
+    | Refunds go back to the original payment method. UPI and wallet refunds arrive within 2 business days of the return being picked up.
+    | UPI and wallet refunds arrive within 2 business days of the return being picked up. Card refunds take 5 to 7 business days.
+    | Card refunds take 5 to 7 business days. Cash-on-delivery orders are refunded to your store wallet or a bank account you add.
+  Look: the fixed chunker splits 'Card refunds take 5 to 7 business days' across two chunks,
+  so neither chunk answers 'how long do card refunds take' on its own.
+
+======================================================================
+2) Index: MiniLM embeddings stored in DuckDB and FAISS
+======================================================================
+  14 docs -> 14 chunks, dim=384, built in 61.3s
+
+======================================================================
+3) Dense retrieval: DuckDB SQL and FAISS must agree (same cosine, two engines)
+======================================================================
+  duckdb ref-01#0  0.673   faiss ref-01#0  0.673
+  duckdb ref-02#0  0.451   faiss ref-02#0  0.451
+  duckdb ret-01#0  0.350   faiss ret-01#0  0.350
+  same top-3: True
+
+======================================================================
+4) Dense vs BM25 vs hybrid (RRF), scored against the doc a human says is right
+======================================================================
+  'what does RF-BANK mean'                      gold=ref-02   dense=#1  bm25=#1  hybrid=#1
+  'warranty on MX-750'                          gold=sell-01  dense=#1  bm25=#1  hybrid=#1
+  'can I pay in instalments'                    gold=pay-02   dense=#2  bm25=miss  hybrid=miss
+  'my parcel came broken, what do I do'         gold=ret-02   dense=#1  bm25=#1  hybrid=#1
+  'is there a fee if my cart is small'          gold=ship-01  dense=#1  bm25=#1  hybrid=#1
+  'someone on the phone asked for my OTP'       gold=acc-01   dense=#1  bm25=#1  hybrid=#1
+  'how fast is express delivery to Pune'        gold=ship-02  dense=#1  bm25=#1  hybrid=#1
+  'I want to change where my parcel goes'       gold=ship-03  dense=#1  bm25=#1  hybrid=#1
+  'can I send back innerwear'                   gold=ret-01   dense=#1  bm25=#1  hybrid=#1
+  'my card refund is taking long'               gold=ref-01   dense=#1  bm25=#2  hybrid=#1
+  'what is RF-DONE'                             gold=ref-02   dense=#1  bm25=#1  hybrid=#1
+  'double payment on one order'                 gold=pay-01   dense=#1  bm25=#1  hybrid=#1
+  'how much does Plus cost per year'            gold=sub-01   dense=#1  bm25=#1  hybrid=#1
+  'how do I close my account'                   gold=acc-02   dense=#1  bm25=#1  hybrid=#1
+  'where do I download my invoice for a warranty claim' gold=sell-01  dense=#2  bm25=#1  hybrid=#1
+  'app keeps crashing on payment page'          gold=app-01   dense=#1  bm25=#1  hybrid=#1
+  'does express shipping work for a sofa'       gold=ship-02  dense=#1  bm25=#1  hybrid=#1
+  'refund for cash on delivery order'           gold=ref-01   dense=#1  bm25=miss  hybrid=miss
+  'cancel my membership and get money back'     gold=sub-01   dense=#1  bm25=#1  hybrid=#1
+  'photos needed for a broken item'             gold=ret-02   dense=#1  bm25=#1  hybrid=#1
+  hit@3 over n=20 queries (95% Wilson intervals):
+    dense   20/20 = 100% (95% CI 84%-100%)
+    bm25    18/20 = 90% (95% CI 70%-97%)
+    hybrid  18/20 = 90% (95% CI 70%-97%)
+  With n=20 the intervals overlap heavily: a difference of one or two queries is NOT evidence that one
+  method is better. You need hundreds of labelled queries for that (lab 06 shows how the interval shrinks).
+  Look: BM25 misses the paraphrase ('instalments' never appears; the doc says 'EMI'). Fusion is not free:
+  RRF gives a noisy BM25 list the same vote as a good dense list, so it can push a right answer
+  out of the top 3. On this tiny corpus dense already wins; hybrid earns its keep on big corpora full of
+  near-identical codes (SKUs, error ids) that embeddings blur. Never assume: measure hit@k (lab 06).
+
+======================================================================
+5) Grounded answers with citations, and a refusal when retrieval is weak
+======================================================================
+  Q: I was charged twice for one order. What happens now?
+  A: If you were charged twice for one order, the duplicate payment is reversed automatically within 3 business days [pay-01#0]. If it is not reversed after 3 business days, raise a billing ticket with both transaction ids.
+     citations=['pay-01#0'] all-cited-ids-were-retrieved=True
+
+  Q: Can I change my delivery address after the order has shipped?
+  A: No, you cannot change your delivery address after the order has shipped. According to [ship-03#0], the address can only be changed before the order is packed.
+     citations=['ship-03#0'] all-cited-ids-were-retrieved=True
+
+  Q: Do you deliver to Antarctica by drone?
+  A: I don't know based on our policies. (refused before calling the LLM: best cosine 0.27 < 0.35)
+     citations=[] all-cited-ids-were-retrieved=True
+
+  Look: every factual sentence carries an id you can check; the off-topic question is refused
+  cheaply by the retrieval threshold, so the model never gets a chance to make something up.
+

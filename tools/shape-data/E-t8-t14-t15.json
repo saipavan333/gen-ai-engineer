@@ -1,0 +1,1456 @@
+[
+ {
+  "n": "8.1",
+  "analogy": "Think of a taxi meter. You pay a small fee for every kilometre you sit in the car on the way there (input tokens) and a bigger fee for every kilometre on the way back (output tokens), and the ride home is slow because the driver can only go one street at a time. A long address to read out makes the driver start late; a long ride home makes the whole trip long and pricey. Where it breaks: a real taxi charges the same rate both ways, while an LLM's output rate is usually several times the input rate.",
+  "scale": {
+   "title": "Pricing a telecom support assistant at 400,000 requests a day",
+   "html": "<p>Assumptions (ours, not a vendor's): 400,000 requests a day, 3,000 input tokens each (system prompt + retrieved help articles + question), 300 output tokens. Prices are the published Claude list prices on 2026-11-03 (<a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\" target=\"_blank\" rel=\"noopener\">Anthropic models overview</a>).</p>\n<ol>\n<li><strong>Per request on claude-sonnet-5-5 ($2 in / $10 out per million).</strong> Input: 3,000 x $2 / 1,000,000 = $0.006. Output: 300 x $10 / 1,000,000 = $0.003. Total <strong>$0.009</strong>.</li>\n<li><strong>Per month.</strong> $0.009 x 400,000 x 30 = <strong>$108,000</strong>.</li>\n<li><strong>Where the money sits.</strong> Output is 5x pricier per token, yet input is two thirds of this bill ($0.006 of $0.009) because there are 10x more input tokens. \"Output dominates\" is a per-token statement; always check the actual split.</li>\n<li><strong>Same traffic on other tiers.</strong> claude-opus-5-5 ($4 / $20): $0.012 + $0.006 = $0.018, so $216,000 a month. claude-haiku-5-5 (from $0.10 / $0.50, the rate for prompts up to 100K tokens per the <a href=\"https://platform.claude.com/docs/en/build-with-claude/prompt-caching\" target=\"_blank\" rel=\"noopener\">prompt caching pricing table</a>): $0.0003 + $0.00015 = $0.00045, so $5,400 a month. A 40x spread for the same token counts.</li>\n<li><strong>Latency, with illustrative speeds.</strong> Say prefill gives a 0.6 s TTFT and decode runs at 60 tokens/s (made-up round numbers; measure your own). 300 output tokens take 5 s, so the user waits about 5.6 s total. Cutting the answer to 150 tokens saves 2.5 s; cutting 1,000 input tokens saves far less time but $0.002 a request, which is $24,000 a month.</li>\n<li><strong>Count with the right tokenizer.</strong> tiktoken's cl100k_base is OpenAI's tokenizer. Anthropic says Claude Opus 4.7 and later models produce roughly 30% more tokens than earlier Claude models for the same text, and offers a free count_tokens endpoint (<a href=\"https://platform.claude.com/docs/en/build-with-claude/token-counting\" target=\"_blank\" rel=\"noopener\">token counting docs</a>). A 30% miss on token counts is a 30% miss on the budget.</li>\n</ol>"
+  },
+  "lab": {
+   "id": "01_generate_and_sample",
+   "look_for": "The lab prints prompt_eval_count (input tokens), eval_count (output tokens), time-to-first-token and tokens/sec for each call. Paste a long block of text into the prompt and watch TTFT climb while tokens/sec stays flat; then ask for a longer answer and watch total time grow with eval_count. Multiply both counts by any price list to turn the run into a bill."
+  },
+  "quiz": [
+   {
+    "q": "A request has 8,000 input tokens and 200 output tokens on a model priced at $2 per million input and $10 per million output. Which part costs more?",
+    "options": [
+     {
+      "t": "Input: $0.016 versus $0.002 for output.",
+      "correct": true,
+      "why": "8,000 x $2/M = $0.016 and 200 x $10/M = $0.002. Output is pricier per token, but input wins on volume here."
+     },
+     {
+      "t": "Output, because output tokens always dominate the bill.",
+      "correct": false,
+      "why": "Output dominates per token, not always per request. With a 40:1 input:output ratio the input side is 8x larger."
+     },
+     {
+      "t": "They cost the same because prices are balanced to make them equal.",
+      "correct": false,
+      "why": "Nothing balances them. Cost is just tokens x price on each side; do the multiplication."
+     },
+     {
+      "t": "You cannot tell without knowing the latency.",
+      "correct": false,
+      "why": "Latency does not change the bill. Token counts and prices are enough."
+     }
+    ]
+   },
+   {
+    "q": "You move a workload from an older Claude model to Claude Opus 4.7 or later and reuse token counts you measured last year with tiktoken. What is the risk?",
+    "options": [
+     {
+      "t": "Your estimate is too low: tiktoken is a different tokenizer, and Anthropic says newer Claude models produce roughly 30% more tokens than pre-4.7 models.",
+      "correct": true,
+      "why": "Each model family tokenizes differently. Re-count with the provider's own counter (Anthropic's count_tokens endpoint is free) before you budget."
+     },
+     {
+      "t": "None, tokens are a universal unit across vendors.",
+      "correct": false,
+      "why": "Tokenizers are model-specific. The same paragraph can be a different number of tokens on two models."
+     },
+     {
+      "t": "Your estimate is too high, newer models always use fewer tokens.",
+      "correct": false,
+      "why": "Anthropic documents the opposite direction for Opus 4.7 and later. Never assume; measure."
+     },
+     {
+      "t": "The only risk is latency, cost is unaffected.",
+      "correct": false,
+      "why": "Billing is per token, so a token-count error is a cost error one for one."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "A summarizer reads 12,000 input tokens and writes 400 output tokens on claude-sonnet-5-5 ($2 / $10 per million). Compute the cost per call and per 1 million calls.",
+    "a": "Input: 12,000 x 2 / 1,000,000 = $0.024. Output: 400 x 10 / 1,000,000 = $0.004. Per call $0.028; per million calls $28,000. Input is 86% of the bill, so the first lever is a shorter or cached prompt, not a shorter summary."
+   },
+   {
+    "level": "Transfer",
+    "q": "Product wants answers to start appearing within 1 second. With your own measurements you find TTFT grows by about 0.1 s per 1,000 prompt tokens above a 0.3 s floor (illustrative numbers). What is the largest prompt that meets the target, and what does that tell you about RAG context size?",
+    "a": "0.3 + 0.1 x (tokens / 1,000) <= 1.0 gives tokens <= 7,000. So the retrieved context plus system prompt plus history must stay under about 7,000 tokens. That turns 'retrieve top-10 chunks' into a constraint: at 500 tokens a chunk and a 1,500-token system prompt you can afford about 11 chunks, minus history. The why: TTFT is set by prefill, and prefill scales with prompt length, so a latency target becomes a token budget."
+   },
+   {
+    "level": "Stretch",
+    "q": "An agent averages 7 model calls per task. Call k re-sends a fixed 2,000-token prefix plus all earlier steps, and each step adds 600 tokens (tool output plus the model's reply). Output per call is 150 tokens. Give the input tokens for the whole task and the cost per task on claude-sonnet-5-5.",
+    "a": "Call k sends 2,000 + 600 x (k - 1) input tokens. Sum over k = 1..7: 7 x 2,000 + 600 x (0+1+...+6) = 14,000 + 600 x 21 = 26,600 input tokens. Output: 7 x 150 = 1,050. Cost: 26,600 x 2/M = $0.0532 plus 1,050 x 10/M = $0.0105, so about $0.064 per task. The growth term (12,600 tokens) is almost half the input, which is why agents need history trimming and prompt caching. Per-call estimates hide this; always cost the task."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "How do you estimate the monthly cost of an LLM feature before launch?",
+    "a": "I count tokens per request with the target model's own tokenizer, split into input and output, and multiply each by its list price. Then I multiply by requests per day and by 30. For example 3,000 input and 300 output tokens on a $2/$10 per million model is $0.009 a request, so 100,000 requests a day is about $27,000 a month. I also add the extra calls a feature makes, like retries, judge calls or agent steps, because the bill is per task, not per call. Finally I check which side dominates so I know which lever to pull first."
+   },
+   {
+    "level": "Mid",
+    "q": "Users say the assistant 'takes forever to start'. Total response time is fine. Where do you look and what do you change?",
+    "a": "'Slow to start' is time to first token, and TTFT is mostly prefill plus queueing. I would pull traces and plot TTFT against prompt tokens. If they correlate, the prompt is too long: trim retrieved context, summarize history, and move the fixed system prompt and tool definitions into a provider prompt cache so the prefix is not re-processed. If TTFT is high even for short prompts, it is queueing or rate limiting at the provider or my own server, so I check concurrency limits and retries. Streaming then makes the improved first token the whole felt experience."
+   },
+   {
+    "level": "Senior",
+    "q": "Finance asks you to cut LLM spend 50% next quarter without hurting quality. How do you plan it?",
+    "a": "First I measure: cost per task broken down by feature, model, input vs output, and cached vs uncached tokens. Usually a few features and the input side dominate. Then I rank levers by saving per unit of risk: prompt caching for fixed prefixes, the Batch API (50% off at Anthropic) for anything not interactive, response caching for repeated questions, routing easy traffic to a cheaper tier, then trimming context. Each change goes through the eval gate so quality is proven, not assumed. I report expected and realised savings per lever, and I set per-feature budgets with alerts so the gain does not erode as traffic grows."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Models overview (prices, context, output limits) - Anthropic",
+    "u": "https://platform.claude.com/docs/en/about-claude/models/overview"
+   },
+   {
+    "t": "Token counting - Anthropic",
+    "u": "https://platform.claude.com/docs/en/build-with-claude/token-counting"
+   },
+   {
+    "t": "Prompt caching (pricing table incl. Haiku 5.5 tiers) - Anthropic",
+    "u": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching"
+   }
+  ]
+ },
+ {
+  "n": "8.2",
+  "analogy": "Imagine ordering a pizza where the shop waits until all eight slices are cut, boxed and driven over before you see anything. Now imagine the cook handing you each slice the moment it is ready. You get the whole pizza at the same time either way, but in the second case you are eating after one minute instead of staring at the door. Where it breaks: a pizza slice is useful alone, but a half-finished JSON object or SQL query is not, which is why machines usually want the whole box.",
+  "scale": {
+   "title": "Streaming a chat assistant at 100,000 requests in the peak hour",
+   "html": "<p>Assumptions (ours, illustrative): 100,000 requests in the busiest hour, answers average 600 tokens, TTFT 0.8 s, decode 50 tokens/s per stream. Measure your own numbers; these are round figures to show the method.</p>\n<ol>\n<li><strong>Without streaming.</strong> Decode takes 600 / 50 = 12 s, plus 0.8 s TTFT. The user stares at a spinner for <strong>12.8 s</strong>, and many will assume it broke.</li>\n<li><strong>With streaming.</strong> First words at <strong>0.8 s</strong>. Total time is still 12.8 s, but the user is reading from 0.8 s on.</li>\n<li><strong>Does the stream outrun the reader?</strong> Assume a fast reader at about 250 words a minute, roughly 4 words or about 5-6 tokens a second. 50 tokens/s is about 9x faster than reading, so the reader never catches up with the text. Streaming hides almost all decode time.</li>\n<li><strong>How many open connections must the server hold?</strong> Use Little's law: concurrency = arrival rate x time in system. 100,000 / 3,600 s = 27.8 requests/s, each held open 12.8 s, so about <strong>356 concurrent streams</strong>. Your web tier, proxy and load balancer must allow that many long-lived SSE connections, and their idle timeouts must be longer than your slowest stream.</li>\n<li><strong>Safety checks need a plan.</strong> Output moderation wants full text. A common compromise: moderate each completed sentence before releasing it, which adds a buffer of one sentence (maybe 20-30 tokens, under 1 s at 50 tokens/s), and keep a retract path if the final check fails.</li>\n<li><strong>Measure the right number.</strong> Log TTFT and total time separately per request. On OpenTelemetry's GenAI conventions the streaming attribute is gen_ai.response.time_to_first_chunk; p95 TTFT is the number to alert on.</li>\n</ol>"
+  },
+  "lab": {
+   "id": "01_generate_and_sample",
+   "look_for": "The lab streams from Ollama and prints time-to-first-token and tokens/sec separately. Compare TTFT with total time: the gap between them is the wait streaming hides from the user. Ask for a 50-word answer and then a 500-word answer; TTFT barely moves while total time grows roughly in step with eval_count."
+  },
+  "quiz": [
+   {
+    "q": "Your streaming chat endpoint works on your laptop but in production long answers cut off after about a minute with no error from the model. What is the most likely cause?",
+    "options": [
+     {
+      "t": "A proxy or load balancer idle or request timeout is closing the long-lived streaming connection.",
+      "correct": true,
+      "why": "Streams are long HTTP connections. Infrastructure between client and server often has timeouts tuned for short requests; raise them or send periodic keep-alive events."
+     },
+     {
+      "t": "Streaming makes the model generate more tokens, which hits max_tokens.",
+      "correct": false,
+      "why": "Streaming does not change how many tokens are generated. A max_tokens stop would show up as a finish reason, not a dropped connection."
+     },
+     {
+      "t": "The model is slower when streaming.",
+      "correct": false,
+      "why": "Generation speed is the same; only delivery changes."
+     },
+     {
+      "t": "SSE only supports one message per connection.",
+      "correct": false,
+      "why": "Server-sent events are designed for many messages over one open connection."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "An answer is 900 tokens, TTFT is 1.2 s and decode runs at 45 tokens/s. How long does the user wait before seeing anything, with and without streaming?",
+    "a": "Decode: 900 / 45 = 20 s. Without streaming the user sees nothing for 1.2 + 20 = 21.2 s. With streaming the first words appear at 1.2 s. Same total, but the blank wait drops by about 94%."
+   },
+   {
+    "level": "Transfer",
+    "q": "You expose a tool-calling agent to a browser. The model streams, but tool-call arguments arrive as partial JSON fragments. How do you stream to the user and still execute tools safely?",
+    "a": "Split the stream by content type. Text deltas go straight to the browser. Tool-call deltas are buffered on the server until the provider signals the tool-use block is complete; only then parse the JSON, validate it against the tool's schema, and run the tool (with any approval gate). Meanwhile send the browser a status event like 'looking up your order' so the user sees progress. The why: humans can read partial text, but code cannot act on partial arguments, so you stream for people and collect-then-parse for machines inside the same response."
+   },
+   {
+    "level": "Stretch",
+    "q": "Using Little's law, size your streaming tier: peak 60 requests/s, average stream duration 15 s, and each server process can hold 500 open streams comfortably. How many processes do you need with 30% headroom, and what changes if you cut average answer length by a third?",
+    "a": "Concurrency = 60 x 15 = 900 open streams. With 30% headroom: 900 x 1.3 = 1,170, so 1,170 / 500 = 2.34, round up to 3 processes. If answers are a third shorter and decode dominates duration, streams last about 10 s: 60 x 10 x 1.3 = 780, which still needs 2 processes (780 / 500 = 1.56). The lesson: output length drives not just cost and latency but how many connections you hold open, so it shapes infrastructure too."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What is the difference between time to first token and total latency, and which does streaming improve?",
+    "a": "Time to first token is how long until the first piece of the answer arrives; it is mostly the model reading the prompt (prefill) plus any queueing. Total latency adds the time to generate every output token (decode). Streaming does not change either number at the server. What it changes is when the user sees text: with streaming they start reading at TTFT instead of waiting for the full total. So streaming improves perceived latency, and if I want a lower TTFT itself I shorten the prompt, cache the prefix, or use a faster model."
+   },
+   {
+    "level": "Mid",
+    "q": "How would you implement streaming from an LLM through a FastAPI backend to a React front end?",
+    "a": "On the backend I call the provider with streaming on and wrap the iterator in a StreamingResponse with the text/event-stream media type, yielding one SSE event per text delta and a final event with usage and finish reason. I use an async client so one worker can hold many streams. On the front end I read the stream with EventSource or fetch and a reader, appending deltas to state. I handle disconnects by cancelling the upstream call so I stop paying for tokens nobody will read, and I log TTFT and total time per request."
+   },
+   {
+    "level": "Senior",
+    "q": "When would you deliberately not stream, even for a user-facing feature?",
+    "a": "When the output must be checked before anyone sees it, and a retraction would be worse than a wait. Examples: regulated advice where every answer must pass a compliance check, a reply that will be sent to a customer by email, or structured output a UI renders as a form. I also skip streaming for machine consumers: JSON, tool calls and SQL need the whole object. Middle grounds exist: stream a status or a progress bar, or release text sentence by sentence after a fast check. The decision is a trade between perceived speed and the cost of showing something wrong."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Streaming Messages - Anthropic",
+    "u": "https://platform.claude.com/docs/en/build-with-claude/streaming"
+   },
+   {
+    "t": "Streaming - Ollama docs",
+    "u": "https://docs.ollama.com/capabilities/streaming"
+   },
+   {
+    "t": "Using server-sent events - MDN",
+    "u": "https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events"
+   }
+  ]
+ },
+ {
+  "n": "8.3",
+  "analogy": "A school library has three tricks. If someone asks for the exact same book again, the librarian hands over the copy already on the desk (exact-match cache). If someone asks for 'that book about the boy wizard', she guesses it is the same as yesterday's request and hands that one over (semantic cache, fast but sometimes wrong). And if every student's homework starts with the same 50-page reading pack, she photocopies it once and keeps it ready instead of re-reading it for each student (prompt caching: the work on the shared start is reused, but each student still gets their own answer). Where it breaks: the librarian can see the books, while a semantic cache only sees how similar two questions look, not whether the answer really fits.",
+  "scale": {
+   "title": "Three caches on an HR policy assistant at 200,000 requests a day",
+   "html": "<p>Assumptions (ours): 200,000 requests a day on claude-sonnet-5-5; each request has a fixed 6,000-token prefix (system prompt + tool definitions + policy summary), 1,500 variable tokens (question + retrieved chunks) and 250 output tokens. Prices from <a href=\"https://platform.claude.com/docs/en/build-with-claude/prompt-caching\" target=\"_blank\" rel=\"noopener\">Anthropic prompt caching docs</a>: base input $2/M, 5-minute cache write $2.50/M, cache read $0.10/M (0.05x on Sonnet 5.5), output $10/M.</p>\n<ol>\n<li><strong>No caching.</strong> 7,500 x $2/M + 250 x $10/M = $0.015 + $0.0025 = $0.0175 a request, so <strong>$3,500 a day</strong>.</li>\n<li><strong>Provider prompt caching</strong> (the provider reuses its computation for an identical prefix; you still get a fresh answer). Traffic is continuous, so the 5-minute cache stays warm; even one rewrite every 5 minutes is 288 writes x 6,000 x $2.50/M = $4.32 a day. Per request: 6,000 x $0.10/M + 1,500 x $2/M + $0.0025 = $0.0006 + $0.003 + $0.0025 = $0.0061, so about <strong>$1,224 a day</strong> (65% saved). Condition: the prefix must be byte-identical, so put the date and user name after the cache breakpoint, and the prefix must meet the model's minimum (512 tokens on Sonnet 5.5).</li>\n<li><strong>Exact-match response cache</strong> (your own store; a hit skips the model entirely). Assume 15% of questions are identical after normalizing case and whitespace. 170,000 calls remain: 170,000 x $0.0061 = <strong>$1,037 a day</strong>, and hits return in milliseconds.</li>\n<li><strong>Semantic cache</strong> (embedding similarity above a threshold, say 0.92). Assume it adds another 10% of hits: 150,000 calls, <strong>$915 a day</strong>. The risk: a wrong hit serves an answer to a different question. HR answers differ by country, so the cache key must include country, policy version and prompt version.</li>\n<li><strong>Read the stack.</strong> Response caches decide whether you call the model; prompt caching makes the calls you still make cheaper and faster to first token. They stack. Total saving here: $3,500 to $915, about 74%, with the semantic layer contributing the smallest and riskiest slice.</li>\n</ol>"
+  },
+  "lab": {
+   "id": "08_llmops",
+   "look_for": "Section 2 runs exact-match and semantic caching over 7 requests and prints the cache result and latency per request: exact hits take about 0.1 ms against about 6 s for a model call. Section 3 prints the paraphrase similarity (0.657) next to a different-intent question (0.523) and the semantic hit count at threshold 0.90 (0 on our run). Lower the threshold and check each new hit is the same intent. Provider prompt caching is not shown locally; price it with the Anthropic table instead."
+  },
+  "quiz": [
+   {
+    "q": "Which statement correctly separates provider prompt caching from a response cache?",
+    "options": [
+     {
+      "t": "Prompt caching reuses the provider's work on an identical prompt prefix and still generates a fresh answer; a response cache returns a stored answer and skips the model call.",
+      "correct": true,
+      "why": "That is the key difference: one discounts the call, the other avoids it. They solve different problems and stack."
+     },
+     {
+      "t": "Prompt caching stores whole answers on the provider's side so repeated questions are free.",
+      "correct": false,
+      "why": "The provider caches the processed prefix, not your answers. You still pay for uncached input and all output tokens."
+     },
+     {
+      "t": "They are the same thing with different names.",
+      "correct": false,
+      "why": "They live in different places (provider vs your app) and save different things (prefill vs the whole call)."
+     },
+     {
+      "t": "A response cache only works if the provider supports it.",
+      "correct": false,
+      "why": "Exact and semantic response caches are your own code and storage, for example Redis. They work with any model, including local ones."
+     }
+    ]
+   },
+   {
+    "q": "Your Claude prompt-cache hit rate is near zero even though every request starts with the same 5,000-token system prompt. What is the most likely bug?",
+    "options": [
+     {
+      "t": "Something that changes per request, like a timestamp or user name, sits before the cache breakpoint, so the prefix is never identical.",
+      "correct": true,
+      "why": "Prompt caching matches exact prefixes. Move volatile content after the breakpoint and keep the cached part byte-for-byte stable."
+     },
+     {
+      "t": "The prompt is too long to cache.",
+      "correct": false,
+      "why": "Long fixed prefixes are exactly what caching is for. The documented limits are minimums (for example 512 tokens on Sonnet 5.5), not maximums."
+     },
+     {
+      "t": "Prompt caching only works with temperature 0.",
+      "correct": false,
+      "why": "Caching is about the input prefix; sampling settings do not affect whether the prefix matches."
+     },
+     {
+      "t": "The cache only works for the same user.",
+      "correct": false,
+      "why": "Identical prefixes can hit across requests within your organisation. The problem is that the prefix is not identical."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "On claude-opus-5-5 (base input $4/M, 5-minute cache write $5/M, cache read $0.20/M), a 10,000-token prefix is written once and then read 99 times. Compare the prefix cost with and without caching.",
+    "a": "Without caching: 100 x 10,000 x $4/M = $4.00. With caching: one write 10,000 x $5/M = $0.05 plus 99 reads x 10,000 x $0.20/M = $0.198, total $0.248. That is about 94% less on the prefix. The write costs 1.25x base, so caching only loses money if the prefix is almost never read again within the TTL."
+   },
+   {
+    "level": "Transfer",
+    "q": "Design the cache key for an exact-match response cache in a multi-tenant SaaS help bot whose answers depend on the tenant's plan and on a prompt template that you update weekly.",
+    "a": "Key = hash(tenant_id or plan tier, model ID, prompt template version, retrieval index version, normalized question). Tenant or plan stops one customer's answer leaking to another and stops a Pro answer being served to a Free user. Model ID and prompt version mean a prompt or model change naturally starts a fresh cache instead of serving answers produced by the old version. Index version invalidates when documents change. Add a TTL as a safety net. The why: every input that can change the right answer must be in the key, or the cache will eventually serve a wrong one."
+   },
+   {
+    "level": "Stretch",
+    "q": "You want to tune a semantic cache threshold. Describe the experiment and the decision rule, given that a wrong cached answer costs 20x more (in support tickets) than a cache miss costs in tokens.",
+    "a": "Collect a few thousand real query pairs from logs where the nearest cached neighbour exists, and label each pair 'same answer is correct' or not (humans or a careful judge, spot-checked). For each threshold from 0.80 to 0.98, compute hit rate and wrong-hit rate. Expected cost per query = miss_rate x c_miss + wrong_hit_rate x 20 x c_miss. Pick the threshold that minimises it, then add a margin because labels are noisy. With a 20x penalty you will usually land high (often 0.93 or more on MiniLM-style embeddings, but measure), and you may restrict the semantic layer to FAQ-type intents only."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What kinds of LLM responses should never be cached across users?",
+    "a": "Anything personalised, anything time-sensitive, and anything where variety is the point. Personalised answers, like a summary of my orders, could leak one user's data to another. Time-sensitive answers, like stock levels or today's schedule, go stale. Creative tasks lose their value if everyone gets the same output. I also avoid caching answers that depend on permissions unless the permission scope is part of the cache key. Stable, shared facts like a return policy are the good candidates."
+   },
+   {
+    "level": "Mid",
+    "q": "Explain how you would combine prompt caching, exact caching and semantic caching in one RAG service.",
+    "a": "Order matters. First an exact-match cache keyed on the normalized question plus tenant, model and prompt version; a hit returns in milliseconds and costs nothing. Next, for FAQ-type intents only, a semantic cache with a conservative threshold tuned on labelled pairs. On a miss I call the model, and the request is laid out so the system prompt and tool definitions form a stable prefix that the provider caches; retrieved chunks and the question go after the breakpoint. I log cache_read and cache_creation token counts and the response-cache hit rates, and invalidate response caches when the index or prompt changes."
+   },
+   {
+    "level": "Senior",
+    "q": "Prompt caching cut your bill 60% in staging but only 10% in production. What could explain it?",
+    "a": "The cache needs repeated identical prefixes within the TTL. In production the prefix might vary: per-tenant system prompts, feature flags or A/B variants injected early, tool lists that change order, or a timestamp at the top. Traffic may also be spread across many prefixes and regions, so each one goes cold between hits at a 5-minute TTL. I would compare cache_read_input_tokens against total input per prompt variant, normalise and sort anything that varies, move volatile parts after the breakpoint, consider the 1-hour TTL for sparse but steady traffic, and consolidate prompt variants where the A/B tests are finished."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Prompt caching - Anthropic",
+    "u": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching"
+   },
+   {
+    "t": "Automatic Prefix Caching - vLLM docs",
+    "u": "https://docs.vllm.ai/en/latest/features/automatic_prefix_caching.html"
+   },
+   {
+    "t": "GPTCache: semantic cache for LLMs - Zilliz (GitHub)",
+    "u": "https://github.com/zilliztech/GPTCache"
+   }
+  ]
+ },
+ {
+  "n": "8.4",
+  "analogy": "A hospital does not send every patient straight to the head surgeon. A nurse at the front desk checks each person: a scraped knee goes to the nurse practitioner, a broken arm goes to a doctor, and only the rare hard case goes to the surgeon. If the practitioner finds it is worse than it looked, they pass the patient up. Where it breaks: a triage nurse can examine the patient, while a router often only sees the words of the question, so it misjudges some hard cases as easy.",
+  "scale": {
+   "title": "Routing an e-commerce assistant at 1 million requests a day",
+   "html": "<p>Assumptions (ours): 1,000,000 requests a day, 1,500 input and 200 output tokens each, and an offline eval showing 75% of traffic (order status, returns, sizing) is answered at your quality bar by the small tier. Prices from <a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\" target=\"_blank\" rel=\"noopener\">Anthropic models overview</a>.</p>\n<ol>\n<li><strong>Everything on claude-sonnet-5-5 ($2 / $10).</strong> 1,500 x $2/M + 200 x $10/M = $0.003 + $0.002 = $0.005 a request, <strong>$5,000 a day</strong>.</li>\n<li><strong>Classifier routing.</strong> 75% to claude-haiku-5-5 (from $0.10 / $0.50): 1,500 x $0.10/M + 200 x $0.50/M = $0.00025 a request; 750,000 x $0.00025 = $187.50. 25% to Sonnet: 250,000 x $0.005 = $1,250. Total <strong>$1,437.50 a day</strong>, a 71% cut.</li>\n<li><strong>Cascade instead.</strong> Send everything to Haiku first, then escalate when a check fails (schema invalid, low retrieval score, refusal). Suppose 30% escalate. Haiku for all: 1,000,000 x $0.00025 = $250. Sonnet for 300,000: $1,500. Total <strong>$1,750 a day</strong> (65% cut), and escalated users pay a latency tax for the double call.</li>\n<li><strong>Price the router's mistakes.</strong> If the classifier wrongly sends 2% of all traffic (20,000 hard queries a day) to Haiku and each bad answer costs a $3 support contact (assumption), that is 20,000 x $3 = $60,000 a day, far more than the $3,562 saved. Routing only works if the misroute rate is measured and tiny, or if a cheap check catches misroutes.</li>\n<li><strong>What to measure every week.</strong> Escalation rate, quality on each path against the golden set, and cost per resolved conversation (not per call). Research systems like FrugalGPT and RouteLLM report large savings at similar quality, but on their benchmarks; your traffic decides yours.</li>\n</ol>"
+  },
+  "lab": {
+   "id": "06_evals",
+   "look_for": "The lab does not contain a router. What it gives you is the tool that decides whether routing is safe: the per-case regression gate comparing two variants. Point the two variants at two model sizes (for example qwen2.5:7b and a smaller local model if you have one) and count the cases where the small one fails; that per-case failure list is your misroute risk."
+  },
+  "quiz": [
+   {
+    "q": "A router sends 70% of traffic to a cheap model and the average eval score drops only 1 point. Why can this still be a bad change?",
+    "options": [
+     {
+      "t": "The average can hide a large drop on a small but important slice, such as refunds or legal questions, that the cheap model gets wrong.",
+      "correct": true,
+      "why": "Always break quality down by intent or segment. A 1-point average dip can be a 30-point collapse on 3% of traffic that carries most of the business risk."
+     },
+     {
+      "t": "Cheap models are always worse, so any routing is bad.",
+      "correct": false,
+      "why": "For easy, well-defined tasks small models often meet the bar. The point is to measure where they do and do not."
+     },
+     {
+      "t": "A 1-point drop is always within noise, so the change is fine.",
+      "correct": false,
+      "why": "Whether it is noise depends on sample size, and the real risk is how the drop is distributed, not its average."
+     },
+     {
+      "t": "Routing increases latency for every request.",
+      "correct": false,
+      "why": "A rules or small-classifier router adds little latency, and the cheap path is often faster. Cascades add latency only on escalation."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "Requests average 2,000 input and 300 output tokens. What is the per-request saving of moving one request from claude-sonnet-5-5 to claude-haiku-5-5?",
+    "a": "Sonnet: 2,000 x 2/M + 300 x 10/M = $0.004 + $0.003 = $0.007. Haiku (up-to-100K-token rate): 2,000 x 0.10/M + 300 x 0.50/M = $0.0002 + $0.00015 = $0.00035. Saving $0.00665 a request, about 95%."
+   },
+   {
+    "level": "Transfer",
+    "q": "Your cascade escalates when the small model's JSON fails validation. Escalation rate is 8% in testing but 35% in production. List three things you would check, in order.",
+    "a": "1) The traffic mix: pull the escalated traces and group by intent; production may contain question types the test set lacked. 2) The check itself: is validation failing on harmless formatting (extra fields, trailing text) that a constrained-decoding schema or a lenient parser would fix? 3) The small model's inputs: are production prompts longer (more history or context) so the small model loses the instructions? Fixes follow from the finding: add the new intents to the golden set, use schema-constrained output, or route long-context requests straight to the big model."
+   },
+   {
+    "level": "Stretch",
+    "q": "Write the break-even condition for a cascade versus always using the big model, with c_s and c_b the per-request costs and e the escalation rate. With c_s = $0.00035 and c_b = $0.007, what escalation rate makes the cascade pointless?",
+    "a": "Cascade cost per request = c_s + e x c_b. Big-only cost = c_b. The cascade wins when c_s + e x c_b < c_b, i.e. e < 1 - c_s / c_b. Here 1 - 0.00035 / 0.007 = 1 - 0.05 = 0.95. So on cost alone the cascade wins unless 95% of requests escalate. In practice the limit is latency and quality, not cost: escalated users wait for two calls, so you also cap e by your p95 latency target."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What is model routing and why do teams use it?",
+    "a": "Routing picks which model handles each request. Most traffic is easy, like greetings, lookups and short classifications, and a small model handles it well at a fraction of the price and often faster. Hard requests, like multi-step reasoning or long documents, go to a bigger model. The router can be simple rules, a small trained classifier, or a cascade that tries the small model first and escalates on a failed check. Teams use it because it can cut cost a lot while keeping quality where it matters, as long as they measure quality per path."
+   },
+   {
+    "level": "Mid",
+    "q": "How do you build and validate a routing classifier?",
+    "a": "I label a few thousand real requests with the cheapest model that meets the bar, by running both models on them and judging the outputs against the golden-set rubric. That gives training labels. I train a small classifier on cheap features or embeddings, and I tune its threshold for low false-easy rate, because sending a hard query to the small model is the costly error. I validate on a held-out set by segment, then canary it on a slice of live traffic and compare thumbs-down, escalations and cost per resolved task against control before going wide."
+   },
+   {
+    "level": "Senior",
+    "q": "Your provider releases a new small model that is cheaper and better. How do you adopt it without breaking the router?",
+    "a": "The router's thresholds were tuned for the old small model, so the routing boundary is now wrong in a safe direction: we are probably sending too much to the big model. I run the new model through the golden set by intent, relabel which intents it handles, and retune the threshold. Then I canary it with both quality and cost dashboards and keep the old route as instant rollback. I also pin model IDs rather than aliases so the switch is a deliberate change that goes through the eval gate, not a silent upgrade."
+   }
+  ],
+  "sources": [
+   {
+    "t": "FrugalGPT: How to Use Large Language Models While Reducing Cost and Improving Performance - arXiv",
+    "u": "https://arxiv.org/abs/2305.05176"
+   },
+   {
+    "t": "RouteLLM: Learning to Route LLMs with Preference Data - arXiv",
+    "u": "https://arxiv.org/abs/2406.18665"
+   },
+   {
+    "t": "Models overview (tiers and prices) - Anthropic",
+    "u": "https://platform.claude.com/docs/en/about-claude/models/overview"
+   }
+  ]
+ },
+ {
+  "n": "8.5",
+  "analogy": "Imagine writing down everyone's height in a class. You could write 152.3847 cm, or just 152 cm. The short version takes much less paper and is almost always good enough. Quantization does that to a model's billions of numbers: it rounds them to fewer digits so the model fits in less memory. Where it breaks: rounding a height loses nothing you care about, but a few of a model's numbers matter a lot, so good quantization methods round those more carefully than the rest.",
+  "scale": {
+   "title": "Fitting Qwen2.5-7B and its KV cache on a 24 GB GPU",
+   "html": "<p>Facts: Qwen2.5-7B-Instruct has 7.61B parameters, 28 layers, 4 key-value heads and hidden size 3,584 with 28 attention heads, so head dimension is 128 (<a href=\"https://huggingface.co/Qwen/Qwen2.5-7B-Instruct\" target=\"_blank\" rel=\"noopener\">model card and config</a>). Locally, <code>ollama show qwen2.5:7b</code> reports quantization Q4_K_M and <code>ollama list</code> shows 4.7 GB. The 24 GB GPU and the traffic are our assumptions.</p>\n<ol>\n<li><strong>Weights at each precision.</strong> bf16: 7.61B x 2 bytes = 15.2 GB. int8: 7.6 GB. The Q4_K_M file at 4.7 GB works out to 4.7e9 x 8 / 7.61e9 = about 4.9 bits per weight, not exactly 4, because k-quants keep scales and some tensors at higher precision.</li>\n<li><strong>KV cache per token.</strong> 2 (K and V) x 28 layers x 4 KV heads x 128 dims x 2 bytes (fp16) = 57,344 bytes, about 56 KB a token.</li>\n<li><strong>KV for real traffic.</strong> 16 concurrent conversations at 8,000 tokens each = 128,000 tokens x 56 KB = about 7.3 GB.</li>\n<li><strong>Does it fit in 24 GB?</strong> bf16: 15.2 + 7.3 = 22.5 GB, leaving about 1.5 GB for activations and runtime overhead, which is too tight. Q4_K_M: 4.7 + 7.3 = 12 GB, leaving room to double concurrency.</li>\n<li><strong>So quantization buys concurrency, not just fit.</strong> Every GB saved on weights is about 17,000 more tokens of KV cache, which means more users per GPU and a lower cost per request.</li>\n<li><strong>The quality check.</strong> Before shipping Q4, run your golden set on bf16 (or the provider's full model) and on Q4. If the per-case regression list is short and not concentrated in one task type, ship it; if arithmetic or extraction cases cluster in the failures, try Q8 or AWQ/GPTQ builds and re-measure.</li>\n</ol>"
+  },
+  "lab": {
+   "id": "01_generate_and_sample",
+   "look_for": "No lab compares quant levels, because that would need a second multi-GB download. What you can see: run <code>ollama show qwen2.5:7b</code> (it prints quantization Q4_K_M) and the lab's tokens/sec for that 4.7 GB build on your machine. If you have disk to spare, pull a q8_0 tag of a small model, rerun, and compare tokens/sec and answers on the same seeds."
+  },
+  "quiz": [
+   {
+    "q": "Ollama lists qwen2.5:7b (7.61B parameters, Q4_K_M) at 4.7 GB rather than the 3.8 GB that exactly 4 bits a weight would give. Why?",
+    "options": [
+     {
+      "t": "k-quant formats store per-block scale factors and keep some sensitive tensors at higher precision, so the average is closer to 5 bits a weight.",
+      "correct": true,
+      "why": "4.7e9 bytes x 8 / 7.61e9 is about 4.9 bits a weight. 'Q4' names the main block format, not the exact average."
+     },
+     {
+      "t": "The file includes the KV cache for a full context.",
+      "correct": false,
+      "why": "The KV cache is allocated at run time and depends on context length and concurrency; it is not in the model file."
+     },
+     {
+      "t": "Ollama stores two copies of the weights.",
+      "correct": false,
+      "why": "There is one set of quantized weights; the overhead comes from scales and mixed precision."
+     },
+     {
+      "t": "Quantization does not really reduce size; the 3.8 GB number is a myth.",
+      "correct": false,
+      "why": "bf16 would be about 15.2 GB, so 4.7 GB is a 3x reduction. The arithmetic is real; the overhead is just bigger than zero."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "Estimate weight memory for a 32B-parameter model at bf16, int8 and 4-bit (assume 4.9 bits a weight for the 4-bit format).",
+    "a": "bf16: 32e9 x 2 = 64 GB. int8: 32 GB. 4-bit at 4.9 bits: 32e9 x 4.9 / 8 = 19.6 GB. So a 32B model goes from needing an 80 GB-class GPU to fitting, with modest KV room, on a 24 GB card."
+   },
+   {
+    "level": "Transfer",
+    "q": "Using the Qwen2.5-7B KV figure of about 56 KB a token, how many concurrent 4,000-token conversations fit in the memory left on a 24 GB GPU after the 4.7 GB Q4 weights, keeping 3 GB for runtime overhead?",
+    "a": "Free memory: 24 - 4.7 - 3 = 16.3 GB. Per conversation: 4,000 x 57,344 bytes = about 229 MB. 16.3 GB / 0.229 GB = about 71 conversations. Serving engines like vLLM allocate the KV cache in pages so they can use this space efficiently; in Ollama, RAM scales with OLLAMA_NUM_PARALLEL x context length, so you set those two knobs within this budget."
+   },
+   {
+    "level": "Stretch",
+    "q": "Your team proposes 3-bit quantization of a 7B model to double concurrency. Lay out how you would decide, and name the failure pattern you would watch for.",
+    "a": "Build three candidates (bf16 reference, Q4, Q3) and run the full golden set plus a task-specific stress set (long-context recall, arithmetic, JSON extraction) on each with fixed seeds. Compare per-case, not just averages, and compute the cost per request at the concurrency each fits. Watch for failures that cluster: low-bit models often degrade first on precise tasks such as numbers, code and long instructions while chat quality looks fine. Decide with a rule set in advance, e.g. 'no more than 2 points average drop and no task family drops more than 5 points'. If Q3 fails, consider a smaller model at Q4 or KV-cache quantization instead."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What is quantization and what does it trade off?",
+    "a": "Quantization stores a model's weights with fewer bits, for example 16-bit down to 8 or 4. Memory drops roughly in proportion, so a 7B model goes from about 15 GB in bf16 to under 5 GB at 4-bit. Less memory also means faster decoding because generation is limited by how fast weights move from memory. The cost is some lost precision, which usually means a small quality drop that grows at lower bit-widths and on smaller models. You measure that drop on your own eval set before choosing a level."
+   },
+   {
+    "level": "Mid",
+    "q": "Compare GPTQ, AWQ and GGUF k-quants at a high level. When would you pick each?",
+    "a": "All three are post-training weight quantization. GPTQ quantizes layer by layer using second-order information from calibration data to minimise error. AWQ protects the small fraction of weights that matter most, found from activation statistics, by scaling them before quantizing. GGUF k-quants are the llama.cpp/Ollama family, with block-wise scales and mixed precision, built for CPU and consumer-GPU inference. I pick GGUF for local and edge serving, and GPTQ or AWQ builds for GPU serving engines like vLLM, choosing between them by running my eval set, since the winner depends on the model and task."
+   },
+   {
+    "level": "Senior",
+    "q": "You run a self-hosted 70B model at bf16 on multiple GPUs. Make the case for or against moving to 4-bit.",
+    "a": "For: weights drop about 4x, so the model may fit on fewer GPUs, which cuts cost and removes cross-GPU communication; freed memory goes to KV cache, so concurrency and throughput rise. Against: quality risk, especially on precise tasks; some kernels at low precision can be slower at large batch sizes than bf16 on high-end GPUs; and the team must operate a second artefact. I would benchmark both on our traffic: quality per task family, tokens/s at our concurrency, and cost per 1,000 requests. If 4-bit holds quality within the threshold we agree on beforehand and lowers cost per request, ship it behind a canary."
+   }
+  ],
+  "sources": [
+   {
+    "t": "GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers - arXiv",
+    "u": "https://arxiv.org/abs/2210.17323"
+   },
+   {
+    "t": "AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration - arXiv",
+    "u": "https://arxiv.org/abs/2306.00978"
+   },
+   {
+    "t": "LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale - arXiv",
+    "u": "https://arxiv.org/abs/2208.07339"
+   },
+   {
+    "t": "Qwen2.5-7B-Instruct model card - Hugging Face",
+    "u": "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct"
+   }
+  ]
+ },
+ {
+  "n": "8.6",
+  "analogy": "A school bus can carry 40 kids, but imagine the driver taking one kid at a time. The bus is always moving and the road is busy, yet almost nobody gets to school. Batching fills the seats, and continuous batching is a bus that lets kids hop on and off at every stop instead of waiting until all 40 seats are full. Where it breaks: a bus has a fixed number of seats, while a GPU's limit is memory for each passenger's notes (the KV cache), which grows as their conversation gets longer.",
+  "scale": {
+   "title": "How many GPUs a self-hosted 7B model needs at 50,000 requests a day",
+   "html": "<p>Assumptions (ours, illustrative): 50,000 requests a day, 300 output tokens each, 15% of daily traffic in the peak hour. Throughput figures are round illustrative numbers for a 7B model on one 24 GB GPU; benchmark your own engine and hardware.</p>\n<ol>\n<li><strong>Peak demand.</strong> 50,000 x 15% = 7,500 requests in the peak hour = 2.08 requests/s. Output needed: 2.08 x 300 = <strong>625 tokens/s</strong>.</li>\n<li><strong>One request at a time.</strong> Say a single stream decodes at 40 tokens/s. You would need 625 / 40 = 15.6, so <strong>16 GPUs</strong>, each mostly idle because decode at batch size 1 is limited by memory bandwidth, not compute.</li>\n<li><strong>Continuous batching.</strong> Say the engine sustains 800 tokens/s aggregate at 32 concurrent sequences. 625 / 800 = 78% of <strong>one GPU</strong>; plan 2 for headroom and failover. That is an 8x cut in hardware.</li>\n<li><strong>What each user feels.</strong> 800 / 32 = 25 tokens/s per stream, slower than 40 but still faster than anyone reads. The trade is visible: throughput up 20x, per-user speed down 38%.</li>\n<li><strong>Memory check.</strong> 32 sequences x 4,000 tokens x 56 KB (Qwen2.5-7B KV per token, from Lesson 8.5) = 7.3 GB of KV, plus 4.7 GB of Q4 weights, fits in 24 GB. Paged KV allocation, as in vLLM's PagedAttention, is what lets the engine pack this many sequences without wasting memory on fragmentation.</li>\n<li><strong>The hosted equivalent.</strong> On an API you do not batch the GPU, but you can batch the bill: Anthropic's Message Batches API is 50% off, takes up to 100,000 requests or 256 MB per batch, and finishes within 24 hours, with most batches done in under an hour (<a href=\"https://platform.claude.com/docs/en/build-with-claude/batch-processing\" target=\"_blank\" rel=\"noopener\">Anthropic batch docs</a>). Nightly evals and backfills belong there.</li>\n</ol>"
+  },
+  "lab": {
+   "id": "01_generate_and_sample",
+   "look_for": "The lab sends one request at a time, so it shows single-stream tokens/sec, the 'one kid on the bus' number. To see batching, restart Ollama with OLLAMA_NUM_PARALLEL=4 (documented in the Ollama FAQ; RAM grows with parallel x context length) and fire four lab calls at once from four terminals. Compare per-call tokens/sec with total tokens per second across all four. On a laptop CPU the gain is small; on a GPU it is large."
+  },
+  "quiz": [
+   {
+    "q": "You must classify 2 million support tickets by tomorrow morning using a hosted Claude model. Nobody waits on individual results. What is the most cost-effective choice?",
+    "options": [
+     {
+      "t": "Submit them through the Message Batches API, which is 50% off and completes within 24 hours.",
+      "correct": true,
+      "why": "Offline work with a deadline measured in hours is what batch APIs are for. 2 million requests is 20 batches at the 100,000-request limit."
+     },
+     {
+      "t": "Send them through the normal API as fast as possible with high concurrency.",
+      "correct": false,
+      "why": "That pays full price and will hit rate limits. You gain speed nobody needs."
+     },
+     {
+      "t": "Stream every response to save time.",
+      "correct": false,
+      "why": "Streaming improves perceived latency for a human reader; it does nothing for an offline job's cost."
+     },
+     {
+      "t": "Quantize the hosted model.",
+      "correct": false,
+      "why": "You cannot quantize a provider's hosted model; quantization is a self-hosting lever."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "A nightly eval run is 40,000 requests averaging 3,000 input and 400 output tokens on claude-sonnet-5-5 ($2 / $10). What does it cost on the normal API and through the Batch API?",
+    "a": "Per request: 3,000 x 2/M + 400 x 10/M = $0.006 + $0.004 = $0.010. Normal: 40,000 x $0.010 = $400. Batch at 50% off: $200 a night, about $6,000 a month saved for one config change."
+   },
+   {
+    "level": "Transfer",
+    "q": "Your vLLM server shows high throughput but users complain that responses sometimes stall for a few seconds mid-answer at peak. What is happening and which knobs do you look at?",
+    "a": "At peak the engine admits so many sequences that KV memory runs out, and it must pause or preempt some sequences (swap or recompute their KV) to make room; those users see a stall. Long prompts arriving and being prefilled can also delay decode steps for everyone. Knobs: cap max concurrent sequences, limit max model length, reserve a larger share of GPU memory for KV, enable chunked prefill if the engine supports it, and add replicas. Then watch p95 time-per-output-token, not just aggregate throughput."
+   },
+   {
+    "level": "Stretch",
+    "q": "Using Little's law, how many concurrent sequences must your engine hold at 5 requests/s if each request spends 0.5 s in prefill and generates 300 tokens at 25 tokens/s per stream? Does a 32-sequence engine cope?",
+    "a": "Time in system per request = 0.5 + 300 / 25 = 12.5 s. Concurrency = 5 x 12.5 = 62.5 sequences. A 32-sequence engine cannot hold that: requests queue, TTFT climbs, and the queue grows without limit because arrivals exceed service. You need about 2 engines of 32 (and more with headroom), or shorter outputs: at 150 tokens, time in system is 6.5 s and concurrency 32.5, which just about fits one engine. Output length is a capacity lever as well as a cost lever."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "Why does batching increase throughput on a GPU?",
+    "a": "During decode, each step must read all the model's weights from GPU memory to produce one token. With one request, that big read produces one token, so the GPU's compute units mostly wait on memory. With 32 requests in a batch, the same weight read produces 32 tokens, one for each sequence. So tokens per second across all users rises a lot, and cost per request falls. The catch is that each user's own speed can drop a bit and memory for each sequence's KV cache limits how big the batch can get."
+   },
+   {
+    "level": "Mid",
+    "q": "What is continuous batching and how is it different from static batching?",
+    "a": "Static batching collects N requests, runs them together until the longest one finishes, then starts the next batch. Short requests sit idle waiting for long ones, and new requests wait for the batch to drain. Continuous batching schedules at the level of each decode step: when a sequence finishes, its slot is filled immediately by a waiting request. GPU utilisation stays high and queueing delay drops. Engines like vLLM combine it with paged KV-cache management so many variable-length sequences share memory without fragmentation."
+   },
+   {
+    "level": "Senior",
+    "q": "How do you decide between a hosted API and self-hosting an open model for a high-volume workload?",
+    "a": "I compare cost per 1,000 requests at our real traffic shape. Hosted: list price, minus caching and batch discounts. Self-hosted: GPU cost divided by measured throughput at our concurrency and latency target, plus idle capacity at off-peak, redundancy and engineering time to run it. Then I add non-cost factors: data residency and privacy, the quality gap on our eval set, need for fine-tuning, and the provider's rate limits. Self-hosting tends to win at sustained high volume with a model we can tune; hosted wins for spiky traffic, frontier quality and small teams."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Efficient Memory Management for Large Language Model Serving with PagedAttention (vLLM) - arXiv",
+    "u": "https://arxiv.org/abs/2309.06180"
+   },
+   {
+    "t": "Batch processing (Message Batches API) - Anthropic",
+    "u": "https://platform.claude.com/docs/en/build-with-claude/batch-processing"
+   },
+   {
+    "t": "Ollama FAQ (OLLAMA_NUM_PARALLEL) - Ollama docs",
+    "u": "https://docs.ollama.com/faq"
+   }
+  ]
+ },
+ {
+  "n": "8.7",
+  "analogy": "Think of a phone plan with a monthly data limit. Before you cut anything, you open the usage screen and see that one app used 80% of it. Deleting a tiny app you barely use would save nothing; turning off autoplay videos in the big one fixes the bill. Token budgeting is the same: open the usage screen first, then cut the biggest item. Where it breaks: a phone plan resets each month, while an agent's history keeps growing inside a single task, so the biggest item can change halfway through.",
+  "scale": {
+   "title": "Budgeting an 8-step support agent at 30,000 tasks a day",
+   "html": "<p>Assumptions (ours): 30,000 tasks a day on claude-sonnet-5-5 ($2 / $10 per million, cache reads $0.10/M per <a href=\"https://platform.claude.com/docs/en/build-with-claude/prompt-caching\" target=\"_blank\" rel=\"noopener\">Anthropic prompt caching docs</a>). Each task runs 8 model calls. Fixed prefix: 1,200-token system prompt + 2,500 tokens of tool definitions = 3,700. Each step appends 800 tokens of tool output and 150 tokens of model reply; output per call is 150 tokens.</p>\n<ol>\n<li><strong>Input per call.</strong> Call k sends 3,700 + 950 x (k - 1). Sum over 8 calls: 8 x 3,700 + 950 x (0+1+...+7) = 29,600 + 950 x 28 = <strong>56,200 input tokens</strong> a task. Output: 8 x 150 = 1,200.</li>\n<li><strong>Baseline cost.</strong> 56,200 x $2/M + 1,200 x $10/M = $0.1124 + $0.012 = $0.1244 a task, <strong>$3,732 a day</strong>. Note output is under 10% here: this is an input-shaped bill.</li>\n<li><strong>Trim tool output.</strong> Have tools return a 150-token summary instead of 800 raw tokens, so each step adds 300. Input: 29,600 + 300 x 28 = 38,000. Cost: $0.076 + $0.012 = $0.088, <strong>$2,640 a day</strong>.</li>\n<li><strong>Cache the fixed prefix.</strong> The 3,700-token prefix is the same on every call of every task, so it stays warm. Prefix: 8 x 3,700 x $0.10/M = $0.00296. Growing part: 8,400 x $2/M = $0.0168. Output $0.012. Total $0.0318 a task, <strong>$953 a day</strong>, a 74% cut from baseline with no change to what the model sees.</li>\n<li><strong>Cap the loop.</strong> A step budget of 8 with repeated-call detection stops runaway tasks; one task that loops 40 times costs about $1.84 under the baseline formula (889,000 input tokens), as much as 15 normal tasks.</li>\n<li><strong>Verify quality.</strong> Run the golden set before and after the tool-output summaries. Trimming is a behaviour change; caching is not.</li>\n</ol>"
+  },
+  "lab": {
+   "id": "08_llmops",
+   "look_for": "Section 3 sums tokens and hosted-equivalent cost across the requests that reached the model (prices set at the top of the file from Claude Haiku 5.5 list prices) and scales it to 2 M requests a day; each span in traces.jsonl also carries its own token counts and cost. Shorten the prompt template and rerun: the cost falls by exactly the removed tokens times the price. The lab does not simulate an agent's growing history; use the worked example's arithmetic for that."
+  },
+  "quiz": [
+   {
+    "q": "In an agent where every step re-sends the full history, which change usually cuts input tokens the most over a long task?",
+    "options": [
+     {
+      "t": "Keep tool outputs and old turns short (summaries instead of raw dumps), because history growth is multiplied by the number of later steps.",
+      "correct": true,
+      "why": "Tokens added at step k are re-sent on every step after k, so their cost grows with the square of task length. Shrinking what each step adds attacks that term."
+     },
+     {
+      "t": "Shorten the final answer.",
+      "correct": false,
+      "why": "The final answer is output on one call; history growth is input on every call. Useful, but usually much smaller."
+     },
+     {
+      "t": "Lower the temperature.",
+      "correct": false,
+      "why": "Sampling settings do not change token counts in any predictable way."
+     },
+     {
+      "t": "Add more tools so the agent finishes in fewer steps.",
+      "correct": false,
+      "why": "Each tool definition is input on every call. More tools can raise, not lower, the fixed part of the budget."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "A prompt has: system 400, few-shot examples 1,600, history 900, retrieved context 3,000, question 100 tokens. Which two parts do you attack first, and what is the share of each?",
+    "a": "Total 6,000. Context 3,000 (50%) and few-shot 1,600 (27%). Retrieve fewer or smaller chunks, and test whether 2-3 examples (or selecting examples per query) match 8 examples on the golden set. The system prompt is under 7%; polishing it first is the classic mistake."
+   },
+   {
+    "level": "Transfer",
+    "q": "You set max_tokens = 300 on a feature to cap output. A week later 12% of responses end mid-sentence. What happened and what is the right fix?",
+    "a": "max_tokens is a hard stop, not a length instruction. The model does not plan to finish within it; it is just cut off, and the finish reason says so (max_tokens or length, depending on the API). Right fix: tell the model the target length in the prompt ('answer in at most 120 words'), keep max_tokens as a safety ceiling with some margin above the target, and monitor the share of responses stopped by the limit. If it stays above about 1%, either raise the ceiling or tighten the instruction."
+   },
+   {
+    "level": "Stretch",
+    "q": "Prove that if each agent step adds d tokens to the history, the total re-sent history over n steps is d x n(n-1)/2, and compute how much a 4x reduction in d saves at n = 20 and d = 1,000.",
+    "a": "Step k re-sends (k-1) x d history tokens. Summing k = 1..n gives d x (0+1+...+(n-1)) = d x n(n-1)/2. At n = 20, d = 1,000: 1,000 x 20 x 19 / 2 = 190,000 tokens a task. With d = 250: 47,500 tokens. Saving 142,500 input tokens a task, $0.285 a task on a $2/M model. Quadratic growth is why long agents need summarised memory, and why the same trim saves far more at n = 20 than at n = 5 (where the saving would be only 7,500 tokens)."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What goes into a token budget for a single LLM request?",
+    "a": "Every part of the input plus the output: the system prompt, tool or function definitions, few-shot examples, conversation history, retrieved context, the user's message, and the answer. I measure each part with the model's own tokenizer and log the breakdown per request, so I can see which part is biggest. Then I set limits: a cap on retrieved chunks, a rule for summarising history after N turns, and a max_tokens ceiling with a length instruction in the prompt. The goal is lean prompts without losing the context the model really needs."
+   },
+   {
+    "level": "Mid",
+    "q": "How do you keep conversation history from blowing the budget in a long chat?",
+    "a": "I keep the last few turns verbatim and replace older turns with a running summary that a cheap model updates every few turns. Facts that must survive, like the user's order number, go into a small structured memory instead of free text. For very long sessions I retrieve older turns on demand by similarity rather than sending everything. Then I measure: tokens per turn should flatten instead of growing linearly, and the golden set should include long conversations to make sure the summary does not drop details users later refer back to."
+   },
+   {
+    "level": "Senior",
+    "q": "How would you enforce token budgets across 20 product teams sharing one LLM platform?",
+    "a": "Make it visible, then make it enforceable. Every call goes through a gateway that tags team, feature and prompt version, records input, cached, and output tokens, and prices them. Each team gets a dashboard of cost per task and a monthly budget with alerts at 80%. The gateway enforces hard limits per feature: max input size, max_tokens ceilings, step budgets for agents, and rate limits. Platform-level savings like prompt caching and batch routing are on by default. A design review for any new feature includes a token estimate per task, and actuals are compared with it after launch."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Token counting - Anthropic",
+    "u": "https://platform.claude.com/docs/en/build-with-claude/token-counting"
+   },
+   {
+    "t": "Prompt caching - Anthropic",
+    "u": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching"
+   },
+   {
+    "t": "Lost in the Middle: How Language Models Use Long Contexts - arXiv",
+    "u": "https://arxiv.org/abs/2307.03172"
+   }
+  ]
+ },
+ {
+  "n": "12.1",
+  "analogy": "Your notebook is like cooking dinner in your own kitchen: it works, but only you eat. A service is a restaurant with a counter and a menu. Customers do not walk into the kitchen; they order through the counter, and the menu says exactly what they can ask for. Where it breaks: a restaurant can see the queue at the door, but a web service only learns it is overloaded when requests start timing out, so you have to plan capacity on purpose.",
+  "scale": {
+   "title": "Capacity-planning a FastAPI LLM endpoint for 2 million requests a day",
+   "html": "<p>Assumptions (ours): 2,000,000 requests a day for an internal assistant, peak traffic 3x the daily average, and a mean model call of 4 s. Facts: FastAPI runs a plain <code>def</code> endpoint in an external threadpool (<a href=\"https://fastapi.tiangolo.com/async/\" target=\"_blank\" rel=\"noopener\">FastAPI docs</a>), and AnyIO's default worker-thread limiter is 40 (<a href=\"https://anyio.readthedocs.io/en/stable/threads.html\" target=\"_blank\" rel=\"noopener\">AnyIO docs</a>).</p>\n<ol>\n<li><strong>Arrival rate.</strong> 2,000,000 / 86,400 s = 23.1 requests/s on average; peak 3x = <strong>69.4 requests/s</strong>.</li>\n<li><strong>Requests in flight.</strong> Little's law: 69.4 x 4 s = <strong>278 concurrent requests</strong>, nearly all of them just waiting on the model.</li>\n<li><strong>The sync trap.</strong> The 15-line example uses <code>def ask()</code> with a blocking client. Each process then has about 40 threads to wait with. 4 uvicorn workers x 40 = 160 slots, fewer than 278, so requests queue inside your own server and p95 latency climbs even though the model is fine.</li>\n<li><strong>The fix.</strong> Make the endpoint <code>async def</code> and use an async client (for Ollama, <code>ollama.AsyncClient</code>; most provider SDKs have one). Waiting on network I/O then costs almost nothing, and one process can hold hundreds of in-flight calls. Keep 2+ replicas for failover.</li>\n<li><strong>Protect the expensive part.</strong> Set a client timeout (say 30 s) so a stuck call frees its slot; add a per-user rate limit (say 60 requests a minute) so one script cannot eat the capacity of 278 users; cap request body size so nobody sends a 2 MB prompt.</li>\n<li><strong>Know the upstream ceiling.</strong> 69 requests/s x 3,000 tokens = about 208,000 input tokens a second at peak. Check this against your provider's rate limits or your GPU throughput (Lesson 8.6) before launch, not after the first 429.</li>\n<li><strong>Return enough to debug.</strong> Send a request ID back in every response and log it in the trace, so a user's complaint maps to one span tree.</li>\n</ol>"
+  },
+  "lab": {
+   "id": "08_llmops",
+   "look_for": "The lab is not a web server, but it shows the operational ring this lesson ends on: each request becomes a traced span with timing and tokens, input and output guardrails run around the model call, and a cache sits in front of it. Read one JSONL trace line and map each field to where it would live in your FastAPI handler (request ID, latency, tokens, guardrail verdict). The lab does not show concurrency or async handling; use the Little's law arithmetic for that."
+  },
+  "quiz": [
+   {
+    "q": "Your FastAPI LLM endpoint uses a plain def handler and a blocking HTTP client. At peak you see requests waiting in your own server while the model provider shows low load. What is the most likely fix?",
+    "options": [
+     {
+      "t": "Switch to async def with an async client, so waiting on the model does not tie up a limited thread pool.",
+      "correct": true,
+      "why": "Sync handlers run in a threadpool with a default of 40 threads per process under AnyIO. LLM calls are long I/O waits, so the pool fills up and new requests queue."
+     },
+     {
+      "t": "Use a bigger model so each call finishes faster.",
+      "correct": false,
+      "why": "Bigger models are usually slower, and the bottleneck is your server's concurrency, not the model."
+     },
+     {
+      "t": "Lower the temperature.",
+      "correct": false,
+      "why": "Sampling settings do not affect how many requests your server can hold at once."
+     },
+     {
+      "t": "Add more pydantic validation.",
+      "correct": false,
+      "why": "Validation is cheap and runs before the call; it does not change how long each request occupies a thread."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "A service gets 30 requests/s at peak and each LLM call takes 6 s. How many requests are in flight, and how many sync worker processes would you need at 40 threads each?",
+    "a": "Little's law: 30 x 6 = 180 in flight. 180 / 40 = 4.5, so 5 processes, before any headroom. With async handlers one or two processes would do, which is why async is the default for LLM services."
+   },
+   {
+    "level": "Transfer",
+    "q": "Extend the /ask endpoint contract for production. Which request and response fields would you add, and why each?",
+    "a": "Request: question (required, max length), optional conversation_id (so memory lives in a store, not the process), optional top_k with a bounded range. Response: answer, sources (doc IDs for grounding), request_id (to find the trace), model and prompt_version (what produced this answer), usage tokens (for cost attribution), and finish_reason (so the client knows a reply was cut off). Errors: 422 for bad input, 429 with Retry-After when rate limited, 503 with a request_id when the model is unavailable, and never a raw stack trace. Each field exists so a caller can trust, debug or pay for the answer."
+   },
+   {
+    "level": "Stretch",
+    "q": "Users abandon requests after 10 s, but the model keeps generating for them. At 70 requests/s with 15% abandonment after 10 s and an average of 400 further output tokens per abandoned request at $10 per million, what does that waste cost a month, and how do you stop it?",
+    "a": "Abandoned: 70 x 0.15 = 10.5 requests/s. Waste: 10.5 x 400 = 4,200 output tokens/s, x 86,400 = 362.9M tokens/day (if peak held all day; scale to your real curve). At $10/M that is $3,629/day, about $109,000/month at that worst case. Fix: detect client disconnects (in FastAPI check request.is_disconnected() in the streaming loop, or rely on cancellation of the response task) and cancel the upstream call so generation stops; streaming also reduces abandonment because users see progress."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "How would you turn a Python function that calls an LLM into an API other teams can use?",
+    "a": "Wrap it in a web framework like FastAPI. Define a pydantic model for the request body so bad input is rejected with a 422, a POST endpoint that runs the function, and a response model with the answer and any sources. Run it with uvicorn, check the auto-generated docs at /docs, and add a health endpoint. Config like model name comes from environment variables. For production I would make the handler async, add timeouts and a request ID in every response, and log each call as a trace."
+   },
+   {
+    "level": "Mid",
+    "q": "What is different about operating an LLM endpoint compared with a normal CRUD API?",
+    "a": "Latency is seconds, not milliseconds, and it varies with output length, so concurrency planning and streaming matter. Each call costs real money, so rate limits, quotas and caching are financial controls, not just protection. Outputs are non-deterministic and can be wrong without an error, so I need evals and quality monitoring, not only status codes. The input is an attack surface for prompt injection. And there is an upstream dependency with its own rate limits and outages, so I need retries with backoff, timeouts and ideally a fallback model."
+   },
+   {
+    "level": "Senior",
+    "q": "Design the failure handling for an LLM service whose provider has a partial outage.",
+    "a": "Detect it fast: alert on upstream error rate and p95 latency per provider and model. Contain it: timeouts per call, retries with jittered exponential backoff only on retryable errors, and a circuit breaker that stops hammering a failing upstream. Degrade gracefully: fail over to a second model or provider that has passed the same eval gate, serve cached answers for common questions, or return a clear 'try again' message with a request ID. Protect cost: retries count toward budgets. Afterwards, add the incident's traffic pattern to load tests and review whether the fallback model's quality was acceptable."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Concurrency and async / await - FastAPI docs",
+    "u": "https://fastapi.tiangolo.com/async/"
+   },
+   {
+    "t": "Custom Response - StreamingResponse - FastAPI docs",
+    "u": "https://fastapi.tiangolo.com/advanced/custom-response/"
+   },
+   {
+    "t": "Working with threads (default limiter of 40) - AnyIO docs",
+    "u": "https://anyio.readthedocs.io/en/stable/threads.html"
+   }
+  ]
+ },
+ {
+  "n": "12.2",
+  "analogy": "A container is like a packed lunchbox. Instead of hoping the school canteen has the right bread, you pack the sandwich, the napkin and the fork together, so lunch is the same wherever you eat it. The note from your parents saying which allergy you have is not glued inside the box; it is handed to the teacher separately (config and secrets from the environment). Where it breaks: a lunchbox is small, but people sometimes try to pack the whole fridge, like baking a 5 GB model into the image, and then every delivery becomes slow.",
+  "scale": {
+   "title": "Shipping a RAG service to 3 environments and 12 replicas, with versioned prompts",
+   "html": "<p>Assumptions (ours): dev, staging and prod; 12 prod replicas; app image about 200 MB on a slim Python base; model served separately (local qwen2.5:7b is 4.7 GB per <code>ollama list</code>, a hosted API in prod).</p>\n<ol>\n<li><strong>Keep weights out of the app image.</strong> Baked in, each prod deploy pulls 12 x 4.9 GB = 59 GB and every new replica waits minutes for it. Kept out, a deploy pulls 12 x 0.2 GB = 2.4 GB. Run the model as its own service (Ollama, vLLM) or call an API, and point at it with <code>MODEL_URL</code>.</li>\n<li><strong>Tag images by commit, never latest.</strong> <code>my-llm-app:3f9c2a1</code> means a rollback is \"run the previous tag\", and you can always say exactly what code served a bad answer.</li>\n<li><strong>Treat prompts as versioned artefacts.</strong> Store prompts as files in the repo. At build time compute <code>sha256(prompt)[:12]</code> and record it with a human name, e.g. <code>support_answer@v14 (a81f0c33d2e9)</code>. The env var <code>PROMPT_VERSION=v14</code> picks which one runs, so staging can test v15 while prod stays on v14 with the same image.</li>\n<li><strong>Stamp every trace.</strong> The OpenTelemetry GenAI conventions define <code>gen_ai.prompt.name</code> and <code>gen_ai.prompt.version</code> (status: Development), so each span says which prompt produced the answer (<a href=\"https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/client-inference.md\" target=\"_blank\" rel=\"noopener\">GenAI inference spans</a>).</li>\n<li><strong>Roll out in waves.</strong> With 25% surge, 3 replicas change at a time: 4 waves. If each new replica needs 90 s to pass its readiness check (assumption), the rollout takes about 6 minutes, and a bad health check stops it after 3 replicas, not 12.</li>\n<li><strong>Secrets stay outside.</strong> The API key is injected at run time from the platform's secret store; it is never in the Dockerfile, the image layers or git. GitHub secret scanning can flag known key formats if one slips into a push, but treat any committed key as leaked and rotate it.</li>\n</ol>"
+  },
+  "lab": {
+   "id": "08_llmops",
+   "look_for": "Look at the lab's versioned prompt registry: each prompt is identified by a content hash, and every trace line records which version ran. Edit one word of a prompt and rerun; the hash and the version stamped in the trace both change. The lab does not build a Docker image or deploy anything; those steps are the commands on this page."
+  },
+  "quiz": [
+   {
+    "q": "Your team bakes the system prompt into the Docker image as a string constant. Product wants to A/B test a new prompt in production next week. What is the better design?",
+    "options": [
+     {
+      "t": "Keep prompts as versioned files (with a content hash), select the version by config, and record the version on every trace.",
+      "correct": true,
+      "why": "Then the same image can serve v14 and v15 to different traffic slices, you can roll back by changing config, and every answer is traceable to the prompt that produced it."
+     },
+     {
+      "t": "Build a separate image for every prompt variant and tag them all latest.",
+      "correct": false,
+      "why": "Separate images can work, but 'latest' destroys traceability and rollback. Prompt selection by config is simpler."
+     },
+     {
+      "t": "Let product edit the prompt directly in the production container.",
+      "correct": false,
+      "why": "Hand edits in a running container are unreviewed, unversioned and lost on the next restart."
+     },
+     {
+      "t": "Store the prompt in an environment variable as free text with no version.",
+      "correct": false,
+      "why": "Config is the right channel, but without a version name or hash you cannot tell which prompt produced a given answer."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "Your Dockerfile has COPY . . before pip install -r requirements.txt. Every code change reinstalls all dependencies. Why, and how do you fix it?",
+    "a": "Docker caches layers in order; any change to a copied file invalidates that layer and all layers after it. With COPY . . first, editing main.py busts the pip install layer. Fix: COPY requirements.txt first, run pip install, then COPY the rest. Code changes now reuse the cached dependency layer, so builds take seconds. Also add a .dockerignore so .env, .git and data files never enter the build context."
+   },
+   {
+    "level": "Transfer",
+    "q": "Write the environment variables you would define for dev, staging and prod of a RAG service, and say which ones are secrets.",
+    "a": "MODEL (e.g. qwen2.5:7b in dev, a pinned hosted model ID in prod), MODEL_URL (local Ollama vs provider endpoint), PROMPT_VERSION, INDEX_URI (local DuckDB file vs managed vector store), LOG_LEVEL, OTEL_EXPORTER_OTLP_ENDPOINT (where traces go), RATE_LIMIT_PER_MIN, and API_KEY / DB_PASSWORD. Only the last two are secrets: inject them from a secret manager at run time, never commit them, and give each environment its own key so a dev leak cannot touch prod. Everything else is plain config and can live in a reviewed config file per environment."
+   },
+   {
+    "level": "Stretch",
+    "q": "A prod incident: answers got worse at 14:05. Image tag, prompt version and model ID are all in your traces. Write the investigation steps that use them, and what you would change if one of the three was missing.",
+    "a": "1) Group traces before and after 14:05 by (image tag, prompt version, model ID). 2) If one of them changed at 14:05, roll that one back first; that is why they are pinned. 3) If none changed, the cause is outside the release: data or index refresh, upstream model behaviour, or traffic mix, so compare retrieval scores and intents across the boundary. If the model ID was missing (for example you called an alias like a 'latest' model name), you could not rule out a silent upstream upgrade; the fix is to pin dated model IDs and log the response model the provider returns (gen_ai.response.model)."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "Why should configuration and secrets come from environment variables instead of the code?",
+    "a": "So the same build runs everywhere and no secret lives in version control. Code is identical across dev, staging and prod; only config differs, such as model name, database URL and log level. If those were hard-coded you would edit code per environment, which breaks reproducibility. Secrets are worse: a key committed to git is readable by anyone with repo access, forever, even after you delete the line. So secrets are injected at run time from a secret manager, .env files go in .gitignore, and a leaked key is rotated immediately."
+   },
+   {
+    "level": "Mid",
+    "q": "How do you manage prompt versions in a production LLM system?",
+    "a": "Prompts are code: they live in the repo as files and change through pull requests that run the eval gate. Each prompt has a name and a version, and I record a content hash so the version name cannot drift from the text. The running version is selected by config, which lets me canary a new prompt on a slice of traffic or roll back without a rebuild. Every trace records prompt name and version, so I can compare quality, cost and latency per version. Tools like Langfuse add a UI and labels such as production on top, but the principle is the same."
+   },
+   {
+    "level": "Senior",
+    "q": "What belongs in the container image and what does not, for an LLM service that uses a self-hosted model?",
+    "a": "The image holds code, pinned dependencies and the prompt files for that release: small, rebuilt often, tagged by commit. Model weights are large and change rarely, so they live in a model registry or object store and are served by a separate inference service (vLLM, TGI, Ollama) with its own scaling, GPU nodes and rollout. Secrets and per-environment config are injected at run time. State such as conversation memory and caches lives in backing stores. This split means a prompt fix ships in minutes, a model upgrade is its own controlled rollout, and app replicas start fast because they do not pull gigabytes."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Building best practices - Docker docs",
+    "u": "https://docs.docker.com/build/building/best-practices/"
+   },
+   {
+    "t": "The Twelve-Factor App: III. Config - 12factor.net",
+    "u": "https://12factor.net/config"
+   },
+   {
+    "t": "About secret scanning - GitHub Docs",
+    "u": "https://docs.github.com/en/code-security/secret-scanning/introduction/about-secret-scanning"
+   },
+   {
+    "t": "GenAI inference spans (gen_ai.prompt.version) - OpenTelemetry semantic-conventions-genai",
+    "u": "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/client-inference.md"
+   }
+  ]
+ },
+ {
+  "n": "12.3",
+  "analogy": "A school spelling test checks the same 50 words every week. If a new teaching trick helps you spell 'necessary' but makes you forget 'separate' and 'definitely', the test catches it before report-card day. The eval gate is that weekly test for your prompts: every change has to pass the whole list, not just the word you were fixing. Where it breaks: a spelling test has exact right answers, while many LLM answers are judged by a rubric or another model, and that judge can be wrong or noisy too.",
+  "scale": {
+   "title": "An eval gate on a 400-case golden set at 30 pull requests a day",
+   "html": "<p>Assumptions (ours): 400 golden cases; each answer uses 2,000 input and 300 output tokens on claude-sonnet-5-5 ($2 / $10 per million); an LLM judge on claude-haiku-5-5 (from $0.10 / $0.50) reads 2,500 tokens and writes 100 per case; 30 PRs a day touch prompts or retrieval. Prices: <a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\" target=\"_blank\" rel=\"noopener\">Anthropic models overview</a>.</p>\n<ol>\n<li><strong>Cost per CI run.</strong> Generation: 400 x ($0.004 + $0.003) = $2.80. Judge: 400 x ($0.00025 + $0.00005) = $0.12. About <strong>$2.92 a run</strong>, $88 a day, $2,600 a month. Cheap next to one bad release, but worth knowing. (The Batch API is half price but can take hours, so it suits the nightly full run, not a PR check.)</li>\n<li><strong>How noisy is the score?</strong> At 88% pass rate on 400 cases the standard error is sqrt(0.88 x 0.12 / 400) = 0.016, so a 95% interval is about <strong>+/- 3.2 points</strong>. A gate of \"block if the score drops more than 1 point\" will fail good PRs at random.</li>\n<li><strong>Gate on paired flips instead.</strong> Run baseline and candidate on the same 400 cases and count cases that went pass to fail versus fail to pass. If baseline-vs-baseline reruns flip about 6 cases from sampling alone (measure it), block when the candidate has more than, say, 12 pass-to-fail flips or more pass-to-fail than fail-to-pass flips. Tag each case with intent so a flip cluster in \"refunds\" is visible.</li>\n<li><strong>Determinism is not always available.</strong> Claude 4.7 and later accept only default sampling, and API version 2026-10-21 rejects <code>temperature</code> with a 400 (<a href=\"https://platform.claude.com/docs/en/api/migration-2026-10-21\" target=\"_blank\" rel=\"noopener\">Anthropic migration guide</a>). So pin dated model IDs, assert on structure, and estimate noise by reruns rather than relying on temperature 0.</li>\n<li><strong>Tie results to versions.</strong> The gate's report records prompt name and version, model ID and index version for both arms; that is the same <code>gen_ai.prompt.version</code> you stamp on production traces.</li>\n<li><strong>Split the suite.</strong> 100-case smoke set on every PR (about $0.73), full 400 plus adversarial cases nightly and before release.</li>\n</ol>"
+  },
+  "lab": {
+   "id": "06_evals",
+   "look_for": "The lab's regression gate compares two prompt versions per case and prints which cases flipped. Change one instruction in the candidate prompt and rerun: the per-case flip list, not the average, tells you what broke. Also run the baseline against itself twice to see how many flips come from sampling noise alone; that number is your gate's floor. The position-bias test shows why an LLM judge needs its own checks."
+  },
+  "quiz": [
+   {
+    "q": "Your golden set has 300 cases and the pass rate is 85%. A PR drops it to 83.7% (4 fewer passes). What should the gate do?",
+    "options": [
+     {
+      "t": "Look at the paired flips: which cases went pass-to-fail and fail-to-pass. A 1.3-point move on 300 cases is inside sampling noise, so the average alone cannot decide.",
+      "correct": true,
+      "why": "The standard error at 85% on 300 cases is about 2 points. Paired per-case comparison against a measured noise floor is the reliable signal."
+     },
+     {
+      "t": "Block it, any drop is a regression.",
+      "correct": false,
+      "why": "With non-deterministic outputs, some movement happens on reruns of the same prompt. Blocking on any drop makes the gate flaky and people learn to ignore it."
+     },
+     {
+      "t": "Pass it, small drops never matter.",
+      "correct": false,
+      "why": "If all 4 lost cases are in one high-risk intent, it matters a lot. Look at which cases moved."
+     },
+     {
+      "t": "Set temperature to 0 and rerun until it passes.",
+      "correct": false,
+      "why": "Rerunning until green is gaming the gate. And on Claude 4.7+ models you cannot set temperature at all."
+     }
+    ]
+   },
+   {
+    "q": "Why should the eval report record the prompt version, model ID and retrieval index version for both baseline and candidate?",
+    "options": [
+     {
+      "t": "So a score change can be attributed to exactly one changed component, and the same versions can be matched against production traces.",
+      "correct": true,
+      "why": "If two things changed at once you cannot tell which caused the regression. Versions make the comparison an experiment."
+     },
+     {
+      "t": "Because GitHub Actions requires it.",
+      "correct": false,
+      "why": "CI does not care; this is for your own ability to reason about results."
+     },
+     {
+      "t": "To make the report longer for auditors.",
+      "correct": false,
+      "why": "The point is attribution and reproducibility, not length."
+     },
+     {
+      "t": "It is only needed for fine-tuned models.",
+      "correct": false,
+      "why": "Prompt and index changes alter behaviour as much as weights do; every component that can change the answer needs a version."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "Compute the 95% confidence half-width for a 90% pass rate on a 200-case golden set, and say what that means for a gate threshold.",
+    "a": "SE = sqrt(0.9 x 0.1 / 200) = sqrt(0.00045) = 0.0212. Half-width = 1.96 x 0.0212 = 0.042, about +/- 4.2 points. A gate that blocks on a 2-point average drop would trigger on noise often. Either grow the set, gate on paired flips, or only block on larger drops while still reviewing the flip list."
+   },
+   {
+    "level": "Transfer",
+    "q": "Write the GitHub Actions trigger and job condition so the expensive eval job runs only when prompts, retrieval code or the golden set change, while unit tests run on every push.",
+    "a": "Use two jobs. The unit-test job runs on: [push, pull_request] with no path filter. The eval job lives in a workflow with on: pull_request: paths: ['prompts/**', 'app/retrieval/**', 'evals/golden/**', 'evals/*.py']. Its steps: checkout, install, run python eval.py --baseline main --candidate HEAD --max-pass-to-fail 12, and upload the per-case report as an artifact. Make that job a required status check on the main branch so a red eval blocks the merge. Path filters keep cost down without letting a prompt change skip the gate."
+   },
+   {
+    "level": "Stretch",
+    "q": "Your LLM judge is a smaller model than the system it grades. Describe how you would validate the judge before trusting it as a gate.",
+    "a": "Build a calibration set of a few hundred answers with human labels (pass/fail with the rubric). Measure the judge's agreement with humans (accuracy and Cohen's kappa), its false-pass rate on known-bad answers, and position bias by swapping A/B order in pairwise judgments and counting flips (the lab does this). Check length bias by comparing verdicts on padded versus concise correct answers. Only gate on rubric items where agreement is high; route low-agreement items to sampled human review. Recheck the judge whenever you change its prompt or model, because the judge is a component that can regress too."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What is an eval gate in CI for an LLM application?",
+    "a": "It is a CI step that runs the application against a fixed golden set of inputs with expected outputs or rubrics, scores the results, and fails the build if quality drops below an agreed bar. It exists because LLM regressions are silent: a prompt change can make answers worse without any error. The gate runs on every pull request that touches prompts, retrieval or model settings, so a regression shows up as a red build before it reaches users. Every production failure we fix is added to the golden set so it cannot come back."
+   },
+   {
+    "level": "Mid",
+    "q": "How do you deal with non-determinism when gating on LLM evals?",
+    "a": "First I measure it: rerun the baseline against itself and count how many cases flip. That gives a noise floor. Then I gate on paired comparisons, the same cases for baseline and candidate, counting pass-to-fail versus fail-to-pass flips, instead of comparing two noisy averages. I pin model IDs, assert on structure for deterministic checks, and where the provider allows it I lower sampling variance; on newer Claude models sampling parameters are fixed, so reruns are the tool. For close calls I run each case several times and use majority pass."
+   },
+   {
+    "level": "Senior",
+    "q": "A team says their golden set always passes but users keep finding regressions. What is wrong with their eval program and how do you fix it?",
+    "a": "The set has gone stale or was too easy. Likely causes: it was written once by engineers, it does not reflect current traffic, it is saturated (everything passes, so it has no power), and the judge is lenient. Fixes: sample real production traffic every week by intent and add hard cases, especially every incident and thumbs-down; keep a held-out slice the team cannot tune against; add adversarial and long-tail cases; validate the judge against human labels; and report per-intent scores. A healthy gate fails sometimes; if it never fails, it is not measuring anything."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Workflow syntax for GitHub Actions (on.paths) - GitHub Docs",
+    "u": "https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax"
+   },
+   {
+    "t": "Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena - arXiv",
+    "u": "https://arxiv.org/abs/2306.05685"
+   },
+   {
+    "t": "Migrating to API version 2026-10-21 (sampling parameters removed) - Anthropic",
+    "u": "https://platform.claude.com/docs/en/api/migration-2026-10-21"
+   },
+   {
+    "t": "Prompt management overview - Langfuse docs",
+    "u": "https://langfuse.com/docs/prompt-management/overview"
+   }
+  ]
+ },
+ {
+  "n": "12.4",
+  "analogy": "A doctor does not wait for you to collapse; she checks your pulse, temperature and blood pressure on every visit, and keeps your file so she can see what changed. Monitoring is that file for your AI service: every request leaves a record (a trace), the numbers are charted over time, and an alarm rings when one goes out of range. Where it breaks: a thermometer reads the same for everyone, but an LLM can sound perfectly healthy while giving wrong answers, so you also need checks of quality, not just of speed and errors.",
+  "scale": {
+   "title": "Tracing 2 million LLM requests a day with OpenTelemetry GenAI conventions",
+   "html": "<p>Facts: OpenTelemetry's GenAI semantic conventions are marked Development and now live in a dedicated repo (<a href=\"https://opentelemetry.io/docs/specs/semconv/gen-ai/\" target=\"_blank\" rel=\"noopener\">opentelemetry.io GenAI page</a>, <a href=\"https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/client-inference.md\" target=\"_blank\" rel=\"noopener\">inference spans</a>). An inference span is named <code>{gen_ai.operation.name} {gen_ai.request.model}</code> (e.g. <code>chat claude-sonnet-5-5</code>), with span kind CLIENT. Traffic and sizes below are our assumptions.</p>\n<ol>\n<li><strong>What each span carries.</strong> Required: <code>gen_ai.operation.name</code>, <code>gen_ai.provider.name</code>. Then <code>gen_ai.request.model</code>, <code>gen_ai.response.model</code>, <code>gen_ai.usage.input_tokens</code>, <code>gen_ai.usage.output_tokens</code>, <code>gen_ai.usage.cache_read.input_tokens</code>, <code>gen_ai.response.finish_reasons</code>, <code>gen_ai.response.time_to_first_chunk</code> for streams, and <code>gen_ai.prompt.version</code>. Prompt and completion text (<code>gen_ai.input.messages</code>, <code>gen_ai.output.messages</code>) are <strong>Opt-In</strong>, because they hold user data.</li>\n<li><strong>Volume.</strong> 2,000,000 requests x 5 spans (gateway, retrieval, model call, tool, guardrail) x about 1.5 KB of attributes = <strong>15 GB a day</strong> of metadata.</li>\n<li><strong>Content is the expensive part.</strong> At about 8 KB of prompt plus answer per request, capturing all of it adds 16 GB a day of sensitive text. Capture 10% at random plus 100% of errors and thumbs-down (say 2% of traffic): 0.12 x 16 GB = about 1.9 GB a day, with redaction before export.</li>\n<li><strong>Turn spans into alerts.</strong> Page on p95 TTFT and p95 total latency (not the mean), upstream error rate above 2% for 5 minutes, cost per request 30% above its 7-day baseline, and the share of <code>finish_reasons</code> equal to max tokens (answers being cut off).</li>\n<li><strong>Online quality.</strong> Judge a 1% sample: 20,000 a day x (2,000 in + 100 out on claude-haiku-5-5 at $0.10 / $0.50 per million) = 20,000 x $0.00025 = <strong>$5 a day</strong>. Trend the pass rate per intent and per prompt version.</li>\n<li><strong>Close the loop.</strong> Failed judgments and thumbs-down traces get triaged weekly; real failures go into the golden set from Lesson 12.3.</li>\n</ol>"
+  },
+  "lab": {
+   "id": "08_llmops",
+   "look_for": "Open labs/outputs/traces.jsonl. Each line is one span per request (no parent or child spans) with gen_ai.* style fields: operation, provider, request model, prompt name and version, usage tokens, plus latency, cache status and guard verdicts. Compare the names with the gen_ai.* attributes above. The lab writes local JSONL instead of exporting over OTLP to a collector, so there is no dashboard or alerting, and no parent-child timing to walk."
+  },
+  "quiz": [
+   {
+    "q": "Under the OpenTelemetry GenAI semantic conventions, why are gen_ai.input.messages and gen_ai.output.messages Opt-In rather than recorded by default?",
+    "options": [
+     {
+      "t": "They contain the actual prompts and answers, which can include personal or confidential data and are large, so capturing them is a deliberate privacy and cost decision.",
+      "correct": true,
+      "why": "Token counts, model and timing are safe metadata; full text is user data. You enable it on purpose, usually sampled and redacted."
+     },
+     {
+      "t": "Because OpenTelemetry cannot store strings.",
+      "correct": false,
+      "why": "Span attributes can be strings and structured values; the convention even shows JSON examples for these attributes."
+     },
+     {
+      "t": "Because the text is useless for debugging.",
+      "correct": false,
+      "why": "Text is very useful for debugging bad answers. That is why you capture a sample, not none."
+     },
+     {
+      "t": "Because providers forbid logging prompts.",
+      "correct": false,
+      "why": "The choice is yours and your users'; the convention makes it explicit so teams decide with privacy in mind."
+     }
+    ]
+   },
+   {
+    "q": "Mean latency is steady at 3 s but complaints rise. p95 went from 6 s to 19 s. What should you look at first in the traces?",
+    "options": [
+     {
+      "t": "The slow requests' span trees, grouped by model, prompt version, input token count and tool calls, to see which step and which kind of request got slow.",
+      "correct": true,
+      "why": "Tails usually come from a subset: long prompts, one tool timing out, retries, or one region. Traces show where time went for exactly those requests."
+     },
+     {
+      "t": "The overall average token count.",
+      "correct": false,
+      "why": "An average hides the tail just like mean latency does."
+     },
+     {
+      "t": "Nothing, the mean is fine so users are wrong.",
+      "correct": false,
+      "why": "Users feel the tail. A 19 s p95 means 1 in 20 requests is very slow."
+     },
+     {
+      "t": "The model's temperature setting.",
+      "correct": false,
+      "why": "Sampling settings do not explain a latency tail."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "Write the attribute set you would put on one model-call span for a RAG answer, using the GenAI conventions, and give example values.",
+    "a": "Span name 'chat claude-sonnet-5-5', kind CLIENT. gen_ai.operation.name='chat', gen_ai.provider.name='anthropic', gen_ai.request.model='claude-sonnet-5-5', gen_ai.response.model as returned, gen_ai.usage.input_tokens=7500, gen_ai.usage.cache_read.input_tokens=6000, gen_ai.usage.output_tokens=250, gen_ai.response.finish_reasons=['end_turn'], gen_ai.prompt.name='support_answer', gen_ai.prompt.version='v14'. Plus your own app attributes like tenant and request ID. Message content only if opted in and redacted."
+   },
+   {
+    "level": "Transfer",
+    "q": "Design three alerts for an LLM service and, for each, say what a page should prompt the on-call engineer to check first.",
+    "a": "1) p95 TTFT above 4 s for 10 minutes: check upstream provider status and rate-limit errors, then prompt token counts (did context grow?), then queueing in your own service. 2) Cost per request 30% above the 7-day baseline for an hour: check token counts by prompt version and feature, cache_read share (did prompt caching break?), and agent step counts (a loop?). 3) Online judge pass rate down 5 points on any intent over a day: check prompt or model version changes, index refresh time, and sample the failing traces. Each alert names a first action so the page is actionable."
+   },
+   {
+    "level": "Stretch",
+    "q": "You run a 5% canary of prompt v15 against v14. After a day, v14 has 9,500 judged samples at 91.0% pass, v15 judged 500 samples at 89.4% pass. Should you roll out v15?",
+    "a": "Not yet. The difference is 1.6 points. The SE of v15's rate is sqrt(0.894 x 0.106 / 500) = 0.0138, so its 95% interval is about 86.7% to 92.1%, which includes 91.0%. The data cannot tell them apart. Options: keep the canary running until v15 has a few thousand samples, raise the canary share, or compare per intent where the effect may be concentrated. Also check cost and latency per version from the same traces. Decide the rollout rule (e.g. no intent worse by more than 2 points with 95% confidence) before looking, so you are not choosing after the fact."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What would you log for every LLM request in production?",
+    "a": "A trace with a request ID, timestamps and duration for each step (retrieval, model call, tools), the model ID requested and returned, prompt name and version, input, cached and output token counts, the cost, the finish reason, and any error or guardrail verdict. I would follow the OpenTelemetry GenAI attribute names so tools can read it. Full prompt and answer text is sensitive, so I would capture it only for a sample and for failures, with personal data redacted. User feedback like thumbs-down gets attached to the same request ID."
+   },
+   {
+    "level": "Mid",
+    "q": "Offline evals pass, but production quality is dropping. How do you find out why?",
+    "a": "Offline evals only cover cases we thought of. I would check online signals first: judge pass rate on sampled traffic, thumbs-down and re-ask rates, broken down by intent, prompt version, model and tenant. Then I compare traffic mix this week versus last: new topics or languages show up as new intent clusters. I check data freshness, since an index refresh or a stale source changes retrieval. I read a sample of failing traces end to end to see whether retrieval or generation went wrong. Whatever I find becomes new golden-set cases."
+   },
+   {
+    "level": "Senior",
+    "q": "Design an LLM observability stack for a company with strict data-privacy rules.",
+    "a": "Instrument with OpenTelemetry using the GenAI conventions so we are not locked into one vendor, and export over OTLP to a collector we run. Metadata such as tokens, latency, model, prompt version and cost is collected for every request. Content capture is opt-in per feature, sampled, and passed through a redaction processor in the collector before storage, with short retention and access controls. Online evals run inside our boundary, with a self-hosted judge if needed. Dashboards and alerts are on tails, cost and judged quality per intent. Audit logs record who viewed raw traces. A DPIA (data protection impact assessment) covers what is kept and why."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Semantic conventions for generative AI systems - OpenTelemetry",
+    "u": "https://opentelemetry.io/docs/specs/semconv/gen-ai/"
+   },
+   {
+    "t": "GenAI client inference spans (attributes, Opt-In content) - OpenTelemetry semantic-conventions-genai",
+    "u": "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/client-inference.md"
+   },
+   {
+    "t": "Monitoring Distributed Systems - Google SRE Book",
+    "u": "https://sre.google/sre-book/monitoring-distributed-systems/"
+   }
+  ]
+ },
+ {
+  "n": "10.1",
+  "analogy": "Picture cutting a photo into a grid of small square stickers and describing each sticker with a short code. Now the picture is a list of codes, just like a sentence is a list of words, and the model can read both lists together. Where it breaks: when you cut a photo into stickers, tiny details that cross a sticker's edge, like small print, can get lost, which is one reason VLMs misread small text and miscount objects.",
+  "scale": {
+   "title": "Pricing photo triage for 80,000 insurance claims a day",
+   "html": "<p>Facts from <a href=\"https://platform.claude.com/docs/en/build-with-claude/vision\" target=\"_blank\" rel=\"noopener\">Anthropic vision docs</a>: Claude splits an image into 28 x 28-pixel patches, so it costs ceil(width / 28) x ceil(height / 28) visual tokens. Claude 4.7 and later models use a high-resolution tier: long edge up to 2,576 px and at most 4,784 visual tokens; bigger images are downscaled. Their example: a 1000 x 1000 image is 1,296 tokens. Traffic numbers are our assumptions.</p>\n<ol>\n<li><strong>Volume.</strong> 80,000 claims a day x 4 phone photos = 320,000 images, each 4032 x 3024 (12 MP).</li>\n<li><strong>Sent as-is.</strong> 4032 x 3024 is far over the limits, so each is downscaled to the cap: up to <strong>4,784 tokens</strong> per photo. 320,000 x 4,784 = 1.53 billion tokens a day. On claude-opus-5-5 at $4 per million input: <strong>$6,124 a day</strong>, before any text or output.</li>\n<li><strong>Resize first.</strong> Damage triage does not need 12 MP. Resize to 1092 x 819: ceil(1092/28) = 39, ceil(819/28) = 30, so 1,170 tokens. 320,000 x 1,170 = 374 million tokens, <strong>$1,498 a day</strong> on Opus 5.5. A 75% cut from one line of Pillow code, and lower latency because uploads are smaller.</li>\n<li><strong>Right-size the model.</strong> If an eval shows claude-haiku-5-5 (from $0.10 per million input, <a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\" target=\"_blank\" rel=\"noopener\">models overview</a>) meets your triage bar: 374M x $0.10/M = <strong>$37 a day</strong>.</li>\n<li><strong>Where not to downsample.</strong> Reading a licence plate or a VIN needs pixels. Crop that region at full resolution and send it as its own image instead of upscaling the whole photo.</li>\n<li><strong>Guard the known weaknesses.</strong> Ask neutral questions (\"list visible damage\") rather than leading ones (\"how bad is the dent on the door?\"), and send high-value or low-confidence claims to a human adjuster.</li>\n</ol>"
+  },
+  "lab": {
+   "id": "02_structured_output",
+   "look_for": "No local vision model is installed for this course, so no lab sends an image. The closest lab is the structured-output one, because the production use of a VLM is usually 'image in, validated JSON out': the same Pydantic schema passed as format, validation, and the business-rule check would wrap a VLM call. What it does not show: image tokens, resizing, or visual hallucination. To see those you would pull a small vision model (several GB) and pass an images list."
+  },
+  "quiz": [
+   {
+    "q": "Under Claude's documented patch rule, how many visual tokens does a 560 x 280 pixel image cost (it is under every resize limit)?",
+    "options": [
+     {
+      "t": "200: ceil(560/28) x ceil(280/28) = 20 x 10.",
+      "correct": true,
+      "why": "Each 28 x 28 patch is one visual token; small images are not resized."
+     },
+     {
+      "t": "156,800, one token per pixel.",
+      "correct": false,
+      "why": "Models work on patches, not pixels. Per-pixel tokens would make every image unaffordable."
+     },
+     {
+      "t": "1, one token per image.",
+      "correct": false,
+      "why": "An image is many tokens; that is why images are expensive in context."
+     },
+     {
+      "t": "It depends only on the file size in KB.",
+      "correct": false,
+      "why": "Cost depends on pixel dimensions after any resizing, not on compression. A heavily compressed JPEG of the same size costs the same tokens."
+     }
+    ]
+   },
+   {
+    "q": "A user uploads a photo of a living room and asks 'what breed is the dog?'. There is no dog. What is the most likely VLM failure and the best mitigation?",
+    "options": [
+     {
+      "t": "The model may invent a dog and a breed because the question presupposes one; ask a neutral question first ('list the animals you see') and only then ask about them.",
+      "correct": true,
+      "why": "Leading questions push VLMs into visual hallucination. A neutral first pass grounds the follow-up."
+     },
+     {
+      "t": "The model will refuse, so nothing can go wrong.",
+      "correct": false,
+      "why": "VLMs often answer confidently instead of refusing, especially when the question assumes the object exists."
+     },
+     {
+      "t": "Use a higher resolution so the model can see the dog.",
+      "correct": false,
+      "why": "There is no dog to see. Resolution does not fix a false premise."
+     },
+     {
+      "t": "Lower the temperature so the model is more accurate.",
+      "correct": false,
+      "why": "Lower randomness does not remove a false premise, and newer Claude models do not accept a temperature setting anyway."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "Compute visual tokens on Claude for a 1456 x 812 screenshot (under the limits), and its input cost per 10,000 screenshots on claude-sonnet-5-5 ($2 per million).",
+    "a": "ceil(1456/28) = 52, ceil(812/28) = 29, so 52 x 29 = 1,508 tokens. 10,000 x 1,508 = 15.08M tokens x $2/M = $30.16. Add your text prompt and output on top."
+   },
+   {
+    "level": "Transfer",
+    "q": "A support-ticket feature attaches full-page browser screenshots (2560 x 1440) and asks the VLM what error the user sees. Costs are high and the model sometimes reads the wrong error from a sidebar. Propose two changes.",
+    "a": "1) Crop: detect the dialog or main content region (or ask the user to crop) and send only that, which cuts tokens and removes distracting sidebars that cause wrong reads. 2) Combine with text: run OCR on the crop and include the extracted text in the prompt, then ask the VLM to answer using both and to quote the error text it relied on. If its quote does not appear in the OCR text, flag the answer. The why: fewer pixels on irrelevant regions means less cost and fewer chances to attend to the wrong thing, and OCR gives an exact-text check."
+   },
+   {
+    "level": "Stretch",
+    "q": "Design an eval for a VLM that counts items on retail shelf photos. What metrics and slices, and how do you decide whether it is good enough to replace manual counts?",
+    "a": "Golden set: a few hundred shelf photos with human counts per product, covering lighting, angle, occlusion and crowded shelves. Metrics: mean absolute error per product, the share of counts within +/-1, and the share with large errors (off by 5 or more), because a few big misses drive stock-outs. Slice by number of items (VLMs degrade as counts rise), occlusion and image quality. Compare with the current manual process's own error rate, measured on the same photos. Decide in advance: e.g. replace manual counts only for shelves with 10 or fewer items where the error is within +/-1 at least 95% of the time, and keep humans or a detection model for the rest."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "How does a vision-language model take an image as input?",
+    "a": "The image is split into small square patches. A vision encoder, usually a vision transformer, turns each patch into a vector, and a projection layer maps those vectors into the same space as the language model's token embeddings. The resulting image tokens sit in the context window next to the text tokens, and the language model attends over both. That is why images cost tokens: for example Claude counts one visual token per 28 x 28-pixel patch, so a 1000 x 1000 image is 1,296 tokens."
+   },
+   {
+    "level": "Mid",
+    "q": "When would you use a VLM, and when a classic computer-vision model, for an image task?",
+    "a": "A VLM is great when the task is open-ended or changes often, the labels are expressed in language, volume is moderate, and a few seconds of latency is fine: describing damage, answering questions about screenshots, reading a varied form. A classic model, like a trained detector or classifier, wins when the task is fixed and narrow, volume is huge, latency must be milliseconds, or precise localisation and counting matter: defect detection on a production line, counting items. Often the best system uses both: a detector finds regions and a VLM reasons about the crops."
+   },
+   {
+    "level": "Senior",
+    "q": "How would you control cost and reliability for a VLM feature processing millions of images a month?",
+    "a": "Cost: resize to the smallest resolution that passes the eval, crop to regions of interest, route easy images to a cheaper model, cache results by image hash, and use batch processing for anything offline. Reliability: schema-constrained outputs with validation and retries, neutral prompts to reduce hallucination, cross-checks such as OCR for exact text, and confidence routing to humans for high-stakes cases. Measure per-slice accuracy on a golden set, monitor online with sampled human review, and track tokens per image because a client sending larger photos silently raises the bill."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Vision (patch-based token cost, resolution tiers) - Anthropic",
+    "u": "https://platform.claude.com/docs/en/build-with-claude/vision"
+   },
+   {
+    "t": "Visual Instruction Tuning (LLaVA) - arXiv",
+    "u": "https://arxiv.org/abs/2304.08485"
+   },
+   {
+    "t": "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale (ViT) - arXiv",
+    "u": "https://arxiv.org/abs/2010.11929"
+   },
+   {
+    "t": "Vision - Ollama docs",
+    "u": "https://docs.ollama.com/capabilities/vision"
+   }
+  ]
+ },
+ {
+  "n": "10.2",
+  "analogy": "OCR is like a friend who reads out every word on a receipt in order, perfectly, but has no idea which number is the total. A VLM is like a friend who glances at the receipt and says 'the total is 42 dollars', but might misread a digit. You want both friends: one to understand, one to double-check the exact characters. Where it breaks: friends can disagree and both be wrong, so for money you still need a sum check or a human.",
+  "scale": {
+   "title": "Extracting fields from 1.2 million invoices a year for an accounts-payable team",
+   "html": "<p>Assumptions (ours): 1.2M invoices a year over 250 working days, 2 pages each, rendered at 1000 x 1400 px. Token rule from <a href=\"https://platform.claude.com/docs/en/build-with-claude/vision\" target=\"_blank\" rel=\"noopener\">Anthropic vision docs</a>: ceil(w/28) x ceil(h/28). Prices: claude-sonnet-5-5 $2 / $10 per million (<a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\" target=\"_blank\" rel=\"noopener\">models overview</a>); Batch API 50% off (<a href=\"https://platform.claude.com/docs/en/build-with-claude/batch-processing\" target=\"_blank\" rel=\"noopener\">batch docs</a>).</p>\n<ol>\n<li><strong>Daily volume.</strong> 1,200,000 / 250 = <strong>4,800 invoices a day</strong>.</li>\n<li><strong>Tokens per invoice.</strong> Per page: ceil(1000/28) x ceil(1400/28) = 36 x 50 = 1,800 tokens. Two pages: 3,600. Add a 600-token instruction and schema: 4,200 input. Output JSON with line items: 300 tokens.</li>\n<li><strong>Model cost.</strong> 4,200 x $2/M + 300 x $10/M = $0.0084 + $0.003 = $0.0114 an invoice. 4,800 x $0.0114 = $54.72 a day, <strong>$13,680 a year</strong>. Invoices are not interactive, so batch them overnight: <strong>$6,840 a year</strong>.</li>\n<li><strong>Checks before payment.</strong> (a) Schema validation, (b) the sum of line items plus tax equals the total, (c) OCR digits agree with the VLM on total and bank account, (d) vendor exists in the vendor master. Anything failing goes to a person.</li>\n<li><strong>The real cost is people.</strong> If 6% fail a check (assumption): 288 reviews a day x 1.5 minutes = 7.2 hours, about <strong>one full-time reviewer</strong>, which costs more than the model. Cutting the false-flag rate from 6% to 3% saves half a person; cutting tokens by 20% saves about $1,400 a year.</li>\n<li><strong>Measure field-level accuracy.</strong> On a 500-invoice golden set, report accuracy per field and per vendor layout, after normalising (4210 = 4210.00; dates to ISO). A 99% total but 85% due-date score tells you where to work.</li>\n</ol>"
+  },
+  "lab": {
+   "id": "02_structured_output",
+   "look_for": "No local vision model is installed for this course, so no lab sends an image. This lab is the second half of document AI: messy text in, a Pydantic schema passed to Ollama as format, validation, and a business-rule check with retry (which did not need to fire on our 8 emails). Invoice extraction fails in the same ways. It does not do OCR or read images. To try OCR locally, Tesseract is free, and its output text can be fed into this lab's pipeline as the 'email'."
+  },
+  "quiz": [
+   {
+    "q": "An extractor returns valid JSON: total 1,240.00, and line items that sum to 1,420.00. Schema validation passes. What should happen?",
+    "options": [
+     {
+      "t": "Flag it for review: the arithmetic check failed, so at least one number was misread.",
+      "correct": true,
+      "why": "Valid shape is not correct content. Cross-field checks like sums catch digit swaps that a schema cannot."
+     },
+     {
+      "t": "Pay 1,240.00, since the total field is what the schema asked for.",
+      "correct": false,
+      "why": "The two numbers disagree; paying either one without checking risks real money."
+     },
+     {
+      "t": "Pay 1,420.00, since line items are more reliable than totals.",
+      "correct": false,
+      "why": "Either could be the misread. You cannot pick one without evidence."
+     },
+     {
+      "t": "Retry with a higher temperature until the numbers match.",
+      "correct": false,
+      "why": "Rerolling until numbers agree can produce a consistent but wrong pair. Use an independent check (OCR, human)."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "How many Claude visual tokens is an A4 page scanned at 150 DPI (1240 x 1754 px)? Is it under the high-resolution tier limits?",
+    "a": "ceil(1240/28) = 45 (44.3 rounds up), ceil(1754/28) = 63 (62.6 rounds up), so 45 x 63 = 2,835 tokens. The long edge 1754 is under 2,576 px and 2,835 is under 4,784 tokens, so it is not resized on Claude 4.7+ models. On older standard-tier models (max 1,568 tokens) it would be downscaled, which can make small print harder to read."
+   },
+   {
+    "level": "Transfer",
+    "q": "Your golden set shows 99.2% accuracy on total, 97% on vendor, but 81% on due_date. List likely causes and fixes.",
+    "a": "Causes: date formats differ by country (03/04 is March 4 or April 3), invoices print several dates (issue, delivery, due), and some give terms ('Net 30') instead of a date. Fixes: ask for the raw date string and the format you think it is, then normalise in code using the vendor's country; ask for due_date only when explicitly labelled and otherwise compute it from issue_date plus payment terms; add per-vendor hints for the worst layouts. Re-measure per vendor. The general point: break accuracy down by field, then fix the field-specific cause."
+   },
+   {
+    "level": "Stretch",
+    "q": "Design the confidence routing for invoice auto-pay so that fewer than 1 in 10,000 paid invoices has a wrong amount, while keeping human review under 5%. What do you need to measure to know you hit it?",
+    "a": "Route an invoice to auto-pay only if all independent checks agree: VLM total equals OCR total, line items sum to the total, the amount is within the vendor's historical range, and the bank account matches the vendor master. Everything else goes to review. To prove the 1-in-10,000 target you need a big audited sample: with zero errors observed, the rule of three says you need about 30,000 audited auto-paid invoices to claim the error rate is below 1 in 10,000 at 95% confidence. Measure review rate weekly, and the error rate on a random audit of auto-paid invoices. If review exceeds 5%, find which check fires most and improve that reader, not the threshold."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What is the difference between OCR and document AI?",
+    "a": "OCR turns pixels into text: it finds characters and words and where they are, but it does not know what they mean. Document AI goes further and turns a document into structured fields, like vendor, total and due date, by understanding layout and context. Classic document AI was OCR plus rules per layout. Today a VLM can read the page and return JSON directly. In production you often use both: the VLM for structure and OCR to double-check exact digits."
+   },
+   {
+    "level": "Mid",
+    "q": "How would you evaluate an invoice extraction system?",
+    "a": "Build a golden set of real invoices with hand-verified fields, covering many vendors and layouts. Measure exact-match accuracy per field after normalising formats, and break it down by vendor and document quality. Separate errors by cost: a missing field flagged for review is cheap, a confident wrong amount is expensive, so I track the wrong-and-not-flagged rate separately. I also measure review rate and time per review, because that is the operating cost. Every production correction goes back into the golden set."
+   },
+   {
+    "level": "Senior",
+    "q": "Your company processes 50 document types from thousands of vendors. Would you fine-tune a document model or use a general VLM with prompts? How do you decide?",
+    "a": "Start with a general VLM plus schemas, because it covers the long tail of layouts with no training and lets us ship and collect labelled data fast. Measure per document type. For the few types with very high volume, a stable layout and accuracy or cost problems, a fine-tuned smaller model or a specialised extractor may beat the general model on cost and latency. The decision is per type, using the eval: accuracy, cost per document, latency and review rate. Corrections from human review are the training data, so the system can move types to cheaper models as evidence accumulates."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Vision (image token cost) - Anthropic",
+    "u": "https://platform.claude.com/docs/en/build-with-claude/vision"
+   },
+   {
+    "t": "PDF support - Anthropic",
+    "u": "https://platform.claude.com/docs/en/build-with-claude/pdf-support"
+   },
+   {
+    "t": "Structured outputs - Ollama docs",
+    "u": "https://docs.ollama.com/capabilities/structured-outputs"
+   },
+   {
+    "t": "Tesseract OCR documentation",
+    "u": "https://tesseract-ocr.github.io/"
+   }
+  ]
+ },
+ {
+  "n": "10.3",
+  "analogy": "A voice assistant is like a relay race with three runners: the first listens and writes down what you said (speech-to-text), the second thinks of an answer (the LLM), and the third reads it out loud (text-to-speech). If any runner is slow, the whole team is slow, and if the first runner writes down the wrong word, the others carry the mistake to the finish line. Where it breaks: in a real relay each runner waits for the baton, but good voice systems let the runners overlap, starting to speak before the answer is fully written.",
+  "scale": {
+   "title": "Call analytics for 20,000 calls a day, and a 1-second voice-agent budget",
+   "html": "<p>All volumes, speeds and latencies below are our assumptions or round illustrative numbers; measure your own hardware. Prices: claude-haiku-5-5 from $0.10 / $0.50 per million (<a href=\"https://platform.claude.com/docs/en/about-claude/models/overview\" target=\"_blank\" rel=\"noopener\">models overview</a>).</p>\n<p><strong>Part A, batch analytics.</strong></p>\n<ol>\n<li><strong>Audio volume.</strong> 20,000 calls x 6 minutes = 120,000 minutes = <strong>2,000 hours of audio a day</strong>.</li>\n<li><strong>Transcription compute.</strong> If a Whisper-family model on one GPU runs at 50x real time (illustrative; faster-whisper's benchmarks are a good place to start), that is 2,000 / 50 = 40 GPU-hours a day, about <strong>2 GPUs running around the clock</strong>.</li>\n<li><strong>LLM cost.</strong> 6 minutes x 150 words a minute = 900 words, about 1,200 tokens, plus a 300-token prompt: 1,500 in, 200 out. 1,500 x $0.10/M + 200 x $0.50/M = $0.00025 a call, so 20,000 calls = <strong>$5 a day</strong>.</li>\n<li><strong>Lesson.</strong> Here the speech model, not the LLM, is the cost and capacity driver. Optimise STT first: model size, voice activity detection to skip silence, batching.</li>\n</ol>\n<p><strong>Part B, real-time agent.</strong> Target: reply audio starts within 1.0 s of the user stopping.</p>\n<ol>\n<li><strong>Budget.</strong> End-of-speech detection 300 ms + final transcript 150 ms + LLM TTFT 350 ms + first clause of 8 tokens at 50 tokens/s = 160 ms + TTS first audio 150 ms = <strong>1,110 ms</strong>. Over by 110 ms.</li>\n<li><strong>Cuts.</strong> Prompt-cache the system prompt to lower TTFT; stream partial transcripts so the LLM starts on the near-final text; start TTS on the first clause, not the full sentence. Shortening end-of-speech detection is the riskiest cut, because it makes the agent interrupt slow speakers.</li>\n</ol>"
+  },
+  "lab": {
+   "id": "01_generate_and_sample",
+   "look_for": "No lab processes audio (no speech model is installed). The closest is the generation lab, because the middle stage of every voice pipeline is an LLM call and its TTFT and tokens/sec are the numbers in the latency budget. Note the lab's TTFT and tokens/sec for qwen2.5:7b on your machine, then compute how long the first 8-token clause would take; that is your LLM slice of the budget. If you want the audio halves, faster-whisper and a local TTS install with pip, but they are not part of this course's verified labs."
+  },
+  "quiz": [
+   {
+    "q": "A meeting-notes product transcribes 1-hour recordings and summarises them overnight. Users complain summaries get names and numbers wrong. Where should you spend effort first?",
+    "options": [
+     {
+      "t": "Transcription quality: a larger STT model, a vocabulary or prompt with names and jargon, and checking the transcript itself against a few reference recordings.",
+      "correct": true,
+      "why": "The LLM only sees the transcript. Wrong names and numbers usually enter at STT; measure word error rate on a reference set first."
+     },
+     {
+      "t": "A bigger LLM for the summary.",
+      "correct": false,
+      "why": "A stronger LLM cannot recover words that were mistranscribed; it will summarise the wrong ones fluently."
+     },
+     {
+      "t": "Streaming the summary to the user.",
+      "correct": false,
+      "why": "Latency is not the problem in an overnight batch job; accuracy is."
+     },
+     {
+      "t": "A faster TTS voice.",
+      "correct": false,
+      "why": "There is no speech output in this product, and TTS does not affect what the summary says."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "A call centre records 3,000 hours of audio a day. If your STT setup processes audio at 30x real time per GPU, how many GPUs run around the clock?",
+    "a": "3,000 / 30 = 100 GPU-hours a day. 100 / 24 = 4.2, so 5 GPUs, with a sixth for headroom and failover. If you can run overnight only (say 10 hours), you need 100 / 10 = 10 GPUs, so the schedule is a capacity lever too."
+   },
+   {
+    "level": "Transfer",
+    "q": "Design the evaluation for the transcription stage of a call-analytics system in Indian English and Hindi code-mixed speech.",
+    "a": "Build a reference set of a few hours of real calls, with human transcripts, covering accents, code-mixing, background noise and phone-line quality. Measure word error rate overall and per slice, plus a targeted metric for what the business needs: accuracy on names, numbers, product terms and Hindi words written in Latin script. Compare two or three model sizes and settings (language hint off vs on, a vocabulary prompt). Then measure the downstream effect: run the LLM classifier on human versus machine transcripts and compare labels. If downstream labels barely change, a cheaper STT model may be fine."
+   },
+   {
+    "level": "Stretch",
+    "q": "Your voice agent's p50 response start is 0.9 s but p95 is 2.8 s. Name three likely contributors and how you would find out which dominates.",
+    "a": "Likely contributors: LLM TTFT tails (provider queueing, long prompts in long calls as history grows), end-of-speech detection waiting on hesitant speakers, and tool calls inserted before the reply (a CRM lookup). To find out, trace every turn with spans per stage (VAD end, STT final, LLM first token, TTS first audio, any tool span) and compare the span breakdown of p95 turns against p50 turns. Whichever stage grows most in the tail is the target: trim history for long calls, speak a filler phrase while a tool runs, or tune VAD per channel."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "How would you build a free meeting-summary tool from a recording?",
+    "a": "Record or upload the audio, transcribe it with an open speech-to-text model such as Whisper running locally, then send the transcript to an LLM with a prompt asking for a summary, decisions and action items with owners. If the meeting is long, I would split the transcript into chunks, summarise each, then summarise the summaries. I would show the transcript alongside the summary so users can check names and numbers, because transcription errors flow straight into the summary."
+   },
+   {
+    "level": "Mid",
+    "q": "What is speaker diarization and when do you need it?",
+    "a": "Diarization answers 'who spoke when': it splits the audio into segments and assigns each to a speaker label. Plain speech-to-text gives you words but not who said them. You need diarization when the speaker matters: action items with owners in meetings, separating agent from customer in call analytics, or compliance checks on what the agent said. It is a separate model step with its own errors, especially on overlapping speech, so I evaluate it separately, for example by checking speaker labels on a reference set."
+   },
+   {
+    "level": "Senior",
+    "q": "Would you build a voice agent as STT, then LLM, then TTS, or use an end-to-end speech model? What drives the choice?",
+    "a": "The pipeline is modular: I can pick the best STT for my languages, any LLM with tools and RAG, and a TTS voice, and I can evaluate and log each stage, including the transcript, which helps compliance and debugging. Its cost is latency and lost prosody, since three hops add delay and the LLM never hears tone. End-to-end speech models cut latency and sound more natural, but are harder to ground, test, guard and audit, and there are fewer choices. For regulated or tool-heavy agents I would start with the pipeline and stream every stage; for casual conversation where latency and naturalness dominate, I would evaluate an end-to-end model."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Robust Speech Recognition via Large-Scale Weak Supervision (Whisper) - arXiv",
+    "u": "https://arxiv.org/abs/2212.04356"
+   },
+   {
+    "t": "openai/whisper - GitHub",
+    "u": "https://github.com/openai/whisper"
+   },
+   {
+    "t": "faster-whisper (CTranslate2 Whisper, benchmarks) - GitHub",
+    "u": "https://github.com/SYSTRAN/faster-whisper"
+   }
+  ]
+ },
+ {
+  "n": "10.4",
+  "analogy": "Imagine a giant map where every picture and every sentence gets a pin. Pictures of red shoes and the words 'red running shoe' get pinned close together, while 'blue sofa' is pinned far away. To search, you pin your question and look at the nearest pins. Where it breaks: the map has room for the gist, not the fine print, so a pin cannot tell you a shoe's price or model number unless that information is also written in text somewhere.",
+  "scale": {
+   "title": "Search over a 2-million-image product catalogue",
+   "html": "<p>Facts: the open <code>clip-ViT-B-32</code> model in sentence-transformers produces 512-dimensional vectors (its config's projection_dim). Image tokens follow the 28 x 28 patch rule in <a href=\"https://platform.claude.com/docs/en/build-with-claude/vision\" target=\"_blank\" rel=\"noopener\">Anthropic vision docs</a>; Batch API 50% off per <a href=\"https://platform.claude.com/docs/en/build-with-claude/batch-processing\" target=\"_blank\" rel=\"noopener\">batch docs</a>. The catalogue size and image sizes are our assumptions.</p>\n<ol>\n<li><strong>CLIP index size.</strong> 2,000,000 images x 512 dims x 4 bytes (float32) = 4.1 GB; at float16 about 2.0 GB. One CPU machine holds it in RAM.</li>\n<li><strong>Caption-then-embed cost.</strong> Caption each 800 x 800 product photo with claude-haiku-5-5: ceil(800/28)^2 = 29 x 29 = 841 image tokens + 100 prompt = 941 input, 80 output. 941 x $0.10/M + 80 x $0.50/M = $0.000134 an image. 2M images = <strong>$268</strong>, or <strong>$134</strong> through the Batch API. A one-off cost, re-run only for new or changed products.</li>\n<li><strong>Caption index size.</strong> MiniLM caption vectors at 384 dims: 2M x 384 x 4 bytes = 3.1 GB.</li>\n<li><strong>Query path.</strong> Embed the query with CLIP's text encoder and with MiniLM, take top-50 from each index (FAISS or a vector database), fuse with reciprocal rank fusion as in Track 3, then pass the top 5 images plus their captions to a VLM to answer and show the images as citations.</li>\n<li><strong>Eval before choosing.</strong> 300 real queries with known-correct products. Measure recall@10 for CLIP only, captions only, and fused. Visual queries (\"curved velvet sofa\") tend to favour CLIP; attribute queries (\"walnut, 180 cm, in stock\") favour captions and metadata filters. Let the numbers pick the blend.</li>\n<li><strong>Scanned documents are different.</strong> For page images full of text, models like ColPali embed page patches with a VLM and match query tokens against them, which often beats a single CLIP vector; evaluate it if your corpus is PDFs, not photos.</li>\n</ol>"
+  },
+  "lab": {
+   "id": "03_rag_local",
+   "look_for": "No lab embeds images (CLIP and a VLM are not part of the verified local stack). The RAG lab is the same pipeline with text: chunk, embed with MiniLM, search in DuckDB and FAISS, fuse BM25 and vector results with RRF, cite [doc-id]s and refuse below a score threshold. Watch how RRF merges the two ranked lists; in multimodal RAG one list would come from CLIP image vectors and the other from caption text. To try CLIP itself, load the sentence-transformers clip-ViT-B-32 model (check free disk first; it is a separate download)."
+  },
+  "quiz": [
+   {
+    "q": "Users search a furniture catalogue for 'SKU 4471-B oak'. CLIP-only retrieval returns visually similar oak chairs but not the exact product. Why, and what fixes it?",
+    "options": [
+     {
+      "t": "A CLIP vector captures visual gist, not exact codes; add keyword or metadata search over SKUs and captions and fuse it with CLIP results.",
+      "correct": true,
+      "why": "Exact identifiers need lexical matching. Hybrid retrieval (CLIP plus BM25 or a filter) handles both visual and exact queries."
+     },
+     {
+      "t": "CLIP is broken and should be retrained.",
+      "correct": false,
+      "why": "It is doing its job: matching appearance. SKUs are not visual."
+     },
+     {
+      "t": "Increase top-k to 1,000.",
+      "correct": false,
+      "why": "The product might not rank in the top 1,000 by visual similarity, and the VLM cannot use that many images anyway."
+     },
+     {
+      "t": "Caption every image with a longer description.",
+      "correct": false,
+      "why": "Captions help only if they contain the SKU, which comes from your product database, not from the photo. Metadata search is the direct fix."
+     }
+    ]
+   }
+  ],
+  "exercises": [
+   {
+    "level": "Warm-up",
+    "q": "How much RAM does a float32 CLIP ViT-B/32 index of 500,000 images need, and how much at int8?",
+    "a": "500,000 x 512 x 4 bytes = 1.02 GB at float32. int8 is 1 byte a dimension: 256 MB (plus small overhead for scales), usually with a small recall loss you should measure."
+   },
+   {
+    "level": "Transfer",
+    "q": "Your multimodal RAG answers questions about a technical manual with diagrams. The VLM's answer cites a diagram, but engineers say the answer is not supported by it. How do you measure and reduce this?",
+    "a": "Measure faithfulness separately from retrieval: for a sample of answers, ask a judge (validated against human labels) whether every claim is supported by the retrieved images and text, and log unsupported claims. Reduce it by asking the VLM to quote or describe the specific diagram element it relied on before answering, sending the diagram at enough resolution to read its labels, including the diagram's caption and nearby text as context, and refusing when retrieval scores are low. Track faithfulness per prompt version so changes are checked."
+   },
+   {
+    "level": "Stretch",
+    "q": "You must choose between CLIP embeddings and caption-then-embed for a 10-million-photo real-estate archive, and you have budget for only one in year one. Lay out the decision with costs and an experiment.",
+    "a": "Costs: CLIP is a local GPU or CPU embedding pass, no per-image API fee; the index is 10M x 512 x 4 bytes = 20.5 GB float32 (10 GB float16). Captioning at the $0.000134 per image computed for 800 x 800 photos is about $1,340 through the normal API or $670 batched, plus a 384-dim caption index of 15.4 GB. Neither is expensive, so the choice is about quality. Experiment: 1,000 photos, 200 real buyer queries ('sunny kitchen with island', '3 bedrooms near park'), recall@10 for each. Visual queries favour CLIP; factual ones (bedrooms, location) belong in structured metadata filters anyway. Pick the one that wins on visual queries, and plan to add the other later as a hybrid."
+   }
+  ],
+  "interview": [
+   {
+    "level": "Junior",
+    "q": "What is CLIP and why is it useful for retrieval?",
+    "a": "CLIP is a model trained on image-caption pairs so that an image and a matching caption end up close together in the same vector space. It has an image encoder and a text encoder. For retrieval, you embed all your images once, then embed a text query and find the nearest image vectors by cosine similarity. That gives you search by appearance, like 'red running shoe', even when no caption contains those words."
+   },
+   {
+    "level": "Mid",
+    "q": "Compare CLIP-style shared embeddings with caption-then-embed for multimodal RAG.",
+    "a": "Shared embeddings match on appearance directly, need no per-image LLM pass, and are cheap to index at scale, but one vector misses fine detail and cannot search non-visual facts. Caption-then-embed turns images into text with a VLM, so it plugs into an existing text RAG stack and can search details the caption spells out; it costs a captioning pass and loses anything the caption omits. Many systems use both and fuse rankings, plus metadata filters for exact attributes. I decide with recall@k on real queries."
+   },
+   {
+    "level": "Senior",
+    "q": "Design multimodal RAG for 5 million scanned insurance documents with tables, stamps and handwriting.",
+    "a": "Ingestion: render pages to images, run OCR for text and layout, and use a VLM to extract structured fields and describe stamps, signatures and tables. Index three ways: OCR text with BM25 for exact terms, dense text embeddings for meaning, and page-image embeddings (a ColPali-style late-interaction model) for layout-heavy pages; fuse with RRF and filter by metadata such as policy number and date. Generation: pass the top pages as images plus OCR text to a VLM, require page citations, and refuse on low scores. Evaluate retrieval recall and answer faithfulness per document type, enforce access control at retrieval, and batch the ingestion for cost."
+   }
+  ],
+  "sources": [
+   {
+    "t": "Learning Transferable Visual Models From Natural Language Supervision (CLIP) - arXiv",
+    "u": "https://arxiv.org/abs/2103.00020"
+   },
+   {
+    "t": "Image Search with CLIP - Sentence Transformers docs",
+    "u": "https://sbert.net/examples/sentence_transformer/applications/image-search/README.html"
+   },
+   {
+    "t": "ColPali: Efficient Document Retrieval with Vision Language Models - arXiv",
+    "u": "https://arxiv.org/abs/2407.01449"
+   },
+   {
+    "t": "Vision (image token cost) - Anthropic",
+    "u": "https://platform.claude.com/docs/en/build-with-claude/vision"
+   }
+  ]
+ }
+]

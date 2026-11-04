@@ -12,6 +12,37 @@
 
   <span class="eyebrow">Track 1 · Lesson 1.4</span>
   <h1>Context windows &amp; attention</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>The context window is everything the model can see at one time.</p>
+    <p>Your instructions, the chat so far, any pasted documents and the model's own answer all share it.</p>
+    <p>It is measured in tokens: from about 8,000 on small models up to 1 million on today's largest.</p>
+    <p>Anything outside the window does not exist for the model.</p>
+    <p>Attention is how the model picks which earlier tokens matter, such as linking "it" back to "the dog".</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>The context window is like the desk you study at. You can only work with the pages spread on the desk; anything still in the cupboard does not exist for you right now, and a bigger desk lets you spread out more pages. Attention is your eyes jumping between pages to connect 'it' on page 3 with 'the dog' on page 1.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The desk surface</td><td>The context window: a fixed number of tokens</td></tr>
+      <tr><td>Pages spread on the desk</td><td>System prompt, chat history, documents, and the answer being written</td></tr>
+      <tr><td>The cupboard</td><td>Everything not in the prompt; the model cannot see it</td></tr>
+      <tr><td>Your eyes jumping between pages</td><td>Attention weights linking each token to earlier ones</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A person can get up and fetch a page from the cupboard, while the model cannot fetch anything on its own; your code has to put it on the desk.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 342" role="img" aria-label="The context window as one shared token budget, and attention linking it to dog" preserveAspectRatio="xMidYMid meet"><text x="20" y="22" text-anchor="start" class="b">One shared budget: a 200,000-token window (illustrative numbers)</text><rect x="20" y="40" width="7.2" height="46" rx="4" class="bx tn-c" /><rect x="27.2" y="40" width="108" height="46" rx="4" class="bx tn-p" /><rect x="135.2" y="40" width="540" height="46" rx="4" class="bx tn-k" /><rect x="675.2" y="40" width="1.8" height="46" rx="4" class="bx tn-a" /><rect x="677" y="40" width="28.8" height="46" rx="4" class="bx tn-g" /><line x1="740" y1="30" x2="740" y2="96" class="ln wn"/><text x="736" y="112" text-anchor="end" class="s wn-t">window limit: 200,000</text><rect x="20" y="125" width="14" height="14" rx="3" class="bx tn-c" /><text x="40" y="137" text-anchor="start" class="s">system prompt 2,000</text><rect x="195" y="125" width="14" height="14" rx="3" class="bx tn-p" /><text x="215" y="137" text-anchor="start" class="s">chat history 30,000</text><rect x="370" y="125" width="14" height="14" rx="3" class="bx tn-k" /><text x="390" y="137" text-anchor="start" class="s">pasted documents 150,000</text><rect x="580" y="125" width="14" height="14" rx="3" class="bx tn-a" /><text x="600" y="137" text-anchor="start" class="s">question 500</text><rect x="20" y="149" width="14" height="14" rx="3" class="bx tn-g" /><text x="40" y="161" text-anchor="start" class="s">room for the answer 8,000</text><text x="20" y="190" text-anchor="start" class="s">Used 190,500 of 200,000. Add 10,000 more tokens of history and something gets cut.</text><rect x="30" y="278" width="45" height="30" rx="6" class="bx tn-b" /><text x="52.5" y="298" text-anchor="middle">The</text><rect x="83" y="278" width="45" height="30" rx="6" class="bx tn-a" /><text x="105.5" y="298" text-anchor="middle">dog</text><rect x="136" y="278" width="72" height="30" rx="6" class="bx tn-b" /><text x="172" y="298" text-anchor="middle">chased</text><rect x="216" y="278" width="45" height="30" rx="6" class="bx tn-b" /><text x="238.5" y="298" text-anchor="middle">the</text><rect x="269" y="278" width="54" height="30" rx="6" class="bx tn-b" /><text x="296" y="298" text-anchor="middle">ball</text><rect x="331" y="278" width="81" height="30" rx="6" class="bx tn-b" /><text x="371.5" y="298" text-anchor="middle">because</text><rect x="420" y="278" width="36" height="30" rx="6" class="bx tn-a" /><text x="438" y="298" text-anchor="middle">it</text><rect x="464" y="278" width="45" height="30" rx="6" class="bx tn-b" /><text x="486.5" y="298" text-anchor="middle">was</text><rect x="517" y="278" width="63" height="30" rx="6" class="bx tn-b" /><text x="548.5" y="298" text-anchor="middle">bored</text><path d="M438,278 C438,230 105.5,230 105.5,276" class="ln ac"/><polygon points="105.5,277 100.5,268 110.5,268" class="hd ac"/><path d="M438,278 C438,252 296,252 296,276" class="ln thin dash"/><text x="20" y="220" text-anchor="start" class="s ac-t">Attention: “it” looks back at every earlier token and weighs “dog” highest</text><text x="20" y="330" text-anchor="start" class="s m">Thick arrow = high attention weight, dashed = low (illustrative)</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 502" role="img" aria-label="The context window as one shared token budget, and attention linking it to dog" preserveAspectRatio="xMidYMid meet"><text x="12" y="20" text-anchor="start" class="b">A 200,000-token window</text><text x="12" y="38" text-anchor="start" class="s m">(illustrative numbers)</text><rect x="12" y="50" width="120" height="16" rx="3" class="bx tn-c" /><text x="142" y="63" text-anchor="start" class="s">system prompt 2,000</text><rect x="12" y="68" width="120" height="45" rx="3" class="bx tn-p" /><text x="142" y="88" text-anchor="start" class="s">chat history 30,000</text><rect x="12" y="115" width="120" height="225" rx="3" class="bx tn-k" /><text x="142" y="135" text-anchor="start" class="s">pasted documents 150,000</text><rect x="12" y="342" width="120" height="16" rx="3" class="bx tn-a" /><text x="142" y="355" text-anchor="start" class="s">question 500</text><rect x="12" y="360" width="120" height="16" rx="3" class="bx tn-g" /><text x="142" y="373" text-anchor="start" class="s">room for the answer 8,000</text><line x1="6" y1="382.0" x2="200" y2="382.0" class="ln wn"/><text x="12" y="400" text-anchor="start" class="s wn-t">limit: everything must fit above</text><rect x="12" y="438" width="43" height="30" rx="6" class="bx tn-a" /><text x="33.5" y="458" text-anchor="middle">dog</text><rect x="61" y="438" width="70" height="30" rx="6" class="bx tn-b" /><text x="96" y="458" text-anchor="middle">chased</text><rect x="137" y="438" width="43" height="30" rx="6" class="bx tn-b" /><text x="158.5" y="458" text-anchor="middle">the</text><rect x="186" y="438" width="52" height="30" rx="6" class="bx tn-b" /><text x="212" y="458" text-anchor="middle">ball</text><rect x="244" y="438" width="25" height="30" rx="6" class="bx tn-b" /><text x="256.5" y="458" text-anchor="middle">…</text><rect x="275" y="438" width="34" height="30" rx="6" class="bx tn-a" /><text x="292" y="458" text-anchor="middle">it</text><path d="M292,438.0 C292,394.0 33.5,394.0 33.5,436.0" class="ln ac"/><polygon points="33.5,437.0 28.5,428.0 38.5,428.0" class="hd ac"/><text x="12" y="490" text-anchor="start" class="s ac-t">Attention links “it” back to “dog”</text></svg>
+    <figcaption>Top: every part of a request spends the same token budget, including the reply. Bottom: attention lets the token “it” draw on “dog” more than on “ball”. Both pictures use illustrative numbers.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">Two ideas that decide what your model can actually do in practice: how much it can hold in mind at once (the context window), and how it figures out which of those words matter (attention). Get these and you’ll design prompts and systems that work <em>with</em> the model instead of against it.</p>
 
   <h2>Why there’s a limit at all</h2>
@@ -21,9 +52,13 @@
     <div class="box-label">Concept</div>
     <p>The <span class="term">context window</span> is the maximum number of tokens a model can process at once — and crucially, it’s shared by <strong>everything</strong>: your instructions, any examples, the conversation history, any documents you paste in, <em>and</em> the model’s own response. If a model has a 8,000-token window and your input uses 7,900, there’s only room for ~100 tokens of answer.</p>
   </div>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <figure class="diagram">
-    <img src="../assets/diagrams/t1-context-window.svg" alt="The context window shown as a frame over the most recent tokens in a stream. Earlier tokens to the left are dimmed and labeled 'no longer visible'. The window is labeled 'context window (today: ~8K to 200K+ tokens)'. Caption: your prompt, the whole conversation, and the model's own reply all share this one budget.">
+    <img src="../assets/diagrams/t1-context-window.svg" alt="The context window shown as a frame over the most recent tokens in a stream. Earlier tokens to the left are dimmed and labeled 'no longer visible'. The window is labeled 'context window (today: ~8K up to 1M tokens)'. Caption: your prompt, the whole conversation, and the model's own reply all share this one budget.">
     <figcaption>The window slides over the token stream. Anything that doesn’t fit is invisible to the model — it cannot use what it cannot see.</figcaption>
   </figure>
 
@@ -33,7 +68,7 @@
   </div>
 
   <h2>The catch with “just use a huge window”</h2>
-  <p>Windows have grown enormously (some models reach hundreds of thousands of tokens). That’s great, but bigger isn’t free:</p>
+  <p>Windows have grown enormously: current frontier models offer a 1M-token window (<a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic models overview, Nov 2026</a>). That’s great, but bigger isn’t free:</p>
   <ul>
     <li><strong>Cost.</strong> You pay per token. Stuffing 100K tokens of documents into every request is expensive — often needlessly, when only a paragraph was relevant.</li>
     <li><strong>Latency.</strong> More tokens to process means slower responses (we’ll quantify this in Track 8).</li>
@@ -96,6 +131,21 @@ WINDOW, RESERVE_FOR_ANSWER <span class="o">=</span> <span class="n">8000</span>,
     <span class="f">print</span>(<span class="s">f"Fits: </span>{n}<span class="s"> tokens, leaving </span>{WINDOW - n}<span class="s"> for the answer."</span>)</code></pre>
     <p>This little guard is the seed of real production logic: measure, then decide whether to send, trim, or retrieve.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Paste the whole contract, or retrieve? Pricing 10,000 questions a day</div>
+    <p>Assume a legal team asks <strong>10,000 questions a day</strong> about a <strong>300-page contract</strong> (about 150,000 words, so about <strong>200,000 tokens</strong>). Current frontier models offer a <strong>1M-token</strong> window, so it fits (<a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic models overview</a>). Should you paste it every time?</p>
+<ol>
+<li><strong>Paste every time.</strong> On Claude Sonnet 5.5 at $2 per million input tokens: 200,000 tokens = $0.40 per question. x 10,000 = <strong>$4,000/day</strong>, before output.</li>
+<li><strong>Paste with prompt caching.</strong> The contract is the same prefix every time, so it can be cached. Cache reads on Sonnet 5.5 cost 5% of the base input price: 200,000 x $2 x 0.05 / 1M = $0.02 per question, about <strong>$200/day</strong> plus cache writes. Caching changes the economics a lot.</li>
+<li><strong>Retrieve instead.</strong> Send 8 chunks x 500 tokens + 1,000 tokens of instructions = 5,000 tokens = $0.01 per question = <strong>$100/day</strong>, and the prompt is 40x shorter, so latency drops too.</li>
+<li><strong>Attention cost.</strong> Naive attention work grows with length squared: (200,000 / 5,000)^2 = 40^2 = <strong>1,600x</strong> more attention compute per question for the pasted version. Real systems use optimised kernels, but long prompts still mean slower first tokens.</li>
+<li><strong>Accuracy, not just money.</strong> Facts buried mid-context can be missed ("lost in the middle"). Test both setups on 100 real questions before choosing.</li>
+<li><strong>Scale up.</strong> The firm's full archive of 2,000 such contracts is about 400M tokens. No window holds that. Retrieval is not optional at that size.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <h2>Watch attention resolve a pronoun</h2>
   <p>The context window decides what the model <em>can</em> see; attention decides what it actually <em>uses</em>. Click a highlighted word to see which earlier words it leans on.</p>
@@ -139,6 +189,22 @@ WINDOW, RESERVE_FOR_ANSWER <span class="o">=</span> <span class="n">8000</span>,
         <div class="why">Temperature shapes sampling, not reference resolution.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">A model has a 1M-token context window. Your team concludes 'we can drop retrieval and paste our 5 GB document store into every request'. What is the strongest objection?</p>
+    <ul class="quiz-options">
+      <li data-correct="false"><span class="opt">A) Large context windows only work for code, not documents.</span>
+        <div class="why">Long context works for any text. The objection is size, cost and accuracy, not content type.</div></li>
+      <li data-correct="false"><span class="opt">B) Attention cannot reach tokens more than 8,000 positions back.</span>
+        <div class="why">Within the window, attention can reach any position. The issue is that the corpus is far bigger than the window.</div></li>
+      <li data-correct="false"><span class="opt">C) The model will refuse inputs longer than 100,000 tokens.</span>
+        <div class="why">Models accept input up to their stated window. There is no such hidden 100K refusal.</div></li>
+      <li data-correct="true"><span class="opt">D) 5 GB of text is roughly a billion tokens, about 1,000 times the window, and even if it fit you would pay for and wait on every token on every call.</span>
+        <div class="why">Right. At about 4 characters per token, 5 GB is around 1.25 billion tokens. A big window helps with one long document, not with a whole corpus, and cost and latency scale with every token you send.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -164,6 +230,82 @@ WINDOW, RESERVE_FOR_ANSWER <span class="o">=</span> <span class="n">8000</span>,
 
   <p>You now understand what the model can see and how it reads it. The last piece of the engine is the part you’ll tune most often: once the model produces its probability distribution, <em>how do we choose the next token?</em> That’s <strong>sampling and decoding</strong>.</p>
 
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/01_generate_and_sample.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/01_generate_and_sample.py</code></pre>
+    <p><strong>What to look for:</strong> Section 4 sends the same question with a short prompt and with about 640 tokens of padding, and prints prompt_eval_count and prefill seconds for each (36 vs 639 tokens and 0.55 s vs 1.49 s on our run) for the same one-word answer. That is the cost of context in one line. Lab 03 shows the other side of the trade: retrieve the relevant paragraph instead of pasting everything.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>2) Same prompt, temperature 1.0, three different seeds
+  seed=1: Bengaluru in July typically experiences warm to hot temperatures with occasional thunderstorms.
+  seed=2: Bengaluru in July typically experiences hot and humid weather with occasional thunderstorms.
+  seed=3: Bengaluru in July typically experiences hot and dry weather with temperatures often soaring above 30°C.
+  distinct outputs at T=1.0: 3  (sampling -&gt; usually 2-3)
+3) Same seed twice at T=1.0 -&gt; reproducible on the same machine
+  identical: True
+4) Tokens are what you pay for: prompt vs output token counts
+  short prompt: prompt_tokens=   36  output_tokens=  2  prefill_s=  0.52  answer=&#x27;Paris&#x27;
+  long prompt : prompt_tokens=  639  output_tokens=  2  prefill_s=  0.22  answer=&#x27;Paris&#x27;
+  Look: the long prompt costs many more input tokens and more prefill time for the same answer.
+5) Streaming: time-to-first-token (TTFT) vs total time
+  TTFT=0.36s  total=2.54s  chunks=16  decode_tokens_per_s=7.3
+  Look: streaming does not make generation faster; it shows the first words sooner.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/01_generate_and_sample.txt">labs/outputs</a>. Source: <a href="../labs/01_generate_and_sample.py">labs/01_generate_and_sample.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> A chat app re-sends the whole conversation each turn. Each turn adds 400 tokens (user + assistant). How many input tokens does turn 30 send, and how many input tokens did the whole 30-turn chat cost in total?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Turn 30 sends about 30 x 400 = 12,000 tokens of history (ignoring the system prompt). Total over the chat is 400 x (1 + 2 + ... + 30) = 400 x 465 = 186,000 input tokens. Cost grows with the square of the conversation length, which is why long chats get summarised or trimmed.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Design a history policy for a support bot with a 32,000-token window: system prompt 1,500 tokens, retrieved docs up to 6,000, answer reserve 1,500. What do you do when history exceeds the remaining space?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Remaining for history = 32,000 - 1,500 - 6,000 - 1,500 = 23,000 tokens. Keep the last N turns verbatim (say 8,000 tokens), and replace older turns with a running summary (say 1,000 tokens) that is updated when turns fall out. Pin facts that must never drop (account id, the customer's stated problem) in a small structured block. Log when trimming happens so you can check quality on long sessions.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Explain, with the query/key/value picture from the deep dive, why a KV cache makes generating token 1,001 cheaper than recomputing everything, and what it costs in memory.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Each past token's keys and values do not change once computed, so the server stores them. To generate the next token it only computes the new token's query, key and value, and attends from that one query to all cached keys. Without the cache it would recompute keys and values for all 1,000 earlier tokens every step. The cost is memory: the cache grows linearly with context length, layers and heads, and for long contexts it often limits how many users one GPU can serve at once.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is a context window and what counts against it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>It is the maximum number of tokens a model can take in one request. Everything counts: the system prompt, examples, conversation history, retrieved documents, tool results, and the answer the model writes. If the input uses most of the window, the answer gets cut short. Chat apps re-send history every turn, so long chats fill the window and old messages have to be trimmed or summarised.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> Context windows are now 1M tokens on frontier models. Does that make RAG obsolete?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>No. A big window is great for one long document or a small codebase. But you pay for every token on every call, latency grows with prompt length, and models can miss facts buried mid-context. Most corpora are far larger than any window, and they change, so you would rebuild the prompt constantly. Prompt caching softens the cost for a fixed prefix. My default is retrieval for large or changing data, long context for bounded material, and I decide with an eval on real questions.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Why is long-context inference expensive, and what levers do you have as an application engineer?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Prefill attention grows roughly with the square of sequence length, and the KV cache grows linearly, which limits concurrency per GPU. Output tokens then attend over that whole cache. Levers: send less (retrieval, reranking, summarised history), reuse prefixes with prompt caching, put stable content first so the cache hits, cap output length, route long-context jobs to batch APIs, and measure time-to-first-token separately from decode speed. On self-hosted models, tune max context per deployment so you are not reserving memory for windows you never use.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">Attention Is All You Need (Vaswani et al., 2017) — arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2307.03172" target="_blank" rel="noopener">Lost in the Middle: How Language Models Use Long Contexts (Liu et al., 2023) — arXiv</a></li>
+      <li><a href="https://platform.claude.com/docs/en/about-claude/models/overview" target="_blank" rel="noopener">Models overview (context windows, pricing, caching) — Anthropic</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> The model sees only what fits on its desk, and attention decides which parts of the desk it looks at.</p>
+<!-- ease:line:end -->
 </main>
 
 <script>
@@ -210,5 +352,10 @@ WINDOW, RESERVE_FOR_ANSWER <span class="o">=</span> <span class="n">8000</span>,
 </script>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

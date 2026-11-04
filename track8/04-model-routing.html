@@ -12,6 +12,37 @@
 
   <span class="eyebrow">Track 8 · Lesson 8.4</span>
   <h1>Model routing</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Big models are smart but cost a lot; small models are cheap and fast.</p>
+    <p>Most real questions are easy, like order status or opening hours.</p>
+    <p>Model routing sends each question to the cheapest model that can handle it.</p>
+    <p>A cascade tries the small model first and passes the question up only if a check fails.</p>
+    <p>It only saves money if you measure how often the router gets it wrong.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>A hospital does not send every patient straight to the head surgeon. A nurse at the front desk checks each person: a scraped knee goes to the nurse practitioner, a broken arm goes to a doctor, and only the rare hard case goes to the surgeon. If the practitioner finds it is worse than it looked, they pass the patient up.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The nurse at the front desk</td><td>The router: rules, a small classifier, or an LLM call</td></tr>
+      <tr><td>Nurse practitioner, doctor, head surgeon</td><td>Model tiers, for example Haiku 5.5, Sonnet 5.5 and Opus 5.5</td></tr>
+      <tr><td>Passing a patient up when it looks worse</td><td>A cascade escalating when the cheap answer fails a check</td></tr>
+      <tr><td>Sending a hard case to the wrong room</td><td>A misroute: a hard query answered badly by the small model</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A triage nurse can examine the patient, while a router often only sees the words of the question, so it misjudges some hard cases as easy.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 434" role="img" aria-label="Two ways to route: a classifier router and a cascade, with cost per day" preserveAspectRatio="xMidYMid meet"><text x="14" y="22" text-anchor="start" class="b">A. Classifier router: $1,437.50 a day (71% less than all-Sonnet $5,000)</text><rect x="14" y="58" width="140" height="62" rx="10" class="bx tn-b" /><g class="vzb"><text x="84" y="82.3" text-anchor="middle" class="b" style="font-size:14px">Query</text><text x="84" y="106.3" text-anchor="middle" class="s" style="font-size:12px">1M a day</text></g><rect x="200" y="58" width="150" height="78" rx="10" class="bx tn-k" /><g class="vzb"><text x="275" y="82.3" text-anchor="middle" class="b" style="font-size:14px">Router</text><text x="275" y="106.3" text-anchor="middle" class="s" style="font-size:12px">small classifier:</text><text x="275" y="122.3" text-anchor="middle" class="s" style="font-size:12px">easy or hard?</text></g><rect x="430" y="38" width="316" height="62" rx="10" class="bx tn-g" /><g class="vzb"><text x="588" y="62.3" text-anchor="middle" class="b" style="font-size:14px">Haiku 5.5 ($0.10 / $0.50)</text><text x="588" y="86.3" text-anchor="middle" class="s" style="font-size:12px">75% of traffic: 750,000 x $0.00025 = $187.50</text></g><rect x="430" y="114" width="316" height="62" rx="10" class="bx tn-c" /><g class="vzb"><text x="588" y="138.3" text-anchor="middle" class="b" style="font-size:14px">Sonnet 5.5 ($2 / $10)</text><text x="588" y="162.3" text-anchor="middle" class="s" style="font-size:12px">25%: 250,000 x $0.005 = $1,250</text></g><line x1="156" y1="89" x2="188" y2="89" class="ln "/><polygon points="197,89 188,84.05 188,93.95" class="hd "/><polyline points="352,97 390,97 390,69 418,69" class="ln ok"/><polygon points="427,69 418,64.05 418,73.95" class="hd ok"/><polyline points="352,97 390,97 390,145 418,145" class="ln "/><polygon points="427,145 418,140.05 418,149.95" class="hd "/><text x="412" y="62" text-anchor="middle" class="s ok-t" style="font-size:12px">easy</text><text x="412" y="138" text-anchor="middle" class="s" style="font-size:12px">hard</text><line x1="14" y1="196" x2="746" y2="196" class="grid"/><text x="14" y="218" text-anchor="start" class="b">B. Cascade: $1,750 a day (65% less)</text><rect x="14" y="242" width="140" height="62" rx="10" class="bx tn-b" /><g class="vzb"><text x="84" y="266.3" text-anchor="middle" class="b" style="font-size:14px">Query</text><text x="84" y="290.3" text-anchor="middle" class="s" style="font-size:12px">1M a day</text></g><rect x="200" y="242" width="160" height="62" rx="10" class="bx tn-g" /><g class="vzb"><text x="280" y="266.3" text-anchor="middle" class="b" style="font-size:14px">Haiku 5.5 first</text><text x="280" y="290.3" text-anchor="middle" class="s" style="font-size:12px">every query: $250</text></g><rect x="400" y="232" width="150" height="94" rx="10" class="bx tn-k" /><g class="vzb"><text x="475" y="256.3" text-anchor="middle" class="b" style="font-size:14px">Check</text><text x="475" y="280.3" text-anchor="middle" class="s" style="font-size:12px">schema valid?</text><text x="475" y="296.3" text-anchor="middle" class="s" style="font-size:12px">retrieval score ok?</text><text x="475" y="312.3" text-anchor="middle" class="s" style="font-size:12px">no refusal?</text></g><rect x="596" y="228" width="150" height="62" rx="10" class="bx tn-g" /><g class="vzb"><text x="671" y="252.3" text-anchor="middle" class="b" style="font-size:14px">Answer</text><text x="671" y="276.3" text-anchor="middle" class="s" style="font-size:12px">70% pass</text></g><rect x="596" y="308" width="150" height="62" rx="10" class="bx tn-c" /><g class="vzb"><text x="671" y="332.3" text-anchor="middle" class="b" style="font-size:14px">Sonnet 5.5</text><text x="671" y="356.3" text-anchor="middle" class="s" style="font-size:12px">30% escalate: $1,500</text></g><line x1="156" y1="273" x2="188" y2="273" class="ln "/><polygon points="197,273 188,268.05 188,277.95" class="hd "/><line x1="362" y1="273" x2="388" y2="273" class="ln "/><polygon points="397,273 388,268.05 388,277.95" class="hd "/><polyline points="552,279 572,279 572,259 584,259" class="ln ok"/><polygon points="593,259 584,254.05 584,263.95" class="hd ok"/><polyline points="552,279 572,279 572,339 584,339" class="ln wn"/><polygon points="593,339 584,334.05 584,343.95" class="hd wn"/><text x="582" y="252" text-anchor="middle" class="s ok-t" style="font-size:12px">pass</text><text x="582" y="332" text-anchor="middle" class="s wn-t" style="font-size:12px">fail</text><text x="14" y="396" text-anchor="start" class="s wn-t" style="font-size:13px">Escalated users wait for two calls. And a misroute is not free: 2% of traffic sent to the wrong tier, at</text><text x="14" y="413" text-anchor="start" class="s wn-t" style="font-size:13px">$3 per support contact, costs $60,000 a day.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 553" role="img" aria-label="Two ways to route: a classifier router and a cascade, with cost per day" preserveAspectRatio="xMidYMid meet"><text x="14" y="22" text-anchor="start" class="b">A. Classifier router</text><text x="14" y="40" text-anchor="start" class="s ac-t">$1,437.50 a day (71% less)</text><rect x="14" y="48" width="120" height="62" rx="10" class="bx tn-b" /><g class="vzb"><text x="74" y="72.3" text-anchor="middle" class="b" style="font-size:14px">Query</text><text x="74" y="96.3" text-anchor="middle" class="s" style="font-size:12px">1M a day</text></g><rect x="14" y="140" width="120" height="62" rx="10" class="bx tn-k" /><g class="vzb"><text x="74" y="164.3" text-anchor="middle" class="b" style="font-size:14px">Router</text><text x="74" y="188.3" text-anchor="middle" class="s" style="font-size:12px">easy or hard?</text></g><line x1="74" y1="112" x2="74" y2="129" class="ln "/><polygon points="74,138 78.95,129 69.05,129" class="hd "/><rect x="180" y="48" width="166" height="62" rx="10" class="bx tn-g" /><g class="vzb"><text x="263" y="72.3" text-anchor="middle" class="b" style="font-size:14px">Haiku 5.5</text><text x="263" y="96.3" text-anchor="middle" class="s" style="font-size:12px">75%: $187.50</text></g><rect x="180" y="156" width="166" height="62" rx="10" class="bx tn-c" /><g class="vzb"><text x="263" y="180.3" text-anchor="middle" class="b" style="font-size:14px">Sonnet 5.5</text><text x="263" y="204.3" text-anchor="middle" class="s" style="font-size:12px">25%: $1,250</text></g><polyline points="136,171 156,171 156,79 168,79" class="ln ok"/><polygon points="177,79 168,74.05 168,83.95" class="hd ok"/><polyline points="136,171 156,171 156,187 168,187" class="ln "/><polygon points="177,187 168,182.05 168,191.95" class="hd "/><line x1="14" y1="230" x2="346" y2="230" class="grid"/><text x="14" y="252" text-anchor="start" class="b">B. Cascade</text><text x="14" y="270" text-anchor="start" class="s ac-t">$1,750 a day (65% less)</text><rect x="14" y="284" width="150" height="62" rx="10" class="bx tn-g" /><g class="vzb"><text x="89" y="308.3" text-anchor="middle" class="b" style="font-size:14px">Haiku 5.5 first</text><text x="89" y="332.3" text-anchor="middle" class="s" style="font-size:12px">every query: $250</text></g><rect x="196" y="284" width="150" height="94" rx="10" class="bx tn-k" /><g class="vzb"><text x="271" y="308.3" text-anchor="middle" class="b" style="font-size:14px">Check</text><text x="271" y="332.3" text-anchor="middle" class="s" style="font-size:12px">schema ok? retrieval</text><text x="271" y="348.3" text-anchor="middle" class="s" style="font-size:12px">score ok? no</text><text x="271" y="364.3" text-anchor="middle" class="s" style="font-size:12px">refusal?</text></g><line x1="166" y1="315" x2="184" y2="315" class="ln "/><polygon points="193,315 184,310.05 184,319.95" class="hd "/><rect x="14" y="412" width="150" height="62" rx="10" class="bx tn-g" /><g class="vzb"><text x="89" y="436.3" text-anchor="middle" class="b" style="font-size:14px">Answer</text><text x="89" y="460.3" text-anchor="middle" class="s" style="font-size:12px">70% pass</text></g><rect x="196" y="412" width="150" height="62" rx="10" class="bx tn-c" /><g class="vzb"><text x="271" y="436.3" text-anchor="middle" class="b" style="font-size:14px">Sonnet 5.5</text><text x="271" y="460.3" text-anchor="middle" class="s" style="font-size:12px">30% escalate: $1,500</text></g><polyline points="240,380 240,402 90,402 90,400" class="ln ok"/><polygon points="90,409 94.95,400 85.05,400" class="hd ok"/><line x1="300" y1="380" x2="300" y2="400" class="ln wn"/><polygon points="300,409 304.95,400 295.05,400" class="hd wn"/><text x="165" y="396" text-anchor="middle" class="s ok-t">pass</text><text x="308" y="399" text-anchor="start" class="s wn-t">fail</text><text x="14" y="498" text-anchor="start" class="s wn-t" style="font-size:13px">Escalated users wait for two calls. A 2%</text><text x="14" y="515" text-anchor="start" class="s wn-t" style="font-size:13px">misroute at $3 per support contact costs</text><text x="14" y="532" text-anchor="start" class="s wn-t" style="font-size:13px">$60,000 a day.</text></svg>
+    <figcaption>Both designs use the page's e-commerce example: 1 million requests a day, 1,500 tokens in and 200 out. All-Sonnet costs $5,000 a day; the costs shown are computed from the verified prices.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">Using your most powerful model for every request is like taking a helicopter to the corner store. Most queries are easy; routing them to a small, cheap model — and reserving the big one for hard cases — can cut costs dramatically with little quality loss.</p>
 
   <h2>Not every query needs your best model</h2>
@@ -26,6 +57,10 @@
     <div class="box-label">Concept</div>
     <p><span class="term">Model routing</span> chooses which model handles each request. A <span class="term">router</span> can be rules (length, keywords, task type), a small classifier, or an LLM call itself. A <span class="term">cascade</span> is a common pattern: try the cheap model first, and escalate to a bigger one only if the cheap model is unsure or its output fails a check. The goal is to move along the <span class="term">cost/quality frontier</span> — getting most of the quality for a fraction of the cost.</p>
   </div>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <div class="box example">
     <div class="box-label">Worked example — a simple router and a cascade (free)</div>
@@ -38,14 +73,28 @@
 
 <span class="k">def</span> <span class="f">answer</span>(query):
     <span class="c"># CASCADE: try small first, escalate if it's not confident / fails a check</span>
-    out <span class="o">=</span> <span class="f">call</span>(<span class="s">"llama3.2:1b"</span>, query)             <span class="c"># small, cheap, fast</span>
+    out <span class="o">=</span> <span class="f">call</span>(<span class="s">"qwen2.5:1.5b"</span>, query)             <span class="c"># small, cheap, fast</span>
     <span class="k">if</span> <span class="f">looks_uncertain</span>(out) <span class="or">or</span> <span class="k">not</span> <span class="f">passes_checks</span>(out):
-        out <span class="o">=</span> <span class="f">call</span>(<span class="s">"llama3.1:8b"</span>, query)         <span class="c"># escalate to a bigger model</span>
+        out <span class="o">=</span> <span class="f">call</span>(<span class="s">"qwen2.5:7b"</span>, query)         <span class="c"># escalate to a bigger model</span>
     <span class="k">return</span> out
 
 <span class="c"># Measure: what % escalates, and is quality on the small path acceptable? (Track 6)</span></code></pre>
     <p>Even a crude router captures most of the savings, because the easy majority is genuinely easy. The art is tuning the threshold so you don’t send hard queries to the small model (quality drop) or easy ones to the big model (wasted money).</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: Routing an e-commerce assistant at 1 million requests a day</div>
+    <p>Assumptions (ours): 1,000,000 requests a day, 1,500 input and 200 output tokens each, and an offline eval showing 75% of traffic (order status, returns, sizing) is answered at your quality bar by the small tier. Prices from <a href="https://platform.claude.com/docs/en/about-claude/models/overview" target="_blank" rel="noopener">Anthropic models overview</a>.</p>
+<ol>
+<li><strong>Everything on claude-sonnet-5-5 ($2 / $10).</strong> 1,500 x $2/M + 200 x $10/M = $0.003 + $0.002 = $0.005 a request, <strong>$5,000 a day</strong>.</li>
+<li><strong>Classifier routing.</strong> 75% to claude-haiku-5-5 (from $0.10 / $0.50): 1,500 x $0.10/M + 200 x $0.50/M = $0.00025 a request; 750,000 x $0.00025 = $187.50. 25% to Sonnet: 250,000 x $0.005 = $1,250. Total <strong>$1,437.50 a day</strong>, a 71% cut.</li>
+<li><strong>Cascade instead.</strong> Send everything to Haiku first, then escalate when a check fails (schema invalid, low retrieval score, refusal). Suppose 30% escalate. Haiku for all: 1,000,000 x $0.00025 = $250. Sonnet for 300,000: $1,500. Total <strong>$1,750 a day</strong> (65% cut), and escalated users pay a latency tax for the double call.</li>
+<li><strong>Price the router's mistakes.</strong> If the classifier wrongly sends 2% of all traffic (20,000 hard queries a day) to Haiku and each bad answer costs a $3 support contact (assumption), that is 20,000 x $3 = $60,000 a day, far more than the $3,562 saved. Routing only works if the misroute rate is measured and tiny, or if a cheap check catches misroutes.</li>
+<li><strong>What to measure every week.</strong> Escalation rate, quality on each path against the golden set, and cost per resolved conversation (not per call). Research systems like FrugalGPT and RouteLLM report large savings at similar quality, but on their benchmarks; your traffic decides yours.</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <h2>Route by task, not by habit</h2>
   <p>Compare sending everything to your best model against routing each task to the cheapest one that can still do it.</p>
@@ -89,6 +138,22 @@
         <div class="why">That misses the cost savings routing provides.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">A router sends 70% of traffic to a cheap model and the average eval score drops only 1 point. Why can this still be a bad change?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) The average can hide a large drop on a small but important slice, such as refunds or legal questions, that the cheap model gets wrong.</span>
+        <div class="why">Always break quality down by intent or segment. A 1-point average dip can be a 30-point collapse on 3% of traffic that carries most of the business risk.</div></li>
+      <li data-correct="false"><span class="opt">B) A 1-point drop is always within noise, so the change is fine.</span>
+        <div class="why">Whether it is noise depends on sample size, and the real risk is how the drop is distributed, not its average.</div></li>
+      <li data-correct="false"><span class="opt">C) Routing increases latency for every request.</span>
+        <div class="why">A rules or small-classifier router adds little latency, and the cheap path is often faster. Cascades add latency only on escalation.</div></li>
+      <li data-correct="false"><span class="opt">D) Cheap models are always worse, so any routing is bad.</span>
+        <div class="why">For easy, well-defined tasks small models often meet the bar. The point is to measure where they do and do not.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -113,10 +178,91 @@
     <p>Choose the router sophistication that pays for itself, and — as always — <em>measure</em>: track the escalation rate, the cost saved, and the quality on each path, so routing is a tuned, monitored system rather than a guess. Done well, model routing is frequently the second-biggest cost lever after caching, and it lets you offer frontier-grade quality where it matters while keeping the bill sane.</p>
   </div>
 
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/06_evals.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/06_evals.py</code></pre>
+    <p><strong>What to look for:</strong> The lab does not contain a router. What it gives you is the tool that decides whether routing is safe: the per-case regression gate comparing two variants. Point the two variants at two model sizes (for example qwen2.5:7b and a smaller local model if you have one) and count the cases where the small one fails; that per-case failure list is your misroute risk.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>5) Judge position bias: same pair, swapped order
+  How long do card refunds take?      order1 picked B, order2 picked B  -&gt; FLIPPED
+  Return window for electronics?      order1 picked B, order2 picked A  -&gt; consistent
+  Express shipping price?             order1 picked B, order2 picked A  -&gt; consistent
+  When is standard shipping free?     order1 picked A, order2 picked B  -&gt; consistent
+  Duplicate charge reversal time?     order1 picked A, order2 picked B  -&gt; consistent
+  consistent verdicts: 4/5 = 80% (95% CI 38%-96%)   correct in both orders: 2/5 = 40% (95% CI 12%-77%)
+  n=5 pairs is a demo, not a measurement of this judge&#x27;s bias: the intervals span most of 0-100%.
+  Look: with no reference passage in the judge prompt, the judge has to guess which number is right.
+  Always judge both orders and count a win only when both agree; give the judge the reference.
+6) How wide is the error bar on 12 cases?
+  v1 accuracy 11/12 = 92% (95% CI 65%-99%)  (Wilson interval)
+  At n=400 the same accuracy would be roughly +/- 2.7%
+{&quot;v1_correct&quot;: 0.917, &quot;regressions&quot;: 12, &quot;judge_consistent&quot;: 4}</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/06_evals.txt">labs/outputs</a>. Source: <a href="../labs/06_evals.py">labs/06_evals.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> Requests average 2,000 input and 300 output tokens. What is the per-request saving of moving one request from claude-sonnet-5-5 to claude-haiku-5-5?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Sonnet: 2,000 x 2/M + 300 x 10/M = $0.004 + $0.003 = $0.007. Haiku (up-to-100K-token rate): 2,000 x 0.10/M + 300 x 0.50/M = $0.0002 + $0.00015 = $0.00035. Saving $0.00665 a request, about 95%.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your cascade escalates when the small model's JSON fails validation. Escalation rate is 8% in testing but 35% in production. List three things you would check, in order.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>1) The traffic mix: pull the escalated traces and group by intent; production may contain question types the test set lacked. 2) The check itself: is validation failing on harmless formatting (extra fields, trailing text) that a constrained-decoding schema or a lenient parser would fix? 3) The small model's inputs: are production prompts longer (more history or context) so the small model loses the instructions? Fixes follow from the finding: add the new intents to the golden set, use schema-constrained output, or route long-context requests straight to the big model.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Write the break-even condition for a cascade versus always using the big model, with c_s and c_b the per-request costs and e the escalation rate. With c_s = $0.00035 and c_b = $0.007, what escalation rate makes the cascade pointless?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Cascade cost per request = c_s + e x c_b. Big-only cost = c_b. The cascade wins when c_s + e x c_b < c_b, i.e. e < 1 - c_s / c_b. Here 1 - 0.00035 / 0.007 = 1 - 0.05 = 0.95. So on cost alone the cascade wins unless 95% of requests escalate. In practice the limit is latency and quality, not cost: escalated users wait for two calls, so you also cap e by your p95 latency target.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is model routing and why do teams use it?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Routing picks which model handles each request. Most traffic is easy, like greetings, lookups and short classifications, and a small model handles it well at a fraction of the price and often faster. Hard requests, like multi-step reasoning or long documents, go to a bigger model. The router can be simple rules, a small trained classifier, or a cascade that tries the small model first and escalates on a failed check. Teams use it because it can cut cost a lot while keeping quality where it matters, as long as they measure quality per path.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> How do you build and validate a routing classifier?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>I label a few thousand real requests with the cheapest model that meets the bar, by running both models on them and judging the outputs against the golden-set rubric. That gives training labels. I train a small classifier on cheap features or embeddings, and I tune its threshold for low false-easy rate, because sending a hard query to the small model is the costly error. I validate on a held-out set by segment, then canary it on a slice of live traffic and compare thumbs-down, escalations and cost per resolved task against control before going wide.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> Your provider releases a new small model that is cheaper and better. How do you adopt it without breaking the router?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>The router's thresholds were tuned for the old small model, so the routing boundary is now wrong in a safe direction: we are probably sending too much to the big model. I run the new model through the golden set by intent, relabel which intents it handles, and retune the threshold. Then I canary it with both quality and cost dashboards and keep the old route as instant rollback. I also pin model IDs rather than aliases so the switch is a deliberate change that goes through the eval gate, not a silent upgrade.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2305.05176" target="_blank" rel="noopener">FrugalGPT: How to Use Large Language Models While Reducing Cost and Improving Performance - arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2406.18665" target="_blank" rel="noopener">RouteLLM: Learning to Route LLMs with Preference Data - arXiv</a></li>
+      <li><a href="https://platform.claude.com/docs/en/about-claude/models/overview" target="_blank" rel="noopener">Models overview (tiers and prices) - Anthropic</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
   <p>So far we’ve optimized <em>around</em> the model. Now we make the model itself cheaper and faster to run — crucial when you self-host. Next: <strong>quantization</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Send easy questions to a cheap model and save the big one for the hard ones, then check the router's mistakes.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

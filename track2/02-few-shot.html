@@ -12,6 +12,38 @@
 
   <span class="eyebrow">Track 2 · Lesson 2.2</span>
   <h1>Few-shot prompting</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>A zero-shot prompt asks for a task with no examples.</p>
+    <p>A few-shot prompt shows two or three solved examples first, then the new input.</p>
+    <p>The model copies the pattern: the labels, the layout, even the length.</p>
+    <p>This is called in-context learning. Nothing inside the model changes, and the examples are forgotten after the request.</p>
+    <p>Examples are the cheapest way to make a classifier or extractor give clean, consistent answers.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Few-shot prompting is like showing a new kid at school two finished worksheets before handing them a blank one. They copy the layout, the way answers are written, even which boxes to leave empty. If both examples you showed had the answer 'yes', they may lean towards 'yes' too.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>Two finished worksheets</td><td>Two or three example pairs: input, then the desired output</td></tr>
+      <tr><td>The blank worksheet</td><td>The new input, with its answer slot left open</td></tr>
+      <tr><td>Copying the layout and the boxes</td><td>Matching the examples' format and label set</td></tr>
+      <tr><td>Leaning to 'yes' because both examples said yes</td><td>Label bias: unbalanced examples tilt the answer</td></tr>
+      <tr><td>Forgetting the worksheets tomorrow</td><td>No weight change: the examples only live in this one prompt</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> The kid actually learns and remembers tomorrow, while the model forgets the examples as soon as the request ends.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 272" role="img" aria-label="Zero-shot versus few-shot on the same mixed review" preserveAspectRatio="xMidYMid meet"><rect x="20" y="14" width="348" height="186" rx="10" class="bx tn-w" /><text x="194" y="42" text-anchor="middle" class="b">Zero-shot: words only</text><circle cx="40" cy="63" r="3" class="dot tn-w"/><text x="52" y="68" text-anchor="start" style="font-size:14px">Prompt: “Return the sentiment of: Arrived</text><text x="52" y="86" text-anchor="start" style="font-size:14px">late but the blender works great.”</text><circle cx="40" cy="107" r="3" class="dot tn-w"/><text x="52" y="112" text-anchor="start" style="font-size:14px">The model must guess: one word or a</text><text x="52" y="130" text-anchor="start" style="font-size:14px">sentence? Which labels? Capital letters?</text><circle cx="40" cy="151" r="3" class="dot tn-w"/><text x="52" y="156" text-anchor="start" style="font-size:14px">Reply drifts between runs, e.g. “The</text><text x="52" y="174" text-anchor="start" style="font-size:14px">sentiment is mostly positive, although…”</text><rect x="392" y="14" width="348" height="186" rx="10" class="bx tn-g" /><text x="566" y="42" text-anchor="middle" class="b">Few-shot: three examples first</text><circle cx="412" cy="63" r="3" class="dot tn-g"/><text x="424" y="68" text-anchor="start" style="font-size:14px">“Loved it, works great” → positive</text><circle cx="412" cy="89" r="3" class="dot tn-g"/><text x="424" y="94" text-anchor="start" style="font-size:14px">“Stopped working in a week” → negative</text><circle cx="412" cy="115" r="3" class="dot tn-g"/><text x="424" y="120" text-anchor="start" style="font-size:14px">“It&#x27;s fine, nothing special” → mixed</text><circle cx="412" cy="141" r="3" class="dot tn-g"/><text x="424" y="146" text-anchor="start" style="font-size:14px">New review → the model continues the</text><text x="424" y="164" text-anchor="start" style="font-size:14px">pattern: “mixed”</text><text x="380" y="226" text-anchor="middle" class="s" style="font-size:14px">The examples answer the format questions and define the label set, including &#x27;mixed&#x27;, which</text><text x="380" y="244" text-anchor="middle" class="s" style="font-size:14px">the zero-shot prompt never mentioned.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 590" role="img" aria-label="Zero-shot versus few-shot on the same mixed review" preserveAspectRatio="xMidYMid meet"><rect x="20" y="14" width="320" height="240" rx="10" class="bx tn-w" /><text x="180" y="42" text-anchor="middle" class="b">Zero-shot: words only</text><circle cx="40" cy="63" r="3" class="dot tn-w"/><text x="52" y="68" text-anchor="start" style="font-size:14px">Prompt: “Return the sentiment of:</text><text x="52" y="86" text-anchor="start" style="font-size:14px">Arrived late but the blender works</text><text x="52" y="104" text-anchor="start" style="font-size:14px">great.”</text><circle cx="40" cy="125" r="3" class="dot tn-w"/><text x="52" y="130" text-anchor="start" style="font-size:14px">The model must guess: one word or a</text><text x="52" y="148" text-anchor="start" style="font-size:14px">sentence? Which labels? Capital</text><text x="52" y="166" text-anchor="start" style="font-size:14px">letters?</text><circle cx="40" cy="187" r="3" class="dot tn-w"/><text x="52" y="192" text-anchor="start" style="font-size:14px">Reply drifts between runs, e.g. “The</text><text x="52" y="210" text-anchor="start" style="font-size:14px">sentiment is mostly positive,</text><text x="52" y="228" text-anchor="start" style="font-size:14px">although…”</text><text x="180" y="276" text-anchor="middle" class="b m">vs</text><rect x="20" y="288" width="320" height="194" rx="10" class="bx tn-g" /><text x="180" y="316" text-anchor="middle" class="b">Few-shot: three examples first</text><circle cx="40" cy="337" r="3" class="dot tn-g"/><text x="52" y="342" text-anchor="start" style="font-size:14px">“Loved it, works great” → positive</text><circle cx="40" cy="363" r="3" class="dot tn-g"/><text x="52" y="368" text-anchor="start" style="font-size:14px">“Stopped working in a week” →</text><text x="52" y="386" text-anchor="start" style="font-size:14px">negative</text><circle cx="40" cy="407" r="3" class="dot tn-g"/><text x="52" y="412" text-anchor="start" style="font-size:14px">“It&#x27;s fine, nothing special” → mixed</text><circle cx="40" cy="433" r="3" class="dot tn-g"/><text x="52" y="438" text-anchor="start" style="font-size:14px">New review → the model continues the</text><text x="52" y="456" text-anchor="start" style="font-size:14px">pattern: “mixed”</text><text x="180" y="508" text-anchor="middle" class="s" style="font-size:14px">The examples answer the format questions</text><text x="180" y="526" text-anchor="middle" class="s" style="font-size:14px">and define the label set, including</text><text x="180" y="544" text-anchor="middle" class="s" style="font-size:14px">&#x27;mixed&#x27;, which the zero-shot prompt</text><text x="180" y="562" text-anchor="middle" class="s" style="font-size:14px">never mentioned.</text></svg>
+    <figcaption>Same review, same model. On the right the examples do three jobs at once: they fix the output shape, they name the allowed labels, and they show where the hard cases go. The reply texts are illustrative; the examples are the lesson's own.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">The single highest-leverage upgrade to most prompts isn’t better wording — it’s a few good examples. Showing the model exactly what you want, with two or three demonstrations, often does what paragraphs of instruction can’t.</p>
 
   <h2>Why showing beats telling</h2>
@@ -21,6 +53,10 @@
     <div class="box-label">Concept</div>
     <p>A <span class="term">zero-shot</span> prompt asks the model to do a task with no examples. A <span class="term">few-shot</span> prompt includes a handful of worked examples (input → desired output) before the real input; <span class="term">one-shot</span> is the special case of exactly one. The model picking up the pattern from examples <em>in the prompt</em> — with no training or weight changes — is called <span class="term">in-context learning</span>. The examples teach for this one request only.</p>
   </div>
+<!-- shape:analogy:start -->
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
+<!-- shape:analogy:end -->
+
 
   <figure class="diagram">
     <img src="../assets/diagrams/t2-fewshot-compare.svg" alt="Show, don't just tell. Zero-shot: prompt 'Classify the sentiment: The checkout kept crashing' produces a long varying paragraph. Few-shot: prompt with two labeled examples ('Great product → positive', 'Never buying again → negative') then 'The checkout kept crashing →' produces a clean 'negative'. A few labeled examples pin both the task and the exact output shape.">
@@ -75,6 +111,20 @@ Sentiment:"""</span>
 <span class="f">print</span>(<span class="f">ask</span>(<span class="f">build_fewshot</span>(<span class="s">"Arrived late but the blender works great"</span>)))   <span class="c"># -> mixed</span></code></pre>
     <p>Because the examples demonstrate the three labels <em>and</em> the exact two-line format, the model returns a clean, correctly-categorized answer — and you can drop the result straight into a database field.</p>
   </div>
+<!-- shape:scale:start -->
+  <div class="box example shape-scale">
+    <div class="box-label">At real scale: A 12-label intent classifier at 1 million messages a day</div>
+    <p>Assume a bank routes <strong>1,000,000 chat messages a day</strong> into <strong>12 intents</strong>. Each example shot is about <strong>40 tokens</strong>. Prices: Claude Sonnet 5.5, $2 per million input tokens, cache reads at 5% of that (<a href="https://platform.claude.com/docs/en/about-claude/models/overview">Anthropic models overview</a>). Volumes and accuracy are assumptions.</p>
+<ol>
+<li><strong>Static few-shot.</strong> Two examples per label x 12 labels = 24 shots x 40 = 960 tokens on every request. 1M x 960 = 960M tokens = <strong>$1,920/day</strong>.</li>
+<li><strong>Static few-shot, cached.</strong> The shots never change, so put them in the cached prefix: 960M x $2 x 0.05 / 1M = <strong>$96/day</strong> plus cache writes.</li>
+<li><strong>Dynamic few-shot.</strong> Retrieve the 6 most similar examples per message: 6 x 40 = 240 tokens, uncached because they differ each time. 1M x 240 = 240M = <strong>$480/day</strong>, plus an embedding lookup.</li>
+<li><strong>Compare.</strong> The cached static set is cheapest here. Dynamic shots earn their cost only if they lift accuracy. Suppose an eval on 1,200 labelled messages shows 91% static vs 95% dynamic: that is 40,000 fewer misroutes a day. If a misroute costs an agent 2 minutes, dynamic saves about 1,300 agent-hours a day, which dwarfs the token bill.</li>
+<li><strong>Check label balance.</strong> Count how often each label appears in the shots. If 'card_lost' appears 6 times and 'mortgage' once, expect a lean towards 'card_lost'. Calibration studies show models pick up exactly this kind of majority-label and recency bias from the examples (<a href="https://arxiv.org/abs/2102.09690">Zhao et al., 2021</a>).</li>
+</ol>
+  </div>
+<!-- shape:scale:end -->
+
 
   <div class="box key">
     <div class="box-label">How to choose examples (this is the skill)</div>
@@ -113,6 +163,22 @@ Sentiment:"""</span>
         <div class="why">They increase input tokens rather than reduce cost.</div></li>
     </ul>
   </div>
+<!-- shape:quiz:start -->
+  <div class="quiz">
+    <p class="quiz-q">You shuffle the order of the same four few-shot examples and accuracy on your test set moves from 88% to 79%. What does that tell you?</p>
+    <ul class="quiz-options">
+      <li data-correct="true"><span class="opt">A) Few-shot prompts can be sensitive to example order, so you should test a few orderings and pick one using an eval, not by eye.</span>
+        <div class="why">Right. Research has shown that the order of demonstrations alone can swing results noticeably (Lu et al., 2021). Treat example order as a setting to evaluate.</div></li>
+      <li data-correct="false"><span class="opt">B) The examples changed the model's weights in the wrong direction.</span>
+        <div class="why">In-context learning does not change weights at all. The examples only shape this one request's output.</div></li>
+      <li data-correct="false"><span class="opt">C) The model is broken and should be replaced.</span>
+        <div class="why">Order sensitivity is a known property of in-context learning, not a defect in one model.</div></li>
+      <li data-correct="false"><span class="opt">D) Few-shot never works; use zero-shot instead.</span>
+        <div class="why">One shuffle result does not condemn few-shot. Measure and pick a robust ordering, or retrieve examples per input.</div></li>
+    </ul>
+  </div>
+<!-- shape:quiz:end -->
+
 
 
   <div class="box practice">
@@ -147,6 +213,83 @@ Output: {"name": "Sam", "date": "March 3"}</code></pre>
 
   <p>Few-shot pins <em>what</em> the output looks like. The next technique improves <em>how well the model reasons</em> to get there — especially on multi-step problems: <strong>chain-of-thought</strong>.</p>
 
+
+<!-- shape:tail:start -->
+  <div class="box practice shape-lab">
+    <div class="box-label">Run it locally: <code>labs/02_structured_output.py</code></div>
+    <p>Free and offline once set up: Ollama with <code>qwen2.5:7b</code>, plus the packages in <a href="../labs/README.md">labs/README.md</a>. From the course folder:</p>
+<pre><code>python labs/02_structured_output.py</code></pre>
+    <p><strong>What to look for:</strong> The lab's SYSTEM prompt has no examples. Add two example email-to-ticket pairs to it and rerun: with 8 of 8 already valid you will not see a parse-rate change, but watch section D's category accuracy against the gold labels (7 of 8 on our run; the compliment was filed as delivery). The lab does not test label bias; to see it, make all your examples share one label and count how the outputs shift.</p>
+    <p class="shape-smalln"><strong>Small samples:</strong> these labs use 5 to 20 cases so they run in minutes on a laptop. Where they report a rate, they print n and a 95% Wilson interval. Read them as a demonstration of the mechanism, not as a measured rate for your system; for that you need hundreds of cases and several seeds.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Recorded output (our run, 2026-11-03, qwen2.5:7b on a laptop GPU)</summary>
+      <div class="sol-body"><pre><code>C) Schema-valid is not business-valid: validate rules, retry with the error
+  rule violations repaired by retry: 0
+D) Content check against gold labels (shape-valid does not mean right)
+  #4: model said &#x27;delivery&#x27;, a human would file &#x27;other&#x27;: &#x27;Just wanted to say the delivery guy was very polite. thanks!&#x27;
+  category accuracy: 7/8
+Summary
+  vague-prompt valid:       0/4 = 0% (95% CI 0%-49%)
+  prompt-only valid:        8/8 = 100% (95% CI 68%-100%)
+  schema-constrained valid: 8/8 = 100% (95% CI 68%-100%)
+  category accuracy (gold): 7/8 = 88% (95% CI 53%-98%)
+  On this model and these 8 emails a clear prompt already gives valid JSON every time, so the schema shows
+  NO measurable advantage here. Its value is the guarantee on the inputs you have not tested yet.
+  Look: constrained decoding guarantees the SHAPE. It does not guarantee the CONTENT is right;
+  that is what the business-rule check + retry (and your eval set) are for.</code></pre>
+      <p>Your numbers will differ a little run to run. Full log: <a href="../labs/outputs/02_structured_output.txt">labs/outputs</a>. Source: <a href="../labs/02_structured_output.py">labs/02_structured_output.py</a>.</p></div>
+    </details>
+  </div>
+  <div class="box practice shape-exercises">
+    <div class="box-label">Exercises: warm-up, transfer, stretch</div>
+    <p><strong>Warm-up.</strong> You have 8 labels and want 2 shots each at about 35 tokens per shot. How many tokens do the examples add per request, and what is that per day at 200,000 requests?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>8 x 2 x 35 = 560 tokens per request. 200,000 x 560 = 112M input tokens a day. Multiply by your model's input price, and check whether caching the fixed examples applies, since that can cut this a lot.</p></div>
+    </details>
+    <p><strong>Transfer.</strong> Your extraction prompt has three examples, all where the date is present. Production emails often have no date and the model invents one. Fix the example set and explain why it works.</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>Replace or add one example where the date is missing and the output is {"date": null}. The model continues demonstrated patterns; with no null example, 'null' is an unseen and low-probability output, so it guesses. Showing null once makes abstaining a normal move. Also check that the schema allows null, and add missing-date emails to your eval set.</p></div>
+    </details>
+    <p><strong>Stretch.</strong> Min et al. (2022) found that, for some classification tasks, replacing the gold labels in demonstrations with random labels hurt accuracy less than expected. What does this suggest examples are really teaching, and how should that change how you pick them?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Solution</summary>
+      <div class="sol-body"><p>It suggests demonstrations often teach the format, the label space and the kind of inputs to expect, more than the exact input-to-label mapping. So pick examples that cover the real input distribution and every label, and keep the format identical. Do not assume correct labels alone guarantee the model learned your boundary; for subtle boundaries you still need clear instructions, tricky examples, an eval, and possibly fine-tuning.</p></div>
+    </details>
+  </div>
+  <div class="box deep shape-interview">
+    <div class="box-label">Interview questions</div>
+    <p><span class="shape-lvl">Junior</span> What is the difference between zero-shot and few-shot prompting?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Zero-shot gives the model only instructions. Few-shot adds a handful of worked examples, input then desired output, before the real input. Examples pin down the format, the labels and the style much more precisely than words, so few-shot usually makes classification and extraction more consistent. The cost is extra input tokens on every request, and the examples only apply to the requests that include them.</p></div>
+    </details>
+    <p><span class="shape-lvl">Mid</span> How do you choose few-shot examples, and how many?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>Cover every label, include edge cases such as missing fields or 'unknown', keep the format exactly the same across examples, and balance the labels so the model does not lean one way. Start with 2 to 5 and add more only if an eval shows it helps. Test a few orderings, since order can matter. If you need many examples, retrieve the most similar few per input from an example bank, or consider fine-tuning.</p></div>
+    </details>
+    <p><span class="shape-lvl">Senior</span> When do you move from few-shot prompting to fine-tuning?</p>
+    <details class="sol">
+      <summary><span class="chev">▸</span> Model answer</summary>
+      <div class="sol-body"><p>When an eval shows few-shot has plateaued below the bar, when the examples needed are too many to send on every call even with caching, when latency or cost per call matters at high volume, or when the behaviour is a stable style or format used everywhere. Fine-tuning needs a labelled dataset, an eval, and a retraining plan as data drifts. In between there is dynamic few-shot: retrieve examples per input. I would compare all three on the same eval with cost per 1,000 requests next to accuracy.</p></div>
+    </details>
+  </div>
+  <div class="box key shape-sources">
+    <div class="box-label">Sources (checked 2026-11-03)</div>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2005.14165" target="_blank" rel="noopener">Language Models are Few-Shot Learners (Brown et al., 2020) — arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2102.09690" target="_blank" rel="noopener">Calibrate Before Use: Improving Few-Shot Performance of Language Models (Zhao et al., 2021) — arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2202.12837" target="_blank" rel="noopener">Rethinking the Role of Demonstrations (Min et al., 2022) — arXiv</a></li>
+      <li><a href="https://arxiv.org/abs/2104.08786" target="_blank" rel="noopener">Fantastically Ordered Prompts and Where to Find Them (Lu et al., 2021) — arXiv</a></li>
+    </ul>
+  </div>
+<!-- shape:tail:end -->
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Show two or three solved examples and the model copies the pattern for the new one.</p>
+<!-- ease:line:end -->
 </main>
 
 <script>
@@ -184,5 +327,10 @@ Output: {"name": "Sam", "date": "March 3"}</code></pre>
 </script>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>
