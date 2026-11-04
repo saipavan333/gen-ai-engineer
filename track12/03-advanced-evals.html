@@ -12,12 +12,40 @@
 
   <span class="eyebrow">Going Deeper · Lesson 11.3</span>
   <h1>Advanced evals</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>An LLM judge is a model that grades other models' answers.</p>
+    <p>A judge can be wrong or biased too, so you test the judge before you trust it.</p>
+    <p>First compare its grades with human grades on 30 to 50 examples.</p>
+    <p>Then cancel its known habits, such as liking the first answer shown or the longer one.</p>
+    <p>Finally, only call a new version better when the gap is bigger than the noise.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>An LLM judge is a new referee. Before you let them run the final, you watch them call 50 recorded plays and compare their calls with a panel of experienced referees. If they agree far more often than chance, you trust them; if they always favour the team on the left side of the screen, you swap the sides and see if the call changes.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>Watching the new referee call 50 recorded plays</td><td>Calibrating the judge against hand labels</td></tr>
+      <tr><td>Agreeing more often than chance</td><td>Cohen's kappa: agreement corrected for luck</td></tr>
+      <tr><td>Swapping the teams' sides of the screen</td><td>Position swapping: judge A-then-B and B-then-A</td></tr>
+      <tr><td>One lucky call in a close game</td><td>Noise: a small score change can be random, so test significance</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A human referee can explain each call; an LLM judge's reasons can sound good and still be wrong, so you check agreement in numbers, not in explanations.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 272" role="img" aria-label="Agreement table between human labels and an LLM judge, and the kappa calculation" preserveAspectRatio="xMidYMid meet"><text x="14" y="20" text-anchor="start" class="b">50 answers labelled by humans and by the LLM judge</text><text x="270" y="44" text-anchor="middle" class="s b">judge says</text><text x="210" y="62" text-anchor="middle" class="s">faithful</text><text x="330" y="62" text-anchor="middle" class="s">not</text><text x="140" y="101" text-anchor="end" class="s b">human:</text><text x="140" y="118" text-anchor="end" class="s">faithful</text><text x="140" y="179" text-anchor="end" class="s b">human: not</text><rect x="152" y="72" width="116" height="66" rx="6" class="bx tn-g" /><text x="210" y="102" text-anchor="middle" class="b" style="font-size:20px">27</text><text x="210" y="122" text-anchor="middle" class="s" style="font-size:12px">agree</text><rect x="272" y="72" width="116" height="66" rx="6" class="bx tn-k" /><text x="330" y="102" text-anchor="middle" class="b" style="font-size:20px">3</text><text x="330" y="122" text-anchor="middle" class="s" style="font-size:12px">too strict</text><rect x="152" y="142" width="116" height="66" rx="6" class="bx tn-w" /><text x="210" y="172" text-anchor="middle" class="b" style="font-size:20px">5</text><text x="210" y="192" text-anchor="middle" class="s" style="font-size:12px">too lenient</text><rect x="272" y="142" width="116" height="66" rx="6" class="bx tn-g" /><text x="330" y="172" text-anchor="middle" class="b" style="font-size:20px">15</text><text x="330" y="192" text-anchor="middle" class="s" style="font-size:12px">agree</text><text x="440" y="52" text-anchor="start" class="s b">Raw agreement</text><text x="440" y="70" text-anchor="start" class="s mono">(27 + 15) / 50 = 0.84</text><text x="440" y="98" text-anchor="start" class="s b">Chance agreement</text><text x="440" y="116" text-anchor="start" class="s mono">0.60 x 0.64 + 0.40 x 0.36 = 0.528</text><text x="440" y="144" text-anchor="start" class="s b ac-t">Cohen&#x27;s kappa</text><text x="440" y="162" text-anchor="start" class="s mono">(0.84 - 0.528) / (1 - 0.528) = 0.66</text><text x="14" y="234" text-anchor="start" class="s" style="font-size:13px">Kappa 0.66 means usable, but the 5 answers the judge passed and humans failed are the dangerous ones for</text><text x="14" y="251" text-anchor="start" class="s" style="font-size:13px">a faithfulness gate: tighten the rubric and re-measure.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 444" role="img" aria-label="Agreement table between human labels and an LLM judge, and the kappa calculation" preserveAspectRatio="xMidYMid meet"><text x="14" y="20" text-anchor="start" class="b">50 answers: humans vs the judge</text><text x="210" y="44" text-anchor="middle" class="s b">judge says</text><text x="160" y="62" text-anchor="middle" class="s">faithful</text><text x="260" y="62" text-anchor="middle" class="s">not</text><text x="100" y="99" text-anchor="end" class="s b">human:</text><text x="100" y="116" text-anchor="end" class="s">faithful</text><text x="100" y="173" text-anchor="end" class="s b">human: not</text><rect x="112" y="72" width="96" height="62" rx="6" class="bx tn-g" /><text x="160" y="102" text-anchor="middle" class="b" style="font-size:20px">27</text><text x="160" y="122" text-anchor="middle" class="s" style="font-size:12px">agree</text><rect x="212" y="72" width="96" height="62" rx="6" class="bx tn-k" /><text x="260" y="102" text-anchor="middle" class="b" style="font-size:20px">3</text><text x="260" y="122" text-anchor="middle" class="s" style="font-size:12px">too strict</text><rect x="112" y="138" width="96" height="62" rx="6" class="bx tn-w" /><text x="160" y="168" text-anchor="middle" class="b" style="font-size:20px">5</text><text x="160" y="188" text-anchor="middle" class="s" style="font-size:12px">too lenient</text><rect x="212" y="138" width="96" height="62" rx="6" class="bx tn-g" /><text x="260" y="168" text-anchor="middle" class="b" style="font-size:20px">15</text><text x="260" y="188" text-anchor="middle" class="s" style="font-size:12px">agree</text><text x="14" y="232" text-anchor="start" class="s b">Raw agreement</text><text x="14" y="250" text-anchor="start" class="s">(27 + 15) / 50 = 0.84</text><text x="14" y="278" text-anchor="start" class="s b">Chance agreement</text><text x="14" y="296" text-anchor="start" class="s">0.60 x 0.64 + 0.40 x 0.36 = 0.528</text><text x="14" y="324" text-anchor="start" class="s b ac-t">Cohen&#x27;s kappa</text><text x="14" y="342" text-anchor="start" class="s">(0.84 - 0.528) / (1 - 0.528) = 0.66</text><text x="14" y="372" text-anchor="start" class="s" style="font-size:13px">Kappa 0.66 means usable, but the 5 answers the</text><text x="14" y="389" text-anchor="start" class="s" style="font-size:13px">judge passed and humans failed are the</text><text x="14" y="406" text-anchor="start" class="s" style="font-size:13px">dangerous ones for a faithfulness gate: tighten</text><text x="14" y="423" text-anchor="start" class="s" style="font-size:13px">the rubric and re-measure.</text></svg>
+    <figcaption>The counts are the page's example. Raw agreement looks high at 84%, but some of it would happen by luck; kappa removes that and lands at 0.66.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">Track&nbsp;6 made you measure. This lesson makes your measurements <em>trustworthy</em> — calibrating LLM judges, cancelling their biases, and using enough statistical care that “v2 is better” is a fact, not a hopeful glance at a number that ticked up.</p>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>An LLM judge is a new referee. Before you let them run the final, you watch them call 50 recorded plays and compare their calls with a panel of experienced referees. If they agree far more often than chance, you trust them; if they always favour the team on the left side of the screen, you swap the sides and see if the call changes. The analogy breaks because a human referee can explain each call; an LLM judge's reasons can sound good and still be wrong, so you check agreement in numbers, not in explanations.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -220,6 +248,10 @@
     </ul>
   </div>
 <!-- shape:tail:end -->
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Before a judge grades your system, grade the judge.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
