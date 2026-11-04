@@ -12,6 +12,37 @@
 
   <span class="eyebrow">Track 5 · Lesson 5.5</span>
   <h1>Instruction tuning</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>A base model only continues text. Ask it a question and it may reply with more questions.</p>
+    <p>Instruction tuning, also called SFT (supervised fine-tuning), trains it on many pairs: a request and a good answer.</p>
+    <p>After that, it answers requests instead of just continuing them.</p>
+    <p>Each example is wrapped in the model's chat template: special tokens that mark who is speaking.</p>
+    <p>A second step, preference tuning, trains on pairs of answers where people marked the better one.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Instruction tuning is like teaching a parrot that already knows thousands of words how to answer questions instead of just repeating whatever it hears. You show it again and again: when someone asks this, the answer looks like that. Preference tuning is then giving it a treat for the better of two answers.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>A parrot that already knows thousands of words</td><td>A pretrained base model</td></tr>
+      <tr><td>“When someone asks this, the answer looks like that”</td><td>SFT on instruction → response pairs</td></tr>
+      <tr><td>A treat for the better of two answers</td><td>Preference tuning (RLHF or DPO) on chosen-versus-rejected pairs</td></tr>
+      <tr><td>Learning even your mistakes and your accent</td><td>The model learns everything in the examples, template tokens included</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A parrot learns from the treat in the moment, while a model learns only from what's in the examples, including their mistakes and their formatting tokens.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 272" role="img" aria-label="Which tokens of a training example carry the loss" preserveAspectRatio="xMidYMid meet"><text x="20" y="20" text-anchor="start" class="b">One training example: 750 tokens in the Qwen2.5 chat template</text><text x="20" y="48" text-anchor="start" class="s mono" style="font-size:12px">&lt;|im_start|&gt;system … &lt;|im_end|&gt;   &lt;|im_start|&gt;user … &lt;|im_end|&gt;   &lt;|im_start|&gt;assistant … &lt;|im_end|&gt;</text><text x="20" y="78" text-anchor="start" class="s b">Full-sequence loss (TRL default for chat datasets)</text><rect x="20.0" y="88" width="141.0" height="34" rx="5" class="fill-a"/><text x="90.5" y="110" text-anchor="middle" class="b" style="font-size:13px">system 150</text><rect x="164.0" y="88" width="333.0" height="34" rx="5" class="fill-a"/><text x="330.5" y="110" text-anchor="middle" class="b" style="font-size:13px">customer 350</text><rect x="500.0" y="88" width="237.0" height="34" rx="5" class="fill-a"/><text x="618.5" y="110" text-anchor="middle" class="b" style="font-size:13px">reply 250</text><text x="20" y="140" text-anchor="start" class="s" style="font-size:13px">graded tokens: 750 of 750; the reply you want to teach is 33% of the loss</text><text x="20" y="172" text-anchor="start" class="s b">assistant_only_loss=True</text><rect x="20.0" y="182" width="141.0" height="34" rx="5" class="bx"/><text x="90.5" y="204" text-anchor="middle" class="s m" style="font-size:13px">system 150</text><rect x="164.0" y="182" width="333.0" height="34" rx="5" class="bx"/><text x="330.5" y="204" text-anchor="middle" class="s m" style="font-size:13px">customer 350</text><rect x="500.0" y="182" width="237.0" height="34" rx="5" class="fill-a"/><text x="618.5" y="204" text-anchor="middle" class="b" style="font-size:13px">reply 250</text><text x="20" y="234" text-anchor="start" class="s" style="font-size:13px">graded tokens: 250 of 750; the reply you want to teach is 100% of the loss</text><rect x="20" y="250" width="14" height="14" rx="3" class="fill-a"/><text x="40" y="262" text-anchor="start" class="s" style="font-size:12px">graded: the model is trained to predict these</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 368" role="img" aria-label="Which tokens of a training example carry the loss" preserveAspectRatio="xMidYMid meet"><text x="12" y="20" text-anchor="start" class="b" style="font-size:14px">One training example: 750 tokens</text><text x="12" y="38" text-anchor="start" class="s m">in the Qwen2.5 chat template</text><text x="12" y="60" text-anchor="start" class="s mono" style="font-size:12px">&lt;|im_start|&gt;system … &lt;|im_end|&gt;</text><text x="12" y="78" text-anchor="start" class="s mono" style="font-size:12px">&lt;|im_start|&gt;user … &lt;|im_end|&gt;</text><text x="12" y="96" text-anchor="start" class="s mono" style="font-size:12px">&lt;|im_start|&gt;assistant … &lt;|im_end|&gt;</text><text x="12" y="126" text-anchor="start" class="s b">Full-sequence loss (TRL default for chat datasets)</text><rect x="12.0" y="136" width="64.2" height="42" rx="5" class="fill-a"/><text x="44.1" y="154" text-anchor="middle" class="b" style="font-size:12px">system</text><text x="44.1" y="170" text-anchor="middle" class="b" style="font-size:12px">150</text><rect x="79.2" y="136" width="153.8" height="42" rx="5" class="fill-a"/><text x="156.1" y="154" text-anchor="middle" class="b" style="font-size:12px">customer</text><text x="156.1" y="170" text-anchor="middle" class="b" style="font-size:12px">350</text><rect x="236.0" y="136" width="109.0" height="42" rx="5" class="fill-a"/><text x="290.5" y="154" text-anchor="middle" class="b" style="font-size:12px">reply</text><text x="290.5" y="170" text-anchor="middle" class="b" style="font-size:12px">250</text><text x="12" y="196" text-anchor="start" class="s" style="font-size:12px">graded: 750 of 750 tokens; the reply you</text><text x="12" y="212" text-anchor="start" class="s" style="font-size:12px">want to teach is 33% of the loss</text><text x="12" y="244" text-anchor="start" class="s b">assistant_only_loss=True</text><rect x="12.0" y="254" width="64.2" height="42" rx="5" class="bx"/><text x="44.1" y="272" text-anchor="middle" class="s m" style="font-size:12px">system</text><text x="44.1" y="288" text-anchor="middle" class="s m" style="font-size:12px">150</text><rect x="79.2" y="254" width="153.8" height="42" rx="5" class="bx"/><text x="156.1" y="272" text-anchor="middle" class="s m" style="font-size:12px">customer</text><text x="156.1" y="288" text-anchor="middle" class="s m" style="font-size:12px">350</text><rect x="236.0" y="254" width="109.0" height="42" rx="5" class="fill-a"/><text x="290.5" y="272" text-anchor="middle" class="b" style="font-size:12px">reply</text><text x="290.5" y="288" text-anchor="middle" class="b" style="font-size:12px">250</text><text x="12" y="314" text-anchor="start" class="s" style="font-size:12px">graded: 250 of 750 tokens; the reply you</text><text x="12" y="330" text-anchor="start" class="s" style="font-size:12px">want to teach is 100% of the loss</text><rect x="12" y="346" width="14" height="14" rx="3" class="fill-a"/><text x="32" y="358" text-anchor="start" class="s" style="font-size:12px">graded: the model is trained to predict these</text></svg>
+    <figcaption>This page's worked example: 150 system tokens, 350 customer tokens, 250 reply tokens. With the default full-sequence loss, two thirds of the training signal goes on predicting the prompt. Assistant-only loss spends all of it on the reply.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">This is the most common kind of fine-tuning, and the one that turned raw next-token predictors into the helpful assistants you use every day. Understand it and you understand both how to specialize a model <em>and</em> how ChatGPT-style models are actually made.</p>
 
   <h2>From “continues text” to “follows instructions”</h2>
@@ -27,10 +58,7 @@
     <p><span class="term">Supervised fine-tuning</span> (SFT) trains the model on instruction→response pairs so it learns to produce the response given the instruction — the workhorse of instruction tuning. The data uses a <span class="term">chat template</span>: the specific formatting (special tokens marking system/user/assistant turns) the model expects. <span class="term">Preference tuning</span> — via <span class="term">RLHF</span> (reinforcement learning from human feedback) or the simpler <span class="term">DPO</span> (direct preference optimization) — further trains the model on <em>comparisons</em> (“response A is better than B”) to align tone, helpfulness, and safety with human preferences.</p>
   </div>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>Instruction tuning is like teaching a parrot that already knows thousands of words how to answer questions instead of just repeating whatever it hears. You show it again and again: when someone asks this, the answer looks like that. Preference tuning is then giving it a treat for the better of two answers. The analogy breaks because a parrot learns from the treat in the moment, while a model learns only from what's in the examples, including their mistakes and their formatting tokens.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -226,6 +254,10 @@ trainer.<span class="f">train</span>()
 
   <p>You’ve trained a model. The non-negotiable final step is proving it actually got better — without quietly breaking. Next: <strong>evaluating a fine-tune</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Instruction tuning shows the model thousands of 'asked this, answer like that' examples until answering becomes its habit.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>

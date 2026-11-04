@@ -12,6 +12,37 @@
 
   <span class="eyebrow">Track 5 · Lesson 5.3</span>
   <h1>Data preparation</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Fine-tuning data is a set of examples: an input and the exact answer you want back.</p>
+    <p>The model copies those examples, the good habits and the bad ones.</p>
+    <p>So the work is cleaning: remove duplicates, drop poor answers, and hide personal data.</p>
+    <p>Keep every example in the same format you will use when you call the model later.</p>
+    <p>Set some examples aside, never trained on, so you can check the result honestly.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Preparing fine-tuning data is like choosing which past exam answers to give a younger student to study. If you hand over a pile with messy answers, wrong answers and the same question copied 50 times, they'll learn the mess. If you hand over 300 neat, correct, varied ones, they'll learn the pattern.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>Messy or wrong past answers</td><td>Low-quality responses, which the model will imitate faithfully</td></tr>
+      <tr><td>The same question copied 50 times</td><td>Duplicates and near-duplicates, which overweight one pattern</td></tr>
+      <tr><td>300 neat, varied answers</td><td>A few hundred clean, consistent, representative pairs</td></tr>
+      <tr><td>Keeping some exams back for the real test</td><td>The validation split, kept apart by customer and time to avoid leakage</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A student can tell a crossed-out wrong answer is wrong; a model copies whatever you show it, wrong answers included.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 191" role="img" aria-label="From 1.2 million support tickets to 8,000 training examples" preserveAspectRatio="xMidYMid meet"><rect x="14" y="22" width="119.2" height="153" rx="10" class="bx tn-b" /><g class="vzb"><text x="73.6" y="72.75" text-anchor="middle" class="b">1.2M</text><text x="73.6" y="92.75" text-anchor="middle" class="b">tickets</text><text x="73.6" y="118.75" text-anchor="middle" class="s" style="font-size:13px">resolved, with</text><text x="73.6" y="135.75" text-anchor="middle" class="s" style="font-size:13px">agent replies</text></g><circle cx="16" cy="24" r="11" class="badge"/><text x="16" y="28.5" text-anchor="middle" class="badge-t">1</text><line x1="137.2" y1="98.5" x2="154.2" y2="98.5" class="ln "/><polygon points="163.2,98.5 154.2,93.55 154.2,103.45" class="hd "/><rect x="167.2" y="22" width="119.2" height="153" rx="10" class="bx tn-b" /><g class="vzb"><text x="226.8" y="74.25" text-anchor="middle" class="b">Dedup</text><text x="226.8" y="100.25" text-anchor="middle" class="s" style="font-size:13px">exact, then</text><text x="226.8" y="117.25" text-anchor="middle" class="s" style="font-size:13px">near-duplicate:</text><text x="226.8" y="134.25" text-anchor="middle" class="s" style="font-size:13px">~590,000 left</text></g><circle cx="169.2" cy="24" r="11" class="badge"/><text x="169.2" y="28.5" text-anchor="middle" class="badge-t">2</text><line x1="290.4" y1="98.5" x2="307.4" y2="98.5" class="ln "/><polygon points="316.4,98.5 307.4,93.55 307.4,103.45" class="hd "/><rect x="320.4" y="22" width="119.2" height="153" rx="10" class="bx tn-b" /><g class="vzb"><text x="380" y="64.25" text-anchor="middle" class="b">Quality</text><text x="380" y="84.25" text-anchor="middle" class="b">filter</text><text x="380" y="110.25" text-anchor="middle" class="s" style="font-size:13px">fixed on first</text><text x="380" y="127.25" text-anchor="middle" class="s" style="font-size:13px">reply, rated</text><text x="380" y="144.25" text-anchor="middle" class="s" style="font-size:13px">4-5: ~88,500</text></g><circle cx="322.4" cy="24" r="11" class="badge"/><text x="322.4" y="28.5" text-anchor="middle" class="badge-t">3</text><line x1="443.6" y1="98.5" x2="460.6" y2="98.5" class="ln "/><polygon points="469.6,98.5 460.6,93.55 460.6,103.45" class="hd "/><rect x="473.6" y="22" width="119.2" height="153" rx="10" class="bx tn-b" /><g class="vzb"><text x="533.2" y="57.25" text-anchor="middle" class="b">PII scrub</text><text x="533.2" y="83.25" text-anchor="middle" class="s" style="font-size:13px">phone,</text><text x="533.2" y="100.25" text-anchor="middle" class="s" style="font-size:13px">account,</text><text x="533.2" y="117.25" text-anchor="middle" class="s" style="font-size:13px">address become</text><text x="533.2" y="134.25" text-anchor="middle" class="s" style="font-size:13px">[PHONE] etc.:</text><text x="533.2" y="151.25" text-anchor="middle" class="s" style="font-size:13px">~80,000</text></g><circle cx="475.6" cy="24" r="11" class="badge"/><text x="475.6" y="28.5" text-anchor="middle" class="badge-t">4</text><line x1="596.8" y1="98.5" x2="613.8" y2="98.5" class="ln "/><polygon points="622.8,98.5 613.8,93.55 613.8,103.45" class="hd "/><rect x="626.8" y="22" width="119.2" height="153" rx="10" class="bx tn-g" /><g class="vzb"><text x="686.4" y="47.25" text-anchor="middle" class="b">Sample</text><text x="686.4" y="67.25" text-anchor="middle" class="b">8,000</text><text x="686.4" y="93.25" text-anchor="middle" class="s" style="font-size:13px">by intent</text><text x="686.4" y="110.25" text-anchor="middle" class="s" style="font-size:13px">share, then a</text><text x="686.4" y="127.25" text-anchor="middle" class="s" style="font-size:13px">90/10 split by</text><text x="686.4" y="144.25" text-anchor="middle" class="s" style="font-size:13px">customer and</text><text x="686.4" y="161.25" text-anchor="middle" class="s" style="font-size:13px">month</text></g><circle cx="628.8" cy="24" r="11" class="badge"/><text x="628.8" y="28.5" text-anchor="middle" class="badge-t">5</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 525" role="img" aria-label="From 1.2 million support tickets to 8,000 training examples" preserveAspectRatio="xMidYMid meet"><rect x="12" y="16" width="336" height="65" rx="10" class="bx tn-b" /><g class="vzb"><text x="180" y="41.25" text-anchor="middle" class="b">1.2M tickets</text><text x="180" y="67.25" text-anchor="middle" class="s" style="font-size:13px">resolved, with agent replies</text></g><circle cx="14" cy="18" r="11" class="badge"/><text x="14" y="22.5" text-anchor="middle" class="badge-t">1</text><line x1="180" y1="84" x2="180" y2="103" class="ln "/><polygon points="180,112 184.95,103 175.05,103" class="hd "/><rect x="12" y="115" width="336" height="65" rx="10" class="bx tn-b" /><g class="vzb"><text x="180" y="140.25" text-anchor="middle" class="b">Dedup</text><text x="180" y="166.25" text-anchor="middle" class="s" style="font-size:13px">exact, then near-duplicate: ~590,000 left</text></g><circle cx="14" cy="117" r="11" class="badge"/><text x="14" y="121.5" text-anchor="middle" class="badge-t">2</text><line x1="180" y1="183" x2="180" y2="202" class="ln "/><polygon points="180,211 184.95,202 175.05,202" class="hd "/><rect x="12" y="214" width="336" height="65" rx="10" class="bx tn-b" /><g class="vzb"><text x="180" y="239.25" text-anchor="middle" class="b">Quality filter</text><text x="180" y="265.25" text-anchor="middle" class="s" style="font-size:13px">fixed on first reply, rated 4-5: ~88,500</text></g><circle cx="14" cy="216" r="11" class="badge"/><text x="14" y="220.5" text-anchor="middle" class="badge-t">3</text><line x1="180" y1="282" x2="180" y2="301" class="ln "/><polygon points="180,310 184.95,301 175.05,301" class="hd "/><rect x="12" y="313" width="336" height="82" rx="10" class="bx tn-b" /><g class="vzb"><text x="180" y="338.25" text-anchor="middle" class="b">PII scrub</text><text x="180" y="364.25" text-anchor="middle" class="s" style="font-size:13px">phone, account, address become [PHONE] etc.:</text><text x="180" y="381.25" text-anchor="middle" class="s" style="font-size:13px">~80,000</text></g><circle cx="14" cy="315" r="11" class="badge"/><text x="14" y="319.5" text-anchor="middle" class="badge-t">4</text><line x1="180" y1="398" x2="180" y2="417" class="ln "/><polygon points="180,426 184.95,417 175.05,417" class="hd "/><rect x="12" y="429" width="336" height="82" rx="10" class="bx tn-g" /><g class="vzb"><text x="180" y="454.25" text-anchor="middle" class="b">Sample 8,000</text><text x="180" y="480.25" text-anchor="middle" class="s" style="font-size:13px">by intent share, then a 90/10 split by</text><text x="180" y="497.25" text-anchor="middle" class="s" style="font-size:13px">customer and month</text></g><circle cx="14" cy="431" r="11" class="badge"/><text x="14" y="435.5" text-anchor="middle" class="badge-t">5</text></svg>
+    <figcaption>The worked example further down this page, as a pipeline. The drop rates at each stage are that example's assumptions. Notice how little survives: curation, not volume, is the job.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">If fine-tuning fails, it’s almost always the data — not the algorithm. The dataset <em>is</em> the product of a fine-tune: the model becomes a mirror of the examples you show it. This lesson is how to build that mirror well.</p>
 
   <h2>Why data is the whole game</h2>
@@ -27,10 +58,7 @@
     <p>A fine-tuning <span class="term">training example</span> is an input paired with the desired output — for instruction tuning, an <span class="term">instruction → response</span> pair, often expressed in a <span class="term">chat format</span> (a list of role/content messages). You split your examples into a <span class="term">training set</span> the model learns from and a <span class="term">validation set</span> held out to measure honestly. The cardinal rule: the data’s format must <strong>match how you’ll prompt the model at inference</strong>.</p>
   </div>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>Preparing fine-tuning data is like choosing which past exam answers to give a younger student to study. If you hand over a pile with messy answers, wrong answers and the same question copied 50 times, they'll learn the mess. If you hand over 300 neat, correct, varied ones, they'll learn the pattern. The analogy breaks because a student can tell a crossed-out wrong answer is wrong; a model copies whatever you show it, wrong answers included.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -232,6 +260,10 @@ train, val <span class="o">=</span> data[:split], data[split:]      <span class=
 
   <p>With clean data ready, you need a way to actually train that’s cheap enough to run for free. That’s the breakthrough that made fine-tuning accessible. Next: <strong>LoRA &amp; QLoRA</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> The model becomes a mirror of your examples, so clean the examples before you train.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
