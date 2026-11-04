@@ -12,6 +12,37 @@
 
   <span class="eyebrow">Track 15 · Lesson 15.2</span>
   <h1>RAG Q&amp;A</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>RAG (retrieval-augmented generation) is the most heavily tested topic in GenAI interviews.</p>
+    <p>RAG means: find the right pieces of your documents first, then let the model answer using only those pieces.</p>
+    <p>So a RAG system has two halves, retrieval and generation, and either one can fail.</p>
+    <p>The strongest answers keep the halves apart: measure each one, and debug by asking which half broke.</p>
+    <p>Interviewers also listen for cost, speed and scale, not just the pipeline steps.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Picture a student who gets an open-book exam question wrong. The teacher's first question is: did you open the right page? If not, the index or the search let them down. If they had the right page in front of them and still wrote the wrong thing, the reading and writing let them down.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>Opening the right page</td><td>The relevant chunk shows up in the top-k results (measured by recall@k)</td></tr>
+      <tr><td>Couldn't find the page</td><td>Retrieval failure: chunking, embedding model, hybrid search, query transformation</td></tr>
+      <tr><td>Had the page but wrote it wrong</td><td>Generation failure: weak grounding, low faithfulness, a loose prompt</td></tr>
+      <tr><td>Asking which page they opened</td><td>Opening the trace and reproducing with the exact retrieved context</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A student can tell you which page they used. A RAG system can only tell you if you logged the retrieved chunks in a trace, so tracing is not optional.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 402" role="img" aria-label="Debugging a wrong RAG answer: split retrieval failures from generation failures" preserveAspectRatio="xMidYMid meet"><rect x="230" y="14" width="300" height="42" rx="10" class="bx tn-b" /><g class="vzb"><text x="380" y="39.25" text-anchor="middle" class="b">A user reports a wrong answer</text></g><rect x="180" y="86" width="400" height="85" rx="10" class="bx tn-k" /><g class="vzb"><text x="380" y="111.25" text-anchor="middle" class="b">Open the trace. Was the relevant chunk in</text><text x="380" y="131.25" text-anchor="middle" class="b">the top-k?</text><text x="380" y="157.25" text-anchor="middle" class="s" style="font-size:13px">recall@k for this query says which half to fix</text></g><line x1="380" y1="59" x2="380" y2="74" class="ln "/><polygon points="380,83 384.95,74 375.05,74" class="hd "/><rect x="20" y="227" width="340" height="119" rx="10" class="bx tn-w" /><g class="vzb"><text x="190" y="262.25" text-anchor="middle" class="b">No: retrieval failed</text><text x="190" y="288.25" text-anchor="middle" class="s" style="font-size:13px">Fix chunking, the embedding model, hybrid</text><text x="190" y="305.25" text-anchor="middle" class="s" style="font-size:13px">search, query transformation, or fetch more</text><text x="190" y="322.25" text-anchor="middle" class="s" style="font-size:13px">then rerank.</text></g><rect x="400" y="227" width="340" height="119" rx="10" class="bx tn-c" /><g class="vzb"><text x="570" y="252.25" text-anchor="middle" class="b">Yes, but the answer ignored it:</text><text x="570" y="272.25" text-anchor="middle" class="b">generation failed</text><text x="570" y="298.25" text-anchor="middle" class="s" style="font-size:13px">Check grounding and faithfulness and the</text><text x="570" y="315.25" text-anchor="middle" class="s" style="font-size:13px">prompt. Reproduce with the exact retrieved</text><text x="570" y="332.25" text-anchor="middle" class="s" style="font-size:13px">context.</text></g><polyline points="300,173 300,193 190,193 190,215" class="ln wn"/><polygon points="190,224 194.95,215 185.05,215" class="hd wn"/><polyline points="460,173 460,193 570,193 570,215" class="ln ac"/><polygon points="570,224 574.95,215 565.05,215" class="hd ac"/><text x="180" y="215" text-anchor="end" class="b wn-t">no</text><text x="580" y="215" text-anchor="start" class="b ac-t">yes</text><text x="20" y="372" text-anchor="start" class="s">Interview example: recall@10 = 0.97 but users still get wrong answers → the right-hand branch.</text><text x="20" y="392" text-anchor="start" class="s">Retrieval is healthy, so fix grounding. Don&#x27;t re-chunk or swap the embedder.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 521" role="img" aria-label="Debugging a wrong RAG answer: split retrieval failures from generation failures" preserveAspectRatio="xMidYMid meet"><rect x="12" y="12" width="336" height="42" rx="10" class="bx tn-b" /><g class="vzb"><text x="180" y="37.25" text-anchor="middle" class="b">A user reports a wrong answer</text></g><line x1="180" y1="57" x2="180" y2="72" class="ln "/><polygon points="180,81 184.95,72 175.05,72" class="hd "/><rect x="12" y="84" width="336" height="85" rx="10" class="bx tn-k" /><g class="vzb"><text x="180" y="109.25" text-anchor="middle" class="b">Open the trace. Was the relevant</text><text x="180" y="129.25" text-anchor="middle" class="b">chunk in the top-k?</text><text x="180" y="155.25" text-anchor="middle" class="s" style="font-size:13px">recall@k for this query says which half</text></g><rect x="56" y="209" width="292" height="99" rx="10" class="bx tn-w" /><g class="vzb"><text x="202" y="234.25" text-anchor="middle" class="b">No: retrieval failed</text><text x="202" y="260.25" text-anchor="middle" class="s" style="font-size:13px">Fix chunking, the embedding model,</text><text x="202" y="277.25" text-anchor="middle" class="s" style="font-size:13px">hybrid search, query transformation, or</text><text x="202" y="294.25" text-anchor="middle" class="s" style="font-size:13px">fetch more then rerank.</text></g><line x1="26" y1="169" x2="26" y2="258.5" class="ln wn"/><line x1="26" y1="258.5" x2="44" y2="258.5" class="ln wn"/><polygon points="53,258.5 44,253.55 44,263.45" class="hd wn"/><text x="34" y="201" text-anchor="start" class="b wn-t">no</text><rect x="56" y="348" width="292" height="119" rx="10" class="bx tn-c" /><g class="vzb"><text x="202" y="373.25" text-anchor="middle" class="b">Yes, but the answer ignored it:</text><text x="202" y="393.25" text-anchor="middle" class="b">generation failed</text><text x="202" y="419.25" text-anchor="middle" class="s" style="font-size:13px">Check grounding and faithfulness and</text><text x="202" y="436.25" text-anchor="middle" class="s" style="font-size:13px">the prompt. Reproduce with the exact</text><text x="202" y="453.25" text-anchor="middle" class="s" style="font-size:13px">retrieved context.</text></g><line x1="26" y1="308" x2="26" y2="407.5" class="ln ac"/><line x1="26" y1="407.5" x2="44" y2="407.5" class="ln ac"/><polygon points="53,407.5 44,402.55 44,412.45" class="hd ac"/><text x="34" y="340" text-anchor="start" class="b ac-t">yes</text><text x="12" y="493" text-anchor="start" class="s">recall@10 = 0.97, answers still wrong:</text><text x="12" y="511" text-anchor="start" class="s">take the yes branch and fix grounding.</text></svg>
+    <figcaption>One question splits every RAG failure in two. If the right chunk never arrived, fix retrieval. If it arrived and the answer still went wrong, fix generation. The recall@10 = 0.97 example is the page's own interview question.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">RAG is the single most heavily-tested topic in applied-GenAI interviews this year — end-to-end design, chunking, evaluation, and production trade-offs. This bank covers the questions teams actually ask, including the advanced ones that separate strong candidates.</p>
 
   <div class="box note">
@@ -93,6 +124,10 @@
 
   <p>RAG covered. The other big system-design topic is letting the model act. Next: <strong>Agents Q&amp;A</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> When a RAG answer is wrong, first ask whether the right chunk was retrieved, then fix that half.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
