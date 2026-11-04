@@ -12,6 +12,37 @@
 
   <span class="eyebrow">Track 6 · Lesson 6.5</span>
   <h1>Tracing &amp; observability</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>One answer from an AI app often takes several steps: search, build a prompt, call the model, check.</p>
+    <p>When the answer is wrong, the final text alone doesn't tell you which step failed.</p>
+    <p>A trace is a record of one request, step by step. Each step is called a span.</p>
+    <p>A span stores what went in, what came out, how long it took and what it cost.</p>
+    <p>Monitoring adds these up into charts and alerts, so you hear about problems before users complain.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>A trace is like the tracking page for a parcel. It does not just say 'delivered late'; it shows every stop: picked up, sorted at the hub, stuck at customs for two days, out for delivery. When something goes wrong you can see exactly which stop caused it.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The parcel's tracking page</td><td>The trace: the whole record of one request</td></tr>
+      <tr><td>Each stop: picked up, sorted, customs</td><td>Each span: guard, embed, retrieve, rerank, LLM call</td></tr>
+      <tr><td>“Stuck at customs for two days”</td><td>A span that is slow, failed, or returned the wrong data</td></tr>
+      <tr><td>What's inside the parcel</td><td>The stored prompt and retrieved text, which may hold private data to redact</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A parcel tracker logs only times and places, but an LLM trace has to store the actual content at each stop (the prompt, the retrieved text), and that content can include private data you must protect.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 332" role="img" aria-label="A trace as a waterfall of timed spans" preserveAspectRatio="xMidYMid meet"><text x="20" y="20" text-anchor="start" class="b" style="font-size:15px">One request = one trace; each step = one span</text><text x="20" y="38" text-anchor="start" class="s m" style="font-size:12px">(illustrative timings; stored size per span from this page)</text><line x1="140.0" y1="54" x2="140.0" y2="258" class="grid"/><text x="140" y="274" text-anchor="middle" class="s m" style="font-size:12px">0 ms</text><line x1="281.7" y1="54" x2="281.7" y2="258" class="grid"/><text x="281.711" y="274" text-anchor="middle" class="s m" style="font-size:12px">500 ms</text><line x1="423.4" y1="54" x2="423.4" y2="258" class="grid"/><text x="423.422" y="274" text-anchor="middle" class="s m" style="font-size:12px">1000 ms</text><line x1="565.1" y1="54" x2="565.1" y2="258" class="grid"/><text x="565.134" y="274" text-anchor="middle" class="s m" style="font-size:12px">1500 ms</text><text x="130" y="73" text-anchor="end" class="s ">input guard</text><rect x="140.0" y="60" width="11.3" height="20" rx="3" class="fill-a"/><text x="157.337" y="75" text-anchor="start" class="s" style="font-size:12px">40 ms · 2 KB</text><text x="130" y="107" text-anchor="end" class="s ">embed</text><rect x="151.3" y="94" width="8.5" height="20" rx="3" class="fill-a"/><text x="165.84" y="109" text-anchor="start" class="s" style="font-size:12px">30 ms · 2 KB</text><text x="130" y="141" text-anchor="end" class="s wn-t b">retrieve</text><rect x="159.8" y="128" width="22.7" height="20" rx="3" class="fill-w"/><text x="188.513" y="143" text-anchor="start" class="s wn-t" style="font-size:12px">80 ms · 2 KB  · returned the old doc v3</text><text x="130" y="175" text-anchor="end" class="s ">rerank</text><rect x="182.5" y="162" width="22.7" height="20" rx="3" class="fill-a"/><text x="211.187" y="177" text-anchor="start" class="s" style="font-size:12px">80 ms · 2 KB</text><text x="130" y="209" text-anchor="end" class="s ">LLM call</text><rect x="205.2" y="196" width="453.5" height="20" rx="3" class="fill-a"/><text x="664.663" y="211" text-anchor="start" class="s" style="font-size:12px">1600 ms · 12 KB</text><text x="130" y="243" text-anchor="end" class="s ">output guard</text><rect x="658.7" y="230" width="11.3" height="20" rx="3" class="fill-a"/><text x="676" y="245" text-anchor="start" class="s" style="font-size:12px">40 ms · 2 KB</text><text x="20" y="296" text-anchor="start" class="s wn-t" style="font-size:13px">The retrieve span shows it returned last year&#x27;s policy (doc v3, not v4).</text><text x="20" y="314" text-anchor="start" class="s" style="font-size:13px">Fast, no error, wrong data: an indexing bug, not a model bug.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 422" role="img" aria-label="A trace as a waterfall of timed spans" preserveAspectRatio="xMidYMid meet"><text x="12" y="20" text-anchor="start" class="b" style="font-size:14px">One request = one trace; each step = one span</text><text x="12" y="38" text-anchor="start" class="s m" style="font-size:12px">(illustrative timings; stored size per span from this page)</text><line x1="12.0" y1="54" x2="12.0" y2="330" class="grid"/><text x="12" y="346" text-anchor="middle" class="s m" style="font-size:12px">0 ms</text><line x1="101.8" y1="54" x2="101.8" y2="330" class="grid"/><text x="101.84" y="346" text-anchor="middle" class="s m" style="font-size:12px">500 ms</text><line x1="191.7" y1="54" x2="191.7" y2="330" class="grid"/><text x="191.679" y="346" text-anchor="middle" class="s m" style="font-size:12px">1000 ms</text><line x1="281.5" y1="54" x2="281.5" y2="330" class="grid"/><text x="281.519" y="346" text-anchor="middle" class="s m" style="font-size:12px">1500 ms</text><text x="12" y="66" text-anchor="start" class="s " style="font-size:12px">input guard  40 ms · 2 KB</text><rect x="12.0" y="72" width="7.2" height="16" rx="3" class="fill-a"/><text x="12" y="112" text-anchor="start" class="s " style="font-size:12px">embed  30 ms · 2 KB</text><rect x="19.2" y="118" width="5.4" height="16" rx="3" class="fill-a"/><text x="12" y="158" text-anchor="start" class="s wn-t b" style="font-size:12px">retrieve  80 ms · 2 KB</text><rect x="24.6" y="164" width="14.4" height="16" rx="3" class="fill-w"/><text x="12" y="204" text-anchor="start" class="s " style="font-size:12px">rerank  80 ms · 2 KB</text><rect x="39.0" y="210" width="14.4" height="16" rx="3" class="fill-a"/><text x="12" y="250" text-anchor="start" class="s " style="font-size:12px">LLM call  1600 ms · 12 KB</text><rect x="53.3" y="256" width="287.5" height="16" rx="3" class="fill-a"/><text x="12" y="296" text-anchor="start" class="s " style="font-size:12px">output guard  40 ms · 2 KB</text><rect x="340.8" y="302" width="7.2" height="16" rx="3" class="fill-a"/><text x="12" y="368" text-anchor="start" class="s wn-t" style="font-size:13px">The retrieve span returned last year&#x27;s</text><text x="12" y="386" text-anchor="start" class="s" style="font-size:13px">policy (doc v3, not v4). Fast, no error,</text><text x="12" y="404" text-anchor="start" class="s" style="font-size:13px">wrong data: an indexing bug, not a model bug.</text></svg>
+    <figcaption>A trace drawn as a waterfall. Without it you only see a wrong answer. With it you can see the retrieve step quietly fetched an old document, which is the worked example further down this page.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">When a RAG pipeline or agent gives a bad answer in production, “the model messed up” isn’t a diagnosis. Tracing gives you an X-ray of every request — what was retrieved, what prompt was sent, what each step cost — so you can actually find and fix the problem.</p>
 
   <h2>Why LLM systems are hard to debug without tracing</h2>
@@ -27,10 +58,7 @@
     <p><span class="term">Observability</span> is the ability to understand what your system is doing from the data it emits. A <span class="term">trace</span> is the full record of one request; a <span class="term">span</span> is one step within it (a retrieval, an LLM call, a tool call) with its inputs, outputs, timing, and cost. <span class="term">Monitoring</span> aggregates these into dashboards and <span class="term">alerts</span> (latency spiking, error rate up, cost climbing) so you learn about problems before users complain.</p>
   </div>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>A trace is like the tracking page for a parcel. It does not just say 'delivered late'; it shows every stop: picked up, sorted at the hub, stuck at customs for two days, out for delivery. When something goes wrong you can see exactly which stop caused it. Where it breaks: a parcel tracker logs only times and places, but an LLM trace has to store the actual content at each stop (the prompt, the retrieved text), and that content can include private data you must protect.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -226,6 +254,10 @@
 
   <p>With observability in place, you can make your evals automatic — a gate that runs on every change, like tests for code. Next: <strong>regression-testing prompts</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> A trace is a step-by-step receipt for one request, so you can see exactly where it went wrong.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>

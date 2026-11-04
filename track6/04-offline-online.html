@@ -12,6 +12,37 @@
 
   <span class="eyebrow">Track 6 · Lesson 6.4</span>
   <h1>Offline vs online evals</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Offline evals test the system on your golden set before you ship. They are fast, cheap and repeatable.</p>
+    <p>Online evals watch real users after you ship.</p>
+    <p>An A/B test sends some users to the new version and compares results, like how many problems get solved.</p>
+    <p>Offline is a practice test; online is the real thing.</p>
+    <p>Use both, and turn online failures into new offline cases.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Offline eval is a driving test in an empty car park: same cones every time, cheap, safe, and you can repeat it. Online eval is watching how the new driver does on real roads in rush hour. You would never skip the car park test, but passing it does not prove you can handle a bus cutting in.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The car park test with the same cones</td><td>Offline eval on a fixed golden set</td></tr>
+      <tr><td>Real roads in rush hour</td><td>Online eval on production traffic</td></tr>
+      <tr><td>A bus cutting in</td><td>Real user queries your golden set never imagined</td></tr>
+      <tr><td>Comparing two learner drivers on the same roads</td><td>An A/B test: two versions, real users, one metric chosen in advance</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A real learner driver gets better with practice, while your users keep changing what they ask, so the 'road' moves under you even if the system stays the same.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 244" role="img" aria-label="Offline versus online evaluation" preserveAspectRatio="xMidYMid meet"><rect x="20" y="14" width="348" height="176" rx="10" class="bx tn-c" /><text x="194" y="42" text-anchor="middle" class="b">Offline: before you ship</text><circle cx="40" cy="63" r="3" class="dot tn-c"/><text x="52" y="68" text-anchor="start" style="font-size:14px">Fixed golden set, same cases every run</text><circle cx="40" cy="89" r="3" class="dot tn-c"/><text x="52" y="94" text-anchor="start" style="font-size:14px">Minutes to run, cheap, repeatable</text><circle cx="40" cy="115" r="3" class="dot tn-c"/><text x="52" y="120" text-anchor="start" style="font-size:14px">Gates every change</text><circle cx="40" cy="141" r="3" class="dot tn-c"/><text x="52" y="146" text-anchor="start" style="font-size:14px">Only as good as the cases you thought of</text><rect x="392" y="14" width="348" height="176" rx="10" class="bx tn-g" /><text x="566" y="42" text-anchor="middle" class="b">Online: after you ship</text><circle cx="412" cy="63" r="3" class="dot tn-g"/><text x="424" y="68" text-anchor="start" style="font-size:14px">Real users and real traffic</text><circle cx="412" cy="89" r="3" class="dot tn-g"/><text x="424" y="94" text-anchor="start" style="font-size:14px">A/B tests, thumbs up or down, task</text><text x="424" y="112" text-anchor="start" style="font-size:14px">completion</text><circle cx="412" cy="133" r="3" class="dot tn-g"/><text x="424" y="138" text-anchor="start" style="font-size:14px">Slow: needs enough traffic to be sure</text><circle cx="412" cy="159" r="3" class="dot tn-g"/><text x="424" y="164" text-anchor="start" style="font-size:14px">Guardrails: latency, cost, error rate</text><text x="380" y="216" text-anchor="middle" class="s" style="font-size:14px">Online failures become new golden cases, so the offline test gets closer to reality.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 508" role="img" aria-label="Offline versus online evaluation" preserveAspectRatio="xMidYMid meet"><rect x="20" y="14" width="320" height="194" rx="10" class="bx tn-c" /><text x="180" y="42" text-anchor="middle" class="b">Offline: before you ship</text><circle cx="40" cy="63" r="3" class="dot tn-c"/><text x="52" y="68" text-anchor="start" style="font-size:14px">Fixed golden set, same cases every</text><text x="52" y="86" text-anchor="start" style="font-size:14px">run</text><circle cx="40" cy="107" r="3" class="dot tn-c"/><text x="52" y="112" text-anchor="start" style="font-size:14px">Minutes to run, cheap, repeatable</text><circle cx="40" cy="133" r="3" class="dot tn-c"/><text x="52" y="138" text-anchor="start" style="font-size:14px">Gates every change</text><circle cx="40" cy="159" r="3" class="dot tn-c"/><text x="52" y="164" text-anchor="start" style="font-size:14px">Only as good as the cases you thought</text><text x="52" y="182" text-anchor="start" style="font-size:14px">of</text><text x="180" y="230" text-anchor="middle" class="b m">vs</text><rect x="20" y="242" width="320" height="176" rx="10" class="bx tn-g" /><text x="180" y="270" text-anchor="middle" class="b">Online: after you ship</text><circle cx="40" cy="291" r="3" class="dot tn-g"/><text x="52" y="296" text-anchor="start" style="font-size:14px">Real users and real traffic</text><circle cx="40" cy="317" r="3" class="dot tn-g"/><text x="52" y="322" text-anchor="start" style="font-size:14px">A/B tests, thumbs up or down, task</text><text x="52" y="340" text-anchor="start" style="font-size:14px">completion</text><circle cx="40" cy="361" r="3" class="dot tn-g"/><text x="52" y="366" text-anchor="start" style="font-size:14px">Slow: needs enough traffic to be sure</text><circle cx="40" cy="387" r="3" class="dot tn-g"/><text x="52" y="392" text-anchor="start" style="font-size:14px">Guardrails: latency, cost, error rate</text><text x="180" y="444" text-anchor="middle" class="s" style="font-size:14px">Online failures become new golden cases,</text><text x="180" y="462" text-anchor="middle" class="s" style="font-size:14px">so the offline test gets closer to</text><text x="180" y="480" text-anchor="middle" class="s" style="font-size:14px">reality.</text></svg>
+    <figcaption>Neither side is enough on its own. Offline catches regressions before users see them; online tells you whether the change helped real people.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">Your golden set tells you a change is good <em>before</em> you ship. Real users tell you if it’s <em>actually</em> good <em>after</em> you ship. Mature teams use both — and know the gap between them is where surprises live.</p>
 
   <h2>Two complementary measurements</h2>
@@ -27,10 +58,7 @@
     <p><span class="term">Offline evaluation</span> scores the system on a fixed dataset (your golden set) before deployment — fast, repeatable, cheap. <span class="term">Online evaluation</span> measures real production behavior: an <span class="term">A/B test</span> sends some users to the new version and compares outcomes; <span class="term">user feedback</span> (thumbs up/down, ratings, corrections) and <span class="term">outcome metrics</span> (task completion, resolution rate, retention) reveal true impact. Offline is a proxy; online is ground truth.</p>
   </div>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>Offline eval is a driving test in an empty car park: same cones every time, cheap, safe, and you can repeat it. Online eval is watching how the new driver does on real roads in rush hour. You would never skip the car park test, but passing it does not prove you can handle a bus cutting in. Where it breaks: a real learner driver gets better with practice, while your users keep changing what they ask, so the 'road' moves under you even if the system stays the same.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -223,6 +251,10 @@
 
   <p>Both offline and online eval depend on <em>seeing</em> what your system actually did on each request. That visibility is observability. Next: <strong>tracing &amp; observability</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Test on your practice set before shipping, then watch real users to learn what actually works.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>

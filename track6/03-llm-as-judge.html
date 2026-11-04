@@ -12,6 +12,43 @@
 
   <span class="eyebrow">Track 6 · Lesson 6.3</span>
   <h1>LLM-as-judge</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Many answers have no single right wording, so a simple text match can't grade them.</p>
+    <p>LLM-as-judge means asking another model to grade the answer against a written checklist called a rubric.</p>
+    <p>It can score one answer, or pick the better of two.</p>
+    <p>Judges have habits: they may favour the first answer shown, or the longest one.</p>
+    <p>So you swap the order to test for that, and you check the judge against human grades before trusting it.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>An LLM judge is like a talent-show judge marking singers. A fair judge follows a scorecard. A tired judge starts liking whoever sang first, gives extra points to whoever sang longest, and quietly favours singers from their own music school. You check a judge by having them mark a few performances that expert judges already scored, and seeing how often they agree.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The judge's scorecard</td><td>The rubric: correct, complete, grounded, concise</td></tr>
+      <tr><td>Liking whoever sang first</td><td>Position bias in pairwise judging</td></tr>
+      <tr><td>Extra points for the longest song</td><td>Verbosity bias: longer answers scored higher</td></tr>
+      <tr><td>Favouring singers from their own school</td><td>Self-preference: rating its own model family higher</td></tr>
+      <tr><td>Checking against expert judges</td><td>Calibrating the judge against human labels (agreement, Cohen's kappa)</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A human judge can explain a bias when asked, but an LLM judge's written reason may sound fair even when its score is biased, so you must measure, not ask.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 252" role="img" aria-label="The swap test: judge the same pair in both orders" preserveAspectRatio="xMidYMid meet"><text x="20" y="22" text-anchor="start" class="s m">Same question, rubric and two answers. Only the order changes.</text><text x="20" y="80" text-anchor="start" class="b">Run 1</text><rect x="80" y="50" width="92" height="50" rx="10" class="bx tn-a" /><text x="126" y="72" text-anchor="middle" class="s" style="font-size:12px">slot 1</text><text x="126" y="90" text-anchor="middle" class="b" style="font-size:14px">answer A</text><rect x="182" y="50" width="92" height="50" rx="10" class="bx tn-k" /><text x="228" y="72" text-anchor="middle" class="s" style="font-size:12px">slot 2</text><text x="228" y="90" text-anchor="middle" class="b" style="font-size:14px">answer B</text><line x1="278" y1="75" x2="307" y2="75" class="ln "/><polygon points="316,75 307,70.05 307,79.95" class="hd "/><rect x="320" y="44" width="130" height="62" rx="10" class="bx tn-c" /><text x="385" y="70" text-anchor="middle" class="b">LLM judge</text><text x="385" y="90" text-anchor="middle" class="s">+ rubric</text><line x1="454" y1="75" x2="483" y2="75" class="ln "/><polygon points="492,75 483,70.05 483,79.95" class="hd "/><rect x="496" y="50" width="110" height="50" rx="10" class="bx tn-b" /><text x="551" y="72" text-anchor="middle" class="s" style="font-size:12px">slot 1 wins</text><text x="551" y="90" text-anchor="middle" class="b" style="font-size:14px">→ A wins</text><text x="20" y="164" text-anchor="start" class="b">Run 2</text><rect x="80" y="134" width="92" height="50" rx="10" class="bx tn-k" /><text x="126" y="156" text-anchor="middle" class="s" style="font-size:12px">slot 1</text><text x="126" y="174" text-anchor="middle" class="b" style="font-size:14px">answer B</text><rect x="182" y="134" width="92" height="50" rx="10" class="bx tn-a" /><text x="228" y="156" text-anchor="middle" class="s" style="font-size:12px">slot 2</text><text x="228" y="174" text-anchor="middle" class="b" style="font-size:14px">answer A</text><line x1="278" y1="159" x2="307" y2="159" class="ln "/><polygon points="316,159 307,154.05 307,163.95" class="hd "/><rect x="320" y="128" width="130" height="62" rx="10" class="bx tn-c" /><text x="385" y="154" text-anchor="middle" class="b">LLM judge</text><text x="385" y="174" text-anchor="middle" class="s">+ rubric</text><line x1="454" y1="159" x2="483" y2="159" class="ln "/><polygon points="492,159 483,154.05 483,163.95" class="hd "/><rect x="496" y="134" width="110" height="50" rx="10" class="bx tn-b" /><text x="551" y="156" text-anchor="middle" class="s" style="font-size:12px">slot 1 wins</text><text x="551" y="174" text-anchor="middle" class="b" style="font-size:14px">→ B wins</text><polyline points="608,75 640,75 640,112 641,112" class="ln "/><polygon points="650,112 641,107.05 641,116.95" class="hd "/><polyline points="608,159 640,159 640,122 641,122" class="ln "/><polygon points="650,122 641,117.05 641,126.95" class="hd "/><rect x="652" y="70" width="96" height="94" rx="10" class="bx tn-w" /><text x="700" y="96" text-anchor="middle" class="b" style="font-size:14px">Orders</text><text x="700" y="114" text-anchor="middle" class="b" style="font-size:14px">disagree:</text><text x="700" y="136" text-anchor="middle" class="s" style="font-size:13px">a flip, so</text><text x="700" y="152" text-anchor="middle" class="s" style="font-size:13px">count a tie</text><text x="20" y="222" text-anchor="start" class="s">Count a win only when both orders pick the same answer. A flip means the judge is</text><text x="20" y="240" text-anchor="start" class="s">rewarding the slot, not the answer (position bias). Check judges against human labels too.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 468" role="img" aria-label="The swap test: judge the same pair in both orders" preserveAspectRatio="xMidYMid meet"><text x="12" y="20" text-anchor="start" class="s m">Same question, rubric and answers.</text><text x="12" y="38" text-anchor="start" class="s m">Only the order changes.</text><text x="12" y="66" text-anchor="start" class="b">Run 1</text><rect x="12" y="74" width="104" height="46" rx="10" class="bx tn-a" /><text x="64" y="93" text-anchor="middle" class="s" style="font-size:12px">slot 1</text><text x="64" y="111" text-anchor="middle" class="b" style="font-size:14px">answer A</text><rect x="124" y="74" width="104" height="46" rx="10" class="bx tn-k" /><text x="176" y="93" text-anchor="middle" class="s" style="font-size:12px">slot 2</text><text x="176" y="111" text-anchor="middle" class="b" style="font-size:14px">answer B</text><line x1="232" y1="97" x2="243" y2="97" class="ln "/><polygon points="252,97 243,92.05 243,101.95" class="hd "/><rect x="256" y="70" width="92" height="54" rx="10" class="bx tn-c" /><text x="302" y="93" text-anchor="middle" class="b" style="font-size:13px">LLM judge</text><text x="302" y="111" text-anchor="middle" class="s" style="font-size:12px">+ rubric</text><line x1="302" y1="124" x2="302" y2="131" class="ln "/><polygon points="302,140 306.95,131 297.05,131" class="hd "/><rect x="196" y="142" width="152" height="40" rx="10" class="bx tn-b" /><text x="272" y="167" text-anchor="middle" class="b" style="font-size:13px">slot 1 wins → A</text><text x="12" y="210" text-anchor="start" class="b">Run 2</text><rect x="12" y="218" width="104" height="46" rx="10" class="bx tn-k" /><text x="64" y="237" text-anchor="middle" class="s" style="font-size:12px">slot 1</text><text x="64" y="255" text-anchor="middle" class="b" style="font-size:14px">answer B</text><rect x="124" y="218" width="104" height="46" rx="10" class="bx tn-a" /><text x="176" y="237" text-anchor="middle" class="s" style="font-size:12px">slot 2</text><text x="176" y="255" text-anchor="middle" class="b" style="font-size:14px">answer A</text><line x1="232" y1="241" x2="243" y2="241" class="ln "/><polygon points="252,241 243,236.05 243,245.95" class="hd "/><rect x="256" y="214" width="92" height="54" rx="10" class="bx tn-c" /><text x="302" y="237" text-anchor="middle" class="b" style="font-size:13px">LLM judge</text><text x="302" y="255" text-anchor="middle" class="s" style="font-size:12px">+ rubric</text><line x1="302" y1="268" x2="302" y2="275" class="ln "/><polygon points="302,284 306.95,275 297.05,275" class="hd "/><rect x="196" y="286" width="152" height="40" rx="10" class="bx tn-b" /><text x="272" y="311" text-anchor="middle" class="b" style="font-size:13px">slot 1 wins → B</text><rect x="12" y="340" width="336" height="56" rx="10" class="bx tn-w" /><text x="180" y="362" text-anchor="middle" class="b" style="font-size:14px">Orders disagree: a flip</text><text x="180" y="382" text-anchor="middle" class="s">→ count it as a tie, not a win</text><text x="12" y="414" text-anchor="start" class="s">Count a win only when both orders agree.</text><text x="12" y="432" text-anchor="start" class="s">A flip means the judge rewards the slot,</text><text x="12" y="450" text-anchor="start" class="s">not the answer: position bias.</text></svg>
+    <figcaption>Run each pair twice with the answers swapped. If the judge picks whatever sits in slot 1 both times, its verdict is about position, not quality. The page's worked example counts a win only when both orders agree.</figcaption>
+  </figure>
+  <div class="ez-play" data-ez-play="judgeswap">
+    <div class="ease-label">Try it</div>
+    <p class="ez-hint">Pick a pair and an order. The judge here is a made-up biased one: it adds a bonus to whatever sits in slot 1. Watch which pairs flip.</p>
+    <div class="ez-stage"></div>
+  </div>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">How do you score “is this answer helpful, faithful, and well-written?” at scale, when there’s no single right string? You use a model to grade the output. It’s the workhorse of modern evals — powerful, scalable, and full of pitfalls you must know about.</p>
 
   <h2>Why we need a model to grade models</h2>
@@ -27,10 +64,7 @@
     <p><span class="term">LLM-as-judge</span> uses a model to evaluate outputs. A <span class="term">rubric</span> is the explicit criteria it scores against (“correct? complete? grounded? concise?”). <span class="term">Reference-based</span> judging compares the answer to a known-good answer; <span class="term">reference-free</span> judging scores against the rubric alone. <span class="term">Pointwise</span> judging scores one answer; <span class="term">pairwise</span> judging picks the better of two (often more reliable). Because the judge is itself an LLM, you must <span class="term">validate</span> it against human labels before trusting it.</p>
   </div>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>An LLM judge is like a talent-show judge marking singers. A fair judge follows a scorecard. A tired judge starts liking whoever sang first, gives extra points to whoever sang longest, and quietly favours singers from their own music school. You check a judge by having them mark a few performances that expert judges already scored, and seeing how often they agree. Where it breaks: a human judge can explain a bias when asked, but an LLM judge's written reason may sound fair even when its score is biased, so you must measure, not ask.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -261,6 +295,10 @@ v <span class="o">=</span> <span class="f">judge</span>(<span class="s">"What's 
 
   <p>You can now score quality offline. But the truest signal comes from real users. Next we contrast measuring before vs. after you ship. Next: <strong>offline vs online evals</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> A model can grade answers for you, but test the grader for bias before you trust its marks.</p>
+<!-- ease:line:end -->
 </main>
 
 <script>
@@ -286,5 +324,10 @@ v <span class="o">=</span> <span class="f">judge</span>(<span class="s">"What's 
 </script>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/ease.js?v=1"></script>
+<script src="../assets/ease/play-t06.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

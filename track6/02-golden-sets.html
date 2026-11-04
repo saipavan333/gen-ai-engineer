@@ -12,6 +12,42 @@
 
   <span class="eyebrow">Track 6 · Lesson 6.2</span>
   <h1>Golden sets</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>A golden set is a list of real questions, each with a known good answer or a clear pass rule.</p>
+    <p>It is your team's shared definition of “working”.</p>
+    <p>It should cover every kind of question, including the tricky ones the system gets wrong.</p>
+    <p>Keep some cases locked away so nobody tunes the prompt to them.</p>
+    <p>Every time users find a new failure, add it as a new case.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>A golden set is like the answer key a teacher keeps for the end-of-term exam. The teacher picks questions from every chapter, including the tricky ones students always get wrong, and keeps the key locked so nobody memorises it. Each year the same exam tells the teacher whether the class got better.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>Questions from every chapter</td><td>Cases from every intent or category of real traffic</td></tr>
+      <tr><td>The tricky questions students always miss</td><td>Edge cases: out-of-scope, ambiguous, should-refuse</td></tr>
+      <tr><td>The answer key</td><td>The expected output or acceptance rule for each case</td></tr>
+      <tr><td>Keeping the exam paper locked</td><td>A held-out set you run only before a release</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A school exam stays the same for years, but your golden set must keep growing as users find new ways to ask things.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 308" role="img" aria-label="What goes into a 400-case golden set and how it is split" preserveAspectRatio="xMidYMid meet"><text x="20" y="20" text-anchor="start" class="b">The 400-case golden set from this page&#x27;s telecom example</text><text x="20" y="54" text-anchor="start" class="s b">What goes in</text><rect x="20.0" y="64" width="645.0" height="30" rx="5" class="fill-a"/><rect x="668.0" y="64" width="69.0" height="30" rx="5" class="fill-k"/><text x="342.5" y="84" text-anchor="middle" class="b" style="font-size:13px">360 real tickets</text><rect x="20" y="104" width="12" height="12" rx="3" class="fill-a"/><text x="40" y="115" text-anchor="start" class="s" style="font-size:13px">360 real tickets: sampled by intent share, at least 20 per intent</text><rect x="20" y="127" width="12" height="12" rx="3" class="fill-k"/><text x="40" y="138" text-anchor="start" class="s" style="font-size:13px">40 edge cases: out-of-scope, abusive, should refuse; 10 from past incidents</text><text x="20" y="178" text-anchor="start" class="s b">How it is used</text><rect x="20.0" y="188" width="537.0" height="30" rx="5" class="fill-c"/><rect x="560.0" y="188" width="177.0" height="30" rx="5" class="fill-p"/><text x="288.5" y="208" text-anchor="middle" class="b" style="font-size:13px">300 dev cases</text><text x="648.5" y="208" text-anchor="middle" class="b" style="font-size:13px">100 locked</text><rect x="20" y="228" width="12" height="12" rx="3" class="fill-c"/><text x="40" y="239" text-anchor="start" class="s" style="font-size:13px">300 dev cases: you look at these while you iterate</text><rect x="20" y="251" width="12" height="12" rx="3" class="fill-p"/><text x="40" y="262" text-anchor="start" class="s" style="font-size:13px">100 locked: run only before a release</text><text x="20" y="294" text-anchor="start" class="s ac-t">Every production incident becomes a new case, so the set keeps growing.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 393" role="img" aria-label="What goes into a 400-case golden set and how it is split" preserveAspectRatio="xMidYMid meet"><text x="12" y="20" text-anchor="start" class="b" style="font-size:14px">The 400-case golden set from</text><text x="12" y="38" text-anchor="start" class="b" style="font-size:14px">this page&#x27;s telecom example</text><text x="12" y="70" text-anchor="start" class="s b">What goes in</text><rect x="12.0" y="80" width="299.4" height="30" rx="5" class="fill-a"/><rect x="314.4" y="80" width="30.6" height="30" rx="5" class="fill-k"/><text x="161.7" y="100" text-anchor="middle" class="b" style="font-size:13px">360 real tickets</text><rect x="12" y="120" width="12" height="12" rx="3" class="fill-a"/><text x="32" y="131" text-anchor="start" class="s" style="font-size:13px">360 real tickets: sampled by intent share,</text><text x="32" y="148" text-anchor="start" class="s" style="font-size:13px">at least 20 per intent</text><rect x="12" y="160" width="12" height="12" rx="3" class="fill-k"/><text x="32" y="171" text-anchor="start" class="s" style="font-size:13px">40 edge cases: out-of-scope, abusive, should</text><text x="32" y="188" text-anchor="start" class="s" style="font-size:13px">refuse; 10 from past incidents</text><text x="12" y="228" text-anchor="start" class="s b">How it is used</text><rect x="12.0" y="238" width="249.0" height="30" rx="5" class="fill-c"/><rect x="264.0" y="238" width="81.0" height="30" rx="5" class="fill-p"/><text x="136.5" y="258" text-anchor="middle" class="b" style="font-size:13px">300 dev cases</text><rect x="12" y="278" width="12" height="12" rx="3" class="fill-c"/><text x="32" y="289" text-anchor="start" class="s" style="font-size:13px">300 dev cases: you look at these while you</text><text x="32" y="306" text-anchor="start" class="s" style="font-size:13px">iterate</text><rect x="12" y="318" width="12" height="12" rx="3" class="fill-p"/><text x="32" y="329" text-anchor="start" class="s" style="font-size:13px">100 locked: run only before a release</text><text x="12" y="361" text-anchor="start" class="s ac-t">Every production incident becomes a new</text><text x="12" y="379" text-anchor="start" class="s ac-t">case, so the set keeps growing.</text></svg>
+    <figcaption>Real traffic sampled with a floor per intent, plus edge cases on purpose, then split so 100 cases stay unseen while you tune. The numbers are this page's worked example.</figcaption>
+  </figure>
+  <div class="ez-play" data-ez-play="goldensize">
+    <div class="ease-label">Try it</div>
+    <p class="ez-hint">Move the number of cases and the pass rate. The 95% Wilson interval is computed live: the range where the true pass rate probably sits.</p>
+    <div class="ez-stage"></div>
+  </div>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">An eval is only as good as the examples it runs on. The golden set is that foundation — a curated set of inputs with known-good answers that becomes your team’s shared definition of “working.” Build it well and everything downstream gets trustworthy.</p>
 
   <h2>Why the golden set is the foundation</h2>
@@ -27,10 +63,7 @@
     <p>A <span class="term">golden set</span> (or eval set) is a labeled dataset of <em>(input, expected output / acceptance criterion)</em> pairs used to measure system quality. Good ones are <span class="term">representative</span> (cover real usage), include <span class="term">edge cases</span> and known failure modes, are <span class="term">held out</span> (the system isn’t tuned to overfit them), and are <span class="term">living</span> (you keep adding cases as you discover failures).</p>
   </div>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>A golden set is like the answer key a teacher keeps for the end-of-term exam. The teacher picks questions from every chapter, including the tricky ones students always get wrong, and keeps the key locked so nobody memorises it. Each year the same exam tells the teacher whether the class got better. Where it breaks: a school exam stays the same for years, but your golden set must keep growing as users find new ways to ask things.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -241,8 +274,17 @@ golden <span class="o">=</span> [
 
   <p>Keyword and exact-match criteria can’t judge open-ended quality like “is this answer helpful and faithful?” For that, you enlist a model as the grader. Next: <strong>LLM-as-judge</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> A golden set is the answer key you test against every time, and it keeps growing.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/ease.js?v=1"></script>
+<script src="../assets/ease/play-t06.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>
