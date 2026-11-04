@@ -12,6 +12,38 @@
 
   <span class="eyebrow">Track 14 · Capstone 14.4</span>
   <h1>Capstone: a fine-tuned domain model</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Fine-tuning means training a model a little more, on your own examples, to change how it behaves.</p>
+    <p>Here you teach a small open model one habit, such as always replying in a strict support format.</p>
+    <p>QLoRA (quantized low-rank adaptation) keeps the big model frozen and trains a small add-on called an adapter.</p>
+    <p>That makes it cheap enough to run on a free Colab GPU.</p>
+    <p>Then you prove it worked on examples it never saw, and check it didn't get worse at everything else.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Think of a skilled new hire learning your company's letter style. You don't send them back to school. You give them a clip-on cheat sheet and a few hundred example letters in the house style. You keep 40 letters aside to test them on, and you also check they can still do the rest of their job.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The skilled new hire</td><td>The base model, Qwen2.5-0.5B, loaded in 4-bit and frozen</td></tr>
+      <tr><td>The clip-on cheat sheet</td><td>The LoRA adapter (r = 16): the only part trained, a few MB</td></tr>
+      <tr><td>Example letters in the house style</td><td>A few hundred instruction → response pairs, all in one format</td></tr>
+      <tr><td>The 40 letters kept aside</td><td>The held-out set, never used for training</td></tr>
+      <tr><td>Checking they can still do the rest of the job</td><td>General-ability prompts, base vs tuned</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A person who learns a house style rarely forgets how to do sums. A model can lose general skills when you tune it hard on one thing (catastrophic forgetting), which is why the general-ability check is part of the project.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 276" role="img" aria-label="Fine-tuning capstone: data split, a frozen 4-bit base with a small LoRA adapter, and evaluation against the base" preserveAspectRatio="xMidYMid meet"><text x="20" y="20" text-anchor="start" class="b ac-t">1. Data</text><text x="280" y="20" text-anchor="start" class="b ac-t">2. QLoRA training</text><text x="560" y="20" text-anchor="start" class="b ac-t">3. Prove it</text><text x="20" y="46" text-anchor="start" class="s">300 pairs, all in one format (illustrative)</text><rect x="20" y="58" width="182" height="34" rx="4" class="fill-c"/><rect x="204" y="58" width="26" height="34" rx="4" class="fill-k"/><text x="20" y="112" text-anchor="start" class="s b">train: 260</text><text x="230" y="112" text-anchor="end" class="s b k-t">held out: 40</text><rect x="280" y="34" width="180" height="190" rx="10" class="bx tn-b" /><text x="370" y="70" text-anchor="middle" class="b" style="font-size:14px">Qwen2.5-0.5B</text><text x="370" y="88" text-anchor="middle" class="b" style="font-size:14px">base weights</text><text x="370" y="116" text-anchor="middle" class="s" style="font-size:13px">frozen, loaded in</text><text x="370" y="133" text-anchor="middle" class="s" style="font-size:13px">4-bit (NF4)</text><text x="370" y="168" text-anchor="middle" class="s m" style="font-size:13px">not changed</text><text x="370" y="185" text-anchor="middle" class="s m" style="font-size:13px">by training</text><rect x="470" y="34" width="34" height="190" rx="6" class="fill-a"/><text x="487" y="129" text-anchor="middle" class="s b" style="fill:var(--bg)" transform="rotate(-90 487 129)">LoRA adapter, r = 16</text><polyline points="111,92 111,246 487,246 487,237" class="ln ac"/><polygon points="487,228 482.05,237 491.95,237" class="hd ac"/><text x="250" y="262" text-anchor="middle" class="s ac-t">only the adapter learns: 3 epochs, lr 2e-4; saved file is a few MB</text><text x="560" y="46" text-anchor="start" class="s">Format score (40 held out)</text><text x="600" y="77" text-anchor="end" class="s b">base</text><rect x="606" y="63" width="44" height="18" rx="3" class="fill-m"/><text x="656" y="77" text-anchor="start" class="s b">0.40</text><text x="600" y="109" text-anchor="end" class="s b">tuned</text><rect x="606" y="95" width="101.2" height="18" rx="3" class="fill-g"/><text x="713.2" y="109" text-anchor="start" class="s b">0.92</text><text x="560" y="140" text-anchor="start" class="s m">(the page&#x27;s example numbers)</text><rect x="560" y="156" width="180" height="94" rx="10" class="bx tn-w" /><g class="vzb"><text x="650" y="180.3" text-anchor="middle" class="b" style="font-size:14px">General ability</text><text x="650" y="204.3" text-anchor="middle" class="s" style="font-size:12px">base vs tuned on other</text><text x="650" y="220.3" text-anchor="middle" class="s" style="font-size:12px">tasks: must not drop</text><text x="650" y="236.3" text-anchor="middle" class="s" style="font-size:12px">much</text></g></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 470" role="img" aria-label="Fine-tuning capstone: data split, a frozen 4-bit base with a small LoRA adapter, and evaluation against the base" preserveAspectRatio="xMidYMid meet"><text x="12" y="18" text-anchor="start" class="b ac-t">1. Data</text><text x="12" y="38" text-anchor="start" class="s">300 pairs (illustrative), last 40 held out</text><rect x="12" y="48" width="291.2" height="28" rx="4" class="fill-c"/><rect x="305.2" y="48" width="42.8" height="28" rx="4" class="fill-k"/><text x="12" y="94" text-anchor="start" class="s b">train: 260</text><text x="348" y="94" text-anchor="end" class="s b k-t">held out: 40</text><text x="12" y="128" text-anchor="start" class="b ac-t">2. QLoRA training</text><rect x="12" y="138" width="270" height="104" rx="10" class="bx tn-b" /><text x="147" y="164" text-anchor="middle" class="s" style="font-size:13px">Qwen2.5-0.5B base weights</text><text x="147" y="184" text-anchor="middle" class="s" style="font-size:13px">frozen, loaded in 4-bit (NF4)</text><text x="147" y="204" text-anchor="middle" class="s" style="font-size:13px">not changed by training</text><rect x="290" y="138" width="58" height="104" rx="6" class="fill-a"/><text x="319" y="178" text-anchor="middle" class="s b" style="fill:var(--bg)" style="font-size:13px">LoRA</text><text x="319" y="196" text-anchor="middle" class="s b" style="fill:var(--bg)" style="font-size:13px">r = 16</text><text x="12" y="262" text-anchor="start" class="s ac-t">Only the adapter learns (3 epochs, lr 2e-4).</text><text x="12" y="300" text-anchor="start" class="b ac-t">3. Prove it on the 40 held out</text><text x="56" y="328" text-anchor="end" class="s b">base</text><rect x="64" y="315" width="88" height="18" rx="3" class="fill-m" /><text x="158" y="328" text-anchor="start" class="s b">0.40</text><text x="56" y="358" text-anchor="end" class="s b">tuned</text><rect x="64" y="345" width="202.4" height="18" rx="3" class="fill-g" /><text x="272.4" y="358" text-anchor="start" class="s b">0.92</text><text x="12" y="386" text-anchor="start" class="s m">format score (the page&#x27;s example numbers)</text><rect x="12" y="398" width="336" height="62" rx="10" class="bx tn-w" /><g class="vzb"><text x="180" y="422.3" text-anchor="middle" class="b" style="font-size:14px">General ability</text><text x="180" y="446.3" text-anchor="middle" class="s" style="font-size:12px">base vs tuned on other tasks: must not drop much</text></g></svg>
+    <figcaption>The base model never changes; only the thin adapter learns. The 300-example size is illustrative (the page says about 200 to 500). The 0.40 and 0.92 format scores are the page's example values, not a measured result.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">Fine-tune a small open model to adopt a specific behavior — a consistent format, tone, or narrow skill — using QLoRA on a free Colab GPU, then <em>prove</em> it improved without breaking general ability. This demonstrates Track 5 end to end and shows you can do the thing most candidates only talk about.</p>
 
   <h2>What you’re building</h2>
@@ -134,6 +166,10 @@ general <span class="o">=</span> [<span class="s">"Translate 'hello' to French."
 
   <p>You can build, measure, agent-ify, and fine-tune. The final capstone makes it all fast and cheap enough to actually run. Next: <strong>a cost &amp; latency-optimized chat service</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Teach one habit with a small add-on, then test on examples it never saw and check nothing else broke.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
