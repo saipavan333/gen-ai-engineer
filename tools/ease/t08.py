@@ -541,6 +541,7 @@ LESSONS = {
              ("Each student still writing their own homework", "With prompt caching the model still writes a fresh answer every time")],
         fig=cache_svg(),
         cap=f"A request only reaches the model if both response caches miss, and even then the long fixed prefix is cheap. The costs use the page's HR-assistant assumptions: {usd(C['d_none'])} a day falls to about {usd(C['d_sem'])}. The semantic layer saves the least and carries the most risk.",
+        breaks='The librarian can see the books, while a semantic cache only sees how similar two questions look, not whether the answer really fits. The photocopy is not kept forever either: a prompt cache only matches the exact start of the prompt, costs 1.25 times the normal price to write, and is thrown away after 5 minutes without a read (or 1 hour if you pay for that).',
         line="Don't pay twice for the same work: store answers, and let the provider reuse the shared start of your prompt."),
     "8.4": dict(
         plain=["Big models are smart but cost a lot; small models are cheap and fast.",
@@ -611,7 +612,8 @@ def fold_where(lessons):
         m = re.search(r"\s*Where it breaks:\s*", a)
         if m:
             tail = a[m.end():].strip()
-            e["pic"], e["breaks"] = a[:m.start()].strip(), tail[0].upper() + tail[1:]
+            # an explicit breaks= in the lesson wins (review, 4 Nov 2026: 8.3 adds the prompt-cache limits)
+            e["pic"], e["breaks"] = a[:m.start()].strip(), e.get("breaks") or (tail[0].upper() + tail[1:])
     return lessons
 
 

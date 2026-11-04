@@ -32,7 +32,7 @@
       <tr><td>The reading pack photocopied once for every student</td><td>Prompt caching: a byte-identical prefix read from cache at $0.10 per million on Sonnet 5.5, instead of $2</td></tr>
       <tr><td>Each student still writing their own homework</td><td>With prompt caching the model still writes a fresh answer every time</td></tr>
     </table></div>
-    <p class="ease-breaks"><b>Where the picture breaks.</b> The librarian can see the books, while a semantic cache only sees how similar two questions look, not whether the answer really fits.</p>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> The librarian can see the books, while a semantic cache only sees how similar two questions look, not whether the answer really fits. The photocopy is not kept forever either: a prompt cache only matches the exact start of the prompt, costs 1.25 times the normal price to write, and is thrown away after 5 minutes without a read (or 1 hour if you pay for that).</p>
   </div>
   <figure class="ease-fig">
     <div class="ease-label">How it works</div>
@@ -282,5 +282,10 @@ sem_q, sem_v, sem_a <span class="o">=</span> [], <span class="kc">None</span>, [
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

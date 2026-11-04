@@ -252,7 +252,7 @@ def samp_svg():
 
 LESSONS = {
     "1.1": dict(
-        plain=["A language model is a program that guesses what comes next in a piece of text.",
+        plain=["A large language model (LLM) is a program that guesses what comes next in a piece of text.",
                "You give it some words. It scores every possible next piece, picks one, and adds it on.",
                "Then it does the same again, one small piece at a time, until the answer is done.",
                "Those pieces are called tokens: a whole word or part of a word.",
@@ -272,7 +272,7 @@ LESSONS = {
                'A token is a small chunk of text, such as "the", "ing" or " cat" (with its space).',
                "A tool called a tokenizer cuts your text into tokens and swaps each one for a number.",
                "The model only ever sees those numbers.",
-               "You pay per token, and the model's memory limit is counted in tokens too."],
+               "You pay per token, and the limit on how much text the model can see at once (its context window) is counted in tokens too."],
         map=[("A big ready-made brick", 'A common word that is one token, like "the"'),
              ("Building a rare word from small bricks", 'A rare word split into pieces, like "Token" + "izing"'),
              ("The full brick catalogue", "The vocabulary: about 50,000 to 200,000 tokens"),
@@ -294,6 +294,7 @@ LESSONS = {
         fig=emb_svg(),
         cap="Each text is an arrow from the centre. Cosine similarity measures how closely two arrows point the same way (1.0 = same direction, 0 = unrelated). The coordinates here are made up for a 2-D picture; the similarity numbers are computed from them.",
         play=("embed", "Pick a question. The three closest texts light up, with their cosine similarity computed from the toy vectors."),
+        breaks="The real hall has hundreds of directions, not just left, right, forward and back, so 'nearby' can mean close in one sense and far in another. And close means similar wording and topic, not the same meaning: 'cancel my order' and 'don't cancel my order' can stand side by side.",
         line="An embedding is a meaning-to-numbers map, so 'similar meaning' becomes 'nearby points'."),
     "1.4": dict(
         plain=["The context window is everything the model can see at one time.",

@@ -17,7 +17,7 @@
   <div class="ease-start">
     <div class="ease-label">Start here</div>
     <p>A 7-billion-parameter model has 7 billion numbers. Training all of them needs a lot of GPU memory.</p>
-    <p>LoRA (Low-Rank Adaptation) freezes those numbers and trains two small extra matrices beside each big one.</p>
+    <p>LoRA (Low-Rank Adaptation) freezes those numbers and trains two small extra matrices beside each big matrix it adapts.</p>
     <p>The small pair learns a correction that is added to the big matrix's output.</p>
     <p>You end up training well under 1% of the numbers, and the result is a file of megabytes.</p>
     <p>QLoRA also squeezes the frozen model into 4-bit numbers, so a big model fits on one small GPU.</p>
@@ -286,6 +286,8 @@ trainer.<span class="f">save_model</span>(<span class="s">"my-adapter"</span>)  
 <script src="../assets/app.js?v=25"></script>
 
 <!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
 <script src="../assets/ease/ease.js?v=1"></script>
 <script src="../assets/ease/play-t05.js?v=1"></script>
 <!-- ease:js:end -->

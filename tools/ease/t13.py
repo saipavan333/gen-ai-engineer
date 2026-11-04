@@ -203,6 +203,7 @@ LESSONS = {
              ("Not wasting a minute on 'what colour is the sky'", "Routing easy requests to low effort or a cheaper model")],
         fig=think_svg(),
         cap="Thinking happens before the answer and is billed as output. The token counts and the 80 tokens a second are the page's assumptions; cost uses Claude Sonnet 5.5's $10 per million output tokens. Effort is a signal, not a hard cap: <code>max_tokens</code> is the hard limit.",
+        breaks="The model's scribbling is not always shown to you, but you are still billed for it. And the scribbles are not a faithful record of how it got the answer: tidy-looking reasoning can sit on top of a wrong answer, so check the answer, not the notepad.",
         line="A reasoning model thinks before it speaks, which helps on hard problems and costs you every word it thinks."),
     "13.2": dict(
         plain=["AI news changes every month, so learn the big directions, not the headlines.",

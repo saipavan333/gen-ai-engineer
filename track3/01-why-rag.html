@@ -33,7 +33,7 @@
       <tr><td>Handing the pages to the student</td><td>Pasting the chunks into the prompt, numbered [1] [2] [3]</td></tr>
       <tr><td>Pointing to the line used</td><td>Citations that tie each claim to a chunk</td></tr>
     </table></div>
-    <p class="ease-breaks"><b>Where the picture breaks.</b> A real librarian understands the question; the retriever only matches meaning numerically, so it can hand over the wrong pages with full confidence.</p>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A real librarian understands the question; the retriever only matches meaning numerically, so it can hand over the wrong pages with full confidence. And the student keeps nothing: the pages are pasted into this one prompt, the model learns nothing from them, and it can still ignore them and answer from memory, which is why citations get checked.</p>
   </div>
   <figure class="ease-fig">
     <div class="ease-label">How it works</div>
@@ -289,5 +289,10 @@ D <span class="o">=</span> embed.<span class="f">encode</span>(docs, normalize_e
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/diagram-fonts.js?v=1"></script>
+<script src="../assets/ease/legible.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

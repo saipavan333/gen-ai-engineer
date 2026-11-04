@@ -268,7 +268,7 @@ LESSONS = {
         line="The model becomes a mirror of your examples, so clean the examples before you train."),
     "5.4": dict(
         plain=["A 7-billion-parameter model has 7 billion numbers. Training all of them needs a lot of GPU memory.",
-               "LoRA (Low-Rank Adaptation) freezes those numbers and trains two small extra matrices beside each big one.",
+               "LoRA (Low-Rank Adaptation) freezes those numbers and trains two small extra matrices beside each big matrix it adapts.",
                "The small pair learns a correction that is added to the big matrix's output.",
                "You end up training well under 1% of the numbers, and the result is a file of megabytes.",
                "QLoRA also squeezes the frozen model into 4-bit numbers, so a big model fits on one small GPU."],

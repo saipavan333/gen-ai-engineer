@@ -298,6 +298,7 @@ LESSONS = {
              ("Pointing to the line used", "Citations that tie each claim to a chunk")],
         fig=rag_svg(),
         cap="Two lanes. The top one runs ahead of time and builds the index. The bottom one runs per question. The only bridge between them is the search into the index, and both lanes must use the same embedding model.",
+        breaks='A real librarian understands the question; the retriever only matches meaning numerically, so it can hand over the wrong pages with full confidence. And the student keeps nothing: the pages are pasted into this one prompt, the model learns nothing from them, and it can still ignore them and answer from memory, which is why citations get checked.',
         line="RAG looks up the right pages first, then lets the model answer from them with page numbers."),
     "3.2": dict(
         plain=["Retrieval never fetches a whole document, only chunks.",
