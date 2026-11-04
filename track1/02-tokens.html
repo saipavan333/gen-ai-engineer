@@ -12,6 +12,42 @@
 
   <span class="eyebrow">Track 1 · Lesson 1.2</span>
   <h1>Tokens &amp; tokenization</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Language models don't read letters or whole words. They read tokens.</p>
+    <p>A token is a small chunk of text, such as "the", "ing" or " cat" (with its space).</p>
+    <p>A tool called a tokenizer cuts your text into tokens and swaps each one for a number.</p>
+    <p>The model only ever sees those numbers.</p>
+    <p>You pay per token, and the model's memory limit is counted in tokens too.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Tokens are like LEGO bricks. Common words come as one big ready-made brick, and rare words have to be built from several small bricks. The model only ever sees the bricks, never the individual plastic dots, which is why counting letters is hard for it.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>A big ready-made brick</td><td>A common word that is one token, like "the"</td></tr>
+      <tr><td>Building a rare word from small bricks</td><td>A rare word split into pieces, like "Token" + "izing"</td></tr>
+      <tr><td>The full brick catalogue</td><td>The vocabulary: about 50,000 to 200,000 tokens</td></tr>
+      <tr><td>Each brick's catalogue number</td><td>The token id, which is all the model reads</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> LEGO bricks are fixed shapes for everyone, while each model family has its own brick set, so the same sentence can be a different number of tokens on two models.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 312" role="img" aria-label="Byte-pair encoding merges letters into tokens step by step" preserveAspectRatio="xMidYMid meet"><text x="20" y="24" text-anchor="start" class="s m">Toy training text: &quot;low&quot; x5, &quot;lower&quot; x2, &quot;newest&quot; x6, &quot;widest&quot; x3</text><text x="20" y="64" text-anchor="start" class="s">Start: single letters</text><rect x="400" y="44" width="31" height="30" rx="7" class="bx tn-a" /><text x="415.5" y="64" text-anchor="middle" class="b mono">l</text><rect x="437" y="44" width="31" height="30" rx="7" class="bx tn-a" /><text x="452.5" y="64" text-anchor="middle" class="b mono">o</text><rect x="474" y="44" width="31" height="30" rx="7" class="bx tn-a" /><text x="489.5" y="64" text-anchor="middle" class="b mono">w</text><rect x="511" y="44" width="31" height="30" rx="7" class="bx tn-a" /><text x="526.5" y="64" text-anchor="middle" class="b mono">e</text><rect x="548" y="44" width="31" height="30" rx="7" class="bx tn-a" /><text x="563.5" y="64" text-anchor="middle" class="b mono">s</text><rect x="585" y="44" width="31" height="30" rx="7" class="bx tn-a" /><text x="600.5" y="64" text-anchor="middle" class="b mono">t</text><line x1="385" y1="59" x2="384" y2="59" class="ln thin"/><polygon points="393,59 384,54.05 384,63.95" class="hd thin"/><text x="20" y="112" text-anchor="start" class="s">Merge 1: e + s → es  (pair seen 9x)</text><rect x="400" y="92" width="31" height="30" rx="7" class="bx tn-a" /><text x="415.5" y="112" text-anchor="middle" class="b mono">l</text><rect x="437" y="92" width="31" height="30" rx="7" class="bx tn-a" /><text x="452.5" y="112" text-anchor="middle" class="b mono">o</text><rect x="474" y="92" width="31" height="30" rx="7" class="bx tn-a" /><text x="489.5" y="112" text-anchor="middle" class="b mono">w</text><rect x="511" y="92" width="48" height="30" rx="7" class="bx tn-a" /><text x="535" y="112" text-anchor="middle" class="b mono">es</text><rect x="565" y="92" width="31" height="30" rx="7" class="bx tn-a" /><text x="580.5" y="112" text-anchor="middle" class="b mono">t</text><line x1="385" y1="107" x2="384" y2="107" class="ln thin"/><polygon points="393,107 384,102.05 384,111.95" class="hd thin"/><text x="20" y="160" text-anchor="start" class="s">Merge 2: es + t → est  (pair seen 9x)</text><rect x="400" y="140" width="31" height="30" rx="7" class="bx tn-a" /><text x="415.5" y="160" text-anchor="middle" class="b mono">l</text><rect x="437" y="140" width="31" height="30" rx="7" class="bx tn-a" /><text x="452.5" y="160" text-anchor="middle" class="b mono">o</text><rect x="474" y="140" width="31" height="30" rx="7" class="bx tn-a" /><text x="489.5" y="160" text-anchor="middle" class="b mono">w</text><rect x="511" y="140" width="65" height="30" rx="7" class="bx tn-a" /><text x="543.5" y="160" text-anchor="middle" class="b mono">est</text><line x1="385" y1="155" x2="384" y2="155" class="ln thin"/><polygon points="393,155 384,150.05 384,159.95" class="hd thin"/><text x="20" y="208" text-anchor="start" class="s">Merge 3: l + o → lo  (pair seen 7x)</text><rect x="400" y="188" width="48" height="30" rx="7" class="bx tn-a" /><text x="424" y="208" text-anchor="middle" class="b mono">lo</text><rect x="454" y="188" width="31" height="30" rx="7" class="bx tn-a" /><text x="469.5" y="208" text-anchor="middle" class="b mono">w</text><rect x="491" y="188" width="65" height="30" rx="7" class="bx tn-a" /><text x="523.5" y="208" text-anchor="middle" class="b mono">est</text><line x1="385" y1="203" x2="384" y2="203" class="ln thin"/><polygon points="393,203 384,198.05 384,207.95" class="hd thin"/><text x="20" y="256" text-anchor="start" class="s">Merge 4: lo + w → low  (pair seen 7x)</text><rect x="400" y="236" width="65" height="30" rx="7" class="bx tn-g" /><text x="432.5" y="256" text-anchor="middle" class="b mono">low</text><rect x="471" y="236" width="65" height="30" rx="7" class="bx tn-g" /><text x="503.5" y="256" text-anchor="middle" class="b mono">est</text><text x="20" y="298" text-anchor="start" class="s ok-t">New word &quot;lowest&quot; → 2 tokens: low + est   (never seen in training, still encoded)</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 406" role="img" aria-label="Byte-pair encoding merges letters into tokens step by step" preserveAspectRatio="xMidYMid meet"><text x="12" y="20" text-anchor="start" class="s m">Toy text: low x5, lower x2,</text><text x="12" y="38" text-anchor="start" class="s m">newest x6, widest x3</text><text x="12" y="68" text-anchor="start" class="s">Start: single letters</text><rect x="12" y="76" width="31" height="30" rx="7" class="bx tn-a" /><text x="27.5" y="96" text-anchor="middle" class="b mono">l</text><rect x="49" y="76" width="31" height="30" rx="7" class="bx tn-a" /><text x="64.5" y="96" text-anchor="middle" class="b mono">o</text><rect x="86" y="76" width="31" height="30" rx="7" class="bx tn-a" /><text x="101.5" y="96" text-anchor="middle" class="b mono">w</text><rect x="123" y="76" width="31" height="30" rx="7" class="bx tn-a" /><text x="138.5" y="96" text-anchor="middle" class="b mono">e</text><rect x="160" y="76" width="31" height="30" rx="7" class="bx tn-a" /><text x="175.5" y="96" text-anchor="middle" class="b mono">s</text><rect x="197" y="76" width="31" height="30" rx="7" class="bx tn-a" /><text x="212.5" y="96" text-anchor="middle" class="b mono">t</text><text x="12" y="134" text-anchor="start" class="s">Merge 1: e + s → es (seen 9x)</text><rect x="12" y="142" width="31" height="30" rx="7" class="bx tn-a" /><text x="27.5" y="162" text-anchor="middle" class="b mono">l</text><rect x="49" y="142" width="31" height="30" rx="7" class="bx tn-a" /><text x="64.5" y="162" text-anchor="middle" class="b mono">o</text><rect x="86" y="142" width="31" height="30" rx="7" class="bx tn-a" /><text x="101.5" y="162" text-anchor="middle" class="b mono">w</text><rect x="123" y="142" width="48" height="30" rx="7" class="bx tn-a" /><text x="147" y="162" text-anchor="middle" class="b mono">es</text><rect x="177" y="142" width="31" height="30" rx="7" class="bx tn-a" /><text x="192.5" y="162" text-anchor="middle" class="b mono">t</text><text x="12" y="200" text-anchor="start" class="s">Merge 2: es + t → est (seen 9x)</text><rect x="12" y="208" width="31" height="30" rx="7" class="bx tn-a" /><text x="27.5" y="228" text-anchor="middle" class="b mono">l</text><rect x="49" y="208" width="31" height="30" rx="7" class="bx tn-a" /><text x="64.5" y="228" text-anchor="middle" class="b mono">o</text><rect x="86" y="208" width="31" height="30" rx="7" class="bx tn-a" /><text x="101.5" y="228" text-anchor="middle" class="b mono">w</text><rect x="123" y="208" width="65" height="30" rx="7" class="bx tn-a" /><text x="155.5" y="228" text-anchor="middle" class="b mono">est</text><text x="12" y="266" text-anchor="start" class="s">Merge 3: l + o → lo (seen 7x)</text><rect x="12" y="274" width="48" height="30" rx="7" class="bx tn-a" /><text x="36" y="294" text-anchor="middle" class="b mono">lo</text><rect x="66" y="274" width="31" height="30" rx="7" class="bx tn-a" /><text x="81.5" y="294" text-anchor="middle" class="b mono">w</text><rect x="103" y="274" width="65" height="30" rx="7" class="bx tn-a" /><text x="135.5" y="294" text-anchor="middle" class="b mono">est</text><text x="12" y="332" text-anchor="start" class="s">Merge 4: lo + w → low (seen 7x)</text><rect x="12" y="340" width="65" height="30" rx="7" class="bx tn-g" /><text x="44.5" y="360" text-anchor="middle" class="b mono">low</text><rect x="83" y="340" width="65" height="30" rx="7" class="bx tn-g" /><text x="115.5" y="360" text-anchor="middle" class="b mono">est</text><text x="12" y="392" text-anchor="start" class="s ok-t">&quot;lowest&quot; → low + est (2 tokens)</text></svg>
+    <figcaption>How a tokenizer learns its bricks (byte-pair encoding, BPE): count which neighbouring pieces appear together most, merge that pair into a new token, repeat. This toy run is computed from the four words shown; real tokenizers do tens of thousands of merges on terabytes of text.</figcaption>
+  </figure>
+  <div class="ez-play" data-ez-play="bpe">
+    <div class="ease-label">Try it</div>
+    <p class="ez-hint">Pick a word and drag the slider to learn more merges. Watch the word shrink from letters to a few tokens. The merges are computed live on the same toy text.</p>
+    <div class="ez-stage"></div>
+  </div>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">Tokens are the units everything is measured in — your costs, your context limits, your latency. They also explain a pile of “why did it do that?” behaviors. Spend twenty minutes here and a lot of mysteries dissolve.</p>
 
   <h2>Why you can’t skip tokens</h2>
@@ -27,10 +63,7 @@
     <p>A <span class="term">token</span> is a small chunk of text — often a whole common word, but sometimes a word-piece, a single character, or a punctuation mark. The fixed list of all tokens a model knows is its <span class="term">vocabulary</span> (typically ~50,000–200,000 entries). A <span class="term">tokenizer</span> is the tool that converts your text into tokens (and their numeric ids) on the way in, and converts tokens back to text on the way out.</p>
   </div>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>Tokens are like LEGO bricks. Common words come as one big ready-made brick, and rare words have to be built from several small bricks. The model only ever sees the bricks, never the individual plastic dots, which is why counting letters is hard for it. The analogy breaks because LEGO bricks are fixed shapes for everyone, while each model family has its own brick set, so the same sentence can be a different number of tokens on two models.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -245,9 +278,18 @@ ids <span class="o">=</span> enc.<span class="f">encode</span>(text)
 
   <p>You can now reason in tokens. Next we’ll ask: what does the model do with a <em>sequence</em> of these tokens — how much can it hold at once, and how does it decide which earlier tokens matter? That’s <strong>context windows and attention</strong>… but first, the idea that gives tokens their meaning: <strong>embeddings</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Text is cut into tokens, tokens become numbers, and everything (cost, limits, speed) is counted in tokens.</p>
+<!-- ease:line:end -->
 </main>
 
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/ease.js?v=1"></script>
+<script src="../assets/ease/play-t01.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

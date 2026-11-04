@@ -12,6 +12,37 @@
 
   <span class="eyebrow">Track 1 · Lesson 1.4</span>
   <h1>Context windows &amp; attention</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>The context window is everything the model can see at one time.</p>
+    <p>Your instructions, the chat so far, any pasted documents and the model's own answer all share it.</p>
+    <p>It is measured in tokens: from about 8,000 on small models up to 1 million on today's largest.</p>
+    <p>Anything outside the window does not exist for the model.</p>
+    <p>Attention is how the model picks which earlier tokens matter, such as linking "it" back to "the dog".</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>The context window is like the desk you study at. You can only work with the pages spread on the desk; anything still in the cupboard does not exist for you right now, and a bigger desk lets you spread out more pages. Attention is your eyes jumping between pages to connect 'it' on page 3 with 'the dog' on page 1.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The desk surface</td><td>The context window: a fixed number of tokens</td></tr>
+      <tr><td>Pages spread on the desk</td><td>System prompt, chat history, documents, and the answer being written</td></tr>
+      <tr><td>The cupboard</td><td>Everything not in the prompt; the model cannot see it</td></tr>
+      <tr><td>Your eyes jumping between pages</td><td>Attention weights linking each token to earlier ones</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A person can get up and fetch a page from the cupboard, while the model cannot fetch anything on its own; your code has to put it on the desk.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 342" role="img" aria-label="The context window as one shared token budget, and attention linking it to dog" preserveAspectRatio="xMidYMid meet"><text x="20" y="22" text-anchor="start" class="b">One shared budget: a 200,000-token window (illustrative numbers)</text><rect x="20" y="40" width="7.2" height="46" rx="4" class="bx tn-c" /><rect x="27.2" y="40" width="108" height="46" rx="4" class="bx tn-p" /><rect x="135.2" y="40" width="540" height="46" rx="4" class="bx tn-k" /><rect x="675.2" y="40" width="1.8" height="46" rx="4" class="bx tn-a" /><rect x="677" y="40" width="28.8" height="46" rx="4" class="bx tn-g" /><line x1="740" y1="30" x2="740" y2="96" class="ln wn"/><text x="736" y="112" text-anchor="end" class="s wn-t">window limit: 200,000</text><rect x="20" y="125" width="14" height="14" rx="3" class="bx tn-c" /><text x="40" y="137" text-anchor="start" class="s">system prompt 2,000</text><rect x="195" y="125" width="14" height="14" rx="3" class="bx tn-p" /><text x="215" y="137" text-anchor="start" class="s">chat history 30,000</text><rect x="370" y="125" width="14" height="14" rx="3" class="bx tn-k" /><text x="390" y="137" text-anchor="start" class="s">pasted documents 150,000</text><rect x="580" y="125" width="14" height="14" rx="3" class="bx tn-a" /><text x="600" y="137" text-anchor="start" class="s">question 500</text><rect x="20" y="149" width="14" height="14" rx="3" class="bx tn-g" /><text x="40" y="161" text-anchor="start" class="s">room for the answer 8,000</text><text x="20" y="190" text-anchor="start" class="s">Used 190,500 of 200,000. Add 10,000 more tokens of history and something gets cut.</text><rect x="30" y="278" width="45" height="30" rx="6" class="bx tn-b" /><text x="52.5" y="298" text-anchor="middle">The</text><rect x="83" y="278" width="45" height="30" rx="6" class="bx tn-a" /><text x="105.5" y="298" text-anchor="middle">dog</text><rect x="136" y="278" width="72" height="30" rx="6" class="bx tn-b" /><text x="172" y="298" text-anchor="middle">chased</text><rect x="216" y="278" width="45" height="30" rx="6" class="bx tn-b" /><text x="238.5" y="298" text-anchor="middle">the</text><rect x="269" y="278" width="54" height="30" rx="6" class="bx tn-b" /><text x="296" y="298" text-anchor="middle">ball</text><rect x="331" y="278" width="81" height="30" rx="6" class="bx tn-b" /><text x="371.5" y="298" text-anchor="middle">because</text><rect x="420" y="278" width="36" height="30" rx="6" class="bx tn-a" /><text x="438" y="298" text-anchor="middle">it</text><rect x="464" y="278" width="45" height="30" rx="6" class="bx tn-b" /><text x="486.5" y="298" text-anchor="middle">was</text><rect x="517" y="278" width="63" height="30" rx="6" class="bx tn-b" /><text x="548.5" y="298" text-anchor="middle">bored</text><path d="M438,278 C438,230 105.5,230 105.5,276" class="ln ac"/><polygon points="105.5,277 100.5,268 110.5,268" class="hd ac"/><path d="M438,278 C438,252 296,252 296,276" class="ln thin dash"/><text x="20" y="220" text-anchor="start" class="s ac-t">Attention: “it” looks back at every earlier token and weighs “dog” highest</text><text x="20" y="330" text-anchor="start" class="s m">Thick arrow = high attention weight, dashed = low (illustrative)</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 502" role="img" aria-label="The context window as one shared token budget, and attention linking it to dog" preserveAspectRatio="xMidYMid meet"><text x="12" y="20" text-anchor="start" class="b">A 200,000-token window</text><text x="12" y="38" text-anchor="start" class="s m">(illustrative numbers)</text><rect x="12" y="50" width="120" height="16" rx="3" class="bx tn-c" /><text x="142" y="63" text-anchor="start" class="s">system prompt 2,000</text><rect x="12" y="68" width="120" height="45" rx="3" class="bx tn-p" /><text x="142" y="88" text-anchor="start" class="s">chat history 30,000</text><rect x="12" y="115" width="120" height="225" rx="3" class="bx tn-k" /><text x="142" y="135" text-anchor="start" class="s">pasted documents 150,000</text><rect x="12" y="342" width="120" height="16" rx="3" class="bx tn-a" /><text x="142" y="355" text-anchor="start" class="s">question 500</text><rect x="12" y="360" width="120" height="16" rx="3" class="bx tn-g" /><text x="142" y="373" text-anchor="start" class="s">room for the answer 8,000</text><line x1="6" y1="382.0" x2="200" y2="382.0" class="ln wn"/><text x="12" y="400" text-anchor="start" class="s wn-t">limit: everything must fit above</text><rect x="12" y="438" width="43" height="30" rx="6" class="bx tn-a" /><text x="33.5" y="458" text-anchor="middle">dog</text><rect x="61" y="438" width="70" height="30" rx="6" class="bx tn-b" /><text x="96" y="458" text-anchor="middle">chased</text><rect x="137" y="438" width="43" height="30" rx="6" class="bx tn-b" /><text x="158.5" y="458" text-anchor="middle">the</text><rect x="186" y="438" width="52" height="30" rx="6" class="bx tn-b" /><text x="212" y="458" text-anchor="middle">ball</text><rect x="244" y="438" width="25" height="30" rx="6" class="bx tn-b" /><text x="256.5" y="458" text-anchor="middle">…</text><rect x="275" y="438" width="34" height="30" rx="6" class="bx tn-a" /><text x="292" y="458" text-anchor="middle">it</text><path d="M292,438.0 C292,394.0 33.5,394.0 33.5,436.0" class="ln ac"/><polygon points="33.5,437.0 28.5,428.0 38.5,428.0" class="hd ac"/><text x="12" y="490" text-anchor="start" class="s ac-t">Attention links “it” back to “dog”</text></svg>
+    <figcaption>Top: every part of a request spends the same token budget, including the reply. Bottom: attention lets the token “it” draw on “dog” more than on “ball”. Both pictures use illustrative numbers.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">Two ideas that decide what your model can actually do in practice: how much it can hold in mind at once (the context window), and how it figures out which of those words matter (attention). Get these and you’ll design prompts and systems that work <em>with</em> the model instead of against it.</p>
 
   <h2>Why there’s a limit at all</h2>
@@ -22,10 +53,7 @@
     <p>The <span class="term">context window</span> is the maximum number of tokens a model can process at once — and crucially, it’s shared by <strong>everything</strong>: your instructions, any examples, the conversation history, any documents you paste in, <em>and</em> the model’s own response. If a model has a 8,000-token window and your input uses 7,900, there’s only room for ~100 tokens of answer.</p>
   </div>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>The context window is like the desk you study at. You can only work with the pages spread on the desk; anything still in the cupboard does not exist for you right now, and a bigger desk lets you spread out more pages. Attention is your eyes jumping between pages to connect 'it' on page 3 with 'the dog' on page 1. The analogy breaks because a person can get up and fetch a page from the cupboard, while the model cannot fetch anything on its own; your code has to put it on the desk.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -274,6 +302,10 @@ WINDOW, RESERVE_FOR_ANSWER <span class="o">=</span> <span class="n">8000</span>,
     </ul>
   </div>
 <!-- shape:tail:end -->
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> The model sees only what fits on its desk, and attention decides which parts of the desk it looks at.</p>
+<!-- ease:line:end -->
 </main>
 
 <script>

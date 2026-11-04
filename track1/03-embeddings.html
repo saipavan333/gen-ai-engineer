@@ -12,6 +12,42 @@
 
   <span class="eyebrow">Track 1 · Lesson 1.3</span>
   <h1>Embeddings: meaning as vectors</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>An embedding turns a piece of text into a long list of numbers.</p>
+    <p>Texts with similar meaning get similar lists.</p>
+    <p>So you can treat every text as a point on a map, where close points mean similar meaning.</p>
+    <p>To search, you turn the question into a point too and look at what is nearby.</p>
+    <p>Search, recommendations and RAG (retrieval-augmented generation, Track 3) all start here.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Imagine a giant school hall where every sentence is a student, and students stand closer together the more alike their meaning is. 'My flight was cancelled' and 'The airline scrapped my trip' stand shoulder to shoulder, while 'I like pizza' is across the room. Searching becomes 'walk to where the question stands and look at who is nearby'.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>A student standing somewhere in the hall</td><td>One text turned into a vector (a point in meaning space)</td></tr>
+      <tr><td>Standing shoulder to shoulder</td><td>High cosine similarity: the vectors point the same way</td></tr>
+      <tr><td>Walking to where the question stands</td><td>Embedding the question with the same embedding model</td></tr>
+      <tr><td>Looking at who is nearby</td><td>Nearest-neighbour search: return the top few closest texts</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> The real hall has hundreds of directions, not just left, right, forward and back, so 'nearby' can mean close in one sense and far in another.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 660 360" role="img" aria-label="Texts as points: similar meanings sit close together and point the same way" preserveAspectRatio="xMidYMid meet"><line x1="135" y1="180" x2="475" y2="180" class="grid"/><line x1="305" y1="20" x2="305" y2="340" class="grid"/><line x1="305" y1="180" x2="447.5" y2="135" class="ln thin ac" opacity="1"/><circle cx="447.5" cy="135" r="7" class="dot tn-c"/><text x="458.5" y="140" text-anchor="start" class="s">My flight was cancelled</text><line x1="305" y1="180" x2="425" y2="90" class="ln thin ac" opacity="1"/><circle cx="425" cy="90" r="7" class="dot tn-c"/><text x="436" y="95" text-anchor="start" class="s">The airline scrapped my trip</text><line x1="305" y1="180" x2="443" y2="183" class="ln thin ac" opacity="1"/><circle cx="443" cy="183" r="7" class="dot tn-c"/><text x="454" y="188" text-anchor="start" class="s">Train delayed two hours</text><line x1="305" y1="180" x2="212" y2="75" class="ln thin " opacity="0.35"/><circle cx="212" cy="75" r="7" class="dot tn-k"/><text x="201" y="80" text-anchor="end" class="s">I like pizza</text><line x1="305" y1="180" x2="192.5" y2="97.5" class="ln thin " opacity="0.35"/><circle cx="192.5" cy="97.5" r="7" class="dot tn-k"/><text x="181.5" y="102.5" text-anchor="end" class="s">Pasta for dinner tonight</text><line x1="305" y1="180" x2="287" y2="322.5" class="ln thin " opacity="0.35"/><circle cx="287" cy="322.5" r="7" class="dot tn-g"/><text x="276" y="327.5" text-anchor="end" class="s">Refund to my card</text><line x1="305" y1="180" x2="365" y2="307.5" class="ln thin " opacity="0.35"/><circle cx="365" cy="307.5" r="7" class="dot tn-g"/><text x="376" y="312.5" text-anchor="start" class="s">Where is my money back?</text><circle cx="390.56" cy="159.54" r="9" class="fill-a"/><circle cx="390.56" cy="159.54" r="15" class="ring"/><text x="20" y="24" text-anchor="start" class="s m">Toy 2-D picture (illustrative). Real embeddings have hundreds to thousands of numbers.</text><text x="20" y="44" text-anchor="start" class="s ac-t">Ringed point = the question “my flight got cancelled, what now?”</text><text x="20" y="350" text-anchor="start" class="s">Top 3 by cosine similarity: 1.00, 0.97, 0.92 (all travel). “I like pizza”: -0.47</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 504" role="img" aria-label="Texts as points: similar meanings sit close together and point the same way" preserveAspectRatio="xMidYMid meet"><line x1="40" y1="150" x2="320" y2="150" class="grid"/><line x1="180" y1="20" x2="180" y2="280" class="grid"/><line x1="180" y1="150" x2="294" y2="114" class="ln thin ac" opacity="1"/><circle cx="294" cy="114" r="7" class="dot tn-c"/><text x="305" y="119" text-anchor="start" class="s b">1</text><line x1="180" y1="150" x2="276" y2="78" class="ln thin ac" opacity="1"/><circle cx="276" cy="78" r="7" class="dot tn-c"/><text x="287" y="83" text-anchor="start" class="s b">2</text><line x1="180" y1="150" x2="290.4" y2="152.4" class="ln thin ac" opacity="1"/><circle cx="290.4" cy="152.4" r="7" class="dot tn-c"/><text x="301.4" y="157.4" text-anchor="start" class="s b">3</text><line x1="180" y1="150" x2="105.6" y2="66" class="ln thin " opacity="0.35"/><circle cx="105.6" cy="66" r="7" class="dot tn-k"/><text x="94.6" y="71" text-anchor="end" class="s b">4</text><line x1="180" y1="150" x2="90" y2="84" class="ln thin " opacity="0.35"/><circle cx="90" cy="84" r="7" class="dot tn-k"/><text x="79" y="89" text-anchor="end" class="s b">5</text><line x1="180" y1="150" x2="165.6" y2="264" class="ln thin " opacity="0.35"/><circle cx="165.6" cy="264" r="7" class="dot tn-g"/><text x="154.6" y="269" text-anchor="end" class="s b">6</text><line x1="180" y1="150" x2="228" y2="252" class="ln thin " opacity="0.35"/><circle cx="228" cy="252" r="7" class="dot tn-g"/><text x="239" y="257" text-anchor="start" class="s b">7</text><circle cx="248.448" cy="133.632" r="9" class="fill-a"/><circle cx="248.448" cy="133.632" r="15" class="ring"/><text x="12" y="20" text-anchor="start" class="s m">Toy 2-D picture (illustrative)</text><circle cx="20" cy="301" r="6" class="dot tn-c"/><text x="32" y="306" text-anchor="start" class="s">1  My flight was cancelled</text><circle cx="20" cy="323" r="6" class="dot tn-c"/><text x="32" y="328" text-anchor="start" class="s">2  The airline scrapped my trip</text><circle cx="20" cy="345" r="6" class="dot tn-c"/><text x="32" y="350" text-anchor="start" class="s">3  Train delayed two hours</text><circle cx="20" cy="367" r="6" class="dot tn-k"/><text x="32" y="372" text-anchor="start" class="s">4  I like pizza</text><circle cx="20" cy="389" r="6" class="dot tn-k"/><text x="32" y="394" text-anchor="start" class="s">5  Pasta for dinner tonight</text><circle cx="20" cy="411" r="6" class="dot tn-g"/><text x="32" y="416" text-anchor="start" class="s">6  Refund to my card</text><circle cx="20" cy="433" r="6" class="dot tn-g"/><text x="32" y="438" text-anchor="start" class="s">7  Where is my money back?</text><text x="12" y="466" text-anchor="start" class="s ac-t">ring = the question</text><text x="12" y="490" text-anchor="start" class="s">Top 3 cosine: 1.00, 0.97, 0.92 (travel); pizza -0.47</text></svg>
+    <figcaption>Each text is an arrow from the centre. Cosine similarity measures how closely two arrows point the same way (1.0 = same direction, 0 = unrelated). The coordinates here are made up for a 2-D picture; the similarity numbers are computed from them.</figcaption>
+  </figure>
+  <div class="ez-play" data-ez-play="embed">
+    <div class="ease-label">Try it</div>
+    <p class="ez-hint">Pick a question. The three closest texts light up, with their cosine similarity computed from the toy vectors.</p>
+    <div class="ez-stage"></div>
+  </div>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">This is the idea that makes search, RAG, recommendations, and clustering possible. Once you can turn meaning into numbers, you can do math on meaning — and a huge amount of applied AI is exactly that.</p>
 
   <h2>Why embeddings have to exist</h2>
@@ -23,10 +59,7 @@
     <p>An <span class="term">embedding</span> is a list of numbers (a <span class="term">vector</span>) that represents a piece of text’s meaning. Each position in the list is a <span class="term">dimension</span>; real text embeddings have hundreds to thousands of them (e.g. 384, 768, 1536). An <span class="term">embedding model</span> is a neural network trained so that texts with similar meaning get vectors that point in similar directions. You can picture each vector as a <strong>point in a high-dimensional “meaning space.”</strong></p>
   </div>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>Imagine a giant school hall where every sentence is a student, and students stand closer together the more alike their meaning is. 'My flight was cancelled' and 'The airline scrapped my trip' stand shoulder to shoulder, while 'I like pizza' is across the room. Searching becomes 'walk to where the question stands and look at who is nearby'. The analogy breaks because the real hall has hundreds of directions, not just left, right, forward and back, so 'nearby' can mean close in one sense and far in another.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -275,6 +308,10 @@ best <span class="o">=</span> <span class="f">int</span>(scores.<span class="f">
     </ul>
   </div>
 <!-- shape:tail:end -->
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> An embedding is a meaning-to-numbers map, so 'similar meaning' becomes 'nearby points'.</p>
+<!-- ease:line:end -->
 </main>
 
 <script>
@@ -343,5 +380,10 @@ best <span class="o">=</span> <span class="f">int</span>(scores.<span class="f">
 </script>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/ease.js?v=1"></script>
+<script src="../assets/ease/play-t01.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

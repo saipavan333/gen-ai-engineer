@@ -1357,3 +1357,6 @@ h2.deeper-h::before{ content:"\2193  "; color:var(--accent); }
 .ez-svg .fade{ opacity:.28; }
 .ez-svg .ring{ fill:none; stroke:var(--accent); stroke-width:2; stroke-dasharray:6 4; }
 .ez-play .ez-svg{ max-width:620px; margin:4px 0; }
+.ez-ctl output{ white-space:nowrap; }
+.ez-svg .ln.k{ stroke:var(--c-key); } .ez-svg .hd.k{ fill:var(--c-key); }
+.ez-svg tspan.s{ font-size:13px; }

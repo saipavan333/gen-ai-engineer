@@ -12,12 +12,40 @@
 
   <span class="eyebrow">Track 1 · Lesson 1.6</span>
   <h1>What LLMs can &amp; can't do</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>LLMs are great at working with text you hand them: rewriting, summarising, pulling out facts.</p>
+    <p>They are weak when they must recall something exactly, like a date, a price or last week's news.</p>
+    <p>When they don't know, they still answer in the same confident voice.</p>
+    <p>A made-up answer like that is called a hallucination.</p>
+    <p>The fix is engineering: put the facts in the prompt, give the model tools, and check what comes back.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>An LLM is like a very well-read friend who has never once said 'I don't know'. Ask them to rewrite your essay or summarise a letter you hand them and they are brilliant. Ask them a date or a number from memory and they will answer in the same confident voice whether they remember it or are making it up.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>Rewriting the essay you hand them</td><td>Tasks grounded in the prompt: summarise, extract, rewrite, classify</td></tr>
+      <tr><td>Answering a date from memory</td><td>Recall from frozen training data, which stops at the knowledge cutoff</td></tr>
+      <tr><td>The same confident voice either way</td><td>Fluent output whether right or wrong; no built-in 'unsure' signal</td></tr>
+      <tr><td>You checking their answer</td><td>Retrieval, tools, validation and evals built around the model</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A person usually has some feeling of being unsure; the model's fluent tone is the same either way, so you have to build the checking in yourself.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 409" role="img" aria-label="Routing a request by how much the model must recall on its own" preserveAspectRatio="xMidYMid meet"><rect x="20" y="172" width="230" height="65" rx="10" class="bx tn-c" /><g class="vzb"><text x="135" y="197.25" text-anchor="middle" class="b">Your request</text><text x="135" y="223.25" text-anchor="middle" class="s" style="font-size:13px">what kind of job is it?</text></g><rect x="440" y="18" width="300" height="85" rx="10" class="bx tn-g" /><g class="vzb"><text x="590" y="43.25" text-anchor="middle" class="b">The answer is in the text you</text><text x="590" y="63.25" text-anchor="middle" class="b">give it</text><text x="590" y="89.25" text-anchor="middle" class="s" style="font-size:13px">summarise, extract, rewrite: reliable</text></g><polyline points="252,204.5 310,204.5 380,60.5 428,60.5" class="ln "/><polygon points="437,60.5 428,55.55 428,65.45" class="hd "/><rect x="440" y="115" width="300" height="82" rx="10" class="bx tn-w" /><g class="vzb"><text x="590" y="140.25" text-anchor="middle" class="b">It needs exact facts from memory</text><text x="590" y="166.25" text-anchor="middle" class="s" style="font-size:13px">dates, prices, citations: may be stale</text><text x="590" y="183.25" text-anchor="middle" class="s" style="font-size:13px">or invented; retrieve them instead</text></g><polyline points="252,204.5 310,204.5 380,156 428,156" class="ln "/><polygon points="437,156 428,151.05 428,160.95" class="hd "/><rect x="440" y="209" width="300" height="85" rx="10" class="bx tn-k" /><g class="vzb"><text x="590" y="234.25" text-anchor="middle" class="b">It needs live data or exact</text><text x="590" y="254.25" text-anchor="middle" class="b">maths</text><text x="590" y="280.25" text-anchor="middle" class="s" style="font-size:13px">today&#x27;s price, a big sum: call a tool</text></g><polyline points="252,204.5 310,204.5 380,251.5 428,251.5" class="ln "/><polygon points="437,251.5 428,246.55 428,256.45" class="hd "/><rect x="440" y="306" width="300" height="85" rx="10" class="bx tn-p" /><g class="vzb"><text x="590" y="331.25" text-anchor="middle" class="b">It needs a judgment you can&#x27;t</text><text x="590" y="351.25" text-anchor="middle" class="b">check</text><text x="590" y="377.25" text-anchor="middle" class="s" style="font-size:13px">medical, legal: add a human review step</text></g><polyline points="252,204.5 310,204.5 380,348.5 428,348.5" class="ln "/><polygon points="437,348.5 428,343.55 428,353.45" class="hd "/></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 547" role="img" aria-label="Routing a request by how much the model must recall on its own" preserveAspectRatio="xMidYMid meet"><rect x="12" y="14" width="336" height="65" rx="10" class="bx tn-c" /><g class="vzb"><text x="180" y="39.25" text-anchor="middle" class="b">Your request</text><text x="180" y="65.25" text-anchor="middle" class="s" style="font-size:13px">what kind of job is it?</text></g><line x1="26" y1="79" x2="26" y2="93" class="ln"/><rect x="56" y="113" width="292" height="85" rx="10" class="bx tn-g" /><g class="vzb"><text x="202" y="138.25" text-anchor="middle" class="b">The answer is in the text you</text><text x="202" y="158.25" text-anchor="middle" class="b">give it</text><text x="202" y="184.25" text-anchor="middle" class="s" style="font-size:13px">summarise, extract, rewrite: reliable</text></g><line x1="26" y1="155.5" x2="44" y2="155.5" class="ln "/><polygon points="53,155.5 44,150.55 44,160.45" class="hd "/><rect x="56" y="212" width="292" height="102" rx="10" class="bx tn-w" /><g class="vzb"><text x="202" y="247.25" text-anchor="middle" class="b">It needs exact facts from memory</text><text x="202" y="273.25" text-anchor="middle" class="s" style="font-size:13px">dates, prices, citations: may be stale</text><text x="202" y="290.25" text-anchor="middle" class="s" style="font-size:13px">or invented; retrieve them instead</text></g><line x1="26" y1="263" x2="44" y2="263" class="ln "/><polygon points="53,263 44,258.05 44,267.95" class="hd "/><rect x="56" y="328" width="292" height="85" rx="10" class="bx tn-k" /><g class="vzb"><text x="202" y="353.25" text-anchor="middle" class="b">It needs live data or exact</text><text x="202" y="373.25" text-anchor="middle" class="b">maths</text><text x="202" y="399.25" text-anchor="middle" class="s" style="font-size:13px">today&#x27;s price, a big sum: call a tool</text></g><line x1="26" y1="370.5" x2="44" y2="370.5" class="ln "/><polygon points="53,370.5 44,365.55 44,375.45" class="hd "/><rect x="56" y="427" width="292" height="102" rx="10" class="bx tn-p" /><g class="vzb"><text x="202" y="460.75" text-anchor="middle" class="b">It needs a judgment you can&#x27;t</text><text x="202" y="480.75" text-anchor="middle" class="b">check</text><text x="202" y="506.75" text-anchor="middle" class="s" style="font-size:13px">medical, legal: add a human review step</text></g><line x1="26" y1="478" x2="44" y2="478" class="ln "/><polygon points="53,478 44,473.05 44,482.95" class="hd "/><line x1="26" y1="79" x2="26" y2="478" class="ln"/></svg>
+    <figcaption>A useful habit: before trusting an answer, ask where the facts came from. From the prompt is usually fine. From the model's memory needs checking.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">This is the lesson that keeps you employed. Knowing exactly where these models shine and where they quietly fail is the difference between a demo that wows and a product that embarrasses you in front of users. It’s also the most-probed area in interviews.</p>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>An LLM is like a very well-read friend who has never once said 'I don't know'. Ask them to rewrite your essay or summarise a letter you hand them and they are brilliant. Ask them a date or a number from memory and they will answer in the same confident voice whether they remember it or are making it up. The analogy breaks because a person usually has some feeling of being unsure; the model's fluent tone is the same either way, so you have to build the checking in yourself.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -247,6 +275,10 @@ prompt <span class="o">=</span> <span class="s">f"Context: </span>{context}<span
     </ul>
   </div>
 <!-- shape:tail:end -->
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Trust an LLM with the text you give it, and check anything it has to remember on its own.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
