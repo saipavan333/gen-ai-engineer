@@ -12,12 +12,41 @@
 
   <span class="eyebrow">Frontier &amp; Responsible AI · Lesson 13.1</span>
   <h1>Reasoning models &amp; test-time compute</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>A normal model starts writing its answer straight away.</p>
+    <p>A reasoning model first writes out its thinking, step by step, and checks itself before it answers.</p>
+    <p>That extra work at answer time is called test-time compute.</p>
+    <p>It makes models much better at maths, code and multi-step planning.</p>
+    <p>But thinking tokens cost money and time, so you only want it on hard problems.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>A standard model is a quiz contestant who must hit the buzzer immediately. A reasoning model is allowed to scribble on a notepad for a minute before answering. On a hard maths question the notepad wins; on 'what colour is the sky' it just wastes a minute. And you pay for every page of scribbling.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>Hitting the buzzer straight away</td><td>One quick pass: the model writes only the answer</td></tr>
+      <tr><td>Scribbling on the notepad</td><td>Thinking tokens written before the final answer</td></tr>
+      <tr><td>Paying for every page of scribbling</td><td>Thinking tokens are billed as output tokens</td></tr>
+      <tr><td>How long you are allowed to scribble</td><td>The effort level (<code>low</code> to <code>max</code>); the model decides how much to think</td></tr>
+      <tr><td>Not wasting a minute on 'what colour is the sky'</td><td>Routing easy requests to low effort or a cheaper model</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> The model's scribbling is not always shown to you, but you are still billed for it.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 346" role="img" aria-label="Thinking tokens before the answer, billed as output, steered by effort level" preserveAspectRatio="xMidYMid meet"><text x="12" y="22" text-anchor="start" class="s m">Tokens the model writes for one answer (illustrative sizes from the page&#x27;s example)</text><text x="12" y="68" text-anchor="start" class="b">Easy input, low effort</text><text x="12" y="86" text-anchor="start" class="s m">the model may skip thinking</text><rect x="230" y="62" width="30" height="22" rx="4" class="fill-g"/><text x="266" y="78" text-anchor="start" class="s b ok-t">answer 300</text><text x="230" y="106" text-anchor="start" class="s">billed output 300 tokens = $0.003, about 4 s at 80 tokens/s</text><text x="12" y="152" text-anchor="start" class="b">Hard problem, high effort</text><text x="12" y="170" text-anchor="start" class="s m">adaptive thinking runs long first</text><rect x="230" y="146" width="385.116" height="22" rx="4" class="fill-k"/><text x="234" y="142" text-anchor="start" class="s b k-t">thinking 4,000 tokens (often hidden)</text><rect x="618.116" y="146" width="30" height="22" rx="4" class="fill-g"/><text x="654.116" y="162" text-anchor="start" class="s b ok-t">answer 300</text><text x="230" y="190" text-anchor="start" class="s">billed output 4,300 tokens = $0.043, about 54 s at 80 tokens/s</text><text x="12" y="222" text-anchor="start" class="s ac-t">You steer it with output_config.effort:</text><rect x="12" y="236" width="142.4" height="30" rx="6" class="bx tn-b" /><text x="83.2" y="256" text-anchor="middle" class="s b mono">low</text><rect x="160.4" y="236" width="142.4" height="30" rx="6" class="bx tn-b" /><text x="231.6" y="256" text-anchor="middle" class="s b mono">medium</text><rect x="308.8" y="236" width="142.4" height="30" rx="6" class="bx tn-a" /><text x="380" y="256" text-anchor="middle" class="s b mono">high</text><rect x="457.2" y="236" width="142.4" height="30" rx="6" class="bx tn-b" /><text x="528.4" y="256" text-anchor="middle" class="s b mono">xhigh</text><rect x="605.6" y="236" width="142.4" height="30" rx="6" class="bx tn-b" /><text x="676.8" y="256" text-anchor="middle" class="s b mono">max</text><text x="380" y="282" text-anchor="middle" class="s ac-t" style="font-size:12px">default on Sonnet 5.5</text><line x1="14" y1="294" x2="737" y2="294" class="ln ac"/><polygon points="746,294 737,289.05 737,298.95" class="hd ac"/><text x="12" y="314" text-anchor="start" class="s">more thinking allowed → slower and more billed output, better on hard multi-step problems</text><text x="12" y="334" text-anchor="start" class="s wn-t">budget_tokens is rejected (400) on Claude 4.7 and later.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 464" role="img" aria-label="Thinking tokens before the answer, billed as output, steered by effort level" preserveAspectRatio="xMidYMid meet"><text x="12" y="20" text-anchor="start" class="b">Tokens written for one answer</text><text x="12" y="38" text-anchor="start" class="s m">(sizes from the page&#x27;s example)</text><text x="12" y="72" text-anchor="start" class="b">Easy input, low effort</text><text x="12" y="90" text-anchor="start" class="s m">the model may skip thinking</text><rect x="12" y="106" width="30" height="22" rx="4" class="fill-g"/><text x="48" y="122" text-anchor="start" class="s b ok-t">answer 300</text><text x="12" y="150" text-anchor="start" class="s">billed output 300 tokens = $0.003</text><text x="12" y="168" text-anchor="start" class="s m">about 4 s at 80 tokens/s</text><text x="12" y="204" text-anchor="start" class="b">Hard problem, high effort</text><text x="12" y="222" text-anchor="start" class="s m">adaptive thinking runs long first</text><rect x="12" y="238" width="215.814" height="22" rx="4" class="fill-k"/><text x="16" y="234" text-anchor="start" class="s b k-t">thinking 4,000 tokens (often hidden)</text><rect x="230.814" y="238" width="30" height="22" rx="4" class="fill-g"/><text x="266.814" y="254" text-anchor="start" class="s b ok-t">answer 300</text><text x="12" y="282" text-anchor="start" class="s">billed output 4,300 tokens = $0.043</text><text x="12" y="300" text-anchor="start" class="s m">about 54 s at 80 tokens/s</text><text x="12" y="340" text-anchor="start" class="s ac-t">Steer it with output_config.effort:</text><rect x="12" y="354" width="62.4" height="30" rx="6" class="bx tn-b" /><text x="43.2" y="374" text-anchor="middle" class="s b mono">low</text><rect x="80.4" y="354" width="62.4" height="30" rx="6" class="bx tn-b" /><text x="111.6" y="374" text-anchor="middle" class="s b mono">medium</text><rect x="148.8" y="354" width="62.4" height="30" rx="6" class="bx tn-a" /><text x="180" y="374" text-anchor="middle" class="s b mono">high</text><rect x="217.2" y="354" width="62.4" height="30" rx="6" class="bx tn-b" /><text x="248.4" y="374" text-anchor="middle" class="s b mono">xhigh</text><rect x="285.6" y="354" width="62.4" height="30" rx="6" class="bx tn-b" /><text x="316.8" y="374" text-anchor="middle" class="s b mono">max</text><text x="180" y="400" text-anchor="middle" class="s ac-t" style="font-size:12px">default on Sonnet 5.5</text><line x1="14" y1="412" x2="337" y2="412" class="ln ac"/><polygon points="346,412 337,407.05 337,416.95" class="hd ac"/><text x="12" y="432" text-anchor="start" class="s">more thinking, slower, more billed output →</text><text x="12" y="452" text-anchor="start" class="s wn-t">budget_tokens is rejected (400) on Claude 4.7 and later.</text></svg>
+    <figcaption>Thinking happens before the answer and is billed as output. The token counts and the 80 tokens a second are the page's assumptions; cost uses Claude Sonnet 5.5's $10 per million output tokens. Effort is a signal, not a hard cap: <code>max_tokens</code> is the hard limit.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">A major shift in the field: instead of only making models bigger, we now let them <em>think longer</em> at answer time. Understanding “reasoning models” and “test-time compute” keeps you current and helps you choose the right model for a job.</p>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>A standard model is a quiz contestant who must hit the buzzer immediately. A reasoning model is allowed to scribble on a notepad for a minute before answering. On a hard maths question the notepad wins; on 'what colour is the sky' it just wastes a minute. And you pay for every page of scribbling. The analogy breaks because the model's scribbling is not always shown to you, but you are still billed for it.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -214,6 +243,10 @@
 
   <p>Reasoning is one frontier shift; there are several worth a working engineer’s awareness. Next: <strong>the modern frontier.</strong></p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> A reasoning model thinks before it speaks, which helps on hard problems and costs you every word it thinks.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>

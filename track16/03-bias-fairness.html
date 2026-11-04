@@ -12,12 +12,41 @@
 
   <span class="eyebrow">Frontier &amp; Responsible AI · Lesson 13.3</span>
   <h1>Responsible AI: bias &amp; fairness</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Models learn from text written by people, so they pick up people's biases too.</p>
+    <p>That matters when a system makes decisions about people, such as who gets a job interview or a loan.</p>
+    <p>A good overall score can hide a group that is failed again and again.</p>
+    <p>So you measure results for each group separately, with inputs that differ only in, say, the name.</p>
+    <p>Then you fix what you find and measure again.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Imagine a school grading machine that is right 90% of the time overall, but it was mostly tested on neat handwriting, so it fails more often for kids with messy writing. The class average looks fine while some kids are marked down again and again. Checking fairness means looking at the results for each group of kids, not just the class average.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The class average</td><td>Overall accuracy or overall advance rate</td></tr>
+      <tr><td>Results for each group of kids</td><td>Disaggregated evaluation: the same metric per group</td></tr>
+      <tr><td>The same essay in different handwriting</td><td>Matched pairs: the same resume with only the name changed</td></tr>
+      <tr><td>Kids with messy writing marked down</td><td>A group whose rate falls below four-fifths of the top group's</td></tr>
+      <tr><td>A teacher checking the machine's marks</td><td>Human review of rejects and a model card that records the tests</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> With people, unlike handwriting, the groups can be hidden behind proxies like a name or a postcode that the system never openly 'looks at'.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 274" role="img" aria-label="Per-group advance rates against the four-fifths line" preserveAspectRatio="xMidYMid meet"><text x="12" y="20" text-anchor="start" class="s m">Same 500 resumes, only the name changed (rates from the page, illustrative)</text><text x="80" y="62" text-anchor="end" class="s b">Group A</text><rect x="90" y="46" width="400" height="24" rx="4" class="fill-g"/><text x="515" y="63" text-anchor="start" class="s ">32%  ratio 1.00</text><text x="80" y="100" text-anchor="end" class="s b">Group B</text><rect x="90" y="84" width="387.5" height="24" rx="4" class="fill-g"/><text x="515" y="101" text-anchor="start" class="s ">31%  ratio 0.97</text><text x="80" y="138" text-anchor="end" class="s b">Group C</text><rect x="90" y="122" width="375" height="24" rx="4" class="fill-g"/><text x="515" y="139" text-anchor="start" class="s ">30%  ratio 0.94</text><text x="80" y="176" text-anchor="end" class="s b">Group D</text><rect x="90" y="160" width="287.5" height="24" rx="4" class="fill-w"/><text x="515" y="177" text-anchor="start" class="s wn-t b">23%  ratio 0.72</text><line x1="410" y1="34" x2="410" y2="198" class="ln wn dash"/><text x="410" y="216" text-anchor="middle" class="s wn-t">four-fifths line: 0.8 x 32% = 25.6%</text><text x="12" y="242" text-anchor="start" class="s">Group D advances at 23%, ratio 0.72 &lt; 0.8: evidence of adverse impact on identical qualifications.</text><text x="12" y="262" text-anchor="start" class="s m">The average advance rate is 29%. It hides the gap.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 274" role="img" aria-label="Per-group advance rates against the four-fifths line" preserveAspectRatio="xMidYMid meet"><text x="12" y="20" text-anchor="start" class="s m">Same 500 resumes, only the name changed</text><text x="68" y="62" text-anchor="end" class="s b">Group A</text><rect x="78" y="46" width="136" height="24" rx="4" class="fill-g"/><text x="222.5" y="63" text-anchor="start" class="s ">32%  ratio 1.00</text><text x="68" y="100" text-anchor="end" class="s b">Group B</text><rect x="78" y="84" width="131.75" height="24" rx="4" class="fill-g"/><text x="222.5" y="101" text-anchor="start" class="s ">31%  ratio 0.97</text><text x="68" y="138" text-anchor="end" class="s b">Group C</text><rect x="78" y="122" width="127.5" height="24" rx="4" class="fill-g"/><text x="222.5" y="139" text-anchor="start" class="s ">30%  ratio 0.94</text><text x="68" y="176" text-anchor="end" class="s b">Group D</text><rect x="78" y="160" width="97.75" height="24" rx="4" class="fill-w"/><text x="222.5" y="177" text-anchor="start" class="s wn-t b">23%  ratio 0.72</text><line x1="186.8" y1="34" x2="186.8" y2="198" class="ln wn dash"/><text x="186.8" y="216" text-anchor="middle" class="s wn-t">four-fifths line: 0.8 x 32% = 25.6%</text><text x="12" y="242" text-anchor="start" class="s">Below the line is evidence of adverse impact.</text><text x="12" y="262" text-anchor="start" class="s m">The average advance rate is 29%. It hides the gap.</text></svg>
+    <figcaption>Bars are the advance rates from the page's matched-pair audit (illustrative). Each ratio is the group's rate divided by the highest. US federal guidelines generally treat a ratio below 0.8 as evidence of adverse impact.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">Models learn from human data, so they inherit human biases. If your system touches decisions about people — hiring, lending, content, access — that isn’t an abstract ethics topic; it’s an engineering requirement you’ll be asked about. This lesson is practical: where bias comes from, how to measure it, and how to reduce it.</p>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>Imagine a school grading machine that is right 90% of the time overall, but it was mostly tested on neat handwriting, so it fails more often for kids with messy writing. The class average looks fine while some kids are marked down again and again. Checking fairness means looking at the results for each group of kids, not just the class average. The analogy breaks because with people, unlike handwriting, the groups can be hidden behind proxies like a name or a postcode that the system never openly 'looks at'.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -214,6 +243,10 @@
 
   <p>Responsibility is also becoming law. Next: <strong>governance &amp; regulation.</strong></p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Never trust the class average: check every group, with the same inputs, before the system judges real people.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
