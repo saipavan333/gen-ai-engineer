@@ -12,12 +12,41 @@
 
   <span class="eyebrow">Productionization &amp; LLMOps · Lesson 12.2</span>
   <h1>Packaging &amp; deploy</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Your service needs the right Python, the right libraries and the right versions to run.</p>
+    <p>Copy it to another computer and one small mismatch can break it.</p>
+    <p>A container packs your code together with everything it needs into one sealed image.</p>
+    <p>Docker is the usual tool for building and running these images.</p>
+    <p>Settings and secrets, like API keys, stay out of the image and are handed in when it starts.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>A container is like a packed lunchbox. Instead of hoping the school canteen has the right bread, you pack the sandwich, the napkin and the fork together, so lunch is the same wherever you eat it. The note from your parents saying which allergy you have is not glued inside the box; it is handed to the teacher separately (config and secrets from the environment).</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The packed lunchbox</td><td>The Docker image: code plus Python plus pinned libraries</td></tr>
+      <tr><td>The packing list</td><td>The Dockerfile, read from the base layer up</td></tr>
+      <tr><td>The allergy note handed to the teacher</td><td>Environment variables and secrets, given at run time</td></tr>
+      <tr><td>Eating the same lunch at school or at home</td><td>The same image running in dev, staging and prod</td></tr>
+      <tr><td>Trying to pack the whole fridge</td><td>Baking 4.7 GB of model weights into the image</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A lunchbox is small, but people sometimes try to pack the whole fridge, like baking a 5 GB model into the image, and then every delivery becomes slow.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 400" role="img" aria-label="One Docker image runs in dev, staging and prod; config and secrets come from the environment" preserveAspectRatio="xMidYMid meet"><text x="20" y="22" text-anchor="start" class="b">Image my-llm-app:3f9c2a1 (about 200 MB), built once</text><rect x="20" y="34" width="330" height="62" rx="10" class="bx tn-a" /><g class="vzb"><text x="185" y="58.3" text-anchor="middle" class="b" style="font-size:14px">CMD uvicorn main:app</text><text x="185" y="82.3" text-anchor="middle" class="s" style="font-size:12px">starts the API on port 8000</text></g><rect x="20" y="98" width="330" height="62" rx="10" class="bx tn-c" /><g class="vzb"><text x="185" y="122.3" text-anchor="middle" class="b" style="font-size:14px">COPY . .</text><text x="185" y="146.3" text-anchor="middle" class="s" style="font-size:12px">your code: main.py, config.py, prompts</text></g><rect x="20" y="162" width="330" height="62" rx="10" class="bx tn-p" /><g class="vzb"><text x="185" y="186.3" text-anchor="middle" class="b" style="font-size:14px">pip install -r requirements.txt</text><text x="185" y="210.3" text-anchor="middle" class="s" style="font-size:12px">pinned versions, so every build is the same</text></g><rect x="20" y="226" width="330" height="62" rx="10" class="bx tn-b" /><g class="vzb"><text x="185" y="250.3" text-anchor="middle" class="b" style="font-size:14px">FROM python:3.11-slim</text><text x="185" y="274.3" text-anchor="middle" class="s" style="font-size:12px">a known, fixed base</text></g><text x="185" y="306" text-anchor="middle" class="s m">↑ built from the Dockerfile, bottom layer first</text><text x="470" y="22" text-anchor="start" class="s ac-t">docker run, same image, different env vars</text><rect x="470" y="34" width="270" height="74" rx="10" class="bx tn-g" /><text x="482" y="56" text-anchor="start" class="b">dev</text><text x="482" y="76" text-anchor="start" class="s mono" style="font-size:12px">MODEL=qwen2.5:7b</text><text x="482" y="94" text-anchor="start" class="s mono" style="font-size:12px">DB_URL=sqlite:///local.db</text><rect x="470" y="120" width="270" height="74" rx="10" class="bx tn-k" /><text x="482" y="142" text-anchor="start" class="b">staging</text><text x="482" y="162" text-anchor="start" class="s mono" style="font-size:12px">PROMPT_VERSION=v15</text><text x="482" y="180" text-anchor="start" class="s mono" style="font-size:12px">DB_URL=staging database</text><rect x="470" y="206" width="270" height="74" rx="10" class="bx tn-a" /><text x="482" y="228" text-anchor="start" class="b">prod</text><text x="482" y="248" text-anchor="start" class="s mono" style="font-size:12px">PROMPT_VERSION=v14</text><text x="482" y="266" text-anchor="start" class="s mono" style="font-size:12px">API_KEY from the secret store</text><polyline points="354,159 410,159 410,71 457,71" class="ln ac"/><polygon points="466,71 457,66.05 457,75.95" class="hd ac"/><polyline points="354,159 410,159 410,157 457,157" class="ln ac"/><polygon points="466,157 457,152.05 457,161.95" class="hd ac"/><polyline points="354,159 410,159 410,243 457,243" class="ln ac"/><polygon points="466,243 457,238.05 457,247.95" class="hd ac"/><rect x="20" y="328" width="720" height="62" rx="10" class="bx tn-w" /><text x="36" y="352" text-anchor="start" class="b wn-t">Never inside the image</text><text x="36" y="374" text-anchor="start" class="s">API keys (secret store, injected at run time) · .env (listed in .gitignore) · 4.7 GB model weights (run as their own service)</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 734" role="img" aria-label="One Docker image runs in dev, staging and prod; config and secrets come from the environment" preserveAspectRatio="xMidYMid meet"><text x="12" y="20" text-anchor="start" class="b">Image my-llm-app:3f9c2a1</text><text x="12" y="38" text-anchor="start" class="s m">about 200 MB, built once</text><rect x="12" y="50" width="336" height="62" rx="10" class="bx tn-a" /><g class="vzb"><text x="180" y="74.3" text-anchor="middle" class="b" style="font-size:14px">CMD uvicorn main:app</text><text x="180" y="98.3" text-anchor="middle" class="s" style="font-size:12px">starts the API on port 8000</text></g><rect x="12" y="117" width="336" height="62" rx="10" class="bx tn-c" /><g class="vzb"><text x="180" y="141.3" text-anchor="middle" class="b" style="font-size:14px">COPY . .</text><text x="180" y="165.3" text-anchor="middle" class="s" style="font-size:12px">your code: main.py, config.py, prompts</text></g><rect x="12" y="184" width="336" height="62" rx="10" class="bx tn-p" /><g class="vzb"><text x="180" y="208.3" text-anchor="middle" class="b" style="font-size:14px">pip install -r requirements.txt</text><text x="180" y="232.3" text-anchor="middle" class="s" style="font-size:12px">pinned versions, so every build is the same</text></g><rect x="12" y="251" width="336" height="62" rx="10" class="bx tn-b" /><g class="vzb"><text x="180" y="275.3" text-anchor="middle" class="b" style="font-size:14px">FROM python:3.11-slim</text><text x="180" y="299.3" text-anchor="middle" class="s" style="font-size:12px">a known, fixed base</text></g><text x="180" y="332" text-anchor="middle" class="s m">↑ built bottom layer first</text><line x1="180" y1="344" x2="180" y2="363" class="ln ac"/><polygon points="180,372 184.95,363 175.05,363" class="hd ac"/><text x="190" y="363" text-anchor="start" class="s ac-t">docker run, same image</text><rect x="12" y="382" width="336" height="74" rx="10" class="bx tn-g" /><text x="24" y="404" text-anchor="start" class="b">dev</text><text x="24" y="424" text-anchor="start" class="s mono" style="font-size:12px">MODEL=qwen2.5:7b</text><text x="24" y="442" text-anchor="start" class="s mono" style="font-size:12px">DB_URL=sqlite:///local.db</text><rect x="12" y="464" width="336" height="74" rx="10" class="bx tn-k" /><text x="24" y="486" text-anchor="start" class="b">staging</text><text x="24" y="506" text-anchor="start" class="s mono" style="font-size:12px">PROMPT_VERSION=v15</text><text x="24" y="524" text-anchor="start" class="s mono" style="font-size:12px">DB_URL=staging database</text><rect x="12" y="546" width="336" height="74" rx="10" class="bx tn-a" /><text x="24" y="568" text-anchor="start" class="b">prod</text><text x="24" y="588" text-anchor="start" class="s mono" style="font-size:12px">PROMPT_VERSION=v14</text><text x="24" y="606" text-anchor="start" class="s mono" style="font-size:12px">API_KEY from the secret store</text><rect x="12" y="634" width="336" height="90" rx="10" class="bx tn-w" /><text x="24" y="656" text-anchor="start" class="b wn-t">Never inside the image</text><text x="24" y="678" text-anchor="start" class="s" style="font-size:13px">API keys: secret store, at run time</text><text x="24" y="696" text-anchor="start" class="s" style="font-size:13px">.env: listed in .gitignore</text><text x="24" y="714" text-anchor="start" class="s" style="font-size:13px">4.7 GB model weights: own service</text></svg>
+    <figcaption>The image is built once and tagged by commit. Only the environment variables change between dev, staging and prod. The red box is what must never be built in. Image size, tag and prompt versions follow the page's worked example.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">“It works on my machine” is not a deployment strategy. Containers make your service run the same everywhere, and a little discipline with config and secrets keeps it safe. This lesson gets your API off your laptop.</p>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>A container is like a packed lunchbox. Instead of hoping the school canteen has the right bread, you pack the sandwich, the napkin and the fork together, so lunch is the same wherever you eat it. The note from your parents saying which allergy you have is not glued inside the box; it is handed to the teacher separately (config and secrets from the environment). Where it breaks: a lunchbox is small, but people sometimes try to pack the whole fridge, like baking a 5 GB model into the image, and then every delivery becomes slow.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -216,6 +245,10 @@ API_KEY <span class="o">=</span> os.<span class="f">environ</span>.<span class="
 
   <p>Your service can run anywhere. But every change you make risks breaking quality — so before anything ships, it should have to pass your evals. Next: <strong>CI for prompts &amp; evals.</strong></p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Pack the code and its tools into one box, and hand the settings and secrets in from outside.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>

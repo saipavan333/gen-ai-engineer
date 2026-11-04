@@ -12,12 +12,46 @@
 
   <span class="eyebrow">Productionization &amp; LLMOps · Lesson 12.3</span>
   <h1>CI for prompts &amp; evals</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>CI (continuous integration) runs your tests on every change and blocks the change if they fail.</p>
+    <p>Normal bugs announce themselves: something crashes or a test goes red.</p>
+    <p>A worse prompt crashes nothing. The answers are still fluent, just wrong more often.</p>
+    <p>So CI also scores your golden set: fixed questions with known good answers.</p>
+    <p>If the score falls below a bar you set, the change cannot merge.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>A school spelling test checks the same 50 words every week. If a new teaching trick helps you spell &#x27;necessary&#x27; but makes you forget &#x27;separate&#x27; and &#x27;definitely&#x27;, the test catches it before report-card day. The eval gate is that weekly test for your prompts: every change has to pass the whole list, not just the word you were fixing.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The same 50 words every week</td><td>The golden set: fixed questions with expected answers</td></tr>
+      <tr><td>Your score on the test</td><td>The eval score, for example the share of cases that pass</td></tr>
+      <tr><td>The pass mark</td><td><code>--min-score 0.85</code> in the CI workflow</td></tr>
+      <tr><td>Failing the test before report-card day</td><td><code>eval.py</code> exits with code 1, the build goes red, the merge is blocked</td></tr>
+      <tr><td>Forgetting 'separate' while learning 'necessary'</td><td>A regression: a case that passed before now fails</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A spelling test has exact right answers, while many LLM answers are judged by a rubric or another model, and that judge can be wrong or noisy too.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 372" role="img" aria-label="The eval gate: tests and the golden-set score decide whether a pull request can merge" preserveAspectRatio="xMidYMid meet"><rect x="20" y="20" width="200" height="92" rx="10" class="bx tn-c" /><g class="vzb"><text x="120" y="50.25" text-anchor="middle" class="b">Pull request</text><text x="120" y="76.25" text-anchor="middle" class="s" style="font-size:13px">the prompt change is a</text><text x="120" y="93.25" text-anchor="middle" class="s" style="font-size:13px">diff in git</text></g><rect x="280" y="20" width="200" height="92" rx="10" class="bx tn-b" /><g class="vzb"><text x="380" y="50.25" text-anchor="middle" class="b">pytest</text><text x="380" y="76.25" text-anchor="middle" class="s" style="font-size:13px">valid JSON? right chunk</text><text x="380" y="93.25" text-anchor="middle" class="s" style="font-size:13px">retrieved?</text></g><rect x="540" y="20" width="200" height="92" rx="10" class="bx tn-a" /><g class="vzb"><text x="640" y="50.25" text-anchor="middle" class="b">eval.py</text><text x="640" y="76.25" text-anchor="middle" class="s" style="font-size:13px">scores the golden set,</text><text x="640" y="93.25" text-anchor="middle" class="s" style="font-size:13px">e.g. 0.83 (illustrative)</text></g><line x1="224" y1="66" x2="267" y2="66" class="ln "/><polygon points="276,66 267,61.05 267,70.95" class="hd "/><line x1="484" y1="66" x2="527" y2="66" class="ln "/><polygon points="536,66 527,61.05 527,70.95" class="hd "/><line x1="640" y1="116" x2="640" y2="141" class="ln "/><polygon points="640,150 644.95,141 635.05,141" class="hd "/><polygon points="640,152 732,200 640,248 548,200" class="bx tn-k"/><text x="640" y="197" text-anchor="middle" class="b" style="font-size:14px">score ≥</text><text x="640" y="214" text-anchor="middle" class="b" style="font-size:14px">--min-score 0.85?</text><rect x="290" y="176" width="200" height="92" rx="10" class="bx tn-w" /><g class="vzb"><text x="390" y="206.25" text-anchor="middle" class="b">Merge blocked</text><text x="390" y="232.25" text-anchor="middle" class="s" style="font-size:13px">eval.py exits 1, so the</text><text x="390" y="249.25" text-anchor="middle" class="s" style="font-size:13px">build goes red</text></g><rect x="540" y="290" width="200" height="82" rx="10" class="bx tn-g" /><g class="vzb"><text x="640" y="315.25" text-anchor="middle" class="b">Merge allowed</text><text x="640" y="341.25" text-anchor="middle" class="s" style="font-size:13px">exit 0, build green,</text><text x="640" y="358.25" text-anchor="middle" class="s" style="font-size:13px">deploy</text></g><line x1="548" y1="200" x2="503" y2="200" class="ln wn"/><polygon points="494,200 503,204.95 503,195.05" class="hd wn"/><text x="521" y="192" text-anchor="middle" class="s wn-t">no</text><line x1="640" y1="248" x2="640" y2="277" class="ln ok"/><polygon points="640,286 644.95,277 635.05,277" class="hd ok"/><text x="652" y="272" text-anchor="start" class="s ok-t">yes</text><line x1="380" y1="116" x2="380" y2="163" class="ln wn"/><polygon points="380,172 384.95,163 375.05,163" class="hd wn"/><text x="388" y="150" text-anchor="start" class="s wn-t">a test fails</text><rect x="20" y="176" width="200" height="92" rx="10" class="bx tn-p" /><g class="vzb"><text x="120" y="206.25" text-anchor="middle" class="b">Fix and push again</text><text x="120" y="232.25" text-anchor="middle" class="s" style="font-size:13px">add the broken case to the</text><text x="120" y="249.25" text-anchor="middle" class="s" style="font-size:13px">golden set too</text></g><line x1="286" y1="222" x2="233" y2="222" class="ln wn"/><polygon points="224,222 233,226.95 233,217.05" class="hd wn"/><line x1="120" y1="172" x2="120" y2="129" class="ln ac"/><polygon points="120,120 115.05,129 124.95,129" class="hd ac"/><text x="128" y="150" text-anchor="start" class="s ac-t">new commit</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 586" role="img" aria-label="The eval gate: tests and the golden-set score decide whether a pull request can merge" preserveAspectRatio="xMidYMid meet"><rect x="12" y="12" width="336" height="65" rx="10" class="bx tn-c" /><g class="vzb"><text x="180" y="37.25" text-anchor="middle" class="b">Pull request</text><text x="180" y="63.25" text-anchor="middle" class="s" style="font-size:13px">the prompt change is a diff in git</text></g><line x1="180" y1="80" x2="180" y2="95" class="ln "/><polygon points="180,104 184.95,95 175.05,95" class="hd "/><rect x="12" y="107" width="336" height="65" rx="10" class="bx tn-b" /><g class="vzb"><text x="180" y="132.25" text-anchor="middle" class="b">pytest</text><text x="180" y="158.25" text-anchor="middle" class="s" style="font-size:13px">valid JSON? right chunk retrieved?</text></g><line x1="180" y1="175" x2="180" y2="190" class="ln "/><polygon points="180,199 184.95,190 175.05,190" class="hd "/><rect x="12" y="202" width="336" height="82" rx="10" class="bx tn-a" /><g class="vzb"><text x="180" y="227.25" text-anchor="middle" class="b">eval.py</text><text x="180" y="253.25" text-anchor="middle" class="s" style="font-size:13px">scores the golden set, e.g. 0.83</text><text x="180" y="270.25" text-anchor="middle" class="s" style="font-size:13px">(illustrative)</text></g><line x1="180" y1="287" x2="180" y2="302" class="ln "/><polygon points="180,311 184.95,302 175.05,302" class="hd "/><polygon points="180,314 290,360 180,406 70,360" class="bx tn-k"/><text x="180" y="357" text-anchor="middle" class="b" style="font-size:14px">score ≥</text><text x="180" y="374" text-anchor="middle" class="b" style="font-size:14px">--min-score 0.85?</text><polyline points="70,360 40,360 40,423" class="ln wn"/><polygon points="40,432 44.95,423 35.05,423" class="hd wn"/><text x="48" y="352" text-anchor="start" class="s wn-t">no</text><polyline points="290,360 320,360 320,423" class="ln ok"/><polygon points="320,432 324.95,423 315.05,423" class="hd ok"/><text x="312" y="352" text-anchor="end" class="s ok-t">yes</text><rect x="12" y="436" width="160" height="96" rx="10" class="bx tn-w" /><g class="vzb"><text x="92" y="468.25" text-anchor="middle" class="b">Merge blocked</text><text x="92" y="494.25" text-anchor="middle" class="s" style="font-size:13px">eval.py exits 1:</text><text x="92" y="511.25" text-anchor="middle" class="s" style="font-size:13px">build red</text></g><rect x="188" y="436" width="160" height="96" rx="10" class="bx tn-g" /><g class="vzb"><text x="268" y="468.25" text-anchor="middle" class="b">Merge allowed</text><text x="268" y="494.25" text-anchor="middle" class="s" style="font-size:13px">exit 0: build green,</text><text x="268" y="511.25" text-anchor="middle" class="s" style="font-size:13px">deploy</text></g><text x="12" y="554" text-anchor="start" class="s m">A failing pytest blocks the merge too.</text><text x="12" y="574" text-anchor="start" class="s m">Fix it, add the case to the golden set, push again.</text></svg>
+    <figcaption>The whole trick is the exit code. <code>eval.py</code> returns 1 when the score is below the bar, and CI treats that like any failed test. The score shown is illustrative.</figcaption>
+  </figure>
+  <div class="ez-play" data-ez-play="evalgate">
+    <div class="ease-label">Try it</div>
+    <p class="ez-hint">Pick a candidate prompt and move the pass mark. Each square is one golden-set case. Watch which cases flip, and whether the gate catches them.</p>
+    <div class="ez-stage"></div>
+  </div>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">In normal software, tests in CI stop you shipping bugs. In LLM software, a one-word prompt tweak can quietly wreck quality with no error anywhere. The fix is the same idea, upgraded: make every change pass your evals before it can ship.</p>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>A school spelling test checks the same 50 words every week. If a new teaching trick helps you spell 'necessary' but makes you forget 'separate' and 'definitely', the test catches it before report-card day. The eval gate is that weekly test for your prompts: every change has to pass the whole list, not just the word you were fixing. Where it breaks: a spelling test has exact right answers, while many LLM answers are judged by a rubric or another model, and that judge can be wrong or noisy too.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -233,8 +267,17 @@ jobs:
 
   <p>Even with a great eval gate, production will surprise you — real users do things your golden set didn’t imagine. So you watch. Next: <strong>monitoring in production.</strong></p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Every prompt change has to pass the whole test, not just the question you were fixing.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
+
+<!-- ease:js:start -->
+<script src="../assets/ease/ease.js?v=1"></script>
+<script src="../assets/ease/play-t12.js?v=1"></script>
+<!-- ease:js:end -->
 </body>
 </html>

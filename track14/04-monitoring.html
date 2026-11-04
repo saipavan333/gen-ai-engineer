@@ -12,12 +12,41 @@
 
   <span class="eyebrow">Productionization &amp; LLMOps · Lesson 12.4</span>
   <h1>Monitoring in production</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Your tests only cover the questions you thought of. Real users ask everything else.</p>
+    <p>Monitoring means recording what the live service does on every request.</p>
+    <p>Each request leaves a trace: the prompt, the retrieved text, tool calls, tokens and time taken.</p>
+    <p>Traces roll up into charts, and an alarm goes off when a number goes out of range.</p>
+    <p>The failures you find become new test cases, so the system gets better the longer it runs.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>A doctor does not wait for you to collapse; she checks your pulse, temperature and blood pressure on every visit, and keeps your file so she can see what changed. Monitoring is that file for your AI service: every request leaves a record (a trace), the numbers are charted over time, and an alarm rings when one goes out of range.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The patient's file</td><td>Traces: one full record per request</td></tr>
+      <tr><td>Pulse, temperature, blood pressure</td><td>p95 latency, cost per request, error rate, thumbs-down share</td></tr>
+      <tr><td>The alarm when a reading is out of range</td><td>Alerts on p95 and error rate, not on the average</td></tr>
+      <tr><td>Asking how the patient actually feels</td><td>Quality signals: user feedback and an LLM judge on a sample of live traffic</td></tr>
+      <tr><td>Changing the treatment next visit</td><td>Fixing the failure and adding it to the golden set</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A thermometer reads the same for everyone, but an LLM can sound perfectly healthy while giving wrong answers, so you also need checks of quality, not just of speed and errors.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 216" role="img" aria-label="The monitoring loop: traces become metrics, alerts lead to fixes, fixes become test cases" preserveAspectRatio="xMidYMid meet"><rect x="14" y="22" width="119.2" height="122" rx="10" class="bx tn-c" /><g class="vzb"><text x="73.6" y="57.25" text-anchor="middle" class="b">Live</text><text x="73.6" y="77.25" text-anchor="middle" class="b">request</text><text x="73.6" y="103.25" text-anchor="middle" class="s" style="font-size:13px">a real user</text><text x="73.6" y="120.25" text-anchor="middle" class="s" style="font-size:13px">asks</text></g><circle cx="16" cy="24" r="11" class="badge"/><text x="16" y="28.5" text-anchor="middle" class="badge-t">1</text><line x1="137.2" y1="83" x2="154.2" y2="83" class="ln "/><polygon points="163.2,83 154.2,78.05 154.2,87.95" class="hd "/><rect x="167.2" y="22" width="119.2" height="122" rx="10" class="bx tn-b" /><g class="vzb"><text x="226.8" y="50.25" text-anchor="middle" class="b">Trace</text><text x="226.8" y="76.25" text-anchor="middle" class="s" style="font-size:13px">prompt,</text><text x="226.8" y="93.25" text-anchor="middle" class="s" style="font-size:13px">context, tool</text><text x="226.8" y="110.25" text-anchor="middle" class="s" style="font-size:13px">calls, tokens,</text><text x="226.8" y="127.25" text-anchor="middle" class="s" style="font-size:13px">timing</text></g><circle cx="169.2" cy="24" r="11" class="badge"/><text x="169.2" y="28.5" text-anchor="middle" class="badge-t">2</text><line x1="290.4" y1="83" x2="307.4" y2="83" class="ln "/><polygon points="316.4,83 307.4,78.05 307.4,87.95" class="hd "/><rect x="320.4" y="22" width="119.2" height="122" rx="10" class="bx tn-a" /><g class="vzb"><text x="380" y="58.75" text-anchor="middle" class="b">Metrics</text><text x="380" y="84.75" text-anchor="middle" class="s" style="font-size:13px">p95 latency,</text><text x="380" y="101.75" text-anchor="middle" class="s" style="font-size:13px">cost, errors,</text><text x="380" y="118.75" text-anchor="middle" class="s" style="font-size:13px">thumbs-down</text></g><circle cx="322.4" cy="24" r="11" class="badge"/><text x="322.4" y="28.5" text-anchor="middle" class="badge-t">3</text><line x1="443.6" y1="83" x2="460.6" y2="83" class="ln "/><polygon points="469.6,83 460.6,78.05 460.6,87.95" class="hd "/><rect x="473.6" y="22" width="119.2" height="122" rx="10" class="bx tn-w" /><g class="vzb"><text x="533.2" y="48.75" text-anchor="middle" class="b">Alert and</text><text x="533.2" y="68.75" text-anchor="middle" class="b">triage</text><text x="533.2" y="94.75" text-anchor="middle" class="s" style="font-size:13px">read the</text><text x="533.2" y="111.75" text-anchor="middle" class="s" style="font-size:13px">traces of the</text><text x="533.2" y="128.75" text-anchor="middle" class="s" style="font-size:13px">bad answers</text></g><circle cx="475.6" cy="24" r="11" class="badge"/><text x="475.6" y="28.5" text-anchor="middle" class="badge-t">4</text><line x1="596.8" y1="83" x2="613.8" y2="83" class="ln "/><polygon points="622.8,83 613.8,78.05 613.8,87.95" class="hd "/><rect x="626.8" y="22" width="119.2" height="122" rx="10" class="bx tn-g" /><g class="vzb"><text x="686.4" y="47.25" text-anchor="middle" class="b">Fix and add</text><text x="686.4" y="67.25" text-anchor="middle" class="b">to the</text><text x="686.4" y="87.25" text-anchor="middle" class="b">golden set</text><text x="686.4" y="113.25" text-anchor="middle" class="s" style="font-size:13px">the eval gate</text><text x="686.4" y="130.25" text-anchor="middle" class="s" style="font-size:13px">now blocks it</text></g><circle cx="628.8" cy="24" r="11" class="badge"/><text x="628.8" y="28.5" text-anchor="middle" class="badge-t">5</text><polyline points="686.4,146 686.4,174 73.6,174 73.6,157" class="ln ac"/><polygon points="73.6,148 68.65,157 78.55,157" class="hd ac"/><text x="380" y="194" text-anchor="middle" class="s ac-t" style="font-size:14px">monitor again: that failure can no longer ship</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 525" role="img" aria-label="The monitoring loop: traces become metrics, alerts lead to fixes, fixes become test cases" preserveAspectRatio="xMidYMid meet"><rect x="12" y="16" width="280" height="65" rx="10" class="bx tn-c" /><g class="vzb"><text x="152" y="41.25" text-anchor="middle" class="b">Live request</text><text x="152" y="67.25" text-anchor="middle" class="s" style="font-size:13px">a real user asks</text></g><circle cx="14" cy="18" r="11" class="badge"/><text x="14" y="22.5" text-anchor="middle" class="badge-t">1</text><line x1="152" y1="84" x2="152" y2="103" class="ln "/><polygon points="152,112 156.95,103 147.05,103" class="hd "/><rect x="12" y="115" width="280" height="82" rx="10" class="bx tn-b" /><g class="vzb"><text x="152" y="140.25" text-anchor="middle" class="b">Trace</text><text x="152" y="166.25" text-anchor="middle" class="s" style="font-size:13px">prompt, context, tool calls, tokens,</text><text x="152" y="183.25" text-anchor="middle" class="s" style="font-size:13px">timing</text></g><circle cx="14" cy="117" r="11" class="badge"/><text x="14" y="121.5" text-anchor="middle" class="badge-t">2</text><line x1="152" y1="200" x2="152" y2="219" class="ln "/><polygon points="152,228 156.95,219 147.05,219" class="hd "/><rect x="12" y="231" width="280" height="82" rx="10" class="bx tn-a" /><g class="vzb"><text x="152" y="256.25" text-anchor="middle" class="b">Metrics</text><text x="152" y="282.25" text-anchor="middle" class="s" style="font-size:13px">p95 latency, cost, errors,</text><text x="152" y="299.25" text-anchor="middle" class="s" style="font-size:13px">thumbs-down</text></g><circle cx="14" cy="233" r="11" class="badge"/><text x="14" y="237.5" text-anchor="middle" class="badge-t">3</text><line x1="152" y1="316" x2="152" y2="335" class="ln "/><polygon points="152,344 156.95,335 147.05,335" class="hd "/><rect x="12" y="347" width="280" height="65" rx="10" class="bx tn-w" /><g class="vzb"><text x="152" y="372.25" text-anchor="middle" class="b">Alert and triage</text><text x="152" y="398.25" text-anchor="middle" class="s" style="font-size:13px">read the traces of the bad answers</text></g><circle cx="14" cy="349" r="11" class="badge"/><text x="14" y="353.5" text-anchor="middle" class="badge-t">4</text><line x1="152" y1="415" x2="152" y2="434" class="ln "/><polygon points="152,443 156.95,434 147.05,434" class="hd "/><rect x="12" y="446" width="280" height="65" rx="10" class="bx tn-g" /><g class="vzb"><text x="152" y="471.25" text-anchor="middle" class="b">Fix and add to the golden set</text><text x="152" y="497.25" text-anchor="middle" class="s" style="font-size:13px">the eval gate now blocks it</text></g><circle cx="14" cy="448" r="11" class="badge"/><text x="14" y="452.5" text-anchor="middle" class="badge-t">5</text><polyline points="294,478.5 326,478.5 326,48.5 305,48.5" class="ln ac"/><polygon points="296,48.5 305,53.45 305,43.55" class="hd ac"/><text x="340" y="263.5" text-anchor="middle" class="s ac-t" transform="rotate(-90 340 263.5)">monitor again: that failure can no longer ship</text></svg>
+    <figcaption>Monitoring is a loop, not a wall of charts. Each real failure ends up in the golden set from Lesson 12.3, so the eval gate stops it from ever coming back.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">Your evals test what you thought of. Real users do what you didn’t. Monitoring is how you see the truth of your system in the wild — and turn its failures into the next round of improvements.</p>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>A doctor does not wait for you to collapse; she checks your pulse, temperature and blood pressure on every visit, and keeps your file so she can see what changed. Monitoring is that file for your AI service: every request leaves a record (a trace), the numbers are charted over time, and an alarm rings when one goes out of range. Where it breaks: a thermometer reads the same for everyone, but an LLM can sound perfectly healthy while giving wrong answers, so you also need checks of quality, not just of speed and errors.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -233,6 +262,10 @@
 
   <p>You can now build, package, gate, deploy, and watch an LLM service. Let’s consolidate it the way an interviewer will test it. Next: the <strong>interview check</strong>.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Watch what real users get, and turn every failure you find into a test.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>

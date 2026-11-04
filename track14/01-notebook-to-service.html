@@ -12,12 +12,41 @@
 
   <span class="eyebrow">Productionization &amp; LLMOps · Lesson 12.1</span>
   <h1>From notebook to a service</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>Code in a notebook only helps the person running it.</p>
+    <p>A web service is a program that waits for requests over the network and sends back answers.</p>
+    <p>Its address and the shape of each request together are called an API (application programming interface).</p>
+    <p>Wrap your model code in one, and any app, website or teammate can ask it a question.</p>
+    <p>In Python, FastAPI does this in about 15 lines.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>Your notebook is like cooking dinner in your own kitchen: it works, but only you eat. A service is a restaurant with a counter and a menu. Customers do not walk into the kitchen; they order through the counter, and the menu says exactly what they can ask for.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The kitchen where you cook</td><td>Your Python logic: RAG, an agent, a plain model call</td></tr>
+      <tr><td>The counter customers order at</td><td>The endpoint: a URL path such as <code>POST /ask</code></td></tr>
+      <tr><td>The menu</td><td>The request schema (a pydantic model) that says which fields are allowed</td></tr>
+      <tr><td>Sending back an order that makes no sense</td><td>A <code>422</code> error for a bad request, before your code runs</td></tr>
+      <tr><td>The queue at the door</td><td>Requests in flight; you plan for peak load on purpose</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> A restaurant can see the queue at the door, but a web service only learns it is overloaded when requests start timing out, so you have to plan capacity on purpose.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 532" role="img" aria-label="One request through a FastAPI model service, and a bad request rejected with 422" preserveAspectRatio="xMidYMid meet"><line x1="650" y1="77" x2="650" y2="478" class="ln thin dash"/><line x1="380" y1="77" x2="380" y2="478" class="ln thin dash"/><line x1="110" y1="77" x2="110" y2="478" class="ln thin dash"/><rect x="20" y="12" width="180" height="65" rx="10" class="bx tn-c" /><g class="vzb"><text x="110" y="37.25" text-anchor="middle" class="b">Client</text><text x="110" y="63.25" text-anchor="middle" class="s" style="font-size:13px">app, website, curl</text></g><rect x="290" y="12" width="180" height="65" rx="10" class="bx tn-a" /><g class="vzb"><text x="380" y="37.25" text-anchor="middle" class="b">FastAPI service</text><text x="380" y="63.25" text-anchor="middle" class="s" style="font-size:13px">POST /ask endpoint</text></g><rect x="560" y="12" width="180" height="65" rx="10" class="bx tn-k" /><g class="vzb"><text x="650" y="37.25" text-anchor="middle" class="b">Ollama model</text><text x="650" y="63.25" text-anchor="middle" class="s" style="font-size:13px">qwen2.5:7b, local</text></g><line x1="114" y1="117" x2="367" y2="117" class="ln "/><polygon points="376,117 367,112.05 367,121.95" class="hd "/><text x="245" y="109" text-anchor="middle" class="s" style="font-size:13px">POST /ask  {&quot;question&quot;: &quot;What is RAG?&quot;}</text><rect x="230" y="145" width="300" height="31" rx="6" class="bx tn-b" /><text x="380" y="165" text-anchor="middle" class="s" style="font-size:13px">pydantic checks the body has a question</text><line x1="384" y1="222" x2="637" y2="222" class="ln "/><polygon points="646,222 637,217.05 637,226.95" class="hd "/><text x="515" y="214" text-anchor="middle" class="s" style="font-size:13px">ollama.chat(model, messages)</text><line x1="646" y1="272" x2="393" y2="272" class="ln dash"/><polygon points="384,272 393,276.95 393,267.05" class="hd dash"/><text x="515" y="264" text-anchor="middle" class="s" style="font-size:13px">reply text, a few seconds later</text><line x1="376" y1="322" x2="123" y2="322" class="ln ok"/><polygon points="114,322 123,326.95 123,317.05" class="hd ok"/><text x="245" y="314" text-anchor="middle" class="s ok-t" style="font-size:13px">200 OK  {&quot;answer&quot;: &quot;RAG retrieves…&quot;}</text><line x1="10" y1="354" x2="750" y2="354" class="grid dash"/><rect x="10" y="360" width="273.4" height="22" rx="6" class="bx tn-b" /><text x="18" y="376" text-anchor="start" class="s m">A bad request: the body has no question</text><line x1="114" y1="416" x2="367" y2="416" class="ln "/><polygon points="376,416 367,411.05 367,420.95" class="hd "/><text x="245" y="408" text-anchor="middle" class="s" style="font-size:13px">POST /ask  {}</text><line x1="376" y1="466" x2="123" y2="466" class="ln wn"/><polygon points="114,466 123,470.95 123,461.05" class="hd wn"/><text x="245" y="458" text-anchor="middle" class="s wn-t" style="font-size:13px">422 error: field &#x27;question&#x27; is missing</text><text x="380" y="500" text-anchor="middle" class="s m">The model is never called, and nothing crashes.</text><text x="750" y="522" text-anchor="end" class="s m">time runs downward ↓</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 624" role="img" aria-label="One request through a FastAPI model service, and a bad request rejected with 422" preserveAspectRatio="xMidYMid meet"><line x1="308" y1="54" x2="308" y2="570" class="ln thin dash"/><line x1="180" y1="54" x2="180" y2="570" class="ln thin dash"/><line x1="52" y1="54" x2="52" y2="570" class="ln thin dash"/><rect x="4" y="12" width="96" height="42" rx="10" class="bx tn-c" /><g class="vzb"><text x="52" y="37.25" text-anchor="middle" class="b">Client</text></g><rect x="132" y="12" width="96" height="42" rx="10" class="bx tn-a" /><g class="vzb"><text x="180" y="37.25" text-anchor="middle" class="b">FastAPI</text></g><rect x="260" y="12" width="96" height="42" rx="10" class="bx tn-k" /><g class="vzb"><text x="308" y="37.25" text-anchor="middle" class="b">Model</text></g><line x1="56" y1="108" x2="167" y2="108" class="ln "/><polygon points="176,108 167,103.05 167,112.95" class="hd "/><text x="116" y="84" text-anchor="middle" class="s" style="font-size:13px">POST /ask</text><text x="116" y="100" text-anchor="middle" class="s" style="font-size:13px">{&quot;question&quot;: …}</text><rect x="105" y="144" width="150" height="48" rx="6" class="bx tn-b" /><text x="180" y="164" text-anchor="middle" class="s" style="font-size:13px">pydantic checks</text><text x="180" y="181" text-anchor="middle" class="s" style="font-size:13px">the body</text><line x1="184" y1="246" x2="295" y2="246" class="ln "/><polygon points="304,246 295,241.05 295,250.95" class="hd "/><text x="244" y="238" text-anchor="middle" class="s" style="font-size:13px">ollama.chat(…)</text><line x1="304" y1="304" x2="193" y2="304" class="ln dash"/><polygon points="184,304 193,308.95 193,299.05" class="hd dash"/><text x="244" y="296" text-anchor="middle" class="s" style="font-size:13px">reply text</text><line x1="176" y1="376" x2="65" y2="376" class="ln ok"/><polygon points="56,376 65,380.95 65,371.05" class="hd ok"/><text x="116" y="352" text-anchor="middle" class="s ok-t" style="font-size:13px">200 OK</text><text x="116" y="368" text-anchor="middle" class="s ok-t" style="font-size:13px">{&quot;answer&quot;: …}</text><line x1="10" y1="416" x2="350" y2="416" class="grid dash"/><rect x="10" y="422" width="174.4" height="22" rx="6" class="bx tn-b" /><text x="18" y="438" text-anchor="start" class="s m">Bad request: no question</text><line x1="56" y1="478" x2="167" y2="478" class="ln "/><polygon points="176,478 167,473.05 167,482.95" class="hd "/><text x="116" y="470" text-anchor="middle" class="s" style="font-size:13px">POST /ask {}</text><line x1="176" y1="550" x2="65" y2="550" class="ln wn"/><polygon points="56,550 65,554.95 65,545.05" class="hd wn"/><text x="116" y="526" text-anchor="middle" class="s wn-t" style="font-size:13px">422 error:</text><text x="116" y="542" text-anchor="middle" class="s wn-t" style="font-size:13px">question missing</text><text x="180" y="592" text-anchor="middle" class="s m">The model is never called.</text><text x="350" y="614" text-anchor="end" class="s m">time runs downward ↓</text></svg>
+    <figcaption>Read it top to bottom: time runs down the page. A good request goes all the way to the model and back. A request with no <code>question</code> is turned away by the schema check with a 422, so the model is never called.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">A model call in a notebook helps exactly one person: you. To let anyone — a website, an app, a teammate — use it, you wrap it in a small web service. This lesson turns your working code into an API others can call.</p>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>Your notebook is like cooking dinner in your own kitchen: it works, but only you eat. A service is a restaurant with a counter and a menu. Customers do not walk into the kitchen; they order through the counter, and the menu says exactly what they can ask for. Where it breaks: a restaurant can see the queue at the door, but a web service only learns it is overloaded when requests start timing out, so you have to plan capacity on purpose.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -223,6 +252,10 @@ app <span class="o">=</span> FastAPI()
 
   <p>Your service runs on your laptop. To run it <em>anywhere</em> — reliably, the same every time — you package it. Next: <strong>containers and deployment.</strong></p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> A service puts a counter and a menu in front of your code, so other programs can order from it.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
