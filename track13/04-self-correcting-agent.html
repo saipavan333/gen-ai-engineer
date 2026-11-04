@@ -12,12 +12,40 @@
 
   <span class="eyebrow">Structured Data &amp; Text-to-SQL · Lesson 9.4</span>
   <h1>The self-correcting SQL agent</h1>
+<!-- ease:top:start -->
+<section class="ease" aria-label="Simple first">
+  <div class="ease-start">
+    <div class="ease-label">Start here</div>
+    <p>The first query a model writes sometimes fails, for example with a wrong column name.</p>
+    <p>The database's error message says exactly what went wrong.</p>
+    <p>A self-correcting agent hands that error back to the model and asks for a fixed query.</p>
+    <p>Cap the loop at two or three tries so it can't spin forever or run up a bill.</p>
+    <p>It can only fix errors; a query that runs but answers the wrong question needs other checks.</p>
+  </div>
+  <div class="ease-pic">
+    <div class="ease-label">Everyday picture</div>
+    <p>It is like a spelling test where the teacher circles the exact wrong letter and lets you try again twice. With the circle you fix it almost every time; if the teacher just said "wrong, try again", you would probably make the same mistake.</p>
+    <div class="tbl-wrap"><table class="t amap">
+      <tr><th>In the picture</th><th>In the real system</th></tr>
+      <tr><td>The teacher circling the wrong letter</td><td>The database error, e.g. “no such column: customer.country”</td></tr>
+      <tr><td>Trying again with the circle in view</td><td>The retry prompt carries the error and the failed SQL</td></tr>
+      <tr><td>Only two more tries</td><td>max_tries = 3, then a polite “could not build a query”</td></tr>
+      <tr><td>A wrong answer with perfect spelling</td><td>Valid SQL that answers a different question: no error, no circle</td></tr>
+    </table></div>
+    <p class="ease-breaks"><b>Where the picture breaks.</b> The database only circles mistakes that break the rules of SQL; a query that is valid but answers the wrong question gets no circle at all.</p>
+  </div>
+  <figure class="ease-fig">
+    <div class="ease-label">How it works</div>
+    <svg class="ez-svg ez-wide" viewBox="0 0 760 292" role="img" aria-label="Bars: each retry with the error message fixes most failures, but not wrong answers" preserveAspectRatio="xMidYMid meet"><text x="14" y="20" text-anchor="start" class="b">1,000 questions, up to 3 tries each (the page&#x27;s assumptions)</text><text x="142" y="64" text-anchor="end" class="s">try 1</text><rect x="150" y="44" width="490" height="28" rx="4" class="bx tn-w"/><rect x="150" y="44" width="0" height="28" rx="4" class="fill-c"/><text x="648" y="63" text-anchor="start" class="s b">820 run</text><text x="142" y="116" text-anchor="end" class="s">try 2 (+ error)</text><rect x="150" y="96" width="490" height="28" rx="4" class="bx tn-w"/><rect x="150" y="96" width="401.8" height="28" rx="4" class="fill-c"/><rect x="551.8" y="96" width="61.74" height="28" rx="0" class="fill-g"/><text x="648" y="115" text-anchor="start" class="s b">946 run</text><text x="142" y="168" text-anchor="end" class="s">try 3 (+ error)</text><rect x="150" y="148" width="490" height="28" rx="4" class="bx tn-w"/><rect x="150" y="148" width="463.54" height="28" rx="4" class="fill-c"/><rect x="613.54" y="148" width="18.522" height="28" rx="0" class="fill-g"/><text x="648" y="167" text-anchor="start" class="s b">984 run</text><line x1="571.4" y1="34" x2="571.4" y2="186" class="ln ac dash"/><text x="565.4" y="202" text-anchor="end" class="s ac-t">only 860 are correct</text><rect x="14" y="215" width="14" height="14" rx="3" class="fill-c"/><text x="34" y="227" text-anchor="start" class="s">ran on an earlier try</text><rect x="209" y="215" width="14" height="14" rx="3" class="fill-g"/><text x="229" y="227" text-anchor="start" class="s">fixed by feeding the error back</text><rect x="474" y="215" width="14" height="14" rx="3" class="bx tn-w"/><text x="494" y="227" text-anchor="start" class="s">still failing</text><text x="14" y="254" text-anchor="start" class="s" style="font-size:13px">The loop lifts “runs” from 82% to 98.4% for about $0.0125 a question (1.234 calls on average). But about</text><text x="14" y="271" text-anchor="start" class="s" style="font-size:13px">124 queries ran fine and gave the wrong answer: no error, so the loop never sees them.</text></svg><svg class="ez-svg ez-tall" viewBox="0 0 360 381" role="img" aria-label="Bars: each retry with the error message fixes most failures, but not wrong answers" preserveAspectRatio="xMidYMid meet"><text x="14" y="20" text-anchor="start" class="b">1,000 questions, up to 3 tries</text><text x="62" y="64" text-anchor="end" class="s">try 1</text><rect x="70" y="44" width="230" height="28" rx="4" class="bx tn-w"/><rect x="70" y="44" width="0" height="28" rx="4" class="fill-c"/><text x="308" y="63" text-anchor="start" class="s b">820 run</text><text x="62" y="116" text-anchor="end" class="s">try 2</text><rect x="70" y="96" width="230" height="28" rx="4" class="bx tn-w"/><rect x="70" y="96" width="188.6" height="28" rx="4" class="fill-c"/><rect x="258.6" y="96" width="28.98" height="28" rx="0" class="fill-g"/><text x="308" y="115" text-anchor="start" class="s b">946 run</text><text x="62" y="168" text-anchor="end" class="s">try 3</text><rect x="70" y="148" width="230" height="28" rx="4" class="bx tn-w"/><rect x="70" y="148" width="217.58" height="28" rx="4" class="fill-c"/><rect x="287.58" y="148" width="8.694" height="28" rx="0" class="fill-g"/><text x="308" y="167" text-anchor="start" class="s b">984 run</text><line x1="267.8" y1="34" x2="267.8" y2="186" class="ln ac dash"/><text x="261.8" y="202" text-anchor="end" class="s ac-t">only 860 are correct</text><rect x="14" y="215" width="14" height="14" rx="3" class="fill-c"/><text x="34" y="227" text-anchor="start" class="s">ran on an earlier try</text><rect x="14" y="235" width="14" height="14" rx="3" class="fill-g"/><text x="34" y="247" text-anchor="start" class="s">fixed by feeding the error back</text><rect x="14" y="255" width="14" height="14" rx="3" class="bx tn-w"/><text x="34" y="267" text-anchor="start" class="s">still failing</text><text x="14" y="292" text-anchor="start" class="s" style="font-size:13px">The loop lifts “runs” from 82% to 98.4% for</text><text x="14" y="309" text-anchor="start" class="s" style="font-size:13px">about $0.0125 a question (1.234 calls on</text><text x="14" y="326" text-anchor="start" class="s" style="font-size:13px">average). But about 124 queries ran fine and</text><text x="14" y="343" text-anchor="start" class="s" style="font-size:13px">gave the wrong answer: no error, so the loop</text><text x="14" y="360" text-anchor="start" class="s" style="font-size:13px">never sees them.</text></svg>
+    <figcaption>Each retry fixes most of what is left (70% here, an assumption from the page). The dashed line is the ceiling: queries that run but are wrong never trigger a retry. All counts and costs are computed from the page's assumptions.</figcaption>
+  </figure>
+</section>
+<h2 class="deeper-h" id="going-deeper">Going deeper</h2>
+<!-- ease:top:end -->
+
   <p class="lead">First tries fail: a wrong column name, a bad join, a dialect quirk. The trick that makes text-to-SQL feel reliable is letting the system read its own error and fix itself — the agent loop from Track&nbsp;4, pointed at a database.</p>
 <!-- shape:analogy:start -->
-  <div class="box note shape-analogy">
-    <div class="box-label">School-kid picture</div>
-    <p>It is like a spelling test where the teacher circles the exact wrong letter and lets you try again twice. With the circle you fix it almost every time; if the teacher just said "wrong, try again", you would probably make the same mistake. The analogy breaks because the database only circles mistakes that break the rules of SQL; a query that is valid but answers the wrong question gets no circle at all.</p>
-  </div>
+  <!-- analogy folded into the Everyday picture at the top of this page (pass 2, tools/ease_pass2.py) -->
 <!-- shape:analogy:end -->
 
 
@@ -205,6 +233,10 @@
 
   <p>You can now build a safe, self-correcting text-to-SQL system. The last question is the one interviewers always ask: how do you know it’s any good? Next: the <strong>interview check</strong>, where evaluation ties it together.</p>
 
+
+<!-- ease:line:start -->
+  <p class="ease-line"><b>In one line:</b> Feed the error back and let the model try again, a few times at most, and check the answers separately.</p>
+<!-- ease:line:end -->
 </main>
 <script src="../assets/curriculum.js?v=25"></script>
 <script src="../assets/app.js?v=25"></script>
